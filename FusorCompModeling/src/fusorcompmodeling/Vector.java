@@ -11,11 +11,13 @@ package fusorcompmodeling;
  */
 public class Vector {
     // Units are mm
-    double x;
-    double y;
-    double z;
+    public double x;
+    public double y;
+    public double z;
     
     // Units are degrees
-    double phi;
-    double theta;
+    public double phi;
+    public double theta;
+    
+    public Vector() {}
 }

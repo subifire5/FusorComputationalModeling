@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shapes>
+   <shape>
+      <phi>4.39</phi>
+      <theta>49.48</theta>
+      <phi2>38.39</phi2>
+      <radius>6.5</radius>
+      <radius2>7.8</radius2>
+      <x>1.68</x>
+      <y>6.28</y>
+      <z>0</z>
+      <type>TorusSegment</type>
+      <charge>Anode</charge>
+   </shape>
+   <shape>
+     <x>-9.525</x>
+     <y>11.75</y>
+     <z>-9.525</z>
+     <radius>10</radius>
+     <phi>0.771</phi>
+     <theta>3.3</theta>
+     <height>394.3</height>
+	   <type>Cylinder</type>
+     <charge>Anode</charge>
+   </shape>
+</shapes>

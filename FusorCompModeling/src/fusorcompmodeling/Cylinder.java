@@ -17,4 +17,6 @@ public class Cylinder extends GridComponent {
         this.radius = radius;
         this.height = height;
     }
+    
+    public Cylinder () {}
 }

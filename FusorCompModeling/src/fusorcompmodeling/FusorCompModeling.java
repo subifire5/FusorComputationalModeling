@@ -5,6 +5,9 @@
  */
 package fusorcompmodeling;
 
+import java.io.FileNotFoundException;
+import java.util.List;
+
 /**
  *
  * @author guberti
@@ -14,8 +17,9 @@ public class FusorCompModeling {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    public static void main(String[] args) throws FileNotFoundException {
+        XMLParser p = new XMLParser("/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/testXML.xml");
+        List<GridComponent> parts = p.parseObjects();
     }
     
 }

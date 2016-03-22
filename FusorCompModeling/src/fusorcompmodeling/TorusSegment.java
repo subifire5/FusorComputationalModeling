@@ -9,7 +9,7 @@ package fusorcompmodeling;
  *
  * @author guberti
  */
-public class TorusSegment extends GridComponent{
+public class TorusSegment extends GridComponent {
     double phi2;
     double radius2;
     public TorusSegment (Vector pos, double radius, double phi2, double radius2) {
@@ -18,4 +18,6 @@ public class TorusSegment extends GridComponent{
         this.phi2 = phi2;
         this.radius2 = radius2;
     }
+    
+    public TorusSegment () {}
 }
