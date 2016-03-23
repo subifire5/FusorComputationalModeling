@@ -5,11 +5,15 @@
  */
 package fusorcompmodeling;
 
+import java.util.Random;
+
 /**
  *
  * @author guberti
  */
-public class GridComponent {
+public abstract class GridComponent {
     Vector pos; // Location
     double radius;
+    
+    public abstract Point getRandomPoint(Random r);    
 }

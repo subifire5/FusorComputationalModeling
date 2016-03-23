@@ -5,6 +5,8 @@
  */
 package fusorcompmodeling;
 
+import java.util.Random;
+
 /**
  *
  * @author guberti
@@ -19,5 +21,10 @@ public class TorusSegment extends GridComponent {
         this.radius2 = radius2;
     }
     
-    public TorusSegment () {}
+    // TODO add a real method here 
+    
+    @Override
+    public Point getRandomPoint(Random r) {
+        return new Point(0, 0, 0);
+    }
 }

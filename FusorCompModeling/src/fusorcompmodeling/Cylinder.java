@@ -5,6 +5,8 @@
  */
 package fusorcompmodeling;
 
+import java.util.Random;
+
 /**
  *
  * @author guberti
@@ -18,5 +20,7 @@ public class Cylinder extends GridComponent {
         this.height = height;
     }
     
-    public Cylinder () {}
+    public Point getRandomPoint(Random r) {
+        return new Point(0, 0, 0);
+    }
 }
