@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shapes>
    <shape>
-      <phi>4.39</phi>
+      <phi>43.2</phi>
       <theta>49.48</theta>
       <phi2>38.39</phi2>
-      <radius>6.5</radius>
-      <radius2>7.8</radius2>
-      <x>1.68</x>
-      <y>6.28</y>
+      <radius>3</radius>
+      <radius2>1</radius2>
+      <x>0</x>
+      <y>0</y>
       <z>0</z>
       <type>TorusSegment</type>
       <charge>Anode</charge>

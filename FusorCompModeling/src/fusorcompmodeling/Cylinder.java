@@ -21,6 +21,9 @@ public class Cylinder extends GridComponent {
     }
     
     public Point getRandomPoint(Random r) {
+        double pointPhi = r.nextDouble() * Math.PI * 2;
+        double pointHeight = r.nextDouble() * height;
+        
         return new Point(0, 0, 0);
     }
 }
