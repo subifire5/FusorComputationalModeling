@@ -20,7 +20,7 @@ public class FusorCompModeling {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
-        XMLParser p = new XMLParser("/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/testXML.xml");
+        XMLParser p = new XMLParser("C:/Users/HSamuelson/Documents/GitHub/CM/FusorComputationalModeling/FusorCompModeling/testXML.xml");
         List<GridComponent> parts = p.parseObjects();
         Random rand = new Random();
         Point point = parts.get(0).getRandomPoint(rand);
