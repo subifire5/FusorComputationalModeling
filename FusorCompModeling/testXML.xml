@@ -13,13 +13,13 @@
       <charge>Anode</charge>
    </shape>
    <shape>
-     <x>-9.525</x>
-     <y>11.75</y>
-     <z>-9.525</z>
-     <radius>10</radius>
-     <phi>0.771</phi>
-     <theta>3.3</theta>
-     <height>394.3</height>
+     <x>3</x>
+     <y>3</y>
+     <z>3</z>
+     <radius>4</radius>
+     <phi>0</phi>
+     <theta>0</theta>
+     <height>10</height>
 	   <type>Cylinder</type>
      <charge>Anode</charge>
    </shape>

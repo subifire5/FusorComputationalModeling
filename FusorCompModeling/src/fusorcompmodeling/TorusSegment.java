@@ -21,7 +21,10 @@ public class TorusSegment extends GridComponent {
         this.radius2 = radius2; // Width of the torus
     }
     
-    // TODO add a real method here 
+    @Override
+    public double getSurfaceArea() {
+        return (4 * Math.pow(Math.PI, 2) * radius * radius2);
+    }
     
     @Override
     public Point getRandomPoint(Random r) {
@@ -29,12 +32,14 @@ public class TorusSegment extends GridComponent {
         double pointTheta = r.nextDouble() * Math.PI * 2;
         
         // Points without rotation
-        double pointZ = pos.z + radius2 * Math.sin(pointTheta);
+        Point p = new Point();
+        
+        p.y = pos.y + radius2 * Math.sin(pointTheta);
         
         double a = radius2 * Math.cos(pointTheta);
-        double pointX = pos.x + (radius + a) * Math.cos(pointPhi);
-        double pointY = pos.y + (radius + a) * Math.sin(pointPhi);
+        p.x = pos.x + (radius + a) * Math.cos(pointPhi);
+        p.z = pos.z + (radius + a) * Math.sin(pointPhi);
                 
-        return new Point(pointX, pointY, pointZ);
+        return p.rotateAroundVector(pos);
     }
 }

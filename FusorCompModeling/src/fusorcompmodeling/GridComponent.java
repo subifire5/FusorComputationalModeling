@@ -15,5 +15,7 @@ public abstract class GridComponent {
     Vector pos; // Location
     double radius;
     
-    public abstract Point getRandomPoint(Random r);    
+    public abstract Point getRandomPoint(Random r);
+    
+    public abstract double getSurfaceArea();
 }

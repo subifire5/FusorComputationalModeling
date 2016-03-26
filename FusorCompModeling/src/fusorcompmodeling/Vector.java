@@ -20,4 +20,12 @@ public class Vector {
     public double theta;
     
     public Vector() {}
+    
+    public Vector(double x, double y, double z, double phi, double theta) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.phi = phi;
+        this.theta = theta;
+    }
 }

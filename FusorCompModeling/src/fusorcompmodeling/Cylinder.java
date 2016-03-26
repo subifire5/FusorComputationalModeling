@@ -5,25 +5,37 @@
  */
 package fusorcompmodeling;
 
-import java.util.Random;
+import java.util.*;
 
 /**
  *
  * @author guberti
  */
 public class Cylinder extends GridComponent {
+
     double height;
-    
-    public Cylinder (Vector pos, double radius, double height) {
+
+    public Cylinder(Vector pos, double radius, double height) {
         this.pos = pos;
         this.radius = radius;
         this.height = height;
     }
-    
-    public Point getRandomPoint(Random r) {
-        double pointPhi = r.nextDouble() * Math.PI * 2;
-        double pointHeight = r.nextDouble() * height;
+
+    public double getSurfaceArea() {
+        return (Math.PI * radius * 2 * height);
+    }
+
+    public Point getRandomPoint(Random rand) {
+        double pointPhi = rand.nextDouble() * Math.PI * 2;
         
-        return new Point(0, 0, 0);
+        Point p = new Point();
+        p.z = rand.nextDouble() * height;
+        p.x = radius * Math.cos(pointPhi);
+        p.y = radius * Math.sin(pointPhi);
+        
+        return p.rotateAroundVector(pos);
+    }
+    
+    public Cylinder() {
     }
 }
