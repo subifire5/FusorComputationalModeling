@@ -21,7 +21,7 @@ public class FusorCompModeling {
      */
     public static void main(String[] args) throws FileNotFoundException {
         System.out.println("Loading file...");
-        XMLParser p = new XMLParser("/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/testXML.xml");
+        XMLParser p = new XMLParser("testXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
         Random rand = new Random();
