@@ -14,6 +14,7 @@ import java.util.Random;
 public abstract class GridComponent {
     Vector pos; // Location
     double radius;
+    int charge;
     
     public abstract Point getRandomPoint(Random r);
     

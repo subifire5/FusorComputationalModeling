@@ -71,13 +71,15 @@ public class XMLParser {
         switch (type) {
             case "Cylinder":            
                 double height = Double.parseDouble(element.getElementsByTagName("height").item(0).getTextContent());
+                int charge = Integer.parseInt(element.getElementsByTagName("charge").item(0).getTextContent());
                 System.out.println("Parsed a Cylinder!");
-                return new Cylinder(v, radius, height);
+                return new Cylinder(v, radius, height, charge);
             case "TorusSegment":
                 double radius2 = Double.parseDouble(element.getElementsByTagName("radius2").item(0).getTextContent());
                 double phi2 = Double.parseDouble(element.getElementsByTagName("phi2").item(0).getTextContent());
+                int charge2 = Integer.parseInt(element.getElementsByTagName("charge").item(0).getTextContent());
                 System.out.println("Parsed a Torus Segment!");
-                return new TorusSegment(v, radius, phi2, radius2);
+                return new TorusSegment(v, radius, phi2, radius2, charge2);
             default:
                 System.out.println("Unknown type " + type);
                 return null;

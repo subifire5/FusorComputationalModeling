@@ -14,11 +14,12 @@ import java.util.Random;
 public class TorusSegment extends GridComponent {
     double phi2;
     double radius2;
-    public TorusSegment (Vector pos, double radius, double phi2, double radius2) {
+    public TorusSegment (Vector pos, double radius, double phi2, double radius2, int charge) {
         this.pos = pos;
         this.radius = radius;
         this.phi2 = phi2;
         this.radius2 = radius2; // Width of the torus
+        this.charge = charge;
     }
     
     @Override

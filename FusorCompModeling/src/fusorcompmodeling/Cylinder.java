@@ -15,10 +15,11 @@ public class Cylinder extends GridComponent {
 
     double height;
 
-    public Cylinder(Vector pos, double radius, double height) {
+    public Cylinder(Vector pos, double radius, double height, int charge) {
         this.pos = pos;
         this.radius = radius;
         this.height = height;
+        this.charge = charge;
     }
 
     public double getSurfaceArea() {
