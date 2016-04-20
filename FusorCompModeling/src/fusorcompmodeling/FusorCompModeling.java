@@ -99,8 +99,13 @@ public class FusorCompModeling {
     }
 
     public static double distanceCalculator(Point a, Point b) {
+<<<<<<< HEAD
         double distance = 0;
         distance = Math.sqrt(Math.pow((a.x - b.x), 2) + Math.pow((a.y - b.y), 2) + Math.pow((a.z - b.z), 2));
+=======
+        //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
+        double distance = Math.sqrt(((a.x - b.x)*(a.x - b.x)) + ((a.x - b.y)*(a.x - b.y)) + ((a.z - b.z)*(a.z - b.z))); 
+>>>>>>> origin/master
         return distance;
     }
 
