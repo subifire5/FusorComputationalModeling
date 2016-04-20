@@ -39,8 +39,8 @@ public class FusorCompModeling {
 //        Vector v = new Vector(0, 0, 0, Math.PI, 0);
 //        System.out.println(p1.rotateAroundVector(v).toString());
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
-        ArrayList<Point> negativePoints = distributePoints(parts, 10, -1);
-        ArrayList<Point> positivePoints = distributePoints(parts, 10, 1);
+        ArrayList<Point> negativePoints = distributePoints(parts, 20000, -1);
+        ArrayList<Point> positivePoints = distributePoints(parts, 20000, 1);
         System.out.println("Positive Points Size: " + positivePoints.size() + "\nNegative Points Size: " + negativePoints.size());
         //System.out.println(listOfAllPoints.size());
         //for (int i = 0; i < listOfAllPoints.size(); i++) {
@@ -109,24 +109,26 @@ public class FusorCompModeling {
         int change = 0;
         for (int i = 0; i < parts.size(); i++) {
             if (parts.get(i).charge == -1) {
-                for (int j = 0; j < positivePoints.size(); j++) {
+                int points = positivePoints.size();
+                System.out.println(points);
+                for (int j = 0; j < points; j++) {
                     Point comparePoint = parts.get(i).getRandomPoint(newRand);
                     double potentialOfComparePoint = electricPotential(positivePoints, negativePoints, comparePoint);
-                    double potentialOfExistingPoint;
-                    potentialOfExistingPoint = electricPotential(positivePoints, negativePoints, positivePoints.get(j));
+                    double potentialOfExistingPoint = electricPotential(positivePoints, negativePoints, positivePoints.get(j));
                     if (potentialOfComparePoint > potentialOfExistingPoint) {
-                        positivePoints.add(j, comparePoint);
+                        positivePoints.set(j, comparePoint);
                         change++;
                     }
                 }
             } else if (parts.get(i).charge == 1) {
-                for (int j = 0; j < negativePoints.size(); j++) {
+                int points = negativePoints.size();
+                System.out.println(points);
+                for (int j = 0; j < points; j++) {
                     Point comparePoint = parts.get(i).getRandomPoint(newRand);
                     double potentialOfComparePoint = electricPotential(positivePoints, negativePoints, comparePoint);
-                    double potentialOfExistingPoint;
-                    potentialOfExistingPoint = electricPotential(positivePoints, negativePoints, negativePoints.get(j));
+                    double potentialOfExistingPoint = electricPotential(positivePoints, negativePoints, negativePoints.get(j));
                     if (potentialOfComparePoint > potentialOfExistingPoint) {
-                        negativePoints.add(j, comparePoint);
+                        negativePoints.set(j, comparePoint);
                         change++;
                     }
                 }
