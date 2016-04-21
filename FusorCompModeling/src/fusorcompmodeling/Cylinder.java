@@ -33,6 +33,7 @@ public class Cylinder extends GridComponent {
         p.z = rand.nextDouble() * height;
         p.x = radius * Math.cos(pointPhi);
         p.y = radius * Math.sin(pointPhi);
+        p.charge = charge;
         
         return p.rotateAroundVector(pos);
     }

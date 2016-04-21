@@ -40,7 +40,8 @@ public class TorusSegment extends GridComponent {
         double a = radius2 * Math.cos(pointTheta);
         p.x = pos.x + (radius + a) * Math.cos(pointPhi);
         p.z = pos.z + (radius + a) * Math.sin(pointPhi);
-                
+        p.charge = charge;
+        
         return p.rotateAroundVector(pos);
     }
 }

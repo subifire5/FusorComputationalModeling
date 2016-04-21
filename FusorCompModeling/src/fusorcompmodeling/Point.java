@@ -13,6 +13,14 @@ public class Point {
     public double x;
     public double y;
     public double z;
+    public int charge; // True is positive, false is negative
+    
+    public Point(double x, double y, double z, int charge) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.charge = charge;
+    }
     
     public Point(double x, double y, double z) {
         this.x = x;
@@ -44,7 +52,7 @@ public class Point {
         rP.x += v.x;
         rP.y += v.y;
         rP.z += v.z;
-        
+        rP.charge = charge;
         // Return the rotated point
         
         return rP;

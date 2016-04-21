@@ -26,49 +26,40 @@ public class FusorCompModeling {
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
         Random rand = new Random();
-//        System.out.println("Obtaining a point...");
-//        Point point = parts.get(1).getRandomPoint(rand);
-//        System.out.println("Got a point");
-//        System.out.println("[" + point.x + ", " + point.y + ", " + point.z + "]");
-//        System.out.println(Math.pow(3 - Math.sqrt(Math.pow(point.x, 2) + Math.pow(point.y, 2)), 2) + Math.pow(point.z, 2));
-//        System.out.println(Math.pow(point.x, 2) + Math.pow(point.y, 2));
-//
-//        System.out.println("Initializing rotation tests...");
-//        System.out.println("Rotating [2, 3, 5] around [0, 0, 0] by 0 and 0 radians");
-//        Point p1 = new Point(2, 3, 5);
-//        Vector v = new Vector(0, 0, 0, Math.PI, 0);
-//        System.out.println(p1.rotateAroundVector(v).toString());
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
-        ArrayList<Point> negativePoints = distributePoints(parts, 20000, -1);
-        ArrayList<Point> positivePoints = distributePoints(parts, 20000, 1);
-        System.out.println("Positive Points Size: " + positivePoints.size() + "\nNegative Points Size: " + negativePoints.size());
-        //System.out.println(listOfAllPoints.size());
-        //for (int i = 0; i < listOfAllPoints.size(); i++) {
-        //System.out.println(listOfAllPoints.get(i).toString());
-        //}
-//        Point testPoint = new Point(rand.nextInt(100), rand.nextInt(100), rand.nextInt(100));
-//        double totalPotential = electricPotential(positivePoints, negativePoints, testPoint);
-//        System.out.println("Potential: " + totalPotential);
-        int changes = balanceCharges(positivePoints, negativePoints, parts);
+        ArrayList<Point> points = distributePoints(parts, 20000);
+        //int changes = 80;
+        //int timesRun = 0;
+        //do  {
+        int changes = balanceCharges(points, parts);
         System.out.println("Changes Made: " + changes);
+        //timesRun++;
+        //} while(changes > 0);
+        //System.out.println("Times run: " + timesRun);
     }
 
-    public static ArrayList<Point> distributePoints(List<GridComponent> parts, int numberOfPoints, int charge) {
-        System.out.println(numberOfPoints);
-        ArrayList<Point> totalPointsOnAllShapes = new ArrayList<Point>();
-        double totalSurfaceArea = totalSurfaceArea(parts, charge);
+    public static ArrayList<Point> distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
+        ArrayList<Point> totalPoints = new ArrayList<Point>();
         Random newRand = new Random();
+        for (int i = 0; i < pointsForEachCharge; i++) {
+            totalPoints.add(getRandomPoint(parts, 1));
+            totalPoints.add(getRandomPoint(parts, -1));
+        }
+        return totalPoints;
+    }
+    
+    public static Point getRandomPoint(List<GridComponent> parts, int charge) {
+        double area = totalSurfaceArea(parts, charge);
+        Random generator = new Random();
+        double rand = generator.nextDouble() * area;
         for (int i = 0; i < parts.size(); i++) {
-            if (parts.get(i).charge == charge) {
-                double percentage = (parts.get(i).getSurfaceArea() / totalSurfaceArea);
-                double timesToRun = Math.floor(numberOfPoints * percentage);
-                for (int j = 0; j < timesToRun; j++) {
-                    totalPointsOnAllShapes.add(parts.get(i).getRandomPoint(newRand));
-                }
+            rand -= parts.get(i).getSurfaceArea();
+            
+            if (rand <= (double) 0.0) {
+                return parts.get(i).getRandomPoint(new Random());
             }
         }
-        System.out.println(totalSurfaceArea);
-        return totalPointsOnAllShapes;
+        return null; // Code will never reach here, but this line is required
     }
 
     public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
@@ -81,18 +72,16 @@ public class FusorCompModeling {
         return surfaceArea;
     }
 
-    public static double electricPotential(ArrayList<Point> positivePoints, ArrayList<Point> negativePoints, Point comparePoint) {
+    public static double electricPotential(ArrayList<Point> points, Point comparePoint) {
         double positivePotential = 0;
         double negativePotential = 0;
-        for (int i = 0; i < positivePoints.size(); i++) {
-            if (!positivePoints.get(i).equals(comparePoint)) {
-                positivePotential += (1 / distanceCalculator(positivePoints.get(i), comparePoint));
-
-            }
-        }
-        for (int i = 0; i < negativePoints.size(); i++) {
-            if (!negativePoints.get(i).equals(comparePoint)) {
-                negativePotential += (1 / distanceCalculator(negativePoints.get(i), comparePoint));
+        for (int i = 0; i < points.size(); i++) {
+            if (!points.get(i).equals(comparePoint)) {
+                if (points.get(i).charge == 1) {
+                    positivePotential += (1 / distanceCalculator(points.get(i), comparePoint));
+                } else {
+                    negativePotential += (1 / distanceCalculator(points.get(i), comparePoint));
+                }
             }
         }
         return (positivePotential - negativePotential);
@@ -100,17 +89,16 @@ public class FusorCompModeling {
 
     public static double distanceCalculator(Point a, Point b) {
         //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
-        double distance = Math.sqrt(((a.x - b.x)*(a.x - b.x)) + ((a.x - b.y)*(a.x - b.y)) + ((a.z - b.z)*(a.z - b.z))); 
+        double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.x - b.y) * (a.x - b.y)) + ((a.z - b.z) * (a.z - b.z)));
         return distance;
     }
 
-    public static int balanceCharges(ArrayList<Point> positivePoints, ArrayList<Point> negativePoints, List<GridComponent> parts) {
-        Random newRand = new Random();
+    public static int balanceCharges(ArrayList<Point> points, List<GridComponent> parts) {
+        /*Random newRand = new Random();
         int change = 0;
         for (int i = 0; i < parts.size(); i++) {
             if (parts.get(i).charge == -1) {
                 int points = positivePoints.size();
-                System.out.println(points);
                 for (int j = 0; j < points; j++) {
                     Point comparePoint = parts.get(i).getRandomPoint(newRand);
                     double potentialOfComparePoint = electricPotential(positivePoints, negativePoints, comparePoint);
@@ -122,7 +110,6 @@ public class FusorCompModeling {
                 }
             } else if (parts.get(i).charge == 1) {
                 int points = negativePoints.size();
-                System.out.println(points);
                 for (int j = 0; j < points; j++) {
                     Point comparePoint = parts.get(i).getRandomPoint(newRand);
                     double potentialOfComparePoint = electricPotential(positivePoints, negativePoints, comparePoint);
@@ -135,6 +122,18 @@ public class FusorCompModeling {
             }
 
         }
-        return change;
+        return change;*/
+        int changes = 0;
+        
+        for (int i = 0; i < points.size(); i++) {
+            Point newPoint = getRandomPoint(parts, points.get(i).charge);
+            double currentEP = electricPotential(points, points.get(i));
+            double newEP = electricPotential(points, newPoint);
+            if (newEP > currentEP) {
+                changes++;
+                points.set(i, newPoint);
+            }
+        }
+        return changes;
     }
 }
