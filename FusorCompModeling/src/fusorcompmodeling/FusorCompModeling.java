@@ -23,15 +23,15 @@ public class FusorCompModeling {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
-        long[] times = new long[4];
-        int[] logNums = new int[]{100, 1000, 5000, 10000};
+        int[] logNums = new int[]{10, 50, 100, 500, 1000, 5000, 10000, 50000};
+        long[] times = new long[logNums.length];
         System.out.println("Loading file...");
         XMLParser p = new XMLParser("testXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
         Random rand = new Random();
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
-        for(int i = 0; i < 4; i++){
+        for(int i = 0; i < logNums.length; i++){
             long startTime = System.currentTimeMillis();
             ArrayList<Point> points = distributePoints(parts, logNums[i]);
             //int changes = 80;
@@ -48,8 +48,8 @@ public class FusorCompModeling {
         BufferedWriter logFile = null;
         try {
             logFile = new BufferedWriter(new FileWriter("C:\\Users\\sfreisem-kirov\\Documents\\GitHub\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
-            for(int i = 0; i < 4; i++){
-                logFile.write("" + times[i]);
+            for(int i = 0; i < logNums.length; i++){
+                logFile.write(""+ logNums[i] + "," + times[i]);
                 logFile.newLine();
                 logFile.flush();
             }
