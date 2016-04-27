@@ -5,7 +5,9 @@
  */
 package fusorcompmodeling;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -21,21 +23,42 @@ public class FusorCompModeling {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
+        long[] times = new long[4];
+        int[] logNums = new int[]{100, 1000, 5000, 10000};
         System.out.println("Loading file...");
         XMLParser p = new XMLParser("testXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
         Random rand = new Random();
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
-        ArrayList<Point> points = distributePoints(parts, 20000);
-        //int changes = 80;
-        //int timesRun = 0;
-        //do  {
-        int changes = balanceCharges(points, parts);
-        System.out.println("Changes Made: " + changes);
+        for(int i = 0; i < 4; i++){
+            long startTime = System.currentTimeMillis();
+            ArrayList<Point> points = distributePoints(parts, logNums[i]);
+            //int changes = 80;
+            //int timesRun = 0;
+            //do  {
+            int changes = balanceCharges(points, parts);
+            System.out.println("Changes Made: " + changes);
+            long endTime = System.currentTimeMillis();
+            times[i] = endTime - startTime;
+        }    
         //timesRun++;
         //} while(changes > 0);
         //System.out.println("Times run: " + timesRun);
+        BufferedWriter logFile = null;
+        try {
+            logFile = new BufferedWriter(new FileWriter("C:\\Users\\sfreisem-kirov\\Documents\\GitHub\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
+            for(int i = 0; i < 4; i++){
+                logFile.write("" + times[i]);
+                logFile.newLine();
+                logFile.flush();
+            }
+            logFile.close();
+        } catch (Exception e) {
+            System.err.println("Cannot create log file");
+
+        }
+
     }
 
     public static ArrayList<Point> distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
