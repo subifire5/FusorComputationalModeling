@@ -49,7 +49,7 @@ public class FusorCompModeling {
         try {
             logFile = new BufferedWriter(new FileWriter("C:\\Users\\Daman\\Documents\\NetBeansProjects\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
             for(int i = 0; i < logNums.length ; i++){
-                logFile.write("" + times[i]);
+                logFile.write(""+ logNums[i] + "," + times[i]);
                 logFile.newLine();
                 logFile.flush();
             }
