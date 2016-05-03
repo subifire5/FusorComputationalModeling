@@ -64,8 +64,20 @@ public class XMLParser {
         v.x = Double.parseDouble(element.getElementsByTagName("x").item(0).getTextContent());
         v.y = Double.parseDouble(element.getElementsByTagName("y").item(0).getTextContent());
         v.z = Double.parseDouble(element.getElementsByTagName("z").item(0).getTextContent());
+        if(element.getElementsByTagName("phi").item(0).getTextContent().contains("pi")) {
+            String temp = element.getElementsByTagName("phi").item(0).getTextContent();
+            String containsDouble[] = temp.split("pi");
+            v.phi = Double.parseDouble(containsDouble[1])*Math.PI;
+        } else {
         v.phi = Double.parseDouble(element.getElementsByTagName("phi").item(0).getTextContent());
-        v.theta = Double.parseDouble(element.getElementsByTagName("theta").item(0).getTextContent());
+        }
+        if(element.getElementsByTagName("theta").item(0).getTextContent().contains("pi")) {
+            String temp = element.getElementsByTagName("theta").item(0).getTextContent();
+            String containsDouble[] = temp.split("pi");
+            v.theta = Double.parseDouble(containsDouble[1])*Math.PI;
+        } else {
+        v.phi = Double.parseDouble(element.getElementsByTagName("theta").item(0).getTextContent());
+        }
         double radius = Double.parseDouble(element.getElementsByTagName("radius").item(0).getTextContent());
 
         switch (type) {
