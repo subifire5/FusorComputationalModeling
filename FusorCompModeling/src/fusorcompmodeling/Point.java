@@ -14,6 +14,15 @@ public class Point {
     public double y;
     public double z;
     public int charge; // True is positive, false is negative
+    public double EP;
+    
+    public Point(double x, double y, double z, int charge, double EP) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.charge = charge;
+        this.EP = EP;
+    }
     
     public Point(double x, double y, double z, int charge) {
         this.x = x;

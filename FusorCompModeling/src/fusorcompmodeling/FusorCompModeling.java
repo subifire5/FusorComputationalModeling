@@ -23,17 +23,17 @@ public class FusorCompModeling {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
-        long[] times = new long[4];
-        int[] logNums = new int[]{100, 1000, 5000, 10000};
+        int[] logNums = new int[]{100, 1000, 5000, 10000, 20000, 50000};
+        long[] times = new long[logNums.length];
         System.out.println("Loading file...");
-        XMLParser p = new XMLParser("testXML.xml");
+        XMLParser p = new XMLParser("simpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
         Random rand = new Random();
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
-        for(int i = 0; i < 4; i++){
+        for(int i = 0; i < logNums.length; i++){
             long startTime = System.currentTimeMillis();
-            ArrayList<Point> points = distributePoints(parts, logNums[i]);
+            Point[] points = distributePoints(parts, logNums[i]);
             //int changes = 80;
             //int timesRun = 0;
             //do  {
@@ -47,8 +47,8 @@ public class FusorCompModeling {
         //System.out.println("Times run: " + timesRun);
         BufferedWriter logFile = null;
         try {
-            logFile = new BufferedWriter(new FileWriter("C:\\Users\\sfreisem-kirov\\Documents\\GitHub\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
-            for(int i = 0; i < 4; i++){
+            logFile = new BufferedWriter(new FileWriter("C:\\Users\\Daman\\Documents\\NetBeansProjects\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
+            for(int i = 0; i < logNums.length ; i++){
                 logFile.write("" + times[i]);
                 logFile.newLine();
                 logFile.flush();
@@ -61,17 +61,17 @@ public class FusorCompModeling {
 
     }
 
-    public static ArrayList<Point> distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
-        ArrayList<Point> totalPoints = new ArrayList<Point>();
+    public static Point[] distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
+        Point[] totalPoints = new Point[pointsForEachCharge];
         Random newRand = new Random();
         for (int i = 0; i < pointsForEachCharge; i++) {
-            totalPoints.add(getRandomPoint(parts, 1));
-            totalPoints.add(getRandomPoint(parts, -1));
+            totalPoints[i] = getRandomPoint(parts);
         }
         return totalPoints;
     }
     
-    public static Point getRandomPoint(List<GridComponent> parts, int charge) {
+    public static Point getRandomPoint(List<GridComponent> parts) {
+        int charge = 1;
         double area = totalSurfaceArea(parts, charge);
         Random generator = new Random();
         double rand = generator.nextDouble() * area;
@@ -95,15 +95,15 @@ public class FusorCompModeling {
         return surfaceArea;
     }
 
-    public static double electricPotential(ArrayList<Point> points, Point comparePoint) {
+    public static double electricPotential(Point[] points, Point comparePoint) {
         double positivePotential = 0;
         double negativePotential = 0;
-        for (int i = 0; i < points.size(); i++) {
-            if (!points.get(i).equals(comparePoint)) {
-                if (points.get(i).charge == 1) {
-                    positivePotential += (1 / distanceCalculator(points.get(i), comparePoint));
+        for (int i = 0; i < points.length; i++) {
+            if (!points[i].equals(comparePoint)) {
+                if (points[i].charge == 1) {
+                    positivePotential += (1 / distanceCalculator(points[i], comparePoint));
                 } else {
-                    negativePotential += (1 / distanceCalculator(points.get(i), comparePoint));
+                    negativePotential += (1 / distanceCalculator(points[i], comparePoint));
                 }
             }
         }
@@ -116,45 +116,24 @@ public class FusorCompModeling {
         return distance;
     }
 
-    public static int balanceCharges(ArrayList<Point> points, List<GridComponent> parts) {
-        /*Random newRand = new Random();
-        int change = 0;
-        for (int i = 0; i < parts.size(); i++) {
-            if (parts.get(i).charge == -1) {
-                int points = positivePoints.size();
-                for (int j = 0; j < points; j++) {
-                    Point comparePoint = parts.get(i).getRandomPoint(newRand);
-                    double potentialOfComparePoint = electricPotential(positivePoints, negativePoints, comparePoint);
-                    double potentialOfExistingPoint = electricPotential(positivePoints, negativePoints, positivePoints.get(j));
-                    if (potentialOfComparePoint > potentialOfExistingPoint) {
-                        positivePoints.set(j, comparePoint);
-                        change++;
-                    }
-                }
-            } else if (parts.get(i).charge == 1) {
-                int points = negativePoints.size();
-                for (int j = 0; j < points; j++) {
-                    Point comparePoint = parts.get(i).getRandomPoint(newRand);
-                    double potentialOfComparePoint = electricPotential(positivePoints, negativePoints, comparePoint);
-                    double potentialOfExistingPoint = electricPotential(positivePoints, negativePoints, negativePoints.get(j));
-                    if (potentialOfComparePoint > potentialOfExistingPoint) {
-                        negativePoints.set(j, comparePoint);
-                        change++;
-                    }
-                }
-            }
-
-        }
-        return change;*/
+    public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
         
-        for (int i = 0; i < points.size(); i++) {
-            Point newPoint = getRandomPoint(parts, points.get(i).charge);
-            double currentEP = electricPotential(points, points.get(i));
+        for (int i = 0; i < points.length; i++) {
+            Point newPoint = getRandomPoint(parts);
+            double currentEP;
+            if(points[i].EP == 0.0d) {
+            currentEP = electricPotential(points, points[i]);
+            } else {
+                currentEP = points[i].EP;
+            }
             double newEP = electricPotential(points, newPoint);
             if (newEP > currentEP) {
                 changes++;
-                points.set(i, newPoint);
+                points[i] = newPoint;
+            }
+            else if(newEP < currentEP) {
+                points[i].EP = currentEP;
             }
         }
         return changes;
