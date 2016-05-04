@@ -31,7 +31,7 @@ public class FusorCompModeling {
         System.out.println("File loaded and initialized");
         Random rand = new Random();
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
-        for(int i = 0; i < logNums.length; i++){
+        for (int i = 0; i < logNums.length; i++) {
             long startTime = System.currentTimeMillis();
             Point[] points = distributePoints(parts, logNums[i]);
             //int changes = 80;
@@ -41,15 +41,15 @@ public class FusorCompModeling {
             System.out.println("Changes Made: " + changes);
             long endTime = System.currentTimeMillis();
             times[i] = endTime - startTime;
-        }    
+        }
         //timesRun++;
         //} while(changes > 0);
         //System.out.println("Times run: " + timesRun);
         BufferedWriter logFile = null;
         try {
             logFile = new BufferedWriter(new FileWriter("C:\\Users\\Daman\\Documents\\NetBeansProjects\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
-            for(int i = 0; i < logNums.length ; i++){
-                logFile.write(""+ logNums[i] + "," + times[i]);
+            for (int i = 0; i < logNums.length; i++) {
+                logFile.write("" + logNums[i] + "," + times[i]);
                 logFile.newLine();
                 logFile.flush();
             }
@@ -69,7 +69,7 @@ public class FusorCompModeling {
         }
         return totalPoints;
     }
-    
+
     public static Point getRandomPoint(List<GridComponent> parts) {
         int charge = 1;
         double area = totalSurfaceArea(parts, charge);
@@ -77,7 +77,7 @@ public class FusorCompModeling {
         double rand = generator.nextDouble() * area;
         for (int i = 0; i < parts.size(); i++) {
             rand -= parts.get(i).getSurfaceArea();
-            
+
             if (rand <= (double) 0.0) {
                 return parts.get(i).getRandomPoint(new Random());
             }
@@ -112,27 +112,20 @@ public class FusorCompModeling {
 
     public static double distanceCalculator(Point a, Point b) {
         //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
-        double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.x - b.y) * (a.x - b.y)) + ((a.z - b.z) * (a.z - b.z)));
+        double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)) + ((a.z - b.z) * (a.z - b.z)));
         return distance;
     }
 
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
-        
         for (int i = 0; i < points.length; i++) {
             Point newPoint = getRandomPoint(parts);
-            double currentEP;
-            if(points[i].EP == 0.0d) {
-            currentEP = electricPotential(points, points[i]);
-            } else {
-                currentEP = points[i].EP;
-            }
+            double currentEP = electricPotential(points, points[i]);
             double newEP = electricPotential(points, newPoint);
             if (newEP > currentEP) {
                 changes++;
                 points[i] = newPoint;
-            }
-            else if(newEP < currentEP) {
+            } else if (newEP < currentEP) {
                 points[i].EP = currentEP;
             }
         }
