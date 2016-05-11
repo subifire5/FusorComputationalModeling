@@ -26,6 +26,7 @@ public class FusorCompModeling {
         int[] logNums = new int[]{100, 1000, 5000, 10000, 20000, 50000};
         long[] times = new long[logNums.length];
         System.out.println("Loading file...");
+        
         XMLParser p = new XMLParser("simpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
