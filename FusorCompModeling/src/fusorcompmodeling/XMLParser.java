@@ -66,15 +66,15 @@ public class XMLParser {
         v.z = Double.parseDouble(element.getElementsByTagName("z").item(0).getTextContent());
         if(element.getElementsByTagName("phi").item(0).getTextContent().contains("pi")) {
             String temp = element.getElementsByTagName("phi").item(0).getTextContent();
-            String containsDouble[] = temp.split("pi");
-            v.phi = Double.parseDouble(containsDouble[1])*Math.PI;
+            String[] containsPoint = temp.split("pi");
+            v.phi = Double.parseDouble(containsPoint[1])*Math.PI;
         } else {
         v.phi = Double.parseDouble(element.getElementsByTagName("phi").item(0).getTextContent());
         }
         if(element.getElementsByTagName("theta").item(0).getTextContent().contains("pi")) {
             String temp = element.getElementsByTagName("theta").item(0).getTextContent();
-            String containsDouble[] = temp.split("pi");
-            v.theta = Double.parseDouble(containsDouble[1])*Math.PI;
+            String[] containsPoint = temp.split("pi");
+            v.theta = Double.parseDouble(containsPoint[1])*Math.PI;
         } else {
         v.phi = Double.parseDouble(element.getElementsByTagName("theta").item(0).getTextContent());
         }
