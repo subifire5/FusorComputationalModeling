@@ -27,7 +27,7 @@ public class FusorCompModeling {
         long[] times = new long[logNums.length];
         System.out.println("Loading file...");
         
-        XMLParser p = new XMLParser("simpleXML.xml");
+        XMLParser p = new XMLParser("SimpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
         Random rand = new Random();
@@ -35,6 +35,9 @@ public class FusorCompModeling {
         for (int i = 0; i < logNums.length; i++) {
             long startTime = System.currentTimeMillis();
             Point[] points = distributePoints(parts, logNums[i]);
+            for(int j = 0; i < points.length; i++) {
+                System.out.println(points[j].charge);
+            }
             //int changes = 80;
             //int timesRun = 0;
             //do  {
@@ -62,18 +65,17 @@ public class FusorCompModeling {
 
     }
 
-    public static Point[] distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
-        Point[] totalPoints = new Point[pointsForEachCharge];
+    public static Point[] distributePoints(List<GridComponent> parts, int pointNum) {
+        Point[] totalPoints = new Point[pointNum];
         Random newRand = new Random();
-        for (int i = 0; i < pointsForEachCharge; i++) {
+        for (int i = 0; i < pointNum; i++) {
             totalPoints[i] = getRandomPoint(parts);
         }
         return totalPoints;
     }
 
     public static Point getRandomPoint(List<GridComponent> parts) {
-        int charge = 1;
-        double area = totalSurfaceArea(parts, charge);
+        double area = totalSurfaceArea(parts);
         Random generator = new Random();
         double rand = generator.nextDouble() * area;
         for (int i = 0; i < parts.size(); i++) {
@@ -86,12 +88,10 @@ public class FusorCompModeling {
         return null; // Code will never reach here, but this line is required
     }
 
-    public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
+    public static double totalSurfaceArea(List<GridComponent> parts) {
         double surfaceArea = 0;
         for (int i = 0; i < parts.size(); i++) {
-            if (parts.get(i).charge == charge) {
-                surfaceArea += parts.get(i).getSurfaceArea();
-            }
+            surfaceArea += parts.get(i).getSurfaceArea();
         }
         return surfaceArea;
     }
