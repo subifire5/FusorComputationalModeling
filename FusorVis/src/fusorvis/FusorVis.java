@@ -56,7 +56,7 @@ public class FusorVis extends Application {
     double mouseDeltaX;
     double mouseDeltaY;
     
-    private void buildElectrons(ArrayList<Point> points) {
+    private void buildElectrons(Point[] points) {
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
         redMaterial.setSpecularColor(Color.RED);
@@ -154,11 +154,11 @@ public class FusorVis extends Application {
     public void start(Stage primaryStage) throws Exception {
         System.out.println("start()");
         
-        XMLParser p = new XMLParser("testXML.xml");
+        XMLParser p = new XMLParser("SimpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
         PointDistributer ps = new PointDistributer();
-        ArrayList<Point> points = ps.shakeUpPoints(parts, 500, 0);
+        Point[] points = ps.shakeUpPoints(parts, 500, 2);
                 
         buildCamera();
         buildElectrons(points);

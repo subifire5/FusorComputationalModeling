@@ -17,8 +17,8 @@ public class PointDistributer {
     
     public PointDistributer () {}
     
-    public static ArrayList<Point> shakeUpPoints(List<GridComponent> parts, int pointsPerCharge, int endCon) {
-        ArrayList<Point> points = distributePoints(parts, pointsPerCharge);
+    public static Point[] shakeUpPoints(List<GridComponent> parts, int pointsPerCharge, int endCon) {
+        Point[] points = distributePoints(parts, pointsPerCharge);
         int timesSinceLastChange = 0;
         while (timesSinceLastChange < endCon) {
             int changesMade = balanceCharges(points, parts);
@@ -30,23 +30,23 @@ public class PointDistributer {
         return points;
     }
     
-    public static ArrayList<Point> distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
-        ArrayList<Point> totalPoints = new ArrayList<Point>();
+    public static Point[] distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
+        Point[] totalPoints = new Point[pointsForEachCharge];
         Random newRand = new Random();
         for (int i = 0; i < pointsForEachCharge; i++) {
-            totalPoints.add(getRandomPoint(parts, 1));
-            totalPoints.add(getRandomPoint(parts, -1));
+            totalPoints[i] = getRandomPoint(parts);
         }
         return totalPoints;
     }
-    
-    public static Point getRandomPoint(List<GridComponent> parts, int charge) {
+
+    public static Point getRandomPoint(List<GridComponent> parts) {
+        int charge = 1;
         double area = totalSurfaceArea(parts, charge);
         Random generator = new Random();
         double rand = generator.nextDouble() * area;
         for (int i = 0; i < parts.size(); i++) {
             rand -= parts.get(i).getSurfaceArea();
-            
+
             if (rand <= (double) 0.0) {
                 return parts.get(i).getRandomPoint(new Random());
             }
@@ -64,15 +64,15 @@ public class PointDistributer {
         return surfaceArea;
     }
 
-    public static double electricPotential(ArrayList<Point> points, Point comparePoint) {
+    public static double electricPotential(Point[] points, Point comparePoint) {
         double positivePotential = 0;
         double negativePotential = 0;
-        for (int i = 0; i < points.size(); i++) {
-            if (!points.get(i).equals(comparePoint)) {
-                if (points.get(i).charge == 1) {
-                    positivePotential += (1 / distanceCalculator(points.get(i), comparePoint));
+        for (int i = 0; i < points.length; i++) {
+            if (!points[i].equals(comparePoint)) {
+                if (points[i].charge == 1) {
+                    positivePotential += (1 / distanceCalculator(points[i], comparePoint));
                 } else {
-                    negativePotential += (1 / distanceCalculator(points.get(i), comparePoint));
+                    negativePotential += (1 / distanceCalculator(points[i], comparePoint));
                 }
             }
         }
@@ -81,20 +81,21 @@ public class PointDistributer {
 
     public static double distanceCalculator(Point a, Point b) {
         //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
-        double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.x - b.y) * (a.x - b.y)) + ((a.z - b.z) * (a.z - b.z)));
+        double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)) + ((a.z - b.z) * (a.z - b.z)));
         return distance;
     }
 
-    public static int balanceCharges(ArrayList<Point> points, List<GridComponent> parts) {
+    public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
-        
-        for (int i = 0; i < points.size(); i++) {
-            Point newPoint = getRandomPoint(parts, points.get(i).charge);
-            double currentEP = electricPotential(points, points.get(i));
+        for (int i = 0; i < points.length; i++) {
+            Point newPoint = getRandomPoint(parts);
+            double currentEP = electricPotential(points, points[i]);
             double newEP = electricPotential(points, newPoint);
             if (newEP > currentEP) {
                 changes++;
-                points.set(i, newPoint);
+                points[i] = newPoint;
+            } else if (newEP < currentEP) {
+                points[i].EP = currentEP;
             }
         }
         return changes;
