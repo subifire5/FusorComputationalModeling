@@ -9,6 +9,19 @@ package fusorcompmodeling;
  *
  * @author sfreisem-kirov
  */
-public class MyKDTree {
+public class MyKDTree implements KDTree{
+    public KDTreeNode root = null;
+    public KDTreeNode last = null;
+    public int numberOfNodes = 0;
+    @Override
+    public void put() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void find() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     
 }

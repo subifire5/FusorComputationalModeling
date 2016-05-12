@@ -9,6 +9,13 @@ package fusorcompmodeling;
  *
  * @author sfreisem-kirov
  */
-public class KDTree {
+public interface KDTree {
+
+    public void put();
+    public void find();
+    //public double tolerence = 100;
+    
+    
+    
     
 }

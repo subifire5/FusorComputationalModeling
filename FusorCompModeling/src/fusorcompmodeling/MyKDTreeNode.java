@@ -12,6 +12,7 @@ package fusorcompmodeling;
 public class MyKDTreeNode implements KDTreeNode{
     public KDTreeNode ChildLeft;
     public KDTreeNode ChildRight;
+    public KDTreeNode Parent;
     public Point NPoint;
     @Override
     public KDTreeNode getChildLeft() {
@@ -22,6 +23,11 @@ public class MyKDTreeNode implements KDTreeNode{
     public KDTreeNode getChildRight() {
         return ChildRight;
     }
+    
+    @Override
+    public KDTreeNode getParent() {
+        return Parent;
+    }    
     
     @Override
     public Point getPoint() {
@@ -37,7 +43,12 @@ public class MyKDTreeNode implements KDTreeNode{
     public void setChildRight(KDTreeNode childRight) {
         ChildRight = childRight;
     }
-
+    
+        @Override
+    public void setParent(KDTreeNode parent) {
+        Parent = parent;
+    }
+    
 
     @Override
     public void setPoint(Point N) {
@@ -52,5 +63,8 @@ public class MyKDTreeNode implements KDTreeNode{
             return false;
         }
     }
-    
+
+
+
+
 }
