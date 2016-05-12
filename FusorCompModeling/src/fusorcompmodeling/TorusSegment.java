@@ -20,6 +20,7 @@ public class TorusSegment extends GridComponent {
         this.phi2 = phi2;
         this.radius2 = radius2; // Width of the torus
         this.charge = charge;
+        this.type = ComponentType.TorusSegment;
     }
     
     @Override

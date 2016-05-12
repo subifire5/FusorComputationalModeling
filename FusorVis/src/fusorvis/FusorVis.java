@@ -13,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.event.EventHandler;
@@ -29,7 +30,7 @@ public class FusorVis extends Application {
     
     final Group root = new Group();
     final Xform chargeGroup = new Xform();
-    final Xform axisGroup = new Xform();
+    final Xform componentGroup = new Xform();
     final Xform world = new Xform();
     final PerspectiveCamera camera = new PerspectiveCamera(true);
     final Xform cameraXform = new Xform();
@@ -56,22 +57,46 @@ public class FusorVis extends Application {
     double mouseDeltaX;
     double mouseDeltaY;
     
+    // Render vars
+    
+    double electronRadius = 1.0;
+    
     private void buildElectrons(Point[] points) {
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
         redMaterial.setSpecularColor(Color.RED);
         
         for (Point point : points) {
-            final Sphere electron = new Sphere(1.0);
+            final Sphere electron = new Sphere(electronRadius);
             electron.setMaterial(redMaterial);
             electron.setTranslateX(point.x);
             electron.setTranslateY(point.y);
             electron.setTranslateZ(point.z);
-
+            
             chargeGroup.getChildren().add(electron);
-            chargeGroup.setVisible(true);
         }
+        chargeGroup.setVisible(true);
         world.getChildren().addAll(chargeGroup);
+    }
+    
+    private void buildWireComponents(List<GridComponent> parts) {
+        final PhongMaterial redMaterial = new PhongMaterial();
+        redMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
+        redMaterial.setSpecularColor(Color.LIGHTGREY);
+        
+        for (GridComponent part : parts) {
+            if (part.type == ComponentType.Cylinder) {
+                // Render a cylinder
+                final Cylinder c = new Cylinder(part.radius, part.height);
+                c.setMaterial(redMaterial);
+                c.setTranslateX(part.pos.x);
+                c.setTranslateY(part.pos.y);
+                c.setTranslateZ(part.pos.z);
+                componentGroup.getChildren().add(c);
+            }
+        }
+        componentGroup.setVisible(true);
+        world.getChildren().addAll(componentGroup);
     }
     
     private void buildCamera() {
@@ -145,9 +170,27 @@ public class FusorVis extends Application {
                             stage.close();
                         }
                         break;
+                    case PAGE_UP: // Get larger
+                        scaleElectrons(1.1);
+                        break;
+                    case PAGE_DOWN:
+                        scaleElectrons(0.9);
+                        break;
                 }
             }
         });
+    }
+    
+    public void scaleElectrons(double scale) {
+        for (int i = 0; i < chargeGroup.getChildren().size(); i++) {
+            double xScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
+            double yScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
+            double zScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
+            chargeGroup.getChildren().get(i).setScaleX(xScale);
+            chargeGroup.getChildren().get(i).setScaleY(yScale);
+            chargeGroup.getChildren().get(i).setScaleZ(zScale);
+
+        }
     }
     
     @Override
@@ -158,12 +201,13 @@ public class FusorVis extends Application {
         List<GridComponent> parts = p.parseObjects();
         
         PointDistributer ps = new PointDistributer();
-        Point[] points = ps.shakeUpPoints(parts, 500, 2);
-                
+        Point[] points = ps.shakeUpPoints(parts, 500, 0);
+
         buildCamera();
         buildElectrons(points);
+        //buildWireComponents(parts);
         buildScene();
-        
+
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
         handleMouse(scene, world);

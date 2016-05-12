@@ -12,9 +12,11 @@ import java.util.Random;
  * @author guberti
  */
 public abstract class GridComponent {
-    Vector pos; // Location
-    double radius;
-    int charge;
+    public Vector pos; // Location
+    public double radius;
+    public int charge;
+    public ComponentType type;
+    public double height;
     
     public abstract Point getRandomPoint(Random r);
     

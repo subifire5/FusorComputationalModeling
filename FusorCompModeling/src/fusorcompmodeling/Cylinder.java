@@ -13,13 +13,12 @@ import java.util.*;
  */
 public class Cylinder extends GridComponent {
 
-    double height;
-
     public Cylinder(Vector pos, double radius, double height, int charge) {
         this.pos = pos;
         this.radius = radius;
         this.height = height;
         this.charge = charge;
+        this.type = ComponentType.Cylinder;
     }
 
     public double getSurfaceArea() {
