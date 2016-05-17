@@ -5,6 +5,8 @@
  */
 package fusorcompmodeling;
 
+import javafx.geometry.Point3D;
+
 /**
  *
  * @author guberti
@@ -27,5 +29,8 @@ public class Vector {
         this.z = z;
         this.phi = phi;
         this.theta = theta;
+    }
+    public Point3D getAs3DPoint() {
+        return new Point3D(x, y, z);
     }
 }

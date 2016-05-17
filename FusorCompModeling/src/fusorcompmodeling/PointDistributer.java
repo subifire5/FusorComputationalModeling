@@ -91,10 +91,10 @@ public class PointDistributer {
             Point newPoint = getRandomPoint(parts);
             double currentEP = electricPotential(points, points[i]);
             double newEP = electricPotential(points, newPoint);
-            if (newEP > currentEP) {
+            if (newEP < currentEP) {
                 changes++;
                 points[i] = newPoint;
-            } else if (newEP < currentEP) {
+            } else if (newEP > currentEP) {
                 points[i].EP = currentEP;
             }
         }

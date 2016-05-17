@@ -5,8 +5,12 @@ import fusorcompmodeling.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -21,6 +25,11 @@ import static javafx.scene.input.KeyCode.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.Reflection;
+import javafx.scene.shape.Box;
+import javafx.scene.transform.Rotate;
 /**
  *
  * @author guberti
@@ -31,6 +40,7 @@ public class FusorVis extends Application {
     final Group root = new Group();
     final Xform chargeGroup = new Xform();
     final Xform componentGroup = new Xform();
+    final Xform axisGroup = new Xform();
     final Xform world = new Xform();
     final PerspectiveCamera camera = new PerspectiveCamera(true);
     final Xform cameraXform = new Xform();
@@ -80,23 +90,54 @@ public class FusorVis extends Application {
     }
     
     private void buildWireComponents(List<GridComponent> parts) {
-        final PhongMaterial redMaterial = new PhongMaterial();
-        redMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
-        redMaterial.setSpecularColor(Color.LIGHTGREY);
+        final PhongMaterial wireMaterial = new PhongMaterial();
+        wireMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
+        wireMaterial.setSpecularColor(Color.LIGHTGREY);
         
         for (GridComponent part : parts) {
             if (part.type == ComponentType.Cylinder) {
                 // Render a cylinder
                 final Cylinder c = new Cylinder(part.radius, part.height);
-                c.setMaterial(redMaterial);
+                c.setMaterial(wireMaterial);
                 c.setTranslateX(part.pos.x);
-                c.setTranslateY(part.pos.y);
+                // Need to add half height because JavaFX centers are at
+                // the centers of cylinders, not at the bases
+                c.setTranslateY(part.pos.y + part.height/2);
                 c.setTranslateZ(part.pos.z);
+                System.out.println(part.pos.phi);
+                // Apply rotations
+                c.getTransforms().add(new Rotate(radToDeg(part.pos.theta),part.pos.x,part.pos.y-part.height/2,part.pos.z,Rotate.X_AXIS));
+                c.getTransforms().add(new Rotate(radToDeg(part.pos.phi),part.pos.x,part.pos.y-part.height/2,part.pos.z,Rotate.Z_AXIS));
                 componentGroup.getChildren().add(c);
             }
         }
         componentGroup.setVisible(true);
         world.getChildren().addAll(componentGroup);
+    }
+    
+    private void buildAxes() { // Red = x, green = y, blue = z
+        final PhongMaterial redMaterial = new PhongMaterial();
+        redMaterial.setDiffuseColor(Color.DARKRED);
+        redMaterial.setSpecularColor(Color.RED);
+
+        final PhongMaterial greenMaterial = new PhongMaterial();
+        greenMaterial.setDiffuseColor(Color.DARKGREEN);
+        greenMaterial.setSpecularColor(Color.GREEN);
+
+        final PhongMaterial blueMaterial = new PhongMaterial();
+        blueMaterial.setDiffuseColor(Color.DARKBLUE);
+        blueMaterial.setSpecularColor(Color.BLUE);
+
+        final Box xAxis = new Box(240.0, 1, 1);
+        final Box yAxis = new Box(1, 240.0, 1);
+        final Box zAxis = new Box(1, 1, 240.0);
+
+        xAxis.setMaterial(redMaterial);
+        yAxis.setMaterial(greenMaterial);
+        zAxis.setMaterial(blueMaterial);
+
+        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis);
+        world.getChildren().addAll(axisGroup);
     }
     
     private void buildCamera() {
@@ -116,6 +157,10 @@ public class FusorVis extends Application {
         root.getChildren().add(world);
     }
     
+    // Helper functions
+    private double radToDeg(double radians) {
+        return (radians*180)/Math.PI;
+    }
     private void handleMouse(Scene scene, final Node root) {
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent me) {
@@ -173,12 +218,24 @@ public class FusorVis extends Application {
                     case PAGE_UP: // Get larger
                         scaleElectrons(1.1);
                         break;
-                    case PAGE_DOWN:
+                    case PAGE_DOWN: // Get smaller
                         scaleElectrons(0.9);
+                        break;
+                    case H: // Toggle wireframe visibility
+                        toggleXform(componentGroup);
+                        break;
+                    case C: // Toggle electron visibility
+                        toggleXform(chargeGroup);
+                        break;
+                    case A: // Toggle axis visibility
+                        toggleXform(axisGroup);
                         break;
                 }
             }
         });
+    }
+    private void toggleXform(Xform g) {
+        g.setVisible(!g.visibleProperty().get());
     }
     
     public void scaleElectrons(double scale) {
@@ -192,7 +249,7 @@ public class FusorVis extends Application {
 
         }
     }
-    
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         System.out.println("start()");
@@ -201,11 +258,12 @@ public class FusorVis extends Application {
         List<GridComponent> parts = p.parseObjects();
         
         PointDistributer ps = new PointDistributer();
-        Point[] points = ps.shakeUpPoints(parts, 500, 0);
+        Point[] points = ps.shakeUpPoints(parts, 500, 3);
 
         buildCamera();
         buildElectrons(points);
-        //buildWireComponents(parts);
+        buildWireComponents(parts);
+        buildAxes();
         buildScene();
 
         Scene scene = new Scene(root, 1024, 768, true);

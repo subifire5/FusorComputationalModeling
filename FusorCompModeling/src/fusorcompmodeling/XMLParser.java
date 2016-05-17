@@ -64,27 +64,31 @@ public class XMLParser {
         v.x = Double.parseDouble(element.getElementsByTagName("x").item(0).getTextContent());
         v.y = Double.parseDouble(element.getElementsByTagName("y").item(0).getTextContent());
         v.z = Double.parseDouble(element.getElementsByTagName("z").item(0).getTextContent());
+        
         if(element.getElementsByTagName("phi").item(0).getTextContent().contains("pi")) {
             String temp = element.getElementsByTagName("phi").item(0).getTextContent();
             String[] containsPoint = temp.split("pi");
             v.phi = Double.parseDouble(containsPoint[1])*Math.PI;
         } else {
-        v.phi = Double.parseDouble(element.getElementsByTagName("phi").item(0).getTextContent());
+            v.phi = Double.parseDouble(element.getElementsByTagName("phi").item(0).getTextContent());
         }
-        if(element.getElementsByTagName("theta").item(0).getTextContent().contains("pi")) {
+        
+        if (element.getElementsByTagName("theta").item(0).getTextContent().contains("pi")) {
+            System.out.println("Theta contains pi!");
             String temp = element.getElementsByTagName("theta").item(0).getTextContent();
             String[] containsPoint = temp.split("pi");
             v.theta = Double.parseDouble(containsPoint[1])*Math.PI;
         } else {
-        v.phi = Double.parseDouble(element.getElementsByTagName("theta").item(0).getTextContent());
+            v.theta = Double.parseDouble(element.getElementsByTagName("theta").item(0).getTextContent());
         }
+                
         double radius = Double.parseDouble(element.getElementsByTagName("radius").item(0).getTextContent());
 
         switch (type) {
             case "Cylinder":            
                 double height = Double.parseDouble(element.getElementsByTagName("height").item(0).getTextContent());
                 int charge = Integer.parseInt(element.getElementsByTagName("charge").item(0).getTextContent());
-                System.out.println("Parsed a Cylinder!");
+                System.out.println("Parsed a Cylinder with theta " + v.theta);
                 return new Cylinder(v, radius, height, charge);
             case "TorusSegment":
                 double radius2 = Double.parseDouble(element.getElementsByTagName("radius2").item(0).getTextContent());
