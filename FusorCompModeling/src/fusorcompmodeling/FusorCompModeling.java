@@ -26,7 +26,7 @@ public class FusorCompModeling {
         int[] logNums = new int[]{100, 1000, 5000, 10000, 20000, 50000};
         long[] times = new long[logNums.length];
         System.out.println("Loading file...");
-        
+
         XMLParser p = new XMLParser("SimpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
@@ -35,9 +35,9 @@ public class FusorCompModeling {
         for (int i = 0; i < logNums.length; i++) {
             long startTime = System.currentTimeMillis();
             Point[] points = distributePoints(parts, logNums[i]);
-            for(int j = 0; i < points.length; i++) {
-                System.out.println(points[j].charge);
-            }
+//            for (int j = 0; j < points.length - 1; j++) {
+//                System.out.println(points[j].x + ", " + points[j].y + ", " + points[j].z);
+//            }
             //int changes = 80;
             //int timesRun = 0;
             //do  {
@@ -123,10 +123,10 @@ public class FusorCompModeling {
             Point newPoint = getRandomPoint(parts);
             double currentEP = electricPotential(points, points[i]);
             double newEP = electricPotential(points, newPoint);
-            if (newEP > currentEP) {
+            if (newEP < currentEP) {
                 changes++;
                 points[i] = newPoint;
-            } else if (newEP < currentEP) {
+            } else if (newEP > currentEP) {
                 points[i].EP = currentEP;
             }
         }
