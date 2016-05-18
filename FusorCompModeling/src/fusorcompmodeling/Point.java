@@ -48,13 +48,13 @@ public class Point {
         // Then rotate the point around the origin with the rotational formula
         Point rP = new Point(); // rP stands for rotatedPoint
 
-        rP.x = Math.cos(v.phi) * mP.x + Math.sin(v.phi) * Math.sin(v.theta) * mP.y -
-                Math.sin(v.phi) * Math.cos(v.theta) * mP.z;
+        rP.z = Math.cos(-v.phi) * mP.x + Math.sin(-v.phi) * Math.sin(-v.theta) * mP.y -
+                Math.sin(-v.phi) * Math.cos(-v.theta) * mP.z;
         
-        rP.y = Math.cos(v.theta) * mP.y + Math.sin(v.theta) * mP.z;
+        rP.y = Math.cos(-v.theta) * mP.y + Math.sin(-v.theta) * mP.z;
         
-        rP.z = Math.sin(v.phi) * mP.x + Math.cos(v.phi) * -1 * Math.sin(v.theta) * 
-                mP.y + Math.cos(v.phi) * Math.cos(v.theta) * mP.z;
+        rP.x = Math.sin(-v.phi) * mP.x + Math.cos(-v.phi) * -1 * Math.sin(-v.theta) * 
+                mP.y + Math.cos(-v.phi) * Math.cos(-v.theta) * mP.z;
         
         // Then add the coordinates the point is being rotated around
         
