@@ -258,7 +258,7 @@ public class FusorVis extends Application {
         List<GridComponent> parts = p.parseObjects();
         
         PointDistributer ps = new PointDistributer();
-        Point[] points = ps.shakeUpPoints(parts, 500, 0);
+        Point[] points = ps.shakeUpPoints(parts, 500, 3);
 
         buildCamera();
         buildElectrons(points);
