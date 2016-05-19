@@ -72,8 +72,8 @@ public class FusorVis extends Application {
         redMaterial.setSpecularColor(Color.RED);
 
         final PhongMaterial blackMaterial = new PhongMaterial();
-        blueMaterial.setDiffuseColor(Color.BLACK);
-        blueMaterial.setSpecularColor(Color.DARKGREY);
+        blackMaterial.setDiffuseColor(Color.BLACK);
+        blackMaterial.setSpecularColor(Color.DARKGREY);
         
         for (Point point : points) {
             final Sphere electron = new Sphere(electronRadius);
