@@ -15,7 +15,7 @@
 	</shape>
 	<shape>
 		<phi>pi0.5</phi>
-		<theta>0</theta>
+		<theta>pi0.5</theta>
 		<phi2>0</phi2>
 		<phi3>0</phi3>
 		<radius>6.5</radius>
@@ -54,7 +54,7 @@
 	</shape>
 	<shape>
 		<phi>pi0.5</phi>
-		<theta>0</theta>
+		<theta>pi0.5</theta>
 		<phi2>0</phi2>
 		<phi3>0</phi3>
 		<radius>1.625</radius>
