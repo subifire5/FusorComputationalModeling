@@ -3,21 +3,15 @@ package fusorvis;
 
 import fusorcompmodeling.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
-import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.event.EventHandler;
@@ -28,6 +22,7 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.Reflection;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.shape.Box;
 import javafx.scene.transform.Rotate;
 /**
@@ -75,13 +70,22 @@ public class FusorVis extends Application {
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
         redMaterial.setSpecularColor(Color.RED);
+
+        final PhongMaterial blackMaterial = new PhongMaterial();
+        blackMaterial.setDiffuseColor(Color.BLACK);
+        blackMaterial.setSpecularColor(Color.DARKGREY);
         
         for (Point point : points) {
             final Sphere electron = new Sphere(electronRadius);
-            electron.setMaterial(redMaterial);
             electron.setTranslateX(point.x);
             electron.setTranslateY(point.y);
             electron.setTranslateZ(point.z);
+            if (point.charge == 1) { // Positive charge
+                electron.setMaterial(redMaterial); // Red
+            } else { // Negative charge
+                electron.setMaterial(blackMaterial); // Black
+            }
+            
             
             chargeGroup.getChildren().add(electron);
         }
@@ -104,10 +108,9 @@ public class FusorVis extends Application {
                 // the centers of cylinders, not at the bases
                 c.setTranslateY(part.pos.y + part.height/2);
                 c.setTranslateZ(part.pos.z);
-                System.out.println(part.pos.phi);
                 // Apply rotations
-                c.getTransforms().add(new Rotate(radToDeg(part.pos.theta),part.pos.x,part.pos.y-part.height/2,part.pos.z,Rotate.X_AXIS));
-                c.getTransforms().add(new Rotate(radToDeg(part.pos.phi),part.pos.x,part.pos.y-part.height/2,part.pos.z,Rotate.Z_AXIS));
+                c.getTransforms().add(new Rotate(radToDeg(-part.pos.theta),part.pos.x,part.pos.y-part.height/2,part.pos.z,Rotate.Z_AXIS));
+                c.getTransforms().add(new Rotate(radToDeg(part.pos.phi),part.pos.x,part.pos.y-part.height/2,part.pos.z,Rotate.X_AXIS));
                 componentGroup.getChildren().add(c);
             }
         }
@@ -131,12 +134,18 @@ public class FusorVis extends Application {
         final Box xAxis = new Box(240.0, 1, 1);
         final Box yAxis = new Box(1, 240.0, 1);
         final Box zAxis = new Box(1, 1, 240.0);
+        final Sphere posXAxis = new Sphere(2.0);
+        final Sphere posZAxis = new Sphere(2.0);
 
         xAxis.setMaterial(redMaterial);
         yAxis.setMaterial(greenMaterial);
         zAxis.setMaterial(blueMaterial);
+        posXAxis.setMaterial(redMaterial);
+        posXAxis.setTranslateX(120);
+        posZAxis.setMaterial(blueMaterial);
+        posZAxis.setTranslateZ(120);
 
-        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis);
+        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis);
         world.getChildren().addAll(axisGroup);
     }
     
@@ -252,13 +261,11 @@ public class FusorVis extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        System.out.println("start()");
         
-        XMLParser p = new XMLParser("SimpleXML.xml");
+        XMLParser p = new XMLParser("torusXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
-        PointDistributer ps = new PointDistributer();
-        Point[] points = ps.shakeUpPoints(parts, 500, 0);
+        Point[] points = PointDistributer.shakeUpPoints(parts, 500, 0);
 
         buildCamera();
         buildElectrons(points);
@@ -270,6 +277,9 @@ public class FusorVis extends Application {
         scene.setFill(Color.GREY);
         handleMouse(scene, world);
         handleKeyboard(scene, primaryStage);
+        
+        primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+        primaryStage.setFullScreenExitHint("");
         
         primaryStage.setTitle("Fusor Electric Field Visualizer");
         primaryStage.setScene(scene);

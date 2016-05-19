@@ -65,40 +65,37 @@ public class XMLParser {
         v.y = Double.parseDouble(element.getElementsByTagName("y").item(0).getTextContent());
         v.z = Double.parseDouble(element.getElementsByTagName("z").item(0).getTextContent());
         
-        if(element.getElementsByTagName("phi").item(0).getTextContent().contains("pi")) {
-            String temp = element.getElementsByTagName("phi").item(0).getTextContent();
-            String[] containsPoint = temp.split("pi");
-            v.phi = Double.parseDouble(containsPoint[1])*Math.PI;
-        } else {
-            v.phi = Double.parseDouble(element.getElementsByTagName("phi").item(0).getTextContent());
-        }
-        
-        if (element.getElementsByTagName("theta").item(0).getTextContent().contains("pi")) {
-            System.out.println("Theta contains pi!");
-            String temp = element.getElementsByTagName("theta").item(0).getTextContent();
-            String[] containsPoint = temp.split("pi");
-            v.theta = Double.parseDouble(containsPoint[1])*Math.PI;
-        } else {
-            v.theta = Double.parseDouble(element.getElementsByTagName("theta").item(0).getTextContent());
-        }
+        v.phi = parsePiDouble(element, "phi");
+        v.theta = parsePiDouble(element, "theta");
                 
-        double radius = Double.parseDouble(element.getElementsByTagName("radius").item(0).getTextContent());
+        double radius = parsePiDouble(element, "radius");
+        int charge = parseCharge(element);
 
         switch (type) {
             case "Cylinder":            
-                double height = Double.parseDouble(element.getElementsByTagName("height").item(0).getTextContent());
-                int charge = Integer.parseInt(element.getElementsByTagName("charge").item(0).getTextContent());
-                System.out.println("Parsed a Cylinder with theta " + v.theta);
+                double height = parsePiDouble(element, "height");
                 return new Cylinder(v, radius, height, charge);
             case "TorusSegment":
-                double radius2 = Double.parseDouble(element.getElementsByTagName("radius2").item(0).getTextContent());
-                double phi2 = Double.parseDouble(element.getElementsByTagName("phi2").item(0).getTextContent());
-                int charge2 = Integer.parseInt(element.getElementsByTagName("charge").item(0).getTextContent());
-                System.out.println("Parsed a Torus Segment!");
-                return new TorusSegment(v, radius, phi2, radius2, charge2);
+                double radius2 = parsePiDouble(element, "radius2");
+                double phi2 = parsePiDouble(element, "phi2");
+                double phi3 = parsePiDouble(element, "phi3");
+                return new TorusSegment(v, radius, phi2, phi3, radius2, charge);
             default:
                 System.out.println("Unknown type " + type);
                 return null;
         }
+    }
+    public double parsePiDouble(Element element, String tag) {
+        String textContent = element.getElementsByTagName(tag).item(0).getTextContent();
+        
+        if (textContent.contains("pi")) {
+            String[] containsPoint = textContent.split("pi");
+            return Double.parseDouble(containsPoint[1])*Math.PI;
+        } else {
+            return Double.parseDouble(textContent);
+        }
+    }
+    public int parseCharge(Element element) {
+        return (int) parsePiDouble(element, "charge");
     }
 }

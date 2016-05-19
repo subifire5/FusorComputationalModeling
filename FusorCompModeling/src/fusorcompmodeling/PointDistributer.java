@@ -40,8 +40,7 @@ public class PointDistributer {
     }
 
     public static Point getRandomPoint(List<GridComponent> parts) {
-        int charge = 1;
-        double area = totalSurfaceArea(parts, charge);
+        double area = totalSurfaceArea(parts);
         Random generator = new Random();
         double rand = generator.nextDouble() * area;
         for (int i = 0; i < parts.size(); i++) {
@@ -54,12 +53,12 @@ public class PointDistributer {
         return null; // Code will never reach here, but this line is required
     }
 
-    public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
+    public static double totalSurfaceArea(List<GridComponent> parts) {
         double surfaceArea = 0;
+        System.out.println(parts.size());
         for (int i = 0; i < parts.size(); i++) {
-            if (parts.get(i).charge == charge) {
-                surfaceArea += parts.get(i).getSurfaceArea();
-            }
+            //System.out.println(parts.get(i).toString());
+            surfaceArea += parts.get(i).getSurfaceArea();
         }
         return surfaceArea;
     }

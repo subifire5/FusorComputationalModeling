@@ -13,11 +13,14 @@ import java.util.Random;
  */
 public class TorusSegment extends GridComponent {
     double phi2;
+    double phi3;
     double radius2;
-    public TorusSegment (Vector pos, double radius, double phi2, double radius2, int charge) {
+    
+    public TorusSegment (Vector pos, double radius, double phi2, double phi3, double radius2, int charge) {
         this.pos = pos;
         this.radius = radius;
         this.phi2 = phi2;
+        this.phi3 = phi3;
         this.radius2 = radius2; // Width of the torus
         this.charge = charge;
         this.type = ComponentType.TorusSegment;
@@ -44,5 +47,11 @@ public class TorusSegment extends GridComponent {
         p.charge = charge;
         
         return p.rotateAroundVector(pos);
+    }
+    
+    @Override
+    public String toString() {
+        return "Torus with radii " + radius + ", " + radius2 +
+                " and position [" + pos.x + ", " + pos.y + ", " + pos.z;
     }
 }
