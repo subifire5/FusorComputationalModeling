@@ -3,6 +3,17 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group/>
-        <group name="Ephemera"/>
+        <group name="Ephemera">
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/GridComponent.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Cylinder.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/MyKDTree.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/XMLParser.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/PointDistributer.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Point.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/KDTree.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/FusorCompModeling.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/TorusSegment.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Vector.java</file>
+        </group>
     </open-files>
 </project-private>

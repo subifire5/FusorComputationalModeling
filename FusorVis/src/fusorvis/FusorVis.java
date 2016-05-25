@@ -262,10 +262,10 @@ public class FusorVis extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         
-        XMLParser p = new XMLParser("SimpleXML.xml");
+        XMLParser p = new XMLParser("torusXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, 500, 0);
+        Point[] points = PointDistributer.shakeUpPoints(parts, 200, 0);
 
         buildCamera();
         buildElectrons(points);

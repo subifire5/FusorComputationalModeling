@@ -55,7 +55,6 @@ public class PointDistributer {
 
     public static double totalSurfaceArea(List<GridComponent> parts) {
         double surfaceArea = 0;
-        System.out.println(parts.size());
         for (int i = 0; i < parts.size(); i++) {
             //System.out.println(parts.get(i).toString());
             surfaceArea += parts.get(i).getSurfaceArea();

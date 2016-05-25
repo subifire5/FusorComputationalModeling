@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import matheval.MathEval;
 
 /**
  *
@@ -22,8 +23,11 @@ import org.w3c.dom.NodeList;
  */
 public class XMLParser {
     String path;
+    MathEval eval;
     public XMLParser(String path) {
         this.path = path;
+        eval = new MathEval();
+        eval.setConstant("Pi", Math.PI);
     }
     
     public List<GridComponent> parseObjects() throws FileNotFoundException {
@@ -65,37 +69,31 @@ public class XMLParser {
         v.y = Double.parseDouble(element.getElementsByTagName("y").item(0).getTextContent());
         v.z = Double.parseDouble(element.getElementsByTagName("z").item(0).getTextContent());
         
-        v.phi = parsePiDouble(element, "phi");
-        v.theta = parsePiDouble(element, "theta");
+        v.phi = parseDouble(element, "phi");
+        v.theta = parseDouble(element, "theta");
                 
-        double radius = parsePiDouble(element, "radius");
+        double radius = parseDouble(element, "radius");
         int charge = parseCharge(element);
 
         switch (type) {
             case "Cylinder":            
-                double height = parsePiDouble(element, "height");
+                double height = parseDouble(element, "height");
                 return new Cylinder(v, radius, height, charge);
             case "TorusSegment":
-                double radius2 = parsePiDouble(element, "radius2");
-                double phi2 = parsePiDouble(element, "phi2");
-                double phi3 = parsePiDouble(element, "phi3");
+                double radius2 = parseDouble(element, "radius2");
+                double phi2 = parseDouble(element, "phi2");
+                double phi3 = parseDouble(element, "phi3");
                 return new TorusSegment(v, radius, phi2, phi3, radius2, charge);
             default:
                 System.out.println("Unknown type " + type);
                 return null;
         }
     }
-    public double parsePiDouble(Element element, String tag) {
+    public double parseDouble(Element element, String tag) {
         String textContent = element.getElementsByTagName(tag).item(0).getTextContent();
-        
-        if (textContent.contains("pi")) {
-            String[] containsPoint = textContent.split("pi");
-            return Double.parseDouble(containsPoint[1])*Math.PI;
-        } else {
-            return Double.parseDouble(textContent);
-        }
+        return eval.evaluate(textContent);
     }
     public int parseCharge(Element element) {
-        return (int) parsePiDouble(element, "charge");
+        return Integer.parseInt(element.getElementsByTagName("charge").item(0).getTextContent());
     }
 }
