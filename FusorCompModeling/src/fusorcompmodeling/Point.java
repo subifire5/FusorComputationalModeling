@@ -5,6 +5,8 @@
  */
 package fusorcompmodeling;
 
+import java.util.Comparator;
+
 /**
  *
  * @author guberti
@@ -65,6 +67,77 @@ public class Point {
         // Return the rotated point
         
         return rP;
+    }
+    
+    public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int compare(Point o1, Point o2) {
+            if (o1.x < o2.x) {
+                return -1;
+            }
+            if (o1.x > o2.x) {
+                return 1;
+            }
+            return 0;
+        }
+    };
+
+    public static final Comparator<Point> Y_COMPARATOR = new Comparator<Point>() {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int compare(Point o1, Point o2) {
+            if (o1.y < o2.y) {
+                return -1;
+            }
+            if (o1.y > o2.y) {
+                return 1;
+            }
+            return 0;
+        }
+    };
+
+    public static final Comparator<Point> Z_COMPARATOR = new Comparator<Point>() {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int compare(Point o1, Point o2) {
+            if (o1.z < o2.z) {
+                return -1;
+            }
+            if (o1.z > o2.z) {
+                return 1;
+            }
+            return 0;
+        }
+    };
+
+    public int compareTo(Point b, int axis) {
+        if (axis == 0) {
+            if (this.x > b.x) {
+                return -1;
+            } else if (this.x < b.x) {
+                return 1;
+            }
+        } else if (axis == 1) {
+            if (this.y > b.y) {
+                return -1;
+            } else if (this.y < b.y) {
+                return 1;
+            }
+        } else if (axis == 2) {
+            if (this.z > b.z) {
+                return -1;
+            } else if (this.z < b.z) {
+                return 1;
+            }
+        }
+        return 0;
     }
     
     @Override
