@@ -14,9 +14,10 @@ import java.util.Random;
  * @author guberti
  */
 public class PointDistributer {
-    
-    public PointDistributer () {}
-    
+
+    public PointDistributer() {
+    }
+
     public static Point[] shakeUpPoints(List<GridComponent> parts, int pointsPerCharge, int endCon) {
         Point[] points = distributePoints(parts, pointsPerCharge);
         int timesSinceLastChange = 0;
@@ -29,7 +30,7 @@ public class PointDistributer {
         }
         return points;
     }
-    
+
     public static Point[] distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
         Point[] totalPoints = new Point[pointsForEachCharge];
         Random newRand = new Random();
@@ -86,17 +87,37 @@ public class PointDistributer {
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
         for (int i = 0; i < points.length; i++) {
-            Point newPoint = getRandomPoint(parts);
+            Point newPoint = getRandomPoint(getReachableShapes(points[i].charge, parts));
             double currentEP = electricPotential(points, points[i]);
+
             double newEP = electricPotential(points, newPoint);
-            if (newEP < currentEP) {
+            if (points[i].charge == 1) {
+                if (newEP < currentEP) {
+                    changes++;
+                    points[i] = newPoint;
+                } else if (newEP > currentEP) {
+                    points[i].EP = currentEP;
+                }
+
+            } else if (newEP > currentEP) {
                 changes++;
                 points[i] = newPoint;
-            } else if (newEP > currentEP) {
+            } else if (newEP < currentEP) {
                 points[i].EP = currentEP;
             }
         }
         return changes;
+    }
+    public static List<GridComponent> getReachableShapes(int charge, List<GridComponent> parts){
+        List<GridComponent> ReachableShapes = new ArrayList<>();
+        int i = 0;
+        while(i < parts.size()){
+            if(charge == parts.get(i).charge){
+                ReachableShapes.add(parts.get(i));
+            }
+            i++;
+        }
+        return ReachableShapes;
     }
 
     ArrayList<Point> shakeUpPoints() {
