@@ -265,7 +265,7 @@ public class FusorVis extends Application {
         XMLParser p = new XMLParser("roundedSquare.xml");
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, 200, 0);
+        Point[] points = PointDistributer.shakeUpPoints(parts, 2000, 0);
 
         buildCamera();
         buildElectrons(points);

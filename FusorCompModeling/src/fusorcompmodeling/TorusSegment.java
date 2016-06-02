@@ -33,7 +33,7 @@ public class TorusSegment extends GridComponent {
     
     @Override
     public Point getRandomPoint(Random r) {
-        double pointPhi = r.nextDouble() * Math.PI * 2; // Tau radians in a circle
+        double pointPhi = phi2 + (phi3 - phi2) * r.nextDouble();
         double pointTheta = r.nextDouble() * Math.PI * 2;
         
         // Points without rotation
