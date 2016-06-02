@@ -262,7 +262,7 @@ public class FusorVis extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         
-        XMLParser p = new XMLParser("roundedSquare.xml");
+        XMLParser p = new XMLParser("SimpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
         Point[] points = PointDistributer.shakeUpPoints(parts, 2000, 0);

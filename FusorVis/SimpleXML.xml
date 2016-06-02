@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<shapes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<shapes>
 	<shape>
 		<phi>0</phi>
 		<theta>0</theta>
 		<phi2>0</phi2>
-		<phi3>0</phi3>
+		<phi3>2*Pi</phi3>
 		<radius>6.5</radius>
 		<radius2>0.205</radius2>
 		<x>0</x>
@@ -17,7 +17,7 @@
 		<phi>Pi/2</phi>
 		<theta>Pi/2</theta>
 		<phi2>0</phi2>
-		<phi3>0</phi3>
+		<phi3>2*Pi</phi3>
 		<radius>6.5</radius>
 		<radius2>0.205</radius2>
 		<x>0</x>
@@ -30,7 +30,7 @@
 		<phi>0</phi>
 		<theta>Pi/2</theta>
 		<phi2>0</phi2>
-		<phi3>0</phi3>
+		<phi3>2*Pi</phi3>
 		<radius>6.5</radius>
 		<radius2>0.205</radius2>
 		<x>0</x>
@@ -43,7 +43,7 @@
 		<phi>0</phi>
 		<theta>0</theta>
 		<phi2>0</phi2>
-		<phi3>0</phi3>
+		<phi3>2*Pi</phi3>
 		<radius>1.625</radius>
 		<radius2>0.205</radius2>
 		<x>0</x>
@@ -56,7 +56,7 @@
 		<phi>Pi/2</phi>
 		<theta>Pi/2</theta>
 		<phi2>0</phi2>
-		<phi3>0</phi3>
+		<phi3>2*Pi</phi3>
 		<radius>1.625</radius>
 		<radius2>0.205</radius2>
 		<x>0</x>
@@ -69,7 +69,7 @@
 		<phi>0</phi>
 		<theta>Pi/2</theta>
 		<phi2>0</phi2>
-		<phi3>0</phi3>
+		<phi3>2*Pi</phi3>
 		<radius>1.625</radius>
 		<radius2>0.205</radius2>
 		<x>0</x>
