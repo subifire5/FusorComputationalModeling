@@ -273,7 +273,7 @@ public class FusorVis extends Application {
         buildAxes();
         buildScene();
 
-        Scene scene = new Scene(root, 1024, 768, true);Z 
+        Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
         handleMouse(scene, world);
         handleKeyboard(scene, primaryStage);
