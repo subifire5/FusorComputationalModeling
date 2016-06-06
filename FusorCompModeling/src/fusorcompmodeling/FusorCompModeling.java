@@ -8,8 +8,11 @@ package fusorcompmodeling;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -24,9 +27,9 @@ public class FusorCompModeling {
      */
     public static void main(String[] args) throws FileNotFoundException {
         int[] logNums = new int[]{100, 1000, 5000, 10000, 20000, 50000};
+        //
         long[] times = new long[logNums.length];
         System.out.println("Loading file...");
-
         XMLParser p = new XMLParser("SimpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         System.out.println("File loaded and initialized");
@@ -34,24 +37,16 @@ public class FusorCompModeling {
         //-1 IS AN ANODE +, 1 IS A CATHODE -, 0 WILL BE NEUTRAL
         for (int i = 0; i < logNums.length; i++) {
             long startTime = System.currentTimeMillis();
-            Point[] points = distributePoints(parts, logNums[i]);
-//            for (int j = 0; j < points.length - 1; j++) {
-//                System.out.println(points[j].x + ", " + points[j].y + ", " + points[j].z);
-//            }
-            //int changes = 80;
-            //int timesRun = 0;
-            //do  {
-            int changes = balanceCharges(points, parts);
+            ArrayList<Point> points = distributePoints(parts, logNums[i]);
+            Node root = Node.kdtree(points, 0);
+            int changes = balanceCharges(root, parts, logNums[i]);
             System.out.println("Changes Made: " + changes);
             long endTime = System.currentTimeMillis();
             times[i] = endTime - startTime;
         }
-        //timesRun++;
-        //} while(changes > 0);
-        //System.out.println("Times run: " + timesRun);
         BufferedWriter logFile = null;
         try {
-            logFile = new BufferedWriter(new FileWriter("C:\\Users\\Daman\\Documents\\NetBeansProjects\\FusorComputationalModeling\\FusorCompModeling\\FusorLog.csv"));
+            logFile = new BufferedWriter(new FileWriter("C:\\Users\\Daman\\Documents\\TestFusor\\Test\\FusorLog.csv"));
             for (int i = 0; i < logNums.length; i++) {
                 logFile.write("" + logNums[i] + "," + times[i]);
                 logFile.newLine();
@@ -65,11 +60,11 @@ public class FusorCompModeling {
 
     }
 
-    public static Point[] distributePoints(List<GridComponent> parts, int pointNum) {
-        Point[] totalPoints = new Point[pointNum];
+    public static ArrayList<Point> distributePoints(List<GridComponent> parts, int pointNum) {
+        ArrayList<Point> totalPoints = new ArrayList<Point>();
         Random newRand = new Random();
         for (int i = 0; i < pointNum; i++) {
-            totalPoints[i] = getRandomPoint(parts);
+            totalPoints.add(getRandomPoint(parts));
         }
         return totalPoints;
     }
@@ -96,15 +91,15 @@ public class FusorCompModeling {
         return surfaceArea;
     }
 
-    public static double electricPotential(Point[] points, Point comparePoint) {
+    public static double electricPotential(ArrayList<Node> nodes, Point comparePoint) {
         double positivePotential = 0;
         double negativePotential = 0;
-        for (int i = 0; i < points.length; i++) {
-            if (!points[i].equals(comparePoint)) {
-                if (points[i].charge == 1) {
-                    positivePotential += (1 / distanceCalculator(points[i], comparePoint));
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i) != null && !nodes.get(i).location.equals(comparePoint)) {
+                if (nodes.get(i).location.charge == 1) {
+                    positivePotential += (1 / distanceCalculator(nodes.get(i).location, comparePoint));
                 } else {
-                    negativePotential += (1 / distanceCalculator(points[i], comparePoint));
+                    negativePotential += (1 / distanceCalculator(nodes.get(i).location, comparePoint));
                 }
             }
         }
@@ -112,24 +107,32 @@ public class FusorCompModeling {
     }
 
     public static double distanceCalculator(Point a, Point b) {
-        //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
         double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)) + ((a.z - b.z) * (a.z - b.z)));
         return distance;
     }
 
-    public static int balanceCharges(Point[] points, List<GridComponent> parts) {
+    public static int balanceCharges(Node root, List<GridComponent> parts, int points) {
         int changes = 0;
-        for (int i = 0; i < points.length; i++) {
+        Deque<Node> results = new ArrayDeque<Node>();
+        Node.search(root, results);
+        Iterator j = results.iterator();
+        while (j.hasNext()) {
+            Node node = (Node) j.next();
+            Point p = node.location;
             Point newPoint = getRandomPoint(parts);
-            double currentEP = electricPotential(points, points[i]);
-            double newEP = electricPotential(points, newPoint);
+            RectHV rect = new RectHV((p.x-2), (p.y-2), (p.x+2), (p.y+2), (p.z-2), (p.z+2));
+            ArrayList<Node> nds = new ArrayList<Node>();
+            Node.queryNode(root, rect, 0, nds);
+            double currentEP = electricPotential(nds, node.location);
+            double newEP = electricPotential(nds, newPoint);
             if (newEP < currentEP) {
                 changes++;
-                points[i] = newPoint;
+                //points[i] = newPoint;
             } else if (newEP > currentEP) {
-                points[i].EP = currentEP;
+                //points[i].EP = currentEP;
             }
         }
         return changes;
     }
+
 }
