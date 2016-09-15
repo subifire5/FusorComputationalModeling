@@ -2,6 +2,7 @@
 package fusorvis;
 
 import fusorcompmodeling.*;
+import java.util.ArrayList;
 
 import java.util.List;
 import javafx.application.Application;
@@ -66,7 +67,7 @@ public class FusorVis extends Application {
     
     double electronRadius = 1.0;
     
-    private void buildElectrons(Point[] points) {
+    private void buildElectrons(ArrayList<Point> points) {
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
         redMaterial.setSpecularColor(Color.RED);
@@ -75,7 +76,7 @@ public class FusorVis extends Application {
         blackMaterial.setDiffuseColor(Color.BLACK);
         blackMaterial.setSpecularColor(Color.DARKGREY);
         
-        for (Point point : points) {
+        for (Point point :points) {
             final Sphere electron = new Sphere(electronRadius);
             electron.setTranslateX(point.x);
             electron.setTranslateY(point.y);
@@ -265,7 +266,15 @@ public class FusorVis extends Application {
         XMLParser p = new XMLParser("simpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, 50000, 1000);
+        int TotalCharges = 100;
+        int BalanceTimes = 2000;
+        
+        ArrayList<Point> points = FusorCompModeling.distributePoints(parts, TotalCharges);
+        KDNode froot = KDNode.kdtree(points, 0);
+        
+        for(int i = 0; i < BalanceTimes; i++){
+            int changes = FusorCompModeling.balanceCharges(froot, parts, TotalCharges);
+        }
 
         buildCamera();
         buildElectrons(points);

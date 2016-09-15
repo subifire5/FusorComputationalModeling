@@ -38,15 +38,16 @@ public class FusorCompModeling {
         for (int i = 0; i < logNums.length; i++) {
             long startTime = System.currentTimeMillis();
             ArrayList<Point> points = distributePoints(parts, logNums[i]);
-            Node root = Node.kdtree(points, 0);
+            KDNode root = KDNode.kdtree(points, 0);
             int changes = balanceCharges(root, parts, logNums[i]);
-            System.out.println("Changes Made: " + changes);
+            //System.out.println("Changes Made: " + changes);
             long endTime = System.currentTimeMillis();
+            System.out.println("Time:" + (endTime - startTime));
             times[i] = endTime - startTime;
         }
         BufferedWriter logFile = null;
         try {
-            logFile = new BufferedWriter(new FileWriter("C:\\Users\\Daman\\Documents\\TestFusor\\Test\\FusorLog.csv"));
+            logFile = new BufferedWriter(new FileWriter("C:\\Users\\sfreisem-kirova\\Desktop\\FusorLog.csv"));
             for (int i = 0; i < logNums.length; i++) {
                 logFile.write("" + logNums[i] + "," + times[i]);
                 logFile.newLine();
@@ -91,15 +92,15 @@ public class FusorCompModeling {
         return surfaceArea;
     }
 
-    public static double electricPotential(ArrayList<Node> nodes, Point comparePoint) {
+    public static double electricPotential(ArrayList<KDNode> KDNodes, Point comparePoint) {
         double positivePotential = 0;
         double negativePotential = 0;
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i) != null && !nodes.get(i).location.equals(comparePoint)) {
-                if (nodes.get(i).location.charge == 1) {
-                    positivePotential += (1 / distanceCalculator(nodes.get(i).location, comparePoint));
+        for (int i = 0; i < KDNodes.size(); i++) {
+            if (KDNodes.get(i) != null && !KDNodes.get(i).location.equals(comparePoint)) {
+                if (KDNodes.get(i).location.charge == 1) {
+                    positivePotential += (1 / distanceCalculator(KDNodes.get(i).location, comparePoint));
                 } else {
-                    negativePotential += (1 / distanceCalculator(nodes.get(i).location, comparePoint));
+                    negativePotential += (1 / distanceCalculator(KDNodes.get(i).location, comparePoint));
                 }
             }
         }
@@ -111,19 +112,19 @@ public class FusorCompModeling {
         return distance;
     }
 
-    public static int balanceCharges(Node root, List<GridComponent> parts, int points) {
+    public static int balanceCharges(KDNode root, List<GridComponent> parts, int points) {
         int changes = 0;
-        Deque<Node> results = new ArrayDeque<Node>();
-        Node.search(root, results);
+        Deque<KDNode> results = new ArrayDeque<KDNode>();
+        KDNode.search(root, results);
         Iterator j = results.iterator();
         while (j.hasNext()) {
-            Node node = (Node) j.next();
-            Point p = node.location;
+            KDNode KDNode = (KDNode) j.next();
+            Point p = KDNode.location;
             Point newPoint = getRandomPoint(parts);
             RectHV rect = new RectHV((p.x-2), (p.y-2), (p.x+2), (p.y+2), (p.z-2), (p.z+2));
-            ArrayList<Node> nds = new ArrayList<Node>();
-            Node.queryNode(root, rect, 0, nds);
-            double currentEP = electricPotential(nds, node.location);
+            ArrayList<KDNode> nds = new ArrayList<KDNode>();
+            KDNode.queryKDNode(root, rect, 0, nds);
+            double currentEP = electricPotential(nds, KDNode.location);
             double newEP = electricPotential(nds, newPoint);
             if (newEP < currentEP) {
                 changes++;
