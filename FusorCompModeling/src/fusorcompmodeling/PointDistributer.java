@@ -65,8 +65,6 @@ public class PointDistributer {
     //needs work
     //
     public static double electricPotential(Point[] points, Point comparePoint) {
-        double positivePotential = 0;
-        double negativePotential = 0;
         double potential = 0;
         for (int i = 0; i < points.length; i++) {
             if (!points[i].equals(comparePoint)) {
