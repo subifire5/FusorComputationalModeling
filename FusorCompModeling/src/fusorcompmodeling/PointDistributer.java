@@ -62,20 +62,20 @@ public class PointDistributer {
         }
         return surfaceArea;
     }
-
+    //needs work
+    //
     public static double electricPotential(Point[] points, Point comparePoint) {
         double positivePotential = 0;
         double negativePotential = 0;
+        double potential = 0;
         for (int i = 0; i < points.length; i++) {
             if (!points[i].equals(comparePoint)) {
-                if (points[i].charge == 1) {
-                    positivePotential += (1 / distanceCalculator(points[i], comparePoint));
-                } else {
-                    negativePotential += (1 / distanceCalculator(points[i], comparePoint));
-                }
+                
+                potential += (points[i].charge * (1 / distanceCalculator(points[i], comparePoint)));
+                
             }
         }
-        return (positivePotential - negativePotential);
+        return (potential);
     }
 
     public static double distanceCalculator(Point a, Point b) {
