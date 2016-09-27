@@ -265,8 +265,13 @@ public class FusorVis extends Application {
         XMLParser p = new XMLParser("simpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, 500, 20);
-
+        Point[] points = PointDistributer.shakeUpPoints(parts, 50, 20);
+        double posAvgPotential;
+        double negAvgPotential;
+        posAvgPotential = StatsGen.avgPotential(points, 1);
+        negAvgPotential = StatsGen.avgPotential(points, -1);
+        System.out.println("Average potential of positve points: " + posAvgPotential);
+        System.out.println("Average potential of negative points: " + negAvgPotential);
         buildCamera();
         buildElectrons(points);
         buildWireComponents(parts);

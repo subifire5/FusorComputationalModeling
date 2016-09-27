@@ -70,8 +70,8 @@ public class PointDistributer {
         return surfaceArea;
     }
 
-    //needs work
-    //
+ 
+   
     public static double electricPotential(Point[] points, Point comparePoint) {
         double potential = 0;
         for (int i = 0; i < points.length; i++) {
