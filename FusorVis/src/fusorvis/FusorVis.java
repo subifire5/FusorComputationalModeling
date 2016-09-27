@@ -196,7 +196,8 @@ public class FusorVis extends Application {
 
 
         textFieldStage.setTitle("My New Stage Title");
-        textFieldStage.setScene(new Scene(textFieldRoot, 300, 300));
+        textFieldStage.setTitle("Model statistics");
+        textFieldStage.setScene(new Scene(textFieldRoot, 600, 300));
         textFieldStage.initOwner(primaryStage);
         textFieldStage.initModality(Modality.APPLICATION_MODAL);
         textFieldStage.setAlwaysOnTop(true);
@@ -344,23 +345,17 @@ public class FusorVis extends Application {
         XMLParser p = new XMLParser("simpleXML.xml");
         List<GridComponent> parts = p.parseObjects();
         
-<<<<<<< HEAD
         Point[] points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
 
+        double posAvgPotential = StatsGen.avgPotential(points, 1);
+        double negAvgPotential = StatsGen.avgPotential(points, -1);
+        
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
         output.put("Optimizations", String.valueOf(optimizations));
-        
-        // Set display
-=======
-        Point[] points = PointDistributer.shakeUpPoints(parts, 50, 20);
-        double posAvgPotential;
-        double negAvgPotential;
-        posAvgPotential = StatsGen.avgPotential(points, 1);
-        negAvgPotential = StatsGen.avgPotential(points, -1);
-        System.out.println("Average potential of positve points: " + posAvgPotential);
-        System.out.println("Average potential of negative points: " + negAvgPotential);
->>>>>>> origin/master
+        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential));
+        output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+
         buildCamera();
         buildElectrons(points);
         buildWireComponents(parts);
