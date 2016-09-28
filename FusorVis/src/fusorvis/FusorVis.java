@@ -73,7 +73,7 @@ public class FusorVis extends Application {
     
     Text consoleDump = new Text();
     
-    String xmlFileName = "SimpleXML";
+    String xmlFileName = "TwoRings";
     
     Point[] points;
     
@@ -377,8 +377,8 @@ public class FusorVis extends Application {
     }
     @Override
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 50;
-        int optimizations = 20;
+        int pointCount = 1000;
+        int optimizations = 1000;
         XMLParser p = new XMLParser(xmlFileName + ".xml");
         List<GridComponent> parts = p.parseObjects();
         
