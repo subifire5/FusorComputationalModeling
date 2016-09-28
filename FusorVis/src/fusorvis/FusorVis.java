@@ -262,10 +262,10 @@ public class FusorVis extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         
-        XMLParser p = new XMLParser("simpleXML.xml");
+        XMLParser p = new XMLParser("Sphere.xml");
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, 50, 20);
+        Point[] points = PointDistributer.shakeUpPoints(parts, 500, 20);
         double posAvgPotential;
         double negAvgPotential;
         posAvgPotential = StatsGen.avgPotential(points, 1);
