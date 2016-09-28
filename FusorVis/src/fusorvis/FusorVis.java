@@ -3,6 +3,9 @@ package fusorvis;
 
 import fusorcompmodeling.*;
 import java.awt.Button;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import java.util.List;
 import javafx.application.Application;
@@ -41,6 +44,11 @@ import java.lang.Integer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 /**
  *
  * @author guberti
@@ -64,6 +72,10 @@ public class FusorVis extends Application {
     HashMap<String, String> output = new HashMap<>();
     
     Text consoleDump = new Text();
+    
+    String xmlFileName = "SimpleXML";
+    
+    Point[] points;
     
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -295,6 +307,19 @@ public class FusorVis extends Application {
                             textFieldStage.setScene(new Scene(textFieldRoot, 450, 450));
                             textFieldStage.show();
                         }
+                    case S:
+                        if (event.isControlDown()) {
+                            PrintWriter writer = null;
+                            try {
+                                writer = new PrintWriter(xmlFileName + ".json", "UTF-8");
+                            } catch (FileNotFoundException ex) {
+                                Logger.getLogger(FusorVis.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (UnsupportedEncodingException ex) {
+                                Logger.getLogger(FusorVis.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            writer.println(exportPointsAsJSON());
+                            writer.close();
+                        }
                     case PAGE_UP: // Get larger
                         scaleElectrons(1.1);
                         break;
@@ -313,6 +338,18 @@ public class FusorVis extends Application {
                 }
             }
         });
+    }
+    private String exportPointsAsJSON() {
+        JSONArray arr = new JSONArray();
+        for (Point p : points) {
+            JSONObject obj = new JSONObject();
+            obj.append("x", p.x);
+            obj.append("y", p.y);
+            obj.append("z", p.z);
+            obj.append("charge", p.charge);
+            arr.put(obj);
+        }
+        return arr.toString();
     }
     private void toggleXform(Xform g) {
         g.setVisible(!g.visibleProperty().get());
@@ -342,10 +379,10 @@ public class FusorVis extends Application {
     public void start(Stage primaryStage) throws Exception {
         int pointCount = 50;
         int optimizations = 20;
-        XMLParser p = new XMLParser("simpleXML.xml");
+        XMLParser p = new XMLParser(xmlFileName + ".xml");
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
 
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
