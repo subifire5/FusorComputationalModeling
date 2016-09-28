@@ -27,4 +27,8 @@ public class StatsGen {
         return avgPotential;
         
     }
+//    public static Acceleration getAcceleration(){
+//        
+//        return 
+//    }
 }
