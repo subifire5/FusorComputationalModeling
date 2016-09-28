@@ -84,6 +84,8 @@ public class XMLParser {
                 double phi2 = parseDouble(element, "phi2");
                 double phi3 = parseDouble(element, "phi3");
                 return new TorusSegment(v, radius, phi2, phi3, radius2, charge);
+            case "Sphere":            
+                return new Sphere(v, radius, charge);
             default:
                 System.out.println("Unknown type " + type);
                 return null;

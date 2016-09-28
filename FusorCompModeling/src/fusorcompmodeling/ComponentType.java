@@ -10,5 +10,5 @@ package fusorcompmodeling;
  * @author guberti
  */
 public enum ComponentType {
-    Cylinder, TorusSegment
+    Cylinder, TorusSegment, Sphere
 }
