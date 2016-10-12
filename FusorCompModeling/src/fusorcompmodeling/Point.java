@@ -69,10 +69,17 @@ public class Point {
         return rP;
     }
     
-    public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
-        /**
-         * {@inheritDoc}
-         */
+    public Point crossProduct(Point p) {
+        Point nP = new Point();
+        
+        nP.x = y*p.z - z*p.y;
+        nP.y = z*p.x - x*p.z;
+        nP.z = x*p.y - y*p.x;
+        
+        return nP;
+    }
+    
+/*    public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
         @Override
         public int compare(Point o1, Point o2) {
             if (o1.x < o2.x) {
@@ -86,9 +93,6 @@ public class Point {
     };
 
     public static final Comparator<Point> Y_COMPARATOR = new Comparator<Point>() {
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int compare(Point o1, Point o2) {
             if (o1.y < o2.y) {
@@ -102,9 +106,6 @@ public class Point {
     };
 
     public static final Comparator<Point> Z_COMPARATOR = new Comparator<Point>() {
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public int compare(Point o1, Point o2) {
             if (o1.z < o2.z) {
@@ -115,7 +116,7 @@ public class Point {
             }
             return 0;
         }
-    };
+    };*/
 
     public int compareTo(Point b, int axis) {
         if (axis == 0) {

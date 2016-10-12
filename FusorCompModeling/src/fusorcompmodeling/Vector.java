@@ -23,6 +23,13 @@ public class Vector {
     
     public Vector() {}
     
+    public Vector(Point pos, double phi, double theta) {
+        this.x = pos.x;
+        this.y = pos.y;
+        this.z = pos.z;
+        this.phi = phi;
+        this.theta = theta;
+    }
     public Vector(double x, double y, double z, double phi, double theta) {
         this.x = x;
         this.y = y;
@@ -30,7 +37,19 @@ public class Vector {
         this.phi = phi;
         this.theta = theta;
     }
+
+    public Vector(double phi, double theta) {
+        this.phi = phi;
+        this.theta = theta;
+    }
+    
     public Point3D getAs3DPoint() {
         return new Point3D(x, y, z);
+    }
+    public Point convertRayToCartesian(double radius) {
+        double x = radius * Math.sin(phi) * Math.cos(theta);
+        double y = radius * Math.sin(phi) * Math.sin(theta);
+        double z = radius * Math.cos(phi);
+        return new Point(x, y, z);
     }
 }

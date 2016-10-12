@@ -41,6 +41,9 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import java.lang.Integer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,7 +76,7 @@ public class FusorVis extends Application {
     
     Text consoleDump = new Text();
     
-    String xmlFileName = "TwoRings";
+    String xmlFileName = "SimpleXML";
     
     Point[] points;
     
@@ -377,10 +380,16 @@ public class FusorVis extends Application {
     }
     @Override
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 1000;
-        int optimizations = 1000;
-        XMLParser p = new XMLParser(xmlFileName + ".xml");
-        List<GridComponent> parts = p.parseObjects();
+        int pointCount = 100;
+        int optimizations = 100;
+        
+        //XMLParser p = new XMLParser(xmlFileName + ".xml");
+        //List<GridComponent> parts = p.parseObjects();
+        
+        String jsonPath = "";
+        byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
+        Wire w = new Wire(new String(encoded, Charset.defaultCharset()));
+        List<GridComponent> parts = w.getAsGridComponents();
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
 
