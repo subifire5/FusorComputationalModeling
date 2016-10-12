@@ -2,10 +2,16 @@
 package fusorvis;
 
 import fusorcompmodeling.*;
+import java.awt.Button;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import java.util.List;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -15,16 +21,34 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import static javafx.scene.input.KeyCode.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.Reflection;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Box;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
+import javafx.stage.Modality;
+import javafx.stage.Screen;
+import java.lang.Integer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 /**
  *
  * @author guberti
@@ -41,6 +65,17 @@ public class FusorVis extends Application {
     final Xform cameraXform = new Xform();
     final Xform cameraXform2 = new Xform();
     final Xform cameraXform3 = new Xform();
+    
+    StackPane textFieldRoot = new StackPane();
+    Stage textFieldStage = new Stage();
+    
+    HashMap<String, String> output = new HashMap<>();
+    
+    Text consoleDump = new Text();
+    
+    String xmlFileName = "TwoRings";
+    
+    Point[] points;
     
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -165,7 +200,42 @@ public class FusorVis extends Application {
     private void buildScene() {
         root.getChildren().add(world);
     }
-    
+    private void buildTextWindow(Stage primaryStage) {
+        
+        consoleDump.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        compileOutput();
+        textFieldRoot.getChildren().add(consoleDump);
+
+
+        textFieldStage.setTitle("My New Stage Title");
+        textFieldStage.setTitle("Model statistics");
+        textFieldStage.setScene(new Scene(textFieldRoot, 600, 300));
+        textFieldStage.initOwner(primaryStage);
+        textFieldStage.initModality(Modality.APPLICATION_MODAL);
+        textFieldStage.setAlwaysOnTop(true);
+        textFieldStage.show();
+        primaryStage.toFront();
+    }
+    private void buildStage (Stage primaryStage) {
+        Screen screen = Screen.getPrimary();
+        Rectangle2D bounds = screen.getVisualBounds();
+
+        primaryStage.setX(bounds.getMinX());
+        primaryStage.setY(bounds.getMinY());
+        primaryStage.setWidth(bounds.getWidth());
+        primaryStage.setHeight(bounds.getHeight());
+
+        primaryStage.focusedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    textFieldStage.setAlwaysOnTop(true);
+                } else {
+                    textFieldStage.setAlwaysOnTop(false);
+                }
+            }
+        });
+    }
     // Helper functions
     private double radToDeg(double radians) {
         return (radians*180)/Math.PI;
@@ -179,9 +249,11 @@ public class FusorVis extends Application {
                 mouseOldY = me.getSceneY();
             }
         });
+        
         scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent me) {
+                
                 mouseOldX = mousePosX;
                 mouseOldY = mousePosY;
                 mousePosX = me.getSceneX();
@@ -201,6 +273,10 @@ public class FusorVis extends Application {
                 if (me.isPrimaryButtonDown()) {
                     cameraXform.ry.setAngle(cameraXform.ry.getAngle() - mouseDeltaX * modifierFactor * modifier * 2.0);  // +
                     cameraXform.rx.setAngle(cameraXform.rx.getAngle() + mouseDeltaY * modifierFactor * modifier * 2.0);  // -
+                    
+                    output.put("Camera phi", String.valueOf(cameraXform.ry.getAngle()));
+                    output.put("Camera theta", String.valueOf(cameraXform.rx.getAngle()));
+                    
                 } else if (me.isSecondaryButtonDown()) {
                     double z = camera.getTranslateZ();
                     double newZ = z + mouseDeltaX * modifierFactor * modifier;
@@ -209,6 +285,7 @@ public class FusorVis extends Application {
                     cameraXform2.t.setX(cameraXform2.t.getX() + mouseDeltaX * modifierFactor * modifier * 0.3);  // -
                     cameraXform2.t.setY(cameraXform2.t.getY() + mouseDeltaY * modifierFactor * modifier * 0.3);  // -
                 }
+                compileOutput();
             }
         });
     }
@@ -224,6 +301,25 @@ public class FusorVis extends Application {
                             stage.close();
                         }
                         break;
+                    case O:
+                        if (event.isControlDown()) {
+                            textFieldStage.setTitle("My New Stage Title");
+                            textFieldStage.setScene(new Scene(textFieldRoot, 450, 450));
+                            textFieldStage.show();
+                        }
+                    case S:
+                        if (event.isControlDown()) {
+                            PrintWriter writer = null;
+                            try {
+                                writer = new PrintWriter(xmlFileName + ".json", "UTF-8");
+                            } catch (FileNotFoundException ex) {
+                                Logger.getLogger(FusorVis.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (UnsupportedEncodingException ex) {
+                                Logger.getLogger(FusorVis.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            writer.println(exportPointsAsJSON());
+                            writer.close();
+                        }
                     case PAGE_UP: // Get larger
                         scaleElectrons(1.1);
                         break;
@@ -243,6 +339,18 @@ public class FusorVis extends Application {
             }
         });
     }
+    private String exportPointsAsJSON() {
+        JSONArray arr = new JSONArray();
+        for (Point p : points) {
+            JSONObject obj = new JSONObject();
+            obj.append("x", p.x);
+            obj.append("y", p.y);
+            obj.append("z", p.z);
+            obj.append("charge", p.charge);
+            arr.put(obj);
+        }
+        return arr.toString();
+    }
     private void toggleXform(Xform g) {
         g.setVisible(!g.visibleProperty().get());
     }
@@ -258,38 +366,56 @@ public class FusorVis extends Application {
 
         }
     }
-
+    public void compileOutput() {
+        Iterator it = output.entrySet().iterator();
+        String textOutput = "";
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            textOutput += pair.getKey() + ": " + pair.getValue() + "\n";
+        }
+        consoleDump.setText(textOutput);
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
-        
-        XMLParser p = new XMLParser("simplexml.xml");
+
+        int pointCount = 1000;
+        int optimizations = 1000;
+        XMLParser p = new XMLParser(xmlFileName + ".xml");
+
         List<GridComponent> parts = p.parseObjects();
         
-        Point[] points = PointDistributer.shakeUpPoints(parts, 500, 20);
-        double posAvgPotential;
-        double negAvgPotential;
-        posAvgPotential = StatsGen.avgPotential(points, 1);
-        negAvgPotential = StatsGen.avgPotential(points, -1);
-        System.out.println("Average potential of positve points: " + posAvgPotential);
-        System.out.println("Average potential of negative points: " + negAvgPotential);
+        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+
+        double posAvgPotential = StatsGen.avgPotential(points, 1);
+        double negAvgPotential = StatsGen.avgPotential(points, -1);
+        
+        output.put("Points", String.valueOf(points.length));
+        output.put("Parts in grid", String.valueOf(parts.size()));
+        output.put("Optimizations", String.valueOf(optimizations));
+        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential));
+        output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+
         buildCamera();
         buildElectrons(points);
         buildWireComponents(parts);
         buildAxes();
         buildScene();
+        buildTextWindow(primaryStage);
+        buildStage(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
         handleMouse(scene, world);
         handleKeyboard(scene, primaryStage);
         
-        primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-        primaryStage.setFullScreenExitHint("");
+        
+        //primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+        //primaryStage.setFullScreenExitHint("");
         
         primaryStage.setTitle("Fusor Electric Field Visualizer");
         primaryStage.setScene(scene);
         primaryStage.show();
-        primaryStage.setFullScreen(true);
+        //primaryStage.setFullScreen(true);
         scene.setCamera(camera);
     }
     

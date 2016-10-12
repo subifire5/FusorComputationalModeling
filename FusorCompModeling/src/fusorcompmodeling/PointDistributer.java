@@ -20,13 +20,11 @@ public class PointDistributer {
 
     public static Point[] shakeUpPoints(List<GridComponent> parts, int pointsPerCharge, int endCon) {
         Point[] points = distributePoints(parts, pointsPerCharge);
-        int timesSinceLastChange = 0;
-        while (timesSinceLastChange < endCon) {
+        int reps = 0;
+        while (reps < endCon) {
             int changesMade = balanceCharges(points, parts);
             System.out.println("Shook up the points, " + changesMade + " changes made");
-            if (changesMade == 0) {
-                timesSinceLastChange++;
-            }
+            reps++;
         }
         return points;
     }

@@ -23,7 +23,7 @@ public class StatsGen {
                 totalPotential += electricPotential(points,points[i]);
             }
         }
-        avgPotential = totalPotential/points.length;
+        avgPotential = 2 * totalPotential/(points.length);
         return avgPotential;
         
     }
