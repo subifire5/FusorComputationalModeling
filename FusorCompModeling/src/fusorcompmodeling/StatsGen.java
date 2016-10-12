@@ -27,8 +27,26 @@ public class StatsGen {
         return avgPotential;
         
     }
-//    public static Acceleration getAcceleration(){
-//        
-//        return 
-//    }
+    public static Acceleration getAcceleration(Point[] points, Point point){
+        double x;
+        double y;
+        double z;
+        
+        Acceleration acc = new Acceleration(x,y,z);
+        
+        return acc;
+    }
+    public static double getDeltaPhi(double posAvgPot, double negAvgPot){
+        double DeltaPhi;
+        DeltaPhi = posAvgPot - negAvgPot;
+        return DeltaPhi;
+    }
+    public static double getkQ(Point[] points, double voltage){
+        double DeltaPhi = getDeltaPhi(avgPotential(points,1),avgPotential(points,1));
+        double kQ;
+        kQ = (voltage/DeltaPhi)*0.01;//m/cm
+        
+        return kQ;
+    }
+    public static VectorForce getVforce(Point[] points, double voltage, )
 }
