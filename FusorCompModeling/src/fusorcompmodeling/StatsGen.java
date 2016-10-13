@@ -27,15 +27,6 @@ public class StatsGen {
         return avgPotential;
         
     }
-    public static Acceleration getAcceleration(Point[] points, Point point){
-        double x;
-        double y;
-        double z;
-        
-        Acceleration acc = new Acceleration(x,y,z);
-        
-        return acc;
-    }
     public static double getDeltaPhi(double posAvgPot, double negAvgPot){
         double DeltaPhi;
         DeltaPhi = posAvgPot - negAvgPot;
@@ -48,5 +39,20 @@ public class StatsGen {
         
         return kQ;
     }
-    public static VectorForce getVforce(Point[] points, double voltage, )
+    public static VectorForce getVforce(Point[] points, double voltage, double q, Point r){
+        VectorForce vForce = new VectorForce();
+        double kQ = getkQ(points, voltage);
+        vForce.setXForce((q*kQ)/r.x);
+        vForce.setYForce((q*kQ)/r.y);
+        vForce.setZForce((q*kQ)/r.z);
+        return vForce;
+    }
+    public static VectorAcceleration getAcceleration(Point[] points, double voltage, double q, Point r, double mass){
+        VectorAcceleration vAcc = new VectorAcceleration();
+        vAcc.setXAcceleration(getVforce(points, voltage, q, r).getXForce()/mass);
+        vAcc.setYAcceleration(getVforce(points, voltage, q, r).getYForce()/mass);
+        vAcc.setZAcceleration(getVforce(points, voltage, q, r).getZForce()/mass);
+        return vAcc;
+    }
+    
 }
