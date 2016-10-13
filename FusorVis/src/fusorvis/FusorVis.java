@@ -346,10 +346,10 @@ public class FusorVis extends Application {
         JSONArray arr = new JSONArray();
         for (Point p : points) {
             JSONObject obj = new JSONObject();
-            obj.append("x", p.x);
-            obj.append("y", p.y);
-            obj.append("z", p.z);
-            obj.append("charge", p.charge);
+            obj.put("x", p.x);
+            obj.put("y", p.y);
+            obj.put("z", p.z);
+            obj.put("charge", p.charge);
             arr.put(obj);
         }
         return arr.toString();
@@ -386,7 +386,7 @@ public class FusorVis extends Application {
         //XMLParser p = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
         
-        String jsonPath = "";
+        String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
         Wire w = new Wire(new String(encoded, Charset.defaultCharset()));
         List<GridComponent> parts = w.getAsGridComponents();

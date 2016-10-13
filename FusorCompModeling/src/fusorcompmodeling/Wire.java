@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import matheval.MathEval;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -37,34 +38,26 @@ public class Wire {
     Vector originalPlane;
 
     public Wire (String json) {
-        JSONObject obj = new JSONObject(json);
+        MathJSONObject obj = new MathJSONObject(json);
         
-        wireradius = obj.getDouble("radius");
+        wireradius = obj.getMath("radius");
         charge = obj.getInt("charge");
         
-        JSONObject jsonStart = obj.getJSONObject("start");
+        MathJSONObject jsonStart = new MathJSONObject(obj.getJSONObject("start"));
         start = new Vector(
-                jsonStart.getDouble("x"),
-                jsonStart.getDouble("y"),
-                jsonStart.getDouble("z"),
-                jsonStart.getDouble("phi"),
-                jsonStart.getDouble("theta"));
+                jsonStart.getMath("x"),
+                jsonStart.getMath("y"),
+                jsonStart.getMath("z"),
+                jsonStart.getMath("phi"),
+                jsonStart.getMath("theta"));
         
         originalPlane = new Vector(
-                jsonStart.getDouble("phi"), 
-                jsonStart.getDouble("theta"));
+                jsonStart.getMath("planePhi"), 
+                jsonStart.getMath("planeTheta"));
         
-        bends = obj.getJSONArray("components");        
+        bends = obj.getJSONArray("components");       
     }
-    
-    public Wire (String filepath, Charset encoding) {
-        try {
-            byte[] encoded = Files.readAllBytes(Paths.get(filepath));
-            this(new String(encoded, encoding));
-        } catch (IOException ex) {
-            Logger.getLogger(Wire.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+
     public boolean isComponent(String type) {
         String[] componentTypes = {"straight", "bend"};
         for (String componentType : componentTypes) {
@@ -74,17 +67,17 @@ public class Wire {
         }
         return false;
     }
-    
+
     public List<GridComponent> getAsGridComponents() {        
         List<GridComponent> parts = new ArrayList<>();
         
-        JSONObject lastObj = new JSONObject(); // Needs to be initialized or Netbeans will be sad
+        MathJSONObject lastObj = new MathJSONObject(); // Needs to be initialized or Netbeans will be sad
         Vector currentPlane = originalPlane;
 
         
         for (int i = 0; i < bends.length(); i++) {
             Vector s;
-            JSONObject currentObj = bends.getJSONObject(i);
+            MathJSONObject currentObj = new MathJSONObject(bends.getJSONObject(i));
             
             if (i == 0) {
                 // If component is the first component in the array,
@@ -102,10 +95,10 @@ public class Wire {
                 // If it is a straight part
                 if ("straight".equals(lastObj.getString("type"))) {
                     
-                    double h = lastObj.getDouble("height");
+                    double h = lastObj.getMath("height");
                     
-                    s.phi = lastObj.getDouble("phi");
-                    s.theta = lastObj.getDouble("theta");
+                    s.phi = lastObj.getMath("phi");
+                    s.theta = lastObj.getMath("theta");
                     s.x = h * Math.sin(s.phi) * Math.cos(s.theta) + lastGC.pos.x;
                     s.z = h * Math.sin(s.phi) * Math.sin(s.theta) + lastGC.pos.y;
                     
@@ -115,8 +108,8 @@ public class Wire {
                 // If it is a curved part
                 } else if ("bend".equals(lastObj.getString("type"))) {
                     
-                    double initialPhi = lastObj.getDouble("phi2") + 
-                            lastObj.getDouble("phi3");
+                    double initialPhi = lastObj.getMath("phi2") + 
+                            lastObj.getMath("phi3");
                     
                     double prelimX = lastGC.pos.x * Math.cos(initialPhi) - 
                             lastGC.pos.z * Math.sin(initialPhi);
@@ -162,12 +155,12 @@ public class Wire {
             // we need to again treat torus segments and cylinders differently
             
             if ("straight".equals(currentObj.getString("type"))) {
-                Cylinder c = new Cylinder(s, wireradius, currentObj.getDouble("height"), charge);
+                Cylinder c = new Cylinder(s, wireradius, currentObj.getMath("height"), charge);
                 parts.add(c);
             } else if ("bend".equals(currentObj.getString("type"))) {
                 // First we must convert our spherical coordinates to get
                 // a point, and then take its cross product with the current plane
-                double r1 = currentObj.getDouble("radius");
+                double r1 = currentObj.getMath("radius");
                 Point sRay = s.convertRayToCartesian(r1);
                 Point pRay = currentPlane.convertRayToCartesian(r1);
                 Point tRay = sRay.crossProduct(pRay);
@@ -181,10 +174,10 @@ public class Wire {
                 
                 // Third argument should probably not be s.phi
                 TorusSegment tS = new TorusSegment(tP, r1, s.phi,
-                        currentObj.getDouble("angle"), wireradius, charge);
+                        currentObj.getMath("angle"), wireradius, charge);
                 parts.add(tS);
             } else if ("planeredef".equals(currentObj.getString("type"))) {
-                currentPlane = new Vector(currentObj.getDouble("phi"), currentObj.getDouble("theta"));
+                currentPlane = new Vector(currentObj.getMath("phi"), currentObj.getMath("theta"));
             }
             
             // Plane redefs should not be referenced when calculating points
