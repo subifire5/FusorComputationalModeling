@@ -44,6 +44,9 @@ import java.lang.Integer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -335,6 +338,18 @@ public class FusorVis extends Application {
                     case A: // Toggle axis visibility
                         toggleXform(axisGroup);
                         break;
+                    case P: // Seed points
+                        // Insert code for setting up particles here
+                        
+                        // Insert code for updating positions in this runnable
+                        Runnable r = new Runnable() {
+                            public void run() {
+                                // Code for updating positions goes here
+                            }
+                        };
+                        
+                        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+                        executor.scheduleAtFixedRate(r, 0, 50, TimeUnit.MILLISECONDS);
                 }
             }
         });
@@ -379,7 +394,7 @@ public class FusorVis extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         int pointCount = 1000;
-        int optimizations = 1000;
+        int optimizations = 50;
         XMLParser p = new XMLParser(xmlFileName + ".xml");
 
         List<GridComponent> parts = p.parseObjects();
