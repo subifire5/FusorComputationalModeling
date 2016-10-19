@@ -380,8 +380,8 @@ public class FusorVis extends Application {
     }
     @Override
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 100;
-        int optimizations = 100;
+        int pointCount = 6;
+        int optimizations = 4;
         
         //XMLParser p = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
