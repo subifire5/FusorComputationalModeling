@@ -54,5 +54,11 @@ public class StatsGen {
         vAcc.setZAcceleration(getVforce(points, voltage, q, r).getZForce()/mass);
         return vAcc;
     }
-    
+    public static VectorVelocity getVelocity(Point[] points, double voltage, double q, Point r, double mass, double t, VectorVelocity initialV){
+        VectorVelocity vVel = new VectorVelocity();
+        vVel.setXVelocity(initialV.x - (getAcceleration(points, voltage, q, r, mass).getXAcceleration()*t));
+        vVel.setYVelocity(initialV.y - (getAcceleration(points, voltage, q, r, mass).getYAcceleration()*t));
+        vVel.setZVelocity(initialV.z - (getAcceleration(points, voltage, q, r, mass).getZAcceleration()*t));
+        return vVel;
+    }
 }

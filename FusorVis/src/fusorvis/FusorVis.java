@@ -73,7 +73,7 @@ public class FusorVis extends Application {
     
     Text consoleDump = new Text();
     
-    String xmlFileName = "TwoRings";
+    String xmlFileName = "SimpleXML";
     
     Point[] points;
     
