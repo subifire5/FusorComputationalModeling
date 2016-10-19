@@ -44,6 +44,7 @@ import java.lang.Integer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -388,8 +389,13 @@ public class FusorVis extends Application {
         
         String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
-        Wire w = new Wire(new String(encoded, Charset.defaultCharset()));
-        List<GridComponent> parts = w.getAsGridComponents();
+        List<GridComponent> parts = new ArrayList<>();
+        JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
+        for (int i = 0; i < wireArr.length(); i++) {
+            JSONObject wireObj = wireArr.getJSONObject(i);
+            Wire w = new Wire(wireObj.toString());
+            parts.addAll(w.getAsGridComponents());
+        }
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
 

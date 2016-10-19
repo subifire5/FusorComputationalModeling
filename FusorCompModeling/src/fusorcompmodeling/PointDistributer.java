@@ -23,7 +23,6 @@ public class PointDistributer {
         int reps = 0;
         while (reps < endCon) {
             int changesMade = balanceCharges(points, parts);
-            System.out.println("Shook up the points, " + changesMade + " changes made");
             reps++;
         }
         return points;
@@ -60,7 +59,6 @@ public class PointDistributer {
     public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
         double surfaceArea = 0;
         for (int i = 0; i < parts.size(); i++) {
-            //System.out.println(parts.get(i).toString());
             if (parts.get(i).charge == charge) {
                 surfaceArea += parts.get(i).getSurfaceArea();
             }
@@ -84,26 +82,14 @@ public class PointDistributer {
 
     public static double distanceCalculator(Point a, Point b) {
         //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
-        System.out.println("Points: " + a.toString() + ", " + b.toString());
         double distance = Math.sqrt(((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)) + ((a.z - b.z) * (a.z - b.z)));
         return distance;
     }
 
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
-        System.out.println(parts.size());
-        System.out.print("[");
-        for (int i = 0; i < parts.size(); i++) {
-            System.out.print(parts.get(i).charge);
-        }
-        System.out.println("]");
         
-        for (int i = 0; i < points.length; i++) {
-            
-            System.out.println(points[i].charge);
-            
-            System.out.println(getReachableShapes(points[i].charge, parts).toString());
-            
+        for (int i = 0; i < points.length; i++) {            
             Point newPoint = getRandomPoint(getReachableShapes(points[i].charge, parts), points[i].charge);
             double currentEP = electricPotential(points, points[i]);
 
@@ -127,7 +113,6 @@ public class PointDistributer {
     }
 
     public static List<GridComponent> getReachableShapes(int charge, List<GridComponent> parts) {
-        System.out.println("GETTING HERE!!!!!!!!!!!!!!!!!");
         List<GridComponent> ReachableShapes = new ArrayList<>();
         int i = 0;
         while (i < parts.size()) {
@@ -136,7 +121,6 @@ public class PointDistributer {
             }
             i++;
         }
-        System.out.println(ReachableShapes.toString());
         return ReachableShapes;
     }
 }
