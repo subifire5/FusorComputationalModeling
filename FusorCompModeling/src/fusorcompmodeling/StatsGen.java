@@ -32,16 +32,10 @@ public class StatsGen {
         DeltaPhi = posAvgPot - negAvgPot;
         return DeltaPhi;
     }
-    public static double getkQ(Point[] points, double voltage){
-        double DeltaPhi = getDeltaPhi(avgPotential(points,1),avgPotential(points,1));
-        double kQ;
-        kQ = (voltage/DeltaPhi)*0.01;//m/cm
-        
-        return kQ;
-    }
+
     public static VectorForce getVforce(Point[] points, double voltage, double q, Point r){
         VectorForce vForce = new VectorForce();
-        double kQ = getkQ(points, voltage);
+        double kQ = EField.getkQ(voltage);
         vForce.setXForce((q*kQ)/r.x);
         vForce.setYForce((q*kQ)/r.y);
         vForce.setZForce((q*kQ)/r.z);
