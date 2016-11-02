@@ -110,11 +110,9 @@ public class Wire {
                     double initialPhi = ((TorusSegment)(lastGC)).phi2 + 
                             ((TorusSegment)(lastGC)).phi3;
                     
-                    double prelimX = lastGC.pos.x * Math.cos(initialPhi) - 
-                            lastGC.pos.z * Math.sin(initialPhi);
+                    double prelimX = lastGC.pos.x + Math.cos(initialPhi) * lastGC.radius;
                     
-                    double prelimZ = lastGC.pos.z * Math.cos(initialPhi) + 
-                            lastGC.pos.x * Math.sin(initialPhi);
+                    double prelimZ = lastGC.pos.z + Math.sin(initialPhi) * lastGC.radius;
                     
                     Point rotatablePoint = new Point(prelimX, lastGC.pos.y, prelimZ);
                     
