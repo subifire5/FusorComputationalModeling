@@ -3,7 +3,9 @@ package fusorvis;
 
 import fusorcompmodeling.*;
 import java.awt.Button;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -80,6 +82,8 @@ public class FusorVis extends Application {
     String xmlFileName = "SimpleXML";
     
     Point[] points;
+    
+    List<Point> markedPoints;
     
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -339,6 +343,33 @@ public class FusorVis extends Application {
                     case A: // Toggle axis visibility
                         toggleXform(axisGroup);
                         break;
+                    case R:
+                        if (event.isControlDown()) {
+                            try {
+                                final Group root = new Group();
+                                final Xform chargeGroup = new Xform();
+                                final Xform componentGroup = new Xform();
+                                final Xform axisGroup = new Xform();
+                                final Xform world = new Xform();
+                                final PerspectiveCamera camera = new PerspectiveCamera(true);
+                                final Xform cameraXform = new Xform();
+                                final Xform cameraXform2 = new Xform();
+                                final Xform cameraXform3 = new Xform();
+
+                                StackPane textFieldRoot = new StackPane();
+                                Stage textFieldStage = new Stage();
+
+                                HashMap<String, String> output = new HashMap<>();
+
+                                Text consoleDump = new Text();
+
+                                String xmlFileName = "SimpleXML";
+                                start(stage);
+                                
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                 }
             }
         });
@@ -381,8 +412,8 @@ public class FusorVis extends Application {
     }
     @Override
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 6;
-        int optimizations = 4;
+        int pointCount = 2000;
+        int optimizations = 0;
         
         //XMLParser p = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
@@ -398,7 +429,8 @@ public class FusorVis extends Application {
         }
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
-
+        markedPoints = new ArrayList<>();
+        
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
         

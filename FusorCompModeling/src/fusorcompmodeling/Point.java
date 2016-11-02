@@ -147,4 +147,14 @@ public class Point {
                 ", " + Double.toString(y) + ", " + 
                 Double.toString(z) + "]";
     }
+
+    void divideByLength(double len) {
+        x /= len;
+        y /= len;
+        z /= len;
+    }
+    
+    double getLength() {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+    }
 }

@@ -73,7 +73,7 @@ public class Wire {
         
         MathJSONObject lastObj = new MathJSONObject(); // Needs to be initialized or Netbeans will be sad
         Vector currentPlane = originalPlane;
-
+        System.out.println(originalPlane.toString());
         
         for (int i = 0; i < bends.length(); i++) {
             Vector s;
@@ -97,19 +97,18 @@ public class Wire {
                     
                     double h = lastObj.getMath("height");
                     
-                    s.phi = lastObj.getMath("phi");
-                    s.theta = lastObj.getMath("theta");
+                    s.phi = lastGC.pos.phi;
+                    s.theta = lastGC.pos.theta;
                     s.x = h * Math.sin(s.phi) * Math.cos(s.theta) + lastGC.pos.x;
-                    s.z = h * Math.sin(s.phi) * Math.sin(s.theta) + lastGC.pos.y;
+                    s.z = h * Math.sin(s.phi) * Math.sin(s.theta) + lastGC.pos.z;
                     
                     // Y is up/down
-                    s.y = h * Math.cos(s.phi) + lastGC.pos.z;
+                    s.y = h * Math.cos(s.phi) + lastGC.pos.y;
                     
                 // If it is a curved part
                 } else if ("bend".equals(lastObj.getString("type"))) {
-                    
-                    double initialPhi = lastObj.getMath("phi2") + 
-                            lastObj.getMath("phi3");
+                    double initialPhi = ((TorusSegment)(lastGC)).phi2 + 
+                            ((TorusSegment)(lastGC)).phi3;
                     
                     double prelimX = lastGC.pos.x * Math.cos(initialPhi) - 
                             lastGC.pos.z * Math.sin(initialPhi);
@@ -141,14 +140,16 @@ public class Wire {
                     // Understand more things here
                     
                     double rayTheta = Math.atan2(
-                            finalRayPoint.x - initialRayPoint.x, 
-                            finalRayPoint.z - initialRayPoint.z);
+                            finalRayPoint.z - initialRayPoint.z, 
+                            finalRayPoint.x - initialRayPoint.x);
                     
                     double rayPhi = Math.asin(
                             (finalRayPoint.x - initialRayPoint.x)/rayTheta);
                     
                     // We're done now, stick all our stuff into one ray
                     s = new Vector(finalPoint, rayPhi, rayTheta);
+                    
+                    
                 }
             }
             // Now that we have the ray our part must stem from,
@@ -157,6 +158,7 @@ public class Wire {
             if ("straight".equals(currentObj.getString("type"))) {
                 Cylinder c = new Cylinder(s, wireradius, currentObj.getMath("height"), charge);
                 parts.add(c);
+                lastObj = currentObj;
             } else if ("bend".equals(currentObj.getString("type"))) {
                 // First we must convert our spherical coordinates to get
                 // a point, and then take its cross product with the current plane
@@ -164,6 +166,7 @@ public class Wire {
                 Point sRay = s.convertRayToCartesian(r1);
                 Point pRay = currentPlane.convertRayToCartesian(r1);
                 Point tRay = sRay.crossProduct(pRay);
+                tRay.divideByLength(sRay.getLength());
                 
                 Vector tP = new Vector(
                         tRay.x + s.x,
@@ -176,13 +179,13 @@ public class Wire {
                 TorusSegment tS = new TorusSegment(tP, r1, s.phi,
                         currentObj.getMath("angle"), wireradius, charge);
                 parts.add(tS);
+                lastObj = currentObj;
             } else if ("planeredef".equals(currentObj.getString("type"))) {
                 currentPlane = new Vector(currentObj.getMath("phi"), currentObj.getMath("theta"));
             }
             
             // Plane redefs should not be referenced when calculating points
             if (!"planeredef".equals(currentObj.getString("type"))) {
-                lastObj = currentObj;
             }
         }
         

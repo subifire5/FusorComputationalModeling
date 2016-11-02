@@ -52,4 +52,7 @@ public class Vector {
         double z = radius * Math.cos(phi);
         return new Point(x, y, z);
     }
+    public String toString() {
+        return "[" + this.x + ", " + this.y + ", " + this.z + ", " + this.phi + ", " + this.theta + "]";
+    }
 }
