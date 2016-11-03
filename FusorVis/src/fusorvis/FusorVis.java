@@ -78,6 +78,10 @@ public class FusorVis extends Application {
     
     String xmlFileName = "SimpleXML";
     
+    double timeStepMCS = 1;
+    
+    Sphere deutron = new Sphere(1.0);
+    
     Point[] points;
     
     private static final double CAMERA_INITIAL_DISTANCE = -450;
@@ -341,10 +345,22 @@ public class FusorVis extends Application {
                     case P: // Seed points
                         // Insert code for setting up particles here
                         
+                        final PhongMaterial deutronMaterial = new PhongMaterial();
+                        deutronMaterial.setDiffuseColor(Color.CORAL);
+                        deutronMaterial.setSpecularColor(Color.PURPLE);
+                        
+                        deutron.setMaterial(deutronMaterial);
+                        deutron.setTranslateX(50);
+                        deutron.setTranslateY(50);
+                        deutron.setTranslateZ(50);
+
+                        world.getChildren().add(deutron);
                         // Insert code for updating positions in this runnable
                         Runnable r = new Runnable() {
                             public void run() {
                                 // Code for updating positions goes here
+                                Point p = new Point(deutron.getTranslateX(), deutron.getTranslateY(), deutron.getTranslateZ());
+                                //Vector v = StatsGen.getVelocity(points, 0, -20000.0, 0, p, ONE_FRAME);
                             }
                         };
                         
