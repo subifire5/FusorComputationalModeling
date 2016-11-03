@@ -13,14 +13,36 @@ import static fusorcompmodeling.StatsGen.getDeltaPhi;
  * @author sfreisem-kirov
  */
 public class EField {
+    public static double kQ;
     
-    public static double getkQ(double voltage, Point[] points) {
+    
+    public static void setkQ(double voltageAnnode, double voltageCathode, Point[] points) {
         double DeltaPhi = getDeltaPhi(avgPotential(points, 1), avgPotential(points, 1));
-        double kQ;
-        kQ = (voltage / DeltaPhi) * 0.01;//m/cm  
-        return kQ;
+        double KQ;
+        double DeltaVoltage = voltageAnnode - voltageCathode;
+        KQ = (DeltaVoltage / DeltaPhi) * 0.01;//m/cm  
+        kQ=KQ;
     }
-    public static Vector EFieldSum(double voltage, Point[] points, Vector r){
-        return r;
+    public static Vector EFieldSum(Point[] points, Point s){
+        Vector e = new Vector();
+        Vector eSum = new Vector();
+        eSum.x= 0;
+        eSum.y=0;
+        eSum.y=0;
+        
+                
+        Vector r;
+        double rLen;
+        for(int i = 0; i < points.length; i++){
+            r = Vector.Difference(s,points[i]);
+            rLen= Vector.getLength(s, points[i]);
+            e.x = r.x/(rLen*rLen*rLen);
+            e.y = r.y/(rLen*rLen*rLen);
+            e.z = r.z/(rLen*rLen*rLen);
+            eSum.x+= e.x;
+            eSum.y+=e.y;
+            eSum.z+=e.z;
+        }
+        return eSum;
     }
 }

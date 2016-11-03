@@ -33,26 +33,19 @@ public class StatsGen {
         return DeltaPhi;
     }
 
-    public static VectorForce getVforce(Point[] points, double voltage, double q, Point r){
-        VectorForce vForce = new VectorForce();
-        double kQ = EField.getkQ(voltage);
-        vForce.setXForce((q*kQ)/r.x);
-        vForce.setYForce((q*kQ)/r.y);
-        vForce.setZForce((q*kQ)/r.z);
-        return vForce;
-    }
-    public static VectorAcceleration getAcceleration(Point[] points, double voltage, double q, Point r, double mass){
+    
+    public static VectorAcceleration getAcceleration(Point[] points, Point r, double mass){
         VectorAcceleration vAcc = new VectorAcceleration();
-        vAcc.setXAcceleration(getVforce(points, voltage, q, r).getXForce()/mass);
-        vAcc.setYAcceleration(getVforce(points, voltage, q, r).getYForce()/mass);
-        vAcc.setZAcceleration(getVforce(points, voltage, q, r).getZForce()/mass);
+        vAcc.setXAcceleration(EField.EFieldSum(points, r).x/mass);
+        vAcc.setYAcceleration(EField.EFieldSum(points, r).y/mass);
+        vAcc.setZAcceleration(EField.EFieldSum(points, r).z/mass);
         return vAcc;
     }
-    public static VectorVelocity getVelocity(Point[] points, double voltage, double q, Point r, double mass, double t, VectorVelocity initialV){
+    public static VectorVelocity getVelocity(Point[] points, Point r, double mass, double t, VectorVelocity initialV){
         VectorVelocity vVel = new VectorVelocity();
-        vVel.setXVelocity(initialV.getXVelocity() - (getAcceleration(points, voltage, q, r, mass).getXAcceleration()*t));
-        vVel.setYVelocity(initialV.getYVelocity() - (getAcceleration(points, voltage, q, r, mass).getYAcceleration()*t));
-        vVel.setZVelocity(initialV.getZVelocity() - (getAcceleration(points, voltage, q, r, mass).getZAcceleration()*t));
+        vVel.setXVelocity(initialV.getXVelocity() - (getAcceleration(points, r, mass).getXAcceleration()*t));
+        vVel.setYVelocity(initialV.getYVelocity() - (getAcceleration(points, r, mass).getYAcceleration()*t));
+        vVel.setZVelocity(initialV.getZVelocity() - (getAcceleration(points, r, mass).getZAcceleration()*t));
         return vVel;
     }
 }

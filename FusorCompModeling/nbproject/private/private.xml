@@ -13,17 +13,19 @@
             <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Vector.java</file>
         </group>
         <group name="Ephemera">
-            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/XMLParser.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Point.java</file>
-            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/ComponentType.java</file>
-            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/VectorForce.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/FusorCompModeling.java</file>
-            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/StatsGen.java</file>
+            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/VectorVelocity.java</file>
+            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/XMLParser.java</file>
+            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/ComponentType.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Cylinder.java</file>
+            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/StatsGen.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Vector.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Acceleration.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/GridComponent.java</file>
+            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/Atom.java</file>
             <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/PointDistributer.java</file>
+            <file>file:/C:/Users/sfreisem-kirov/Documents/GitHub/FusorComputationalModeling/FusorCompModeling/src/fusorcompmodeling/EField.java</file>
         </group>
     </open-files>
 </project-private>
