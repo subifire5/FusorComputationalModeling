@@ -411,6 +411,13 @@ public class FusorVis extends Application {
 
         int pointCount = 1000;
         int optimizations = 50;
+        double annodeVoltage = 2000;
+        double cathodeVoltage = 2000;
+        Point q = new Point();
+        q.x = 1;
+        q.y = 1;
+        q.z = 1;
+        Vector efield = new Vector();
         XMLParser p = new XMLParser(xmlFileName + ".xml");
 
         List<GridComponent> parts = p.parseObjects();
@@ -420,11 +427,17 @@ public class FusorVis extends Application {
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
         
+        EField.setkQ(annodeVoltage, cathodeVoltage, points);
+        EField.EFieldSum(points, q);
+        
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
         output.put("Optimizations", String.valueOf(optimizations));
         output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+        output.put("Sample point x e-field", String.valueOf(efield.x));
+        output.put("Sample point y e-field", String.valueOf(efield.y));
+        output.put("Sample point z e-field", String.valueOf(efield.z));
 
         buildCamera();
         buildElectrons(points);
