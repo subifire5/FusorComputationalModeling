@@ -145,7 +145,7 @@ public class Wire {
                             (finalRayPoint.x - initialRayPoint.x)/rayTheta);
                     
                     // We're done now, stick all our stuff into one ray
-                    s = new Vector(finalPoint, rayPhi, rayTheta);
+                    s = new Vector(finalPoint, 0, -rayTheta);
                     
                     
                 }

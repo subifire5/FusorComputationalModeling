@@ -437,7 +437,7 @@ public class FusorVis extends Application {
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
         output.put("Optimizations", String.valueOf(optimizations));
-        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential));
+        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential*1/1));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
 
         buildCamera();
