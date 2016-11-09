@@ -4,6 +4,7 @@ package fusorvis;
 import fusorcompmodeling.*;
 import java.awt.Button;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -41,6 +42,9 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import java.lang.Integer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -50,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -409,13 +414,26 @@ public class FusorVis extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        int pointCount = 1000;
-        int optimizations = 50;
+        int pointCount = 100;
+        int optimizations = 5;
         XMLParser p = new XMLParser(xmlFileName + ".xml");
 
         List<GridComponent> parts = p.parseObjects();
         
-        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        try {
+            String path = xmlFileName + ".json";
+            byte[] encoded = Files.readAllBytes(Paths.get(path));
+            JSONArray jsonPoints = new JSONArray(new String(encoded, Charset.defaultCharset()));
+            points = new Point[jsonPoints.length()];
+            for (int i = 0; i < jsonPoints.length(); i++) {
+                JSONObject o = jsonPoints.getJSONObject(i);
+                points[i] = new Point(o.getDouble("x"),o.getDouble("y"),o.getDouble("z"), o.getInt("charge"));
+            }
+            System.out.println("Prior file found! Imported it.");
+        } catch (IOException e) {
+            System.out.println("No prior file found! Generating a new one...");
+            points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        }
 
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
