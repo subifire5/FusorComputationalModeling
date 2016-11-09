@@ -13,6 +13,9 @@ import static fusorcompmodeling.StatsGen.getDeltaPhi;
  * @author sfreisem-kirov
  */
 public class EField {
+    public EField() {
+        
+    }
     public static double kQ;
     
     
