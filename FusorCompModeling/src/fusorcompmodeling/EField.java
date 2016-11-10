@@ -31,7 +31,7 @@ public class EField {
         Vector eSum = new Vector();
         eSum.x= 0;
         eSum.y=0;
-        eSum.y=0;
+        eSum.z=0;
         
                 
         Vector r;
