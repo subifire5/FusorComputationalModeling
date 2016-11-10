@@ -411,12 +411,12 @@ public class FusorVis extends Application {
 
         int pointCount = 1000;
         int optimizations = 50;
-        double annodeVoltage = 2000;
-        double cathodeVoltage = 2000;
+        double annodeVoltage = 0;
+        double cathodeVoltage = 0;
         Point q = new Point();
-        q.x = 1;
-        q.y = 1;
-        q.z = 1;
+        q.x = 0;
+        q.y = 0;
+        q.z = 4;
         Vector efield = new Vector();
         XMLParser p = new XMLParser(xmlFileName + ".xml");
 
@@ -428,7 +428,7 @@ public class FusorVis extends Application {
         double negAvgPotential = StatsGen.avgPotential(points, -1);
         
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
-        EField.EFieldSum(points, q);
+        efield = EField.EFieldSum(points, q);
         
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
