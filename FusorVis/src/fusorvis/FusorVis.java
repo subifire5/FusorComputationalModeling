@@ -2,10 +2,7 @@
 package fusorvis;
 
 import fusorcompmodeling.*;
-import java.awt.Button;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -23,17 +20,11 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import static javafx.scene.input.KeyCode.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.Reflection;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Box;
 import javafx.scene.text.Font;
@@ -42,7 +33,6 @@ import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
-import java.lang.Integer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -66,6 +56,7 @@ public class FusorVis extends Application {
     final Xform chargeGroup = new Xform();
     final Xform componentGroup = new Xform();
     final Xform axisGroup = new Xform();
+    final Xform referenceGroup = new Xform();
     final Xform world = new Xform();
     final PerspectiveCamera camera = new PerspectiveCamera(true);
     final Xform cameraXform = new Xform();
@@ -190,6 +181,22 @@ public class FusorVis extends Application {
 
         axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis);
         world.getChildren().addAll(axisGroup);
+    }
+
+    private void buildReferencePoints(Point[] referencePoints) {
+        
+        for (Point p : referencePoints) {
+            final PhongMaterial m = new PhongMaterial();
+            m.setDiffuseColor(Color.BLACK);
+            m.setDiffuseColor(Color.GREY);
+            final Sphere s = new Sphere(1.0);
+            s.setTranslateX(p.x);
+            s.setTranslateY(p.y);
+            s.setTranslateZ(p.z);
+            
+            referenceGroup.getChildren().add(s);
+        }
+        world.getChildren().addAll(referenceGroup);
     }
     
     private void buildCamera() {
@@ -411,6 +418,7 @@ public class FusorVis extends Application {
         consoleDump.setText(textOutput);
     }
     @Override
+    @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
         int pointCount = 2000;
         int optimizations = 0;
@@ -439,11 +447,14 @@ public class FusorVis extends Application {
         output.put("Optimizations", String.valueOf(optimizations));
         output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential*1/1));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
-
+        
+        Point[] referencePoints = {new Point(5, 10, 5), new Point(5, 15, 0)};
+        
         buildCamera();
         buildElectrons(points);
         buildWireComponents(parts);
         buildAxes();
+        buildReferencePoints(referencePoints);
         buildScene();
         buildTextWindow(primaryStage);
         buildStage(primaryStage);

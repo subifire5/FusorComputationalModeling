@@ -129,9 +129,9 @@ public class Wire {
                             Math.cos(initialPhi) + finalPoint.x, 
                             finalPoint.y,
                             Math.sin(initialPhi) + finalPoint.z);
-                    
+                    System.out.println("Initial point: " + rotatablePoint.toString());
                     Point finalRayPoint = initialRayPoint.rotateAroundVector(lastGC.pos);
-                    
+                    System.out.println("Final ray point: " + finalPoint.toString());
                     // If stuff is broke, try changing the order we subtract
                     // things here
                     
@@ -146,7 +146,7 @@ public class Wire {
                     
                     // We're done now, stick all our stuff into one ray
                     s = new Vector(finalPoint, 0, -rayTheta);
-                    
+                    System.out.println(s.toString());
                     
                 }
             }
