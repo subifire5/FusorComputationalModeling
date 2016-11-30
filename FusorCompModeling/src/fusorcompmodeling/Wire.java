@@ -5,17 +5,9 @@
  */
 package fusorcompmodeling;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import matheval.MathEval;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  *
@@ -99,11 +91,12 @@ public class Wire {
                     
                     s.phi = lastGC.pos.phi;
                     s.theta = lastGC.pos.theta;
-                    s.x = h * Math.sin(s.phi) * Math.cos(s.theta) + lastGC.pos.x;
-                    s.z = h * Math.sin(s.phi) * Math.sin(s.theta) + lastGC.pos.z;
+                    System.out.println("Rotation: " + s.phi + ", " + s.theta);
+                    s.x = h * Math.sin(s.theta) * Math.cos(s.phi) + lastGC.pos.x;
+                    s.z = h * Math.sin(s.theta) * Math.sin(s.phi) + lastGC.pos.z;
                     
                     // Y is up/down
-                    s.y = h * Math.cos(s.phi) + lastGC.pos.y;
+                    s.y = h * Math.cos(s.theta) + lastGC.pos.y;
                     
                 // If it is a curved part
                 } else if ("bend".equals(lastObj.getString("type"))) {
