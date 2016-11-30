@@ -8,9 +8,9 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="FusorVis.jar" size="17725" download="eager" />
-    <jar href="lib\FusorCompModeling.jar" size="30414" download="eager" />
-    <jar href="lib\MathEval.jar" size="25301" download="eager" />
+    <jar href="FusorVis.jar" size="18300" download="eager" />
+    <jar href="lib\FusorCompModeling.jar" size="32540" download="eager" />
+    <jar href="lib\MathEval.jar" size="25306" download="eager" />
     <jar href="lib\simple-json.jar" size="65139" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="FusorVis" >

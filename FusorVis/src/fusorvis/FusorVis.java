@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -479,6 +480,20 @@ public class FusorVis extends Application {
      * Java main for when running without JavaFX launcher
      */
     public static void main(String[] args) {
+        
+        Point p1 = new Point(1, 0, 0, 0, 0);
+        Point p2 = new Point(0, 1, 0, 0, 0);
+        Point p3 = new Point(0, 0, 1, 0, 0);
+        Point[] points = new Point[3];
+        points[0] = p1;
+        points[1] = p2;
+        points[2] = p3;
+        
+        Triangle t = new Triangle(points, 0);
+        Random rand = new Random();
+        System.out.println(t.getRandomPoint(rand));
+        System.out.println(t.getSurfaceArea());
+        
         launch(args);
     }
 }
