@@ -448,7 +448,7 @@ public class FusorVis extends Application {
         output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential*1/1));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
         
-        Point[] referencePoints = {new Point(15, 15, 0), new Point(5, 15, 0)};
+        Point[] referencePoints = {/*new Point(15, 15, 0), new Point(5, 15, 0)*/};
         
         buildCamera();
         buildElectrons(points);

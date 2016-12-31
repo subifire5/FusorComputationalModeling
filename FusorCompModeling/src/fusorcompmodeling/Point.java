@@ -78,45 +78,6 @@ public class Point {
         
         return nP;
     }
-    
-/*    public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
-        @Override
-        public int compare(Point o1, Point o2) {
-            if (o1.x < o2.x) {
-                return -1;
-            }
-            if (o1.x > o2.x) {
-                return 1;
-            }
-            return 0;
-        }
-    };
-
-    public static final Comparator<Point> Y_COMPARATOR = new Comparator<Point>() {
-        @Override
-        public int compare(Point o1, Point o2) {
-            if (o1.y < o2.y) {
-                return -1;
-            }
-            if (o1.y > o2.y) {
-                return 1;
-            }
-            return 0;
-        }
-    };
-
-    public static final Comparator<Point> Z_COMPARATOR = new Comparator<Point>() {
-        @Override
-        public int compare(Point o1, Point o2) {
-            if (o1.z < o2.z) {
-                return -1;
-            }
-            if (o1.z > o2.z) {
-                return 1;
-            }
-            return 0;
-        }
-    };*/
 
     public int compareTo(Point b, int axis) {
         if (axis == 0) {

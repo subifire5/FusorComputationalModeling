@@ -8,6 +8,7 @@ package fusorcompmodeling;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
+import Jama.*;
 
 /**
  *
@@ -139,7 +140,6 @@ public class Wire {
                     
                     // We're done now, stick all our stuff into one ray
                     s = new Vector(finalPoint, 0, -rayTheta);
-                    System.out.println(s.toString());
                     
                 }
             }
@@ -151,24 +151,79 @@ public class Wire {
                 parts.add(c);
                 lastObj = currentObj;
             } else if ("bend".equals(currentObj.getString("type"))) {
-                // First we must convert our spherical coordinates to get
-                // a point, and then take its cross product with the current plane
+                
+                // R1 could be anything, but we pick this to make our life down
+                // thre road easier
                 double r1 = currentObj.getMath("radius");
-                Point sRay = s.convertRayToCartesian(r1);
+                
+                /* To find the center of our torus, we need to take the cross
+                product of the starting vector and a vector perpendicular to the
+                current plane, as if these vectors were positionless rays. This
+                will give us a vector that is perpendicular to these two vectors,
+                */
+                
+                // Cross products can only be taken of vectors in cartesian form
+                Point sRay = s.convertRayToCartesian(r1); 
                 Point pRay = currentPlane.convertRayToCartesian(r1);
+                
                 Point tRay = sRay.crossProduct(pRay);
-                tRay.divideByLength(sRay.getLength());
+                
+                /*Now we need to set the length of this ray to the radius of
+                the torus (the inner radius, not the width (i.e. r1, not r2)).
+                Thhere are plenty of ways to do this, but we're going to convert
+                the vector into spherical form, change its radius, and then
+                convert back.
+                
+                While it may seem at first glance that we can just use
+                tRay, since the lengths of sRay and pRay are both what we
+                need the length of tRay to be, this is not the case. When you
+                take the cross product of two vectors with lengths a and b, 
+                the cross product has a length of ab. This means that we need
+                to divide tRay by the radius of the current torus.
+                */
+                
+                tRay.divideByLength(r1);
+
+                /* I used to believe that a lot of complicated things had to
+                be done in order to determine the direction the torus segment
+                was facing, but this is completely false. Because the torus
+                needs to lie inside the current plane, the vector that runs
+                through the torus is the same as the vector that runs through
+                the current plane. Therefore, we can just use the current plane
+                as our torus's direction. Simple!
+                
+                */
+                
+                                
+                /* TODO: REMOVE THIS BLOCK COMMENT ONCE THIS SECTION WORKS
+                
+                
+                Point cPC = currentPlane.convertRayToCartesian(1);
+                double[][] cPArr = {{cPC.x}, {cPC.y}, {cPC.z}}; // Maybe change order?
+                Matrix cPMatrix = new Matrix(cPArr);
+                
+                Vector direction = s;
+                direction.rotateAroundVector(currentObj.getMath("angle"), cPMatrix);*/
+                
+                /* Now, we must define how much "torus" we want - it is a torus
+                segment, after all. Unlike the previous two steps, this one will
+                be reasonably complicated. We must first limit the number of
+                dimensions to two, which we can do by making the current plane
+                our 2D plane. 
+                */
+                
+                /* The feature described above is not yet implemented, and needs to be*/
                 
                 Vector tP = new Vector(
                         tRay.x + s.x,
                         tRay.y + s.y,
                         tRay.z + s.z,
-                        currentPlane.phi, // Probably wrong
-                        currentPlane.theta); // Also fix here
+                        currentPlane.phi,
+                        currentPlane.theta);
                 
                 // Third argument should probably not be s.phi
-                TorusSegment tS = new TorusSegment(tP, r1, s.phi,
-                        currentObj.getMath("angle"), wireradius, charge);
+                TorusSegment tS = new TorusSegment(tP, r1, 0,
+                        Math.PI*2, wireradius, charge);
                 parts.add(tS);
                 lastObj = currentObj;
             } else if ("planeredef".equals(currentObj.getString("type"))) {
