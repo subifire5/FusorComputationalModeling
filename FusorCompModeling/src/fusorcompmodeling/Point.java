@@ -78,6 +78,21 @@ public class Point {
         
         return nP;
     }
+    
+    public double dotProduct(Point p) {
+        return x*p.x + y*p.y + z*p.z;
+    }
+    
+    public double getVectorLength() {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+    }
+    
+    public double getAngleBetweenVectors(Point p) {
+        double dotProduct = dotProduct(p);
+        double divisor = getVectorLength() * p.getVectorLength();
+        double cosAngle = dotProduct/divisor;
+        return Math.acos(cosAngle);
+    }
 
     public int compareTo(Point b, int axis) {
         if (axis == 0) {

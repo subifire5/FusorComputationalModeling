@@ -423,8 +423,8 @@ public class FusorVis extends Application {
         int pointCount = 2000;
         int optimizations = 0;
         
-        //XMLParser p = new XMLParser(xmlFileName + ".xml");
-        //List<GridComponent> parts = p.parseObjects();
+        /*XMLParser p = new XMLParser(xmlFileName + ".xml");
+        List<GridComponent> parts = p.parseObjects();*/
         
         String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));

@@ -207,10 +207,25 @@ public class Wire {
                 
                 /* Now, we must define how much "torus" we want - it is a torus
                 segment, after all. To do this, we must first calculate the vector
-                direction equivalent to "0" on the torus. 
+                direction equivalent to "0" on the torus. For a torus
+                at the origin, the "0" mark is at the Z axis: i.e. phi: pi/2 and
+                theta: pi/2. If our torus is rotated, all we do is add pi/2 to
+                both phi and theta to get our 0 angle.
                 */
                 
-                /* The feature described above is not yet implemented, and needs to be*/
+                Vector segmentStartSpherical = new Vector(
+                        currentPlane.phi + Math.PI/2,
+                        currentPlane.theta + Math.PI/2);
+                
+                /* Now, we need to calculate the angle between this segment start
+                and the vector "s". We have a function for this, but it requires
+                that both vectors be in cartesian form
+                */
+                
+                // Radius of course does not matter for this conversion
+                Point segmentStart = segmentStartSpherical.convertRayToCartesian(r1); 
+                
+                double angleToStart = sRay.getAngleBetweenVectors(segmentStart);
                 
                 Vector tP = new Vector(
                         tRay.x + s.x,
@@ -220,8 +235,8 @@ public class Wire {
                         currentPlane.theta);
                 
                 // Third argument should probably not be s.phi
-                TorusSegment tS = new TorusSegment(tP, r1, 0,
-                        Math.PI/2, wireradius, charge);
+                TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
+                        Math.PI/2/*Change this*/, wireradius, charge);
                 parts.add(tS);
                 lastObj = currentObj;
             } else if ("planeredef".equals(currentObj.getString("type"))) {
