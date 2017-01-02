@@ -19,16 +19,7 @@
 			{
 				"type": "bend",
 				"radius": "5",
-				"angle": "tau/4"
-			},
-			{
-				"type": "straight",
-				"height": "10"
-			},			
-			{
-				"type": "bend",
-				"radius": "5",
-				"angle": "tau/4"
+				"angle": "-tau/4"
 			},
 			{
 				"type": "straight",

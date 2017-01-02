@@ -84,7 +84,7 @@ public class Wire {
                 GridComponent lastGC = parts.get(parts.size() - 1);
                 
                 s = new Vector();
-                
+               
                 // If it is a straight part
                 if ("straight".equals(lastObj.getString("type"))) {
                     
@@ -206,10 +206,8 @@ public class Wire {
                 direction.rotateAroundVector(currentObj.getMath("angle"), cPMatrix);*/
                 
                 /* Now, we must define how much "torus" we want - it is a torus
-                segment, after all. Unlike the previous two steps, this one will
-                be reasonably complicated. We must first limit the number of
-                dimensions to two, which we can do by making the current plane
-                our 2D plane. 
+                segment, after all. To do this, we must first calculate the vector
+                direction equivalent to "0" on the torus. 
                 */
                 
                 /* The feature described above is not yet implemented, and needs to be*/
@@ -223,7 +221,7 @@ public class Wire {
                 
                 // Third argument should probably not be s.phi
                 TorusSegment tS = new TorusSegment(tP, r1, 0,
-                        Math.PI*2, wireradius, charge);
+                        Math.PI/2, wireradius, charge);
                 parts.add(tS);
                 lastObj = currentObj;
             } else if ("planeredef".equals(currentObj.getString("type"))) {
