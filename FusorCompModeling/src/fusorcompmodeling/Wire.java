@@ -228,18 +228,23 @@ public class Wire {
                 
                 double angleToStart = sRay.getAngleBetweenVectors(segmentStart);
                 
+                // Combine all our data for the position into a single vector
+                // This will be fed right into our torus segment untouched
+                
                 Vector tP = new Vector(
                         tRay.x + s.x,
                         tRay.y + s.y,
                         tRay.z + s.z,
                         currentPlane.phi,
                         currentPlane.theta);
-                
-                // Third argument should probably not be s.phi
+                                
                 TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
                         currentObj.getMath("angle") + angleToStart, wireradius, charge);
+                
                 parts.add(tS);
+                
                 lastObj = currentObj;
+                
             } else if ("planeredef".equals(currentObj.getString("type"))) {
                 currentPlane = new Vector(currentObj.getMath("phi"), currentObj.getMath("theta"));
             }
