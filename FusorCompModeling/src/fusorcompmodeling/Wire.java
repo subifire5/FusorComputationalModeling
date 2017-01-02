@@ -237,7 +237,7 @@ public class Wire {
                 
                 // Third argument should probably not be s.phi
                 TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
-                        Math.PI/2/*Change this*/, wireradius, charge);
+                        currentObj.getMath("angle") + angleToStart, wireradius, charge);
                 parts.add(tS);
                 lastObj = currentObj;
             } else if ("planeredef".equals(currentObj.getString("type"))) {
