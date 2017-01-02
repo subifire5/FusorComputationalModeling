@@ -182,7 +182,8 @@ public class Wire {
                 to divide tRay by the radius of the current torus.
                 */
                 
-                tRay.divideByLength(r1);
+                // We need to include the minus sign to invert the vector
+                tRay.divideByLength(-r1);
 
                 /* I used to believe that a lot of complicated things had to
                 be done in order to determine the direction the torus segment
