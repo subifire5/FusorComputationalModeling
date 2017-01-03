@@ -61,7 +61,7 @@ public class Vector {
     public String toString() {
         return "[" + this.x + ", " + this.y + ", " + this.z + ", " + this.phi + ", " + this.theta + "]";
     }
-    public void rotateAroundVector(double radians, Matrix v) {
+    public Point rotatePoint(double radians, Matrix v) {
         // To perform vector rotations around other vectors, we must create three rotation vectors
         // For this, we can assume that both vectors are at the origin
         
@@ -101,16 +101,19 @@ public class Vector {
         vR.times(Mz.inverse());
         double[][] arr = v.transpose().getArray(); // Change from matrix back to 2D array
         
+        return new Point(arr[0][0], arr[0][1], arr[0][2]);
+    }
+    public Vector rotateVector(double radians, Matrix v) {
+        Point p = rotatePoint(radians, v);
         // Convert back to spherical coords
         // We don't care about the radius, so we don't calculate it
         
-        phi = Math.atan((
-                Math.sqrt(Math.pow(arr[0][0], 2) + Math.pow(arr[0][1], 2)))/
-                arr[0][2]);
+        theta = Math.atan((
+                Math.sqrt(Math.pow(p.x, 2) + Math.pow(p.z, 2)))/
+                p.y);
         
-        theta = Math.atan(arr[0][1]/arr[0][0]);
+        phi = Math.atan(p.z/p.x);
         
-        // We don't return anything, because this function modifies the object
-        // in place
+        return new Vector(phi, theta);
     }
 }

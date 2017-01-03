@@ -101,7 +101,8 @@ public class Wire {
                     
                 // If it is a curved part
                 } else if ("bend".equals(lastObj.getString("type"))) {
-                    double initialPhi = ((TorusSegment)(lastGC)).phi2 + 
+                    
+                    /*double initialPhi = ((TorusSegment)(lastGC)).phi2 + 
                             ((TorusSegment)(lastGC)).phi3;
                     
                     double prelimX = lastGC.pos.x + Math.cos(initialPhi) * lastGC.radius;
@@ -139,7 +140,34 @@ public class Wire {
                             (finalRayPoint.x - initialRayPoint.x)/rayTheta);
                     
                     // We're done now, stick all our stuff into one ray
-                    s = new Vector(finalPoint, 0, -rayTheta);
+                    s = new Vector(finalPoint, 0, -rayTheta);*/
+                    
+                    /* To calculate a starting rotation, we will take the place
+                    where the last torus started and rotate that around a
+                    vector that goes straight through the torus by the number
+                    of degrees the torus is. For our position, we'll do the
+                    same thing with a position instead.
+                    */
+                    Vector rotationAxis = lastGC.pos;
+                                        
+                    Point startDirCart = ((TorusSegment) lastGC).startPos.convertRayToCartesian(1);
+                    double[][] startDirArr = {{startDirCart.x}, {startDirCart.y}, {startDirCart.z}};
+                    // Inversion necessary?
+                    Matrix startDirMatrix = new Matrix(startDirArr);
+ 
+                    Vector start = rotationAxis.rotateVector(lastObj.getMath("angle"), startDirMatrix);
+                    
+                    // Next, we need to rotate the point in startPos around gCOV
+                    Vector startDirection = ((TorusSegment) lastGC).startPos;
+                    double[][] startPosArr = {{startDirection.x}, {startDirection.y}, {startDirection.z}};
+                    
+                    Matrix startPosMatrix = new Matrix(startPosArr);
+                    
+                    Point p = rotationAxis.rotatePoint(lastObj.getMath("angle"), startPosMatrix);
+                    
+                    start.x = p.x;
+                    start.y = p.y;
+                    start.z = p.z;
                     
                 }
             }
@@ -237,9 +265,13 @@ public class Wire {
                         tRay.z + s.z,
                         currentPlane.phi,
                         currentPlane.theta);
-                                
+                
+                // We include the start in our constructor to be saved so that
+                // calculating the next cylinder easier
+                
                 TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
-                        currentObj.getMath("angle") + angleToStart, wireradius, charge);
+                        currentObj.getMath("angle") + angleToStart, 
+                        wireradius, charge, s);
                 
                 parts.add(tS);
                 
