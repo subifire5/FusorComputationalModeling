@@ -28,7 +28,7 @@ public class TorusSegment extends GridComponent {
     
     @Override
     public double getSurfaceArea() {
-        return (4 * Math.pow(Math.PI, 2) * radius * radius2) * (phi3/Math.PI*2);
+        return (4 * Math.pow(Math.PI, 2) * radius * radius2) * (Math.abs(phi3)/Math.PI*2);
     }
     
     @Override
