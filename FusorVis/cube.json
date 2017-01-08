@@ -14,21 +14,21 @@
 		"components": [
 			{
 				"type": "straight",
-				"height": "10"
+				"height": "20"
 			},
 			{
 				"type": "bend",
-				"radius": "5",
+				"radius": "1",
 				"angle": "tau/4"
 			},
 			{
 				"type": "straight",
-				"height": "10"
+				"height": "4"
 			},
 			{
 				"type": "bend",
 				"radius": "5",
-				"angle": "tau/4"
+				"angle": "-tau/4"
 			},
 			{
 				"type": "straight",
@@ -50,8 +50,9 @@
 		},
 		"components": [
 			{
-				"type": "straight",
-				"height": "1",
+				"type": "bend",
+				"radius": "40",
+				"angle": "tau",
 			}
 		]
 	}

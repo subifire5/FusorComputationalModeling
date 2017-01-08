@@ -109,7 +109,7 @@ public class Wire {
                     double prelimZ = lastGC.pos.z + Math.sin(initialPhi) * lastGC.radius;
                     
                     Point rotatablePoint = new Point(prelimX, lastGC.pos.y, prelimZ);
-                    
+                                        
                     Point finalPoint = rotatablePoint.rotateAroundVector(lastGC.pos);
                     
                     // Now we must calculate a ray coming off of the torus segment
@@ -239,7 +239,7 @@ public class Wire {
                         currentPlane.theta);
                                 
                 TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
-                        currentObj.getMath("angle") + angleToStart, wireradius, charge);
+                        currentObj.getMath("angle"), wireradius, charge);
                 
                 parts.add(tS);
                 

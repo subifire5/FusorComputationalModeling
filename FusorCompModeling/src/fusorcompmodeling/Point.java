@@ -39,32 +39,72 @@ public class Point {
         this.z = z;
     }
     
+    public Point(Vector v, double r) {
+        this.x = r * Math.sin(v.theta) * Math.cos(v.phi);
+        this.y = r * Math.cos(v.theta);
+        this.z = r * Math.sin(v.theta) * Math.sin(v.phi);
+    }
+    
     public Point() {}
     
     public Point rotateAroundVector(Vector v) {
-
+        /* Note to future self: the code below is an abomination. It was
+        written based on incorrect formulas, but instead of finding correct
+        ones I chose to fix the errors generated here in later parts of the
+        code. If this some day breaks, do not try to fix it - major
+        restructuring will be needed.
+        */
+        
         // First move the two points so that the point can be rotated around
         // the origin
+        
+        v.phi = -v.phi;
+        v.theta = -v.theta;
+        
         Point mP = new Point(x - v.x, y - v.y, z - v.z);
         
         // Then rotate the point around the origin with the rotational formula
         Point rP = new Point(); // rP stands for rotatedPoint
 
-        rP.z = Math.cos(-v.phi) * mP.x + Math.sin(-v.phi) * Math.sin(-v.theta) * mP.y -
-                Math.sin(-v.phi) * Math.cos(-v.theta) * mP.z;
+        rP.z = Math.cos(v.phi) * mP.x + Math.sin(v.phi) * Math.sin(v.theta) * mP.y -
+                Math.sin(v.phi) * Math.cos(v.theta) * mP.z;
         
-        rP.y = Math.cos(-v.theta) * mP.y + Math.sin(-v.theta) * mP.z;
+        rP.y = Math.cos(v.theta) * mP.y + Math.sin(v.theta) * mP.z;
         
-        rP.x = Math.sin(-v.phi) * mP.x + Math.cos(-v.phi) * -1 * Math.sin(-v.theta) * 
-                mP.y + Math.cos(-v.phi) * Math.cos(-v.theta) * mP.z;
+        rP.x = Math.sin(v.phi) * mP.x + Math.cos(v.phi) * -1 * Math.sin(v.theta) * 
+                mP.y + Math.cos(v.phi) * Math.cos(v.theta) * mP.z;
         
         // Then add the coordinates the point is being rotated around
+        
+        v.phi = -v.phi;
+        v.theta = -v.theta;
         
         rP.x += v.x;
         rP.y += v.y;
         rP.z += v.z;
         rP.charge = charge;
         // Return the rotated point
+        
+        return rP;
+    }
+    
+    // Vector v's phi and theta describe how much to rotate, and the vector's location
+    // describes what to rotate around
+    
+    public Point rotateAroundPoint(Vector v) {
+        
+        Point mP = new Point(x - v.x, y - v.y, z - v.z);
+        
+        Vector sphericalCoords = mP.convertToSphericalCoords();
+        sphericalCoords.phi += v.phi;
+        sphericalCoords.theta += v.theta;
+        double radius = Math.sqrt(mP.x*mP.x + mP.y*mP.y + mP.z*mP.z);
+        Point rP = new Point(sphericalCoords, radius);
+        
+        rP.x += v.x;
+        rP.y += v.y;
+        rP.z += v.z;
+        rP.charge = charge;
         
         return rP;
     }
@@ -83,6 +123,12 @@ public class Point {
         return x*p.x + y*p.y + z*p.z;
     }
     
+    public Vector convertToSphericalCoords() {
+        Vector v = new Vector();
+        v.phi = Math.atan(z/x);
+        v.theta = Math.atan(Math.sqrt(x*x+z*z)/y);
+        return v;        
+    }
     public double getVectorLength() {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
     }

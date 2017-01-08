@@ -189,7 +189,7 @@ public class FusorVis extends Application {
             final PhongMaterial m = new PhongMaterial();
             m.setDiffuseColor(Color.BLACK);
             m.setDiffuseColor(Color.GREY);
-            final Sphere s = new Sphere(1.0);
+            final Sphere s = new Sphere(0.2);
             s.setTranslateX(p.x);
             s.setTranslateY(p.y);
             s.setTranslateZ(p.z);
@@ -423,18 +423,19 @@ public class FusorVis extends Application {
         int pointCount = 2000;
         int optimizations = 0;
         
-        /*XMLParser p = new XMLParser(xmlFileName + ".xml");
-        List<GridComponent> parts = p.parseObjects();*/
-        
-        String jsonPath = "cube.json";
-        byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
+        XMLParser p = new XMLParser(xmlFileName + ".xml");
+        List<GridComponent> demoParts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
+
+        /*String jsonPath = "cube.json";
+        byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
         JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
         for (int i = 0; i < wireArr.length(); i++) {
             JSONObject wireObj = wireArr.getJSONObject(i);
             Wire w = new Wire(wireObj.toString());
             parts.addAll(w.getAsGridComponents());
-        }
+        }*/
+        parts.addAll(demoParts);
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
@@ -448,7 +449,7 @@ public class FusorVis extends Application {
         output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential*1/1));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
         
-        Point[] referencePoints = {/*new Point(15, 15, 0), new Point(5, 15, 0)*/};
+        Point[] referencePoints = {};
         
         buildCamera();
         buildElectrons(points);
