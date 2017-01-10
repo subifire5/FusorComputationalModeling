@@ -427,15 +427,15 @@ public class FusorVis extends Application {
         List<GridComponent> demoParts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
 
-        /*String jsonPath = "cube.json";
+        String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
         JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
         for (int i = 0; i < wireArr.length(); i++) {
             JSONObject wireObj = wireArr.getJSONObject(i);
             Wire w = new Wire(wireObj.toString());
             parts.addAll(w.getAsGridComponents());
-        }*/
-        parts.addAll(demoParts);
+        }
+        //parts.addAll(demoParts);
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
@@ -453,11 +453,11 @@ public class FusorVis extends Application {
         
         buildCamera();
         buildElectrons(points);
-        buildWireComponents(parts);
+        //buildWireComponents(parts);
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
-        buildTextWindow(primaryStage);
+        //buildTextWindow(primaryStage);
         buildStage(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
