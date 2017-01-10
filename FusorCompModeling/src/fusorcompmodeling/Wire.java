@@ -65,6 +65,7 @@ public class Wire {
         List<GridComponent> parts = new ArrayList<>();
         
         MathJSONObject lastObj = new MathJSONObject(); // Needs to be initialized or Netbeans will be sad
+        
         Vector currentPlane = originalPlane;
         System.out.println(originalPlane.toString());
         
@@ -112,7 +113,7 @@ public class Wire {
                                         
                     Point finalPoint = rotatablePoint.rotateAroundVector(lastGC.pos);
                     
-                    // Now we must calculate a ray coming off of the torus segment
+                   /* // Now we must calculate a ray coming off of the torus segment
                     
                     // To do this, we will calculate an initial point coming
                     // off our initally calculated ray, and then we
@@ -123,23 +124,57 @@ public class Wire {
                             Math.cos(initialPhi) + finalPoint.x, 
                             finalPoint.y,
                             Math.sin(initialPhi) + finalPoint.z);
+                    
                     System.out.println("Initial point: " + rotatablePoint.toString());
                     Point finalRayPoint = initialRayPoint.rotateAroundVector(lastGC.pos);
                     System.out.println("Final ray point: " + finalPoint.toString());
-                    // If stuff is broke, try changing the order we subtract
-                    // things here
-                    
-                    // Understand more things here
-                    
+          
                     double rayTheta = Math.atan2(
                             finalRayPoint.z - initialRayPoint.z, 
                             finalRayPoint.x - initialRayPoint.x);
                     
                     double rayPhi = Math.asin(
-                            (finalRayPoint.x - initialRayPoint.x)/rayTheta);
+                            (finalRayPoint.x - initialRayPoint.x)/rayTheta);*/
+                   
+                   // To calculate the starting direction, we must take the
+                   // cross product of the current torus's center (lastGC.pos)
+                   // with the vector created from finalPoint with the torus's
+                   // center. This must then be inverted, perhaps.
+                   
+                    Point lastGCDirection = lastGC.pos.convertRayToCartesian(1);
+                    Point sliceDirection = new Point(
+                            finalPoint.x - lastGC.pos.x,
+                            finalPoint.y - lastGC.pos.y,
+                            finalPoint.z - lastGC.pos.z);
+
+                    Vector d = lastGCDirection.crossProduct(sliceDirection).convertToSphericalCoords();
+                    try {
+                         if (lastObj.getBoolean("invert")) {
+                             d.phi *= -1;
+                             d.theta *= -1;
+                         }
+                    } catch (Exception e) {} // Nothing will occur if invert was not set
+
+                    boolean flipdir = false;
                     
+                    try {
+                         if (lastObj.getBoolean("invertangle")) {
+                             flipdir = true;
+                         }
+                    } catch (Exception e) {} // Nothing will occur if invert was not set
+                    try {
+                         if (lastObj.getBoolean("flipdir")) {
+                             flipdir = true;
+                         }
+                    } catch (Exception e) {} // Nothing will occur if invert was not set
+                    
+                    if (flipdir) {
+                             d.phi -= Math.PI;
+                             d.theta -= Math.PI;
+                    }
+
                     // We're done now, stick all our stuff into one ray
-                    s = new Vector(finalPoint, 0, -rayTheta);
+                    s = new Vector(finalPoint, d.phi, d.theta);
                     
                 }
             }
@@ -195,25 +230,6 @@ public class Wire {
                 
                 */
                 
-                                
-                /* TODO: REMOVE THIS BLOCK COMMENT ONCE THIS SECTION WORKS
-                
-                
-                Point cPC = currentPlane.convertRayToCartesian(1);
-                double[][] cPArr = {{cPC.x}, {cPC.y}, {cPC.z}}; // Maybe change order?
-                Matrix cPMatrix = new Matrix(cPArr);
-                
-                Vector direction = s;
-                direction.rotateAroundVector(currentObj.getMath("angle"), cPMatrix);*/
-                
-                /* Now, we must define how much "torus" we want - it is a torus
-                segment, after all. To do this, we must first calculate the vector
-                direction equivalent to "0" on the torus. For a torus
-                at the origin, the "0" mark is at the Z axis: i.e. phi: pi/2 and
-                theta: pi/2. If our torus is rotated, all we do is add pi/2 to
-                both phi and theta to get our 0 angle.
-                */
-                
                 Vector segmentStartSpherical = new Vector(
                         currentPlane.phi + Math.PI/2,
                         currentPlane.theta + Math.PI/2);
@@ -227,6 +243,12 @@ public class Wire {
                 Point segmentStart = segmentStartSpherical.convertRayToCartesian(r1); 
                 
                 double angleToStart = sRay.getAngleBetweenVectors(segmentStart);
+
+                try {
+                    if (currentObj.getBoolean("invertangle")) {
+                        angleToStart *= -1;
+                    }
+                   } catch (Exception e) {} // Nothing will occur if invert was not set
                 
                 // Combine all our data for the position into a single vector
                 // This will be fed right into our torus segment untouched
@@ -247,10 +269,6 @@ public class Wire {
                 
             } else if ("planeredef".equals(currentObj.getString("type"))) {
                 currentPlane = new Vector(currentObj.getMath("phi"), currentObj.getMath("theta"));
-            }
-            
-            // Plane redefs should not be referenced when calculating points
-            if (!"planeredef".equals(currentObj.getString("type"))) {
             }
         }
         
