@@ -13,7 +13,7 @@ public class Acceleration {
     public double accX;
     public double accY;
     public double accZ;
-    public Acceleration(int accx, int accy, int accz){
+    public Acceleration(double accx, double accy, double accz){
         accX = accx;
         accY = accy;
         accZ = accz;
