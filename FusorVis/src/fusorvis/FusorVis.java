@@ -421,7 +421,7 @@ public class FusorVis extends Application {
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
         int pointCount = 2000;
-        int optimizations = 0;
+        int optimizations = 10;
         
         XMLParser p = new XMLParser(xmlFileName + ".xml");
         List<GridComponent> demoParts = p.parseObjects();
@@ -457,7 +457,7 @@ public class FusorVis extends Application {
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
-        //buildTextWindow(primaryStage);
+        buildTextWindow(primaryStage);
         buildStage(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
