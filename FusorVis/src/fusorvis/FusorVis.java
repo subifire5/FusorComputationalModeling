@@ -414,10 +414,11 @@ public class FusorVis extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        int pointCount = 1000;
-        int optimizations = 50;
+        int pointCount = 10000;
+        int optimizations = 100;
         double annodeVoltage = 0;
-        double cathodeVoltage = 0;
+        double cathodeVoltage = -500;
+        EField field = new EField();
         Point q = new Point();
         q.x = 0;
         q.y = 0;

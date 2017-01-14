@@ -20,7 +20,7 @@ public class EField {
     
     
     public static void setkQ(double voltageAnnode, double voltageCathode, Point[] points) {
-        double DeltaPhi = getDeltaPhi(avgPotential(points, 1), avgPotential(points, 1));
+        double DeltaPhi = getDeltaPhi(avgPotential(points, 1), avgPotential(points, -1));
         double KQ;
         double DeltaVoltage = voltageAnnode - voltageCathode;
         KQ = (DeltaVoltage / DeltaPhi) * 0.01;//m/cm  
@@ -45,6 +45,11 @@ public class EField {
             eSum.x+= e.x;
             eSum.y+=e.y;
             eSum.z+=e.z;
+            
+            eSum.x*=kQ;
+            eSum.y*=kQ;
+            eSum.z*=kQ;
+            
         }
         return eSum;
     }
