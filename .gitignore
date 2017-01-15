@@ -23,3 +23,4 @@ FusorVis/dist/lib/FusorCompModeling.jar
 FusorVis/build/built-jar.properties
 *.class
 FusorVis/dist/FusorVis.html
+/FusorVis/dist/

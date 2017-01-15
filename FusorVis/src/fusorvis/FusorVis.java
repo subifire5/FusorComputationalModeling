@@ -4,6 +4,7 @@ package fusorvis;
 import fusorcompmodeling.*;
 import java.awt.Button;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -41,12 +42,19 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import java.lang.Integer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -73,7 +81,11 @@ public class FusorVis extends Application {
     
     Text consoleDump = new Text();
     
-    String xmlFileName = "TwoRings";
+    String xmlFileName = "SimpleXML";
+    
+    double timeStepMCS = 1;
+    
+    Sphere deutron = new Sphere(1.0);
     
     Point[] points;
     
@@ -335,6 +347,30 @@ public class FusorVis extends Application {
                     case A: // Toggle axis visibility
                         toggleXform(axisGroup);
                         break;
+                    case P: // Seed points
+                        // Insert code for setting up particles here
+                        
+                        final PhongMaterial deutronMaterial = new PhongMaterial();
+                        deutronMaterial.setDiffuseColor(Color.CORAL);
+                        deutronMaterial.setSpecularColor(Color.PURPLE);
+                        
+                        deutron.setMaterial(deutronMaterial);
+                        deutron.setTranslateX(50);
+                        deutron.setTranslateY(50);
+                        deutron.setTranslateZ(50);
+
+                        world.getChildren().add(deutron);
+                        // Insert code for updating positions in this runnable
+                        Runnable r = new Runnable() {
+                            public void run() {
+                                // Code for updating positions goes here
+                                Point p = new Point(deutron.getTranslateX(), deutron.getTranslateY(), deutron.getTranslateZ());
+                                //Vector v = StatsGen.getVelocity(points, 0, -20000.0, 0, p, ONE_FRAME);
+                            }
+                        };
+                        
+                        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+                        executor.scheduleAtFixedRate(r, 0, 50, TimeUnit.MILLISECONDS);
                 }
             }
         });
@@ -343,10 +379,10 @@ public class FusorVis extends Application {
         JSONArray arr = new JSONArray();
         for (Point p : points) {
             JSONObject obj = new JSONObject();
-            obj.append("x", p.x);
-            obj.append("y", p.y);
-            obj.append("z", p.z);
-            obj.append("charge", p.charge);
+            obj.put("x", p.x);
+            obj.put("y", p.y);
+            obj.put("z", p.z);
+            obj.put("charge", p.charge);
             arr.put(obj);
         }
         return arr.toString();
@@ -378,22 +414,50 @@ public class FusorVis extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        int pointCount = 1000;
-        int optimizations = 1000;
+        int pointCount = 10000;
+        int optimizations = 100;
+        double annodeVoltage = 0;
+        double cathodeVoltage = -500;
+        EField field = new EField();
+        Point q = new Point();
+        q.x = 0;
+        q.y = 0;
+        q.z = 4;
+        Vector efield = new Vector();
+
         XMLParser p = new XMLParser(xmlFileName + ".xml");
 
         List<GridComponent> parts = p.parseObjects();
         
-        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        try {
+            String path = xmlFileName + ".json";
+            byte[] encoded = Files.readAllBytes(Paths.get(path));
+            JSONArray jsonPoints = new JSONArray(new String(encoded, Charset.defaultCharset()));
+            points = new Point[jsonPoints.length()];
+            for (int i = 0; i < jsonPoints.length(); i++) {
+                JSONObject o = jsonPoints.getJSONObject(i);
+                points[i] = new Point(o.getDouble("x"),o.getDouble("y"),o.getDouble("z"), o.getInt("charge"));
+            }
+            System.out.println("Prior file found! Imported it.");
+        } catch (IOException e) {
+            System.out.println("No prior file found! Generating a new one...");
+            points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        }
 
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
+        
+        EField.setkQ(annodeVoltage, cathodeVoltage, points);
+        efield = EField.EFieldSum(points, q);
         
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
         output.put("Optimizations", String.valueOf(optimizations));
         output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+        output.put("Sample point x e-field", String.valueOf(efield.x));
+        output.put("Sample point y e-field", String.valueOf(efield.y));
+        output.put("Sample point z e-field", String.valueOf(efield.z));
 
         buildCamera();
         buildElectrons(points);
