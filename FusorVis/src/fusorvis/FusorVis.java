@@ -44,6 +44,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelWriter;
 
 /**
  *
@@ -57,6 +60,9 @@ public class FusorVis extends Application {
     final Xform componentGroup = new Xform();
     final Xform axisGroup = new Xform();
     final Xform referenceGroup = new Xform();
+    Box eFieldSlice;
+    GraphicsContext eFieldPixels;
+    PixelWriter eFieldPixelWriter;
     final Xform world = new Xform();
     final PerspectiveCamera camera = new PerspectiveCamera(true);
     final Xform cameraXform = new Xform();
@@ -65,6 +71,7 @@ public class FusorVis extends Application {
     
     StackPane textFieldRoot = new StackPane();
     Stage textFieldStage = new Stage();
+    Stage eFieldStage = new Stage();
     
     HashMap<String, String> output = new HashMap<>();
     
@@ -221,8 +228,6 @@ public class FusorVis extends Application {
         compileOutput();
         textFieldRoot.getChildren().add(consoleDump);
 
-
-        textFieldStage.setTitle("My New Stage Title");
         textFieldStage.setTitle("Model statistics");
         textFieldStage.setScene(new Scene(textFieldRoot, 600, 300));
         textFieldStage.initOwner(primaryStage);
@@ -230,6 +235,33 @@ public class FusorVis extends Application {
         textFieldStage.setAlwaysOnTop(true);
         textFieldStage.show();
         primaryStage.toFront();
+    }
+    private void buildEFieldStage(Stage primaryStage) {
+        eFieldStage.setTitle("Electric Field");
+        Group r = new Group();
+          
+        eFieldStage.setScene(new Scene(r, 960, 540));
+        final Canvas canvas = new Canvas(960, 540);
+        eFieldPixels = canvas.getGraphicsContext2D();
+        eFieldPixelWriter = eFieldPixels.getPixelWriter();
+        r.getChildren().add(canvas);
+        
+        eFieldStage.initOwner(primaryStage);
+        eFieldStage.initModality(Modality.APPLICATION_MODAL);
+        eFieldStage.setAlwaysOnTop(true);
+        eFieldStage.show();
+        primaryStage.toFront();
+        updateEField();
+        
+    }
+    private void updateEField() {
+        int width = 960;
+        int height = 540;
+        for (int i = 0; i < width; i++) {
+            for (int k = 0; k < height; k++) {
+                eFieldPixelWriter.setColor(i, k, Color.GREY);
+            }
+        }
     }
     private void buildStage (Stage primaryStage) {
         Screen screen = Screen.getPrimary();
@@ -350,33 +382,6 @@ public class FusorVis extends Application {
                     case A: // Toggle axis visibility
                         toggleXform(axisGroup);
                         break;
-                    case R:
-                        if (event.isControlDown()) {
-                            try {
-                                final Group root = new Group();
-                                final Xform chargeGroup = new Xform();
-                                final Xform componentGroup = new Xform();
-                                final Xform axisGroup = new Xform();
-                                final Xform world = new Xform();
-                                final PerspectiveCamera camera = new PerspectiveCamera(true);
-                                final Xform cameraXform = new Xform();
-                                final Xform cameraXform2 = new Xform();
-                                final Xform cameraXform3 = new Xform();
-
-                                StackPane textFieldRoot = new StackPane();
-                                Stage textFieldStage = new Stage();
-
-                                HashMap<String, String> output = new HashMap<>();
-
-                                Text consoleDump = new Text();
-
-                                String xmlFileName = "SimpleXML";
-                                start(stage);
-                                
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
                 }
             }
         });
@@ -408,6 +413,20 @@ public class FusorVis extends Application {
 
         }
     }
+    
+    public void buildEFieldSlice() {
+        final int baseWidth = 48;
+        final int baseHeight = 27;
+        
+        final PhongMaterial planeMaterial = new PhongMaterial();
+        planeMaterial.setDiffuseColor(new Color(0.5,0.5,0.5,0.5));
+        
+        Box eFieldSlice = new Box(baseWidth, baseHeight, 0.025);
+        eFieldSlice.setMaterial(planeMaterial);
+
+        world.getChildren().add(eFieldSlice);
+    }
+    
     public void compileOutput() {
         Iterator it = output.entrySet().iterator();
         String textOutput = "";
@@ -457,8 +476,10 @@ public class FusorVis extends Application {
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
+        buildEFieldSlice();
         buildTextWindow(primaryStage);
         buildStage(primaryStage);
+        buildEFieldStage(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
