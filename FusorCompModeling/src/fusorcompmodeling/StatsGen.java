@@ -32,11 +32,20 @@ public class StatsGen {
         DeltaPhi = posAvgPot - negAvgPot;
         return DeltaPhi;
     }
-    public static double getkQ(Point[] points, double voltage){
-        double DeltaPhi = getDeltaPhi(avgPotential(points,1),avgPotential(points,1));
-        double kQ;
-        kQ = (voltage/DeltaPhi)*0.01;//m/cm
-        
-        return kQ;
+
+    
+    public static VectorAcceleration getAcceleration(Point[] points, Point r, double mass){
+        VectorAcceleration vAcc = new VectorAcceleration();
+        vAcc.setXAcceleration(EField.EFieldSum(points, r).x/mass);
+        vAcc.setYAcceleration(EField.EFieldSum(points, r).y/mass);
+        vAcc.setZAcceleration(EField.EFieldSum(points, r).z/mass);
+        return vAcc;
+    }
+    public static VectorVelocity getVelocity(Point[] points, Point r, double mass, double t, VectorVelocity initialV){
+        VectorVelocity vVel = new VectorVelocity();
+        vVel.setXVelocity(initialV.getXVelocity() - (getAcceleration(points, r, mass).getXAcceleration()*t));
+        vVel.setYVelocity(initialV.getYVelocity() - (getAcceleration(points, r, mass).getYAcceleration()*t));
+        vVel.setZVelocity(initialV.getZVelocity() - (getAcceleration(points, r, mass).getZAcceleration()*t));
+        return vVel;
     }
 }
