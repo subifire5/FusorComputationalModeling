@@ -56,6 +56,7 @@ import org.json.JSONObject;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
+import javafx.scene.input.KeyCode;
 
 /**
  *
@@ -69,7 +70,6 @@ public class FusorVis extends Application {
     final Xform componentGroup = new Xform();
     final Xform axisGroup = new Xform();
     final Xform referenceGroup = new Xform();
-    Box eFieldSlice;
     GraphicsContext eFieldPixels;
     PixelWriter eFieldPixelWriter;
     final Xform world = new Xform();
@@ -92,10 +92,15 @@ public class FusorVis extends Application {
     
     Sphere deutron = new Sphere(1.0);
     
+    public boolean eFieldBuilt = false;
+    
     Point[] points;
     
     List<Point> markedPoints;
     
+    Stage primaryStage;
+    Box eFieldSlice;
+                            
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
     private static final double CAMERA_INITIAL_Y_ANGLE = 320.0;
@@ -256,8 +261,8 @@ public class FusorVis extends Application {
         eFieldStage.setTitle("Electric Field");
         Group r = new Group();
           
-        eFieldStage.setScene(new Scene(r, 96, 54));
-        final Canvas canvas = new Canvas(96, 54);
+        eFieldStage.setScene(new Scene(r, 96*16, 54*16));
+        final Canvas canvas = new Canvas(96*16, 54*16);
         eFieldPixels = canvas.getGraphicsContext2D();
         eFieldPixelWriter = eFieldPixels.getPixelWriter();
         r.getChildren().add(canvas);
@@ -271,39 +276,39 @@ public class FusorVis extends Application {
         
     }
     private void updateEField(Point[] points) {
-        int width = 96;
-        int height = 54;
-        double[][][] fieldGrid = new double[96][54][3];
-        double minValueX = Double.MAX_VALUE;
-        double maxValueX = Double.MIN_VALUE;
-        double minValueY = Double.MAX_VALUE;
-        double maxValueY = Double.MIN_VALUE;
-        double minValueZ = Double.MAX_VALUE;
-        double maxValueZ = Double.MIN_VALUE;
+        EField e = new EField();
+        EField.setkQ(annodeVoltage, cathodeVoltage, points);
+        int width = 96*16;
+        int height = 54*16;
+        double[][][] fieldGrid = new double[width][height][3];
+        double[] minValues = new double[3]; // Goes X, Y, Z
+        double[] maxValues = new double[3];
         
         for (int i = 0; i < width; i++) {
             for (int k = 0; k < height; k++) {
                 System.out.println("Calculated a window!" + i);
-                EField e = new EField();
-                EField.setkQ(annodeVoltage, cathodeVoltage, points);
-                Vector efield = EField.EFieldSum(points, new Point(width/2 + i, height/2 + k, 0));
-                minValueX = Math.min(efield.x, minValueX);
-                minValueY = Math.min(efield.y, minValueY);
-                minValueZ = Math.min(efield.z, minValueZ);
-                maxValueX = Math.max(efield.x, maxValueX);
-                maxValueY = Math.max(efield.y, maxValueY);
-                maxValueZ = Math.max(efield.z, maxValueZ);
+                Vector efield = EField.EFieldSum(points, new Point((-width/2 + i)*0.01, (-height/2 + k)*0.01, 0));
+                minValues[0] = Math.min(efield.x, minValues[0]);
+                minValues[1] = Math.min(efield.y, minValues[1]);
+                minValues[2] = Math.min(efield.z, minValues[2]);
+                maxValues[0] = Math.max(efield.x, maxValues[0]);
+                maxValues[1] = Math.max(efield.y, maxValues[1]);
+                maxValues[2] = Math.max(efield.z, maxValues[2]);
+                fieldGrid[i][k][0] = efield.x;
+                fieldGrid[i][k][1] = efield.y;
+                fieldGrid[i][k][2] = efield.z;
             }
         }
-        int xPixelUnit = (int) (maxValueX - minValueX)/256;
-        int yPixelUnit = (int) (maxValueY - minValueY)/256;
-        int zPixelUnit = (int) (maxValueZ - minValueZ)/256;
+        double[] range = new double[3];
+        for (int i = 0; i < 3; i++) {
+            range[i] = maxValues[i] - minValues[i];
+        }
         for (int i = 0; i < width; i++) {
             for (int k = 0; k < height; k++) {
                 eFieldPixelWriter.setColor(i, k, 
-                        new Color((int) (minValueX + xPixelUnit*fieldGrid[i][k][0]),
-                                  (int) (minValueY + yPixelUnit*fieldGrid[i][k][1]), 
-                                  (int) (minValueZ + zPixelUnit*fieldGrid[i][k][2]),
+                        new Color(((fieldGrid[i][k][0] - minValues[0]) / range[0]),
+                                  ((fieldGrid[i][k][1] - minValues[1]) / range[1]), 
+                                  ((fieldGrid[i][k][2] - minValues[2]) / range[2]),
                                   1.0));
             }
         }
@@ -451,6 +456,25 @@ public class FusorVis extends Application {
                         
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
                         executor.scheduleAtFixedRate(r, 0, 50, TimeUnit.MILLISECONDS);
+                        break;
+                    case E:
+                        if (event.isControlDown()) {
+                            if (!eFieldBuilt) {
+                                buildEFieldStage(primaryStage, points);
+                            } else {
+                                updateEField(points);
+                            }
+                        } else {
+                            if (!eFieldBuilt) {
+                                buildEFieldSlice();
+                            }
+                        }
+                        break;
+                            
+                    default:
+                        HashMap<KeyCode, String[]> tfFuncMap = new HashMap<>();
+                        //tfFuncMap.put(Q, );
+                        //eFieldSlice.getClass().getMethod().invoke("foobar")eFieldSlice.getClass().getField(xmlFileName));
                 }
             }
         });
@@ -491,7 +515,7 @@ public class FusorVis extends Application {
         final PhongMaterial planeMaterial = new PhongMaterial();
         planeMaterial.setDiffuseColor(new Color(0.5,0.5,0.5,0.5));
         
-        Box eFieldSlice = new Box(baseWidth, baseHeight, 0.025);
+        eFieldSlice = new Box(baseWidth, baseHeight, 0.025);
         eFieldSlice.setMaterial(planeMaterial);
 
         world.getChildren().add(eFieldSlice);
@@ -508,8 +532,9 @@ public class FusorVis extends Application {
     }
     @Override
     @SuppressWarnings("empty-statement")
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage pS) throws Exception {
 
+        primaryStage = pS;
         int pointCount = 2000;
         int optimizations = 10;
         Point q = new Point();
@@ -519,7 +544,7 @@ public class FusorVis extends Application {
         Vector efield = new Vector();
 
         XMLParser p = new XMLParser(xmlFileName + ".xml");
-        List<GridComponent> demoParts = p.parseObjects();
+        //List<GridComponent> parts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
 
         String jsonPath = "cube.json";
@@ -584,10 +609,10 @@ public class FusorVis extends Application {
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
-        buildEFieldSlice();
+        //buildEFieldSlice();
         //buildTextWindow(primaryStage);
         buildStage(primaryStage);
-        buildEFieldStage(primaryStage, points);
+        //buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);

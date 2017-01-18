@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <shapes>
 	<shape>
-		<phi>pi/2</phi>
-		<theta>-pi/2</theta>
+		<phi>0</phi>
+		<theta>pi/2</theta>
 		<phi2>0</phi2>
-		<phi3>tau/4</phi3>
-		<radius>5</radius>
+		<phi3>tau</phi3>
+		<radius>3</radius>
 		<radius2>0.45</radius2>
 		<x>0</x>
-		<y>10</y>
+		<y>0</y>
 		<z>0</z>
 		<type>TorusSegment</type>
 		<charge>1</charge>
 	</shape>
 	<shape>
-		<phi>pi/2</phi>
-		<theta>-pi/2</theta>
+		<phi>0</phi>
+		<theta>pi/2</theta>
 		<phi2>0</phi2>
-		<phi3>-tau/4</phi3>
+		<phi3>tau</phi3>
 		<radius>5</radius>
 		<radius2>0.45</radius2>
-		<x>15</x>
-		<y>10</y>
+		<x>0</x>
+		<y>0</y>
 		<z>0</z>
 		<type>TorusSegment</type>
 		<charge>-1</charge>
