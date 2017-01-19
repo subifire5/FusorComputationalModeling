@@ -9,10 +9,3 @@ FusorVis/build/*
 FusorVis/dist/*
 FusorVis/dist/run/*
 *.jar
-FusorCompModeling/nbproject/build-impl.xml
-FusorCompModeling/nbproject/genfiles.properties
-FusorCompModeling/nbproject/genfiles.properties
-FusorCompModeling/nbproject/private/private.properties
-FusorCompModeling/nbproject/private/private.xml
-FusorCompModeling/nbproject/private/private.xml
-FusorCompModeling/nbproject/private/private.xml

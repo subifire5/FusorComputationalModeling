@@ -2,7 +2,7 @@
 <shapes>
 	<shape>
 		<phi>pi/2</phi>
-		<theta>-pi/2</theta>
+		<theta>0</theta>
 		<phi2>0</phi2>
 		<phi3>tau/4</phi3>
 		<radius>5</radius>
@@ -15,7 +15,7 @@
 	</shape>
 	<shape>
 		<phi>pi/2</phi>
-		<theta>-pi/2</theta>
+		<theta>0</theta>
 		<phi2>0</phi2>
 		<phi3>-tau/4</phi3>
 		<radius>5</radius>
