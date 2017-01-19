@@ -2,7 +2,6 @@
 package fusorvis;
 
 import fusorcompmodeling.*;
-import java.awt.Button;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,17 +21,11 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import static javafx.scene.input.KeyCode.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.Reflection;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Box;
 import javafx.scene.text.Font;
@@ -41,6 +34,10 @@ import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.lang.Integer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -68,6 +65,7 @@ public class FusorVis extends Application {
     final Xform chargeGroup = new Xform();
     final Xform componentGroup = new Xform();
     final Xform axisGroup = new Xform();
+    final Xform referenceGroup = new Xform();
     final Xform world = new Xform();
     final PerspectiveCamera camera = new PerspectiveCamera(true);
     final Xform cameraXform = new Xform();
@@ -88,6 +86,8 @@ public class FusorVis extends Application {
     Sphere deutron = new Sphere(1.0);
     
     Point[] points;
+    
+    List<Point> markedPoints;
     
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -194,6 +194,22 @@ public class FusorVis extends Application {
 
         axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis);
         world.getChildren().addAll(axisGroup);
+    }
+
+    private void buildReferencePoints(Point[] referencePoints) {
+        
+        for (Point p : referencePoints) {
+            final PhongMaterial m = new PhongMaterial();
+            m.setDiffuseColor(Color.BLACK);
+            m.setDiffuseColor(Color.GREY);
+            final Sphere s = new Sphere(0.2);
+            s.setTranslateX(p.x);
+            s.setTranslateY(p.y);
+            s.setTranslateZ(p.z);
+            
+            referenceGroup.getChildren().add(s);
+        }
+        world.getChildren().addAll(referenceGroup);
     }
     
     private void buildCamera() {
@@ -412,10 +428,11 @@ public class FusorVis extends Application {
         consoleDump.setText(textOutput);
     }
     @Override
+    @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
-
-        int pointCount = 10000;
-        int optimizations = 100;
+        int pointCount = 2000;
+        int optimizations = 10;
+        
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
         EField field = new EField();
@@ -426,10 +443,23 @@ public class FusorVis extends Application {
         Vector efield = new Vector();
 
         XMLParser p = new XMLParser(xmlFileName + ".xml");
+        List<GridComponent> demoParts = p.parseObjects();
+        List<GridComponent> parts = new ArrayList<>();
 
-        List<GridComponent> parts = p.parseObjects();
+        String jsonPath = "cube.json";
+        byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
+        JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
+        for (int i = 0; i < wireArr.length(); i++) {
+            JSONObject wireObj = wireArr.getJSONObject(i);
+            Wire w = new Wire(wireObj.toString());
+            parts.addAll(w.getAsGridComponents());
+        }
+        //parts.addAll(demoParts);
         
-        try {
+        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        markedPoints = new ArrayList<>();
+        
+        /*try {
             String path = xmlFileName + ".json";
             byte[] encoded = Files.readAllBytes(Paths.get(path));
             JSONArray jsonPoints = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -442,7 +472,7 @@ public class FusorVis extends Application {
         } catch (IOException e) {
             System.out.println("No prior file found! Generating a new one...");
             points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
-        }
+        }*/
 
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
@@ -453,16 +483,20 @@ public class FusorVis extends Application {
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
         output.put("Optimizations", String.valueOf(optimizations));
-        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential));
+        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential*1/1));
         output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+        
+        Point[] referencePoints = {};
+        
         output.put("Sample point x e-field", String.valueOf(efield.x));
         output.put("Sample point y e-field", String.valueOf(efield.y));
         output.put("Sample point z e-field", String.valueOf(efield.z));
 
         buildCamera();
         buildElectrons(points);
-        buildWireComponents(parts);
+        //buildWireComponents(parts);
         buildAxes();
+        buildReferencePoints(referencePoints);
         buildScene();
         buildTextWindow(primaryStage);
         buildStage(primaryStage);

@@ -28,12 +28,12 @@ public class TorusSegment extends GridComponent {
     
     @Override
     public double getSurfaceArea() {
-        return (4 * Math.pow(Math.PI, 2) * radius * radius2);
+        return (4 * Math.pow(Math.PI, 2) * radius * radius2) * (Math.abs(phi3)/Math.PI*2);
     }
     
     @Override
     public Point getRandomPoint(Random r) {
-        double pointPhi = phi2 + (phi3 - phi2) * r.nextDouble();
+        double pointPhi = phi2 + (phi3) * r.nextDouble();
         double pointTheta = r.nextDouble() * Math.PI * 2;
         
         // Points without rotation

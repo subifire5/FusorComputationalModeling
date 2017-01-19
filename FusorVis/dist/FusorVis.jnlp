@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="FusorVis.jnlp">
+  <information>
+    <title>FusorVis</title>
+    <vendor>guberti</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="FusorVis.jar" size="19256" download="eager" />
+    <jar href="lib\FusorCompModeling.jar" size="42521" download="eager" />
+    <jar href="lib\Jama-1.0.3.jar" size="35981" download="eager" />
+    <jar href="lib\MathEval.jar" size="25301" download="eager" />
+    <jar href="lib\simple-json.jar" size="65139" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="FusorVis" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="fusorvis.FusorVis"  name="FusorVis" />
+  <update check="always"/>
+</jnlp>

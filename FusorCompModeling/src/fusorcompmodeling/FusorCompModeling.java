@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package fusorcompmodeling;
+import Jama.*;
 
 /**
  *
@@ -16,7 +17,11 @@ public class FusorCompModeling {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) {
- 
+        Vector v = new Vector(0, 0, 0, Math.PI/2, -Math.PI/2);
+        double[][] rotatable  = {{0}, {5}, {0}};
+        Matrix m = new Matrix(rotatable);
+        double[][] rotated = v.rotateAroundVector(Math.PI/2, m);
+        
     }
 
 }

@@ -23,7 +23,6 @@ public class PointDistributer {
         int reps = 0;
         while (reps < endCon) {
             int changesMade = balanceCharges(points, parts);
-            System.out.println("Shook up the points, " + changesMade + " changes made");
             reps++;
         }
         return points;
@@ -40,7 +39,7 @@ public class PointDistributer {
     }
 
     public static Point getRandomPoint(List<GridComponent> parts, int charge) {
-
+        
         double area = totalSurfaceArea(parts, charge);
         Random generator = new Random();
 
@@ -60,7 +59,6 @@ public class PointDistributer {
     public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
         double surfaceArea = 0;
         for (int i = 0; i < parts.size(); i++) {
-            //System.out.println(parts.get(i).toString());
             if (parts.get(i).charge == charge) {
                 surfaceArea += parts.get(i).getSurfaceArea();
             }
@@ -90,8 +88,8 @@ public class PointDistributer {
 
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
-        for (int i = 0; i < points.length; i++) {
-            
+        
+        for (int i = 0; i < points.length; i++) {            
             Point newPoint = getRandomPoint(getReachableShapes(points[i].charge, parts), points[i].charge);
             double currentEP = electricPotential(points, points[i]);
 
