@@ -532,11 +532,13 @@ public class FusorVis extends Application {
     }
     @Override
     @SuppressWarnings("empty-statement")
-    public void start(Stage pS) throws Exception {
-
-        primaryStage = pS;
+    public void start(Stage primaryStage) throws Exception {
         int pointCount = 2000;
         int optimizations = 10;
+        
+        double annodeVoltage = 0;
+        double cathodeVoltage = -500;
+        EField field = new EField();
         Point q = new Point();
         q.x = 0;
         q.y = 0;
