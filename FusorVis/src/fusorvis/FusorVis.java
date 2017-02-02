@@ -282,10 +282,11 @@ public class FusorVis extends Application {
         
         eFieldStage.initOwner(primaryStage);
         eFieldStage.initModality(Modality.APPLICATION_MODAL);
-        eFieldStage.setAlwaysOnTop(true);
         eFieldStage.show();
-        //primaryStage.toFront();
+        primaryStage.toFront();
         updateEField(points);
+        
+        eFieldBuilt = true;
         
     }
     private void updateEField(Point[] points) {
@@ -308,15 +309,12 @@ public class FusorVis extends Application {
                 Point p = new Point((-(sliceWidth/2) + i * widthUnit), (-(sliceHeight/2) + k * widthUnit), 0);
                 Vector efield = EField.EFieldSum(points, translateEFieldPixel(p));
                         
-                //System.out.println("Took the efield of the point (" + p.x + ", " + p.y + ", " + p.z + "), and got the vector [" + efield.x + ", " + efield.y + ", " + efield.z + "]");
-                //Vector efield = new Vector (r.nextDouble(), r.nextDouble(), r.nextDouble(), 0.0, 0.0);
                 minValues[0] = Math.min(efield.x, minValues[0]);
                 minValues[1] = Math.min(efield.y, minValues[1]);
                 minValues[2] = Math.min(efield.z, minValues[2]);
                 maxValues[0] = Math.max(efield.x, maxValues[0]);
                 maxValues[1] = Math.max(efield.y, maxValues[1]);
                 maxValues[2] = Math.max(efield.z, maxValues[2]);
-                //System.out.println("Current minimums - x: [" + maxValues[0] + "], y: [" + maxValues[1] + "], z: [" + maxValues[2] + "]");
                 fieldGrid[i][k][0] = efield.x;
                 fieldGrid[i][k][1] = efield.y;
                 fieldGrid[i][k][2] = efield.z;
@@ -502,11 +500,12 @@ public class FusorVis extends Application {
                             if (!eFieldBuilt) {
                                 buildEFieldStage(primaryStage, points);
                             } else {
+                                System.out.println("Updating e-field!");
                                 updateEField(points);
                             }
                         } else {
                             if (!eFieldBuilt) {
-                                buildEFieldSlice();
+                                //buildEFieldSlice();
                                 eFieldBuilt = true;
                             }
                         }
@@ -648,7 +647,6 @@ public class FusorVis extends Application {
         t.y += eFieldSlice.getTranslateY();
         t.z += eFieldSlice.getTranslateZ();
 
-        System.out.println("Rotated the point at " + p.toString() + " to become the point " + r.toString() + " which then became, after translation and scaling, " + t.toString());
         return t;
     }
     
@@ -746,6 +744,7 @@ public class FusorVis extends Application {
         buildTextWindow(primaryStage);
         buildStage(primaryStage);
         buildEFieldSlice();
+        buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
