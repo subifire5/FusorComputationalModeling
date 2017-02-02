@@ -123,12 +123,33 @@ public class Point {
         return x*p.x + y*p.y + z*p.z;
     }
     
-    public Vector convertToSphericalCoords() {
+    public Vector convertToSphericalCoords() { // Faster, used by Wire class
         Vector v = new Vector();
         v.phi = Math.atan(z/x);
         v.theta = Math.atan(Math.sqrt(x*x+z*z)/y);
-        return v;        
+        v.length = Math.sqrt(x*x + y*y + z*z);
+        return v;
     }
+    
+    public Vector convertToSphericalCoordsExc() { // Slower, but works for all values
+        Vector v = new Vector();
+        
+        if (x == 0 && y == 0 && z == 0) {
+            return new Vector(0, 0, 0);
+        }
+        
+        if (x == 0 && z == 0) {
+            v.phi = 0;
+        } else {
+            v.phi = Math.acos(x/Math.sqrt(x*x + z*z));
+        }
+        
+        v.length = Math.sqrt(x*x + y*y + z*z);
+        v.theta = Math.acos(y/v.length);
+        
+        return v;
+    }
+    
     public double getVectorLength() {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
     }

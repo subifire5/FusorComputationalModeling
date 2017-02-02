@@ -51,6 +51,12 @@ public class Vector {
         this.phi = phi;
         this.theta = theta;
     }
+
+    public Vector(double phi, double theta, double length) {
+        this.length = length;
+        this.phi = phi;
+        this.theta = theta;
+    }
     
     public Point3D getAs3DPoint() {
         return new Point3D(x, y, z);

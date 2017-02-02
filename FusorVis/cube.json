@@ -53,8 +53,7 @@
 				"type": "bend",
 				"radius": "2.5",
 				"angle": "tau/4",
-				"invertangle": true,
-				"invert": true
+				"invertangle": true
 			},
 			{
 				"type": "straight",
