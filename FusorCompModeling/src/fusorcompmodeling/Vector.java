@@ -36,7 +36,7 @@ public class Vector {
         this.y = y;
         this.z = z;
         this.phi = phi;
-        this.theta = theta;
+        this.theta = theta;  
     }
     public Vector(double x, double y, double z, double phi, double theta, double length) {
         this.x = x;
@@ -48,6 +48,12 @@ public class Vector {
     }
 
     public Vector(double phi, double theta) {
+        this.phi = phi;
+        this.theta = theta;
+    }
+
+    public Vector(double phi, double theta, double length) {
+        this.length = length;
         this.phi = phi;
         this.theta = theta;
     }
@@ -123,8 +129,7 @@ public class Vector {
         // We don't return anything, because this function modifies the object
         // in place
     }
-    
-    public static double getLength(Point a, Point b){
+    public static double getLength(Point a, Point b) {
         return Math.sqrt(((b.x-a.x)*(b.x-a.x)) + ((b.y-a.y)*(b.y-a.y))+((b.z-a.z)*(b.z-a.z)));
     }
     public static Vector Difference(Point a, Point b){

@@ -26,6 +26,7 @@ public class EField {
         KQ = (DeltaVoltage / DeltaPhi) * 0.01;//m/cm  
         kQ=KQ;
     }
+    
     public static Vector EFieldSum(Point[] points, Point s){
         Vector e = new Vector();
         Vector eSum = new Vector();
@@ -36,9 +37,11 @@ public class EField {
                 
         Vector r;
         double rLen;
+        
         for(int i = 0; i < points.length; i++){
             r = Vector.Difference(s,points[i]);
             rLen= Vector.getLength(s, points[i]);
+            
             e.x = r.x/(rLen*rLen*rLen);
             e.y = r.y/(rLen*rLen*rLen);
             e.z = r.z/(rLen*rLen*rLen);
@@ -51,6 +54,9 @@ public class EField {
             eSum.z*=kQ;
             
         }
+
+
+        
         return eSum;
     }
 }
