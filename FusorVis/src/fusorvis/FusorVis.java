@@ -402,7 +402,7 @@ public class FusorVis extends Application {
     }
     
     public void scaleElectrons(double scale) {
-        for (int i = 0; i < chargeGroup.getChildren().size(); i++) { 
+        for (int i = 0; i < chargeGroup.getChildren().size(); i++) {
             double xScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
             double yScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
             double zScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
@@ -482,17 +482,11 @@ public class FusorVis extends Application {
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
         
-        //String stlAscii = openStlFile("block.stl");
-        //readStlFile(stlAscii);
+        String stlAscii = openStlFile("block.stl");
+        readStlFile(stlAscii);
         
         int pointCount = 2000;
         int optimizations = 0;
-        
-        
-        
-        STLParser t = new STLParser("block.stl");
-        List<Triangle> triangles = t.parseObjects();
-        
         
         //XMLParser p = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
