@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="FusorVis.jar" size="18813" download="eager" />
+    <jar href="FusorVis.jar" size="18300" download="eager" />
     <jar href="lib\FusorCompModeling.jar" size="32540" download="eager" />
     <jar href="lib\MathEval.jar" size="25306" download="eager" />
     <jar href="lib\simple-json.jar" size="65139" download="eager" />

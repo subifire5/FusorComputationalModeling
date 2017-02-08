@@ -2,12 +2,10 @@
 package fusorvis;
 
 import fusorcompmodeling.*;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+
 import java.util.List;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
@@ -47,7 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
-//import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -421,70 +418,9 @@ public class FusorVis extends Application {
         }
         consoleDump.setText(textOutput);
     }
-    
-    public String openStlFile(String name) throws IOException {
-
-        // The name of the file to open.
-        String fileName = name;
-
-        // This will reference one line at a time
-        String line = null;
-        String text = "";
-
-        try {
-            // FileReader reads text files in the default encoding.
-            FileReader fileReader = 
-                new FileReader(fileName);
-
-            // Always wrap FileReader in BufferedReader.
-            BufferedReader bufferedReader = 
-                new BufferedReader(fileReader);
-
-            while((line = bufferedReader.readLine()) != null) {
-                text = text + " " +  line;
-            }   
-
-            // Always close files.
-            bufferedReader.close();         
-        }
-        catch(FileNotFoundException ex) {
-            System.out.println(
-                "Unable to open file '" + 
-                fileName + "'");                
-        }
-        catch(IOException ex) {
-            System.out.println(
-                "Error reading file '" 
-                + fileName + "'");                  
-            // Or we could just do this: 
-            // ex.printStackTrace();
-        }
-        return text;
-    }
-    
-    public Triangle[] readStlFile(String stlAscii){
-        String word = "outer loop";
-        int occurences = 0;
-        int lastIndex = stlAscii.indexOf(word);
-        while (lastIndex != -1) {
-            occurences++;
-            lastIndex = stlAscii.indexOf(word, lastIndex + word.length());
-        }
-
-        Triangle[] triangles = new Triangle[occurences];
-        return null;
-    }
-    
-    
-    
-    
     @Override
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
-        
-        String stlAscii = openStlFile("block.stl");
-        readStlFile(stlAscii);
-        
         int pointCount = 2000;
         int optimizations = 0;
         
@@ -500,8 +436,6 @@ public class FusorVis extends Application {
             Wire w = new Wire(wireObj.toString());
             parts.addAll(w.getAsGridComponents());
         }
-        
-        
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
@@ -540,16 +474,14 @@ public class FusorVis extends Application {
         primaryStage.show();
         //primaryStage.setFullScreen(true);
         scene.setCamera(camera);
-        
     }
-        
-      
+    
     /**
      * Java main for when running without JavaFX launcher
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         
-        /*Point p1 = new Point(1, 0, 0, 0, 0);
+        Point p1 = new Point(1, 0, 0, 0, 0);
         Point p2 = new Point(0, 1, 0, 0, 0);
         Point p3 = new Point(0, 0, 1, 0, 0);
         Point[] points = new Point[3];
@@ -560,9 +492,7 @@ public class FusorVis extends Application {
         Triangle t = new Triangle(points, 0);
         Random rand = new Random();
         System.out.println(t.getRandomPoint(rand));
-        System.out.println(t.getSurfaceArea()); */
-        
-        
+        System.out.println(t.getSurfaceArea());
         
         launch(args);
     }
