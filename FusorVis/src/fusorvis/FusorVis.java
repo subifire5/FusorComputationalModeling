@@ -61,6 +61,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.transform.*;
+import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
+import java.io.File;
+import javafx.collections.ObservableFloatArray;
+import javafx.scene.shape.TriangleMesh;
 
 /**
  *
@@ -210,6 +214,7 @@ public class FusorVis extends Application {
         final Box yAxis = new Box(1, 240.0, 1);
         final Box zAxis = new Box(1, 1, 240.0);
         final Sphere posXAxis = new Sphere(2.0);
+        final Sphere posYAxis = new Sphere(2.0);
         final Sphere posZAxis = new Sphere(2.0);
 
         xAxis.setMaterial(redMaterial);
@@ -217,10 +222,12 @@ public class FusorVis extends Application {
         zAxis.setMaterial(blueMaterial);
         posXAxis.setMaterial(redMaterial);
         posXAxis.setTranslateX(120);
+        posYAxis.setMaterial(greenMaterial);
+        posYAxis.setTranslateY(120);
         posZAxis.setMaterial(blueMaterial);
         posZAxis.setTranslateZ(120);
 
-        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis);
+        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis, posYAxis);
         world.getChildren().addAll(axisGroup);
     }
 
@@ -668,17 +675,33 @@ public class FusorVis extends Application {
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
-        XMLParser p = new XMLParser(xmlFileName + ".xml");
+        XMLParser par = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
 
         String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
-        JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
-        for (int i = 0; i < wireArr.length(); i++) {
-            JSONObject wireObj = wireArr.getJSONObject(i);
-            Wire w = new Wire(wireObj.toString());
-            parts.addAll(w.getAsGridComponents());
+        JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
+        for (int i = 0; i < pieceArr.length(); i++) {
+            JSONObject infoObj = pieceArr.getJSONObject(i);
+            if (infoObj.getString("type").equals("wire")) {
+                Wire w = new Wire(infoObj.toString());
+                parts.addAll(w.getAsGridComponents());
+            } else if (infoObj.getString("type").equals("stl")) {
+                StlMeshImporter imp = new StlMeshImporter();
+                try {
+                    imp.read(new File(infoObj.getString("file")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                TriangleMesh mesh = imp.getImport();
+                imp.close();
+                float[] fA;
+                fA = mesh.getPoints().toArray(fA);
+                for (int j = 0; j < fA.length; j += 3) {
+                    
+                }
+            }
         }
         //parts.addAll(demoParts);
         
@@ -741,7 +764,7 @@ public class FusorVis extends Application {
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
-        buildTextWindow(primaryStage);
+        //buildTextWindow(primaryStage);
         buildStage(primaryStage);
         buildEFieldSlice();
         buildEFieldStage(primaryStage, points);

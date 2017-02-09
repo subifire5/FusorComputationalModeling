@@ -1,5 +1,6 @@
 [
 	{
+		"type": "wire",
 		"radius": "0.45",
 		"charge": 1,
 		"start": {
@@ -88,23 +89,9 @@
 		]
 	},
 	{
-		"radius": "0.2",
+		"scalefactor": "3",
 		"charge": -1,
-		"start": {
-			"x": "3",
-			"y": "0",
-			"z": "3",
-			"phi": "0",
-			"theta": "0",
-			"planePhi": "0",
-			"planeTheta": "0"
-		},
-		"components": [
-			{
-				"type": "bend",
-				"radius": "40",
-				"angle": "tau",
-			}
-		]
+		"filename": "cartest.stl",
+		"type": "stl"
 	}
 ]
