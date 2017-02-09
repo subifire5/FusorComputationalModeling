@@ -27,8 +27,25 @@ public class StatsGen {
         return avgPotential;
         
     }
-//    public static Acceleration getAcceleration(){
-//        
-//        return 
-//    }
+    public static double getDeltaPhi(double posAvgPot, double negAvgPot){
+        double DeltaPhi;
+        DeltaPhi = posAvgPot - negAvgPot;
+        return DeltaPhi;
+    }
+
+    
+    public static VectorAcceleration getAcceleration(Point[] points, Point r, double mass){
+        VectorAcceleration vAcc = new VectorAcceleration();
+        vAcc.setXAcceleration(EField.EFieldSum(points, r).x/mass);
+        vAcc.setYAcceleration(EField.EFieldSum(points, r).y/mass);
+        vAcc.setZAcceleration(EField.EFieldSum(points, r).z/mass);
+        return vAcc;
+    }
+    public static VectorVelocity getVelocity(Point[] points, Point r, double mass, double t, VectorVelocity initialV){
+        VectorVelocity vVel = new VectorVelocity();
+        vVel.setXVelocity(initialV.getXVelocity() - (getAcceleration(points, r, mass).getXAcceleration()*t));
+        vVel.setYVelocity(initialV.getYVelocity() - (getAcceleration(points, r, mass).getYAcceleration()*t));
+        vVel.setZVelocity(initialV.getZVelocity() - (getAcceleration(points, r, mass).getZAcceleration()*t));
+        return vVel;
+    }
 }
