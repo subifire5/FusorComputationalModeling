@@ -20,14 +20,15 @@
 			{
 				"type": "bend",
 				"radius": "0.37",
-				"angle": "tau/6"
+				"angle": "tau/6",
+				
+				"flipdir": true,
+				
 			},
 			{
 				"type": "straight",
 				"height": "1.2",
-				"invertangle": true,
-				"invert": true
-			},
+			}
 		]
 	},
 	{

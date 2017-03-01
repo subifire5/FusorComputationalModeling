@@ -430,7 +430,7 @@ public class FusorVis extends Application {
             @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
-                    case X: // CTRL+X closes window
+                    case Z: // CTRL+X closes window
                         if (event.isControlDown()) {
                             // Close down window
                             stage.close();
@@ -470,6 +470,10 @@ public class FusorVis extends Application {
                     case A: // Toggle axis visibility
                         toggleXform(axisGroup);
                         break;
+                    case X:
+                        if (event.isControlDown()) {
+                            printShapesXML.printShapes();
+                        }
                     case P: // Seed points
                         // Insert code for setting up particles here
                         
@@ -668,13 +672,14 @@ public class FusorVis extends Application {
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
-        XMLParser p = new XMLParser(xmlFileName + ".xml");
+        //XMLParser p = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
 
-        String jsonPath = "testAngles.json";
+        String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
         JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
+        
         for (int i = 0; i < wireArr.length(); i++) {
             JSONObject wireObj = wireArr.getJSONObject(i);
             Wire w = new Wire(wireObj.toString());
