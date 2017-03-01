@@ -672,7 +672,7 @@ public class FusorVis extends Application {
         //List<GridComponent> parts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
 
-        String jsonPath = "cube.json";
+        String jsonPath = "testAngles.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
         JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
         for (int i = 0; i < wireArr.length(); i++) {
