@@ -5,6 +5,7 @@
  */
 package fusorcompmodeling;
 
+import static java.lang.Double.NaN;
 import java.util.Comparator;
 
 /**
@@ -199,5 +200,8 @@ public class Point {
     
     double getLength() {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+    }
+    boolean testForNaN() {
+        return x == NaN || y == NaN || z == NaN;
     }
 }

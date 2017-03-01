@@ -5,6 +5,7 @@
  */
 package fusorcompmodeling;
 
+import static java.lang.Double.NaN;
 import java.util.*;
 import java.util.Random;
 
@@ -35,7 +36,11 @@ public class Triangle extends GridComponent {
         p.z = (1 - Math.sqrt(r1)) * points[0].z + (Math.sqrt(r1) * (1 - r2)) * points[1].z + (Math.sqrt(r1) * r2) * points[2].z;
         //Use a formula to generate a random coordinate that is on triangle, and set it to the point
         
-        return p;   
+        if (p.x == NaN || p.y == NaN || p.z == NaN) {
+            System.out.println("getRandomPoint returned a NAN value!");
+        }
+        
+        return new Point(5, 5, 5);
     }
 
     @Override
@@ -67,7 +72,10 @@ public class Triangle extends GridComponent {
         
         surfaceArea = norm/2;
         //because it is area of triangle, divide by 2
-        
+
+        if (surfaceArea == NaN) {
+            System.out.println("getSurfaceArea returned a NAN value!");
+        }
         return surfaceArea;
     }
 

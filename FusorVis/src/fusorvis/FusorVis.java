@@ -4,6 +4,7 @@ package fusorvis;
 import com.sun.javafx.geom.transform.Affine3D;
 import com.sun.javafx.geom.transform.BaseTransform;
 import fusorcompmodeling.*;
+import fusorcompmodeling.Triangle;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -688,19 +689,35 @@ public class FusorVis extends Application {
                 Wire w = new Wire(infoObj.toString());
                 parts.addAll(w.getAsGridComponents());
             } else if (infoObj.getString("type").equals("stl")) {
-                StlMeshImporter imp = new StlMeshImporter();
+                Point[] testPoints = new Point[3];
+                testPoints[0] = new Point(0, 0, 0);
+                testPoints[2] = new Point(5, 0, 0);
+                testPoints[1] = new Point(0, 5, 0);
+                Triangle t = new Triangle(testPoints, -1);
+                parts.add(t);
+                /*StlMeshImporter imp = new StlMeshImporter();
                 try {
-                    imp.read(new File(infoObj.getString("file")));
+                    System.out.println(infoObj.getString("filename"));
+                    imp.read(new File(infoObj.getString("filename")));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 TriangleMesh mesh = imp.getImport();
                 imp.close();
-                float[] fA;
+                float[] fA = null;
                 fA = mesh.getPoints().toArray(fA);
-                for (int j = 0; j < fA.length; j += 3) {
-                    
-                }
+                
+                int[] iA = null;
+                iA = mesh.getFaces().toArray(iA);
+                
+                for (int k = 0; k < iA.length; k += 6) {
+                    Point p1 = new Point(fA[iA[k]*3], fA[iA[k]*3 + 1], fA[iA[k]*3 + 2]);
+                    Point p2 = new Point(fA[iA[k+2]*3], fA[iA[k+2]*3 + 1], fA[iA[k+2]*3 + 2]);
+                    Point p3 = new Point(fA[iA[k+4]*3], fA[iA[k+4]*3 + 1], fA[iA[k+4]*3 + 2]);
+                    Point[] verts = {p1, p2, p3};
+                    Triangle t = new Triangle(verts, infoObj.getInt("charge"));
+                    parts.add(t);
+                }*/
             }
         }
         //parts.addAll(demoParts);
