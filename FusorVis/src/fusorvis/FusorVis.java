@@ -97,6 +97,7 @@ public class FusorVis extends Application {
     Sphere deutron = new Sphere(1.0);
         
     Point[] points;
+    List<GridComponent> parts;
     
     List<Point> markedPoints;
     
@@ -168,7 +169,7 @@ public class FusorVis extends Application {
         world.getChildren().addAll(chargeGroup);
     }
     
-    private void buildWireComponents(List<GridComponent> parts) {
+    private void buildWireComponents() {
         final PhongMaterial wireMaterial = new PhongMaterial();
         wireMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
         wireMaterial.setSpecularColor(Color.LIGHTGREY);
@@ -472,8 +473,9 @@ public class FusorVis extends Application {
                         break;
                     case X:
                         if (event.isControlDown()) {
-                            printShapesXML.printShapes();
+                            printShapesXML.printShapes(parts);
                         }
+                        break;
                     case P: // Seed points
                         // Insert code for setting up particles here
                         
@@ -674,7 +676,7 @@ public class FusorVis extends Application {
 
         //XMLParser p = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
-        List<GridComponent> parts = new ArrayList<>();
+        parts = new ArrayList<>();
 
         String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
