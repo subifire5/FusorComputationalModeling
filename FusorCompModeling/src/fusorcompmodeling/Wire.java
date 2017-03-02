@@ -139,7 +139,7 @@ public class Wire {
                    // To calculate the starting direction, we must take the
                    // cross product of the current torus's center (lastGC.pos)
                    // with the vector created from finalPoint with the torus's
-                   // center. This must then be inverted, perhaps.
+                   // center.
                    
                     Point lastGCDirection = lastGC.pos.convertRayToCartesian(1);
                     Point sliceDirection = new Point(
@@ -163,28 +163,21 @@ public class Wire {
                          }
                     } catch (Exception e) {} // Nothing will occur if invertangle was not set
                     try {
-                         if (lastObj.getBoolean("flipdir")) {
-                             flipdir = true;
-                         }
+                        if (lastObj.getBoolean("flipdir")) {
+                            flipdir = true;
+                        }
                     } catch (Exception e) {} // Nothing will occur if flipdir was not set
 
                     try {
-                         if (lastObj.getBoolean("smartinver")) {
-                             d.theta += Math.PI;
-                             d.phi = Math.PI - d.phi;
-                         }
+                        if (lastObj.getBoolean("smartinver")) {
+                            d.theta = Math.PI - d.theta;
+                            d.phi += Math.PI;
+                        }
                     } catch (Exception e) {} // Nothing will occur if flipdir was not set
                     
                     if (flipdir) {
-                        System.out.println("Flipping the direction");
-                        System.out.println("d.phi was previously " + d.phi);
-                        System.out.println("d.theta was previously " + d.theta);
-
                         d.phi += Math.PI;
                         d.theta += Math.PI;
-
-                        System.out.println("d.phi is now " + d.phi);
-                        System.out.println("d.theta is now " + d.theta);
                     }
 
                     // We're done now, stick all our stuff into one ray

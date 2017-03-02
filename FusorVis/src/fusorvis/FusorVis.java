@@ -741,10 +741,10 @@ public class FusorVis extends Application {
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
-        buildTextWindow(primaryStage);
+        //buildTextWindow(primaryStage);
         buildStage(primaryStage);
-        buildEFieldSlice();
-        buildEFieldStage(primaryStage, points);
+        //buildEFieldSlice();
+        //buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
