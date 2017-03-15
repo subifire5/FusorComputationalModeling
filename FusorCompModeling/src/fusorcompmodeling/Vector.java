@@ -18,7 +18,7 @@ public class Vector {
     public double y;
     public double z;
     public double length;
-    // Units are degrees
+    // Units are radians
     public double phi;
     public double theta;
     

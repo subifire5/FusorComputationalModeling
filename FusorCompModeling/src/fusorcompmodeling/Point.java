@@ -5,6 +5,7 @@
  */
 package fusorcompmodeling;
 
+import static java.lang.Double.NaN;
 import java.util.Comparator;
 
 /**
@@ -191,13 +192,30 @@ public class Point {
                 Double.toString(z) + "]";
     }
 
-    void divideByLength(double len) {
+    public void divideByLength(double len) {
         x /= len;
         y /= len;
         z /= len;
     }
     
+    public void scale (double scaleFactor) { // Technically redundant (see previous method)
+        // But is still a good thing to have (I think)
+        x *= scaleFactor;
+        y *= scaleFactor;
+        z *= scaleFactor;
+        
+    }
+    
+    public void sum (Point addend) {
+        x += addend.x;
+        y += addend.y;
+        z += addend.z;
+    }
+    
     double getLength() {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+    }
+    boolean testForNaN() {
+        return x == NaN || y == NaN || z == NaN;
     }
 }

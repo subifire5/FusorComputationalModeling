@@ -28,7 +28,6 @@ public class MathJSONObject extends JSONObject{
         super(json);
     }
     public double getMath(String key) {
-        System.out.println(super.getString(key));
         MathEval eval = new MathEval();
         return eval.evaluate(super.getString(key));
     }
