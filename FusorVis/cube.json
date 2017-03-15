@@ -98,13 +98,14 @@
 			"z": "20",
 			"phi": "0",
 			"theta": "0",
-			"planePhi": "tau/4",
-			"planeTheta": "-tau/4"
+			"planePhi": "0",
+			"planeTheta": "0"
 		},
 		"components": [
 			{
-				"type": "straight",
-				"height": "10"
+				"type": "bend",
+				"radius": "40",
+				"angle": "tau"
 			}
 		]
 	}
