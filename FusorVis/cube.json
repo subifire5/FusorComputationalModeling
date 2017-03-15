@@ -89,9 +89,10 @@
 		]
 	},
 	{
-		"scalefactor": "3",
+		"scalefactor": 3,
 		"charge": -1,
 		"filename": "cartest.stl",
-		"type": "stl"
+		"type": "stl",
+		"positionadj": {"x": 10.0, "y": 10.0, "z": 10.0}
 	}
 ]

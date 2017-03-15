@@ -696,6 +696,13 @@ public class FusorVis extends Application {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                double scaleFactor = infoObj.getDouble("scalefactor");
+                JSONObject translationObj = infoObj.getJSONObject("positionadj");
+                Point translation = new Point (
+                translationObj.getDouble("x"),
+                translationObj.getDouble("y"),
+                translationObj.getDouble("z"));
+                
                 TriangleMesh mesh = imp.getImport();
                 imp.close();
                 float[] fA = null;
@@ -709,6 +716,12 @@ public class FusorVis extends Application {
                     Point p2 = new Point(fA[iA[k+2]*3], fA[iA[k+2]*3 + 1], fA[iA[k+2]*3 + 2]);
                     Point p3 = new Point(fA[iA[k+4]*3], fA[iA[k+4]*3 + 1], fA[iA[k+4]*3 + 2]);
                     Point[] verts = {p1, p2, p3};
+                    
+                    for (Point p : verts) { // Apply transformations
+                        p.scale(scaleFactor);
+                        p.sum(translation);
+                    }
+                    
                     Triangle t = new Triangle(verts, infoObj.getInt("charge"));
                     parts.add(t);
                 }
