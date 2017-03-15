@@ -45,13 +45,14 @@ public class EField {
             e.x = r.x/(rLen*rLen*rLen);
             e.y = r.y/(rLen*rLen*rLen);
             e.z = r.z/(rLen*rLen*rLen);
+            
+            e.x *=kQ;
+            e.y *=kQ;
+            e.z *=kQ;
+            
             eSum.x+= e.x;
             eSum.y+=e.y;
             eSum.z+=e.z;
-            
-            eSum.x*=kQ;
-            eSum.y*=kQ;
-            eSum.z*=kQ;
             
         }
 
