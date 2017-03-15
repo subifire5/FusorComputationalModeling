@@ -311,8 +311,11 @@ public class FusorVis extends Application {
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
                 Point p = new Point((-(sliceWidth/2) + i * widthUnit), (-(sliceHeight/2) + k * widthUnit), 0);
-                Vector efield = EField.EFieldSum(points, translateEFieldPixel(p));
-                        
+                System.out.println("Old point: " + p.toString());
+                p = translateEFieldPixel(p);
+                System.out.println("New point: " + p.toString());
+                Vector efield = EField.EFieldSum(points, p);
+                
                 minValues[0] = Math.min(efield.x, minValues[0]);
                 minValues[1] = Math.min(efield.y, minValues[1]);
                 minValues[2] = Math.min(efield.z, minValues[2]);
@@ -428,7 +431,7 @@ public class FusorVis extends Application {
         final boolean moveCamera = true;
         
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            double translateStep = 0.02;
+            double translateStep = 0.2;
             double rotateStep = 1;
             
             @Override
@@ -446,6 +449,7 @@ public class FusorVis extends Application {
                             textFieldStage.setScene(new Scene(textFieldRoot, 450, 450));
                             textFieldStage.show();
                         }
+                        break;
                     case S:
                         if (event.isControlDown()) {
                             PrintWriter writer = null;
@@ -459,6 +463,7 @@ public class FusorVis extends Application {
                             writer.println(exportPointsAsJSON());
                             writer.close();
                         }
+                        break;
                     case PAGE_UP: // Get larger
                         scaleElectrons(1.1);
                         break;
@@ -775,8 +780,8 @@ public class FusorVis extends Application {
         buildScene();
         //buildTextWindow(primaryStage);
         buildStage(primaryStage);
-        //buildEFieldSlice();
-        //buildEFieldStage(primaryStage, points);
+        buildEFieldSlice();
+        buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
