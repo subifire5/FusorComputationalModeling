@@ -89,10 +89,23 @@
 		]
 	},
 	{
-		"scalefactor": 3,
+		"type": "wire",
+		"radius": "0.45",
 		"charge": -1,
-		"filename": "cartest.stl",
-		"type": "stl",
-		"positionadj": {"x": 10.0, "y": 10.0, "z": 10.0}
+		"start": {
+			"x": "20",
+			"y": "0",
+			"z": "20",
+			"phi": "0",
+			"theta": "0",
+			"planePhi": "tau/4",
+			"planeTheta": "-tau/4"
+		},
+		"components": [
+			{
+				"type": "straight",
+				"height": "10"
+			}
+		]
 	}
 ]
