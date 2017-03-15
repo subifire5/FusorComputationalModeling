@@ -1,20 +1,24 @@
 
 package fusorvis;
 
-import com.sun.javafx.geom.transform.Affine3D;
-import com.sun.javafx.geom.transform.BaseTransform;
 import fusorcompmodeling.*;
-import fusorcompmodeling.Triangle;
+
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import java.util.List;
+
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+
+import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
+
+import static javafx.scene.input.KeyCode.*;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -23,9 +27,6 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
-import javafx.event.EventHandler;
-import javafx.geometry.Rectangle2D;
-import static javafx.scene.input.KeyCode.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
@@ -37,14 +38,12 @@ import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.shape.TriangleMesh;
+
 import java.util.ArrayList;
-import java.lang.Integer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -54,18 +53,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.input.KeyCode;
-import javafx.scene.transform.*;
+
 import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
 import java.io.File;
-import javafx.collections.ObservableFloatArray;
-import javafx.scene.shape.TriangleMesh;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  *
