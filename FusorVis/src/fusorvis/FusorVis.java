@@ -98,6 +98,7 @@ public class FusorVis extends Application {
     Sphere deutron = new Sphere(1.0);
         
     Point[] points;
+    List<GridComponent> parts;
     
     List<Point> markedPoints;
     
@@ -169,7 +170,7 @@ public class FusorVis extends Application {
         world.getChildren().addAll(chargeGroup);
     }
     
-    private void buildWireComponents(List<GridComponent> parts) {
+    private void buildWireComponents() {
         final PhongMaterial wireMaterial = new PhongMaterial();
         wireMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
         wireMaterial.setSpecularColor(Color.LIGHTGREY);
@@ -437,7 +438,7 @@ public class FusorVis extends Application {
             @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
-                    case X: // CTRL+X closes window
+                    case Z: // CTRL+X closes window
                         if (event.isControlDown()) {
                             // Close down window
                             stage.close();
@@ -478,6 +479,11 @@ public class FusorVis extends Application {
                         break;
                     case A: // Toggle axis visibility
                         toggleXform(axisGroup);
+                        break;
+                    case X:
+                        if (event.isControlDown()) {
+                            printShapesXML.printShapes(parts);
+                        }
                         break;
                     case P: // Seed points
                         // Insert code for setting up particles here
@@ -677,12 +683,12 @@ public class FusorVis extends Application {
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
-        XMLParser par = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
-        List<GridComponent> parts = new ArrayList<>();
+        parts = new ArrayList<>();
 
         String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
+        
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
         for (int i = 0; i < pieceArr.length(); i++) {
             JSONObject infoObj = pieceArr.getJSONObject(i);
