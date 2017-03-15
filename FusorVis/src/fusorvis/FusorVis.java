@@ -689,13 +689,7 @@ public class FusorVis extends Application {
                 Wire w = new Wire(infoObj.toString());
                 parts.addAll(w.getAsGridComponents());
             } else if (infoObj.getString("type").equals("stl")) {
-                Point[] testPoints = new Point[3];
-                testPoints[0] = new Point(0, 0, 0);
-                testPoints[2] = new Point(5, 0, 0);
-                testPoints[1] = new Point(0, 5, 0);
-                Triangle t = new Triangle(testPoints, -1);
-                parts.add(t);
-                /*StlMeshImporter imp = new StlMeshImporter();
+                StlMeshImporter imp = new StlMeshImporter();
                 try {
                     System.out.println(infoObj.getString("filename"));
                     imp.read(new File(infoObj.getString("filename")));
@@ -717,25 +711,14 @@ public class FusorVis extends Application {
                     Point[] verts = {p1, p2, p3};
                     Triangle t = new Triangle(verts, infoObj.getInt("charge"));
                     parts.add(t);
-                }*/
+                }
             }
         }
-        //parts.addAll(demoParts);
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
         
-        /*try {
-            String path = xmlFileName + ".json";
-            byte[] encoded = Files.readAllBytes(Paths.get(path));
-            JSONArray jsonPoints = new JSONArray(new String(encoded, Charset.defaultCharset()));
-            points = new Point[jsonPoints.length()];
-        }
-        //parts.addAll(demoParts);
-        
-        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
-        markedPoints = new ArrayList<>();
-        
+        /*        
         /*try {
             String path = xmlFileName + ".json";
             byte[] encoded = Files.readAllBytes(Paths.get(path));

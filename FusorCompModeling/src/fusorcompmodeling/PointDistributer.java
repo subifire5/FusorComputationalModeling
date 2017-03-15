@@ -82,13 +82,10 @@ public class PointDistributer {
 
     public static double distanceCalculator(Point a, Point b) {
 
-        System.out.println(a.x);
-        System.out.println(b.x);
-        //This will make our calculations a lot more accurate because there are less floating point calculations as opposed to Math.pow()
-        double subt = a.x - b.x;
-        double distSquared = (Math.pow(subt, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
-        double distance = Math.sqrt(distSquared);
-        return distance;
+        // I'm using the slower math.pow here, because it doesn't seem to make a big impact on performance
+        // However, a more thourough investigation is required here
+        double distSquared = (Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
+        return Math.sqrt(distSquared);
     }
 
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {

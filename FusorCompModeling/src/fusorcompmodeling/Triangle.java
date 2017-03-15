@@ -17,6 +17,7 @@ public class Triangle extends GridComponent {
     
     Point[] points;
     
+    
     public Triangle(Point[] points, int charge) {
         this.points = points;
         this.charge = charge;
@@ -34,13 +35,10 @@ public class Triangle extends GridComponent {
         p.x = (1 - Math.sqrt(r1)) * points[0].x + (Math.sqrt(r1) * (1 - r2)) * points[1].x + (Math.sqrt(r1) * r2) * points[2].x;
         p.y = (1 - Math.sqrt(r1)) * points[0].y + (Math.sqrt(r1) * (1 - r2)) * points[1].y + (Math.sqrt(r1) * r2) * points[2].y;
         p.z = (1 - Math.sqrt(r1)) * points[0].z + (Math.sqrt(r1) * (1 - r2)) * points[1].z + (Math.sqrt(r1) * r2) * points[2].z;
+        p.charge = charge;
         //Use a formula to generate a random coordinate that is on triangle, and set it to the point
         
-        if (p.x == NaN || p.y == NaN || p.z == NaN) {
-            System.out.println("getRandomPoint returned a NAN value!");
-        }
-        
-        return new Point(5, 5, 5);
+        return p;
     }
 
     @Override
