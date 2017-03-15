@@ -4,6 +4,7 @@ package fusorvis;
 import com.sun.javafx.geom.transform.Affine3D;
 import com.sun.javafx.geom.transform.BaseTransform;
 import fusorcompmodeling.*;
+import fusorcompmodeling.Triangle;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -61,6 +62,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.transform.*;
+import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
+import java.io.File;
+import javafx.collections.ObservableFloatArray;
+import javafx.scene.shape.TriangleMesh;
 
 /**
  *
@@ -210,6 +215,7 @@ public class FusorVis extends Application {
         final Box yAxis = new Box(1, 240.0, 1);
         final Box zAxis = new Box(1, 1, 240.0);
         final Sphere posXAxis = new Sphere(2.0);
+        final Sphere posYAxis = new Sphere(2.0);
         final Sphere posZAxis = new Sphere(2.0);
 
         xAxis.setMaterial(redMaterial);
@@ -217,10 +223,12 @@ public class FusorVis extends Application {
         zAxis.setMaterial(blueMaterial);
         posXAxis.setMaterial(redMaterial);
         posXAxis.setTranslateX(120);
+        posYAxis.setMaterial(greenMaterial);
+        posYAxis.setTranslateY(120);
         posZAxis.setMaterial(blueMaterial);
         posZAxis.setTranslateZ(120);
 
-        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis);
+        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis, posYAxis);
         world.getChildren().addAll(axisGroup);
     }
 
@@ -668,34 +676,62 @@ public class FusorVis extends Application {
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
-        XMLParser p = new XMLParser(xmlFileName + ".xml");
+        XMLParser par = new XMLParser(xmlFileName + ".xml");
         //List<GridComponent> parts = p.parseObjects();
         List<GridComponent> parts = new ArrayList<>();
 
         String jsonPath = "cube.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
-        JSONArray wireArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
-        for (int i = 0; i < wireArr.length(); i++) {
-            JSONObject wireObj = wireArr.getJSONObject(i);
-            Wire w = new Wire(wireObj.toString());
-            parts.addAll(w.getAsGridComponents());
+        JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
+        for (int i = 0; i < pieceArr.length(); i++) {
+            JSONObject infoObj = pieceArr.getJSONObject(i);
+            if (infoObj.getString("type").equals("wire")) {
+                Wire w = new Wire(infoObj.toString());
+                parts.addAll(w.getAsGridComponents());
+            } else if (infoObj.getString("type").equals("stl")) {
+                StlMeshImporter imp = new StlMeshImporter();
+                try {
+                    System.out.println(infoObj.getString("filename"));
+                    imp.read(new File(infoObj.getString("filename")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                double scaleFactor = infoObj.getDouble("scalefactor");
+                JSONObject translationObj = infoObj.getJSONObject("positionadj");
+                Point translation = new Point (
+                translationObj.getDouble("x"),
+                translationObj.getDouble("y"),
+                translationObj.getDouble("z"));
+                
+                TriangleMesh mesh = imp.getImport();
+                imp.close();
+                float[] fA = null;
+                fA = mesh.getPoints().toArray(fA);
+                
+                int[] iA = null;
+                iA = mesh.getFaces().toArray(iA);
+                
+                for (int k = 0; k < iA.length; k += 6) {
+                    Point p1 = new Point(fA[iA[k]*3], fA[iA[k]*3 + 1], fA[iA[k]*3 + 2]);
+                    Point p2 = new Point(fA[iA[k+2]*3], fA[iA[k+2]*3 + 1], fA[iA[k+2]*3 + 2]);
+                    Point p3 = new Point(fA[iA[k+4]*3], fA[iA[k+4]*3 + 1], fA[iA[k+4]*3 + 2]);
+                    Point[] verts = {p1, p2, p3};
+                    
+                    for (Point p : verts) { // Apply transformations
+                        p.scale(scaleFactor);
+                        p.sum(translation);
+                    }
+                    
+                    Triangle t = new Triangle(verts, infoObj.getInt("charge"));
+                    parts.add(t);
+                }
+            }
         }
-        //parts.addAll(demoParts);
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
         
-        /*try {
-            String path = xmlFileName + ".json";
-            byte[] encoded = Files.readAllBytes(Paths.get(path));
-            JSONArray jsonPoints = new JSONArray(new String(encoded, Charset.defaultCharset()));
-            points = new Point[jsonPoints.length()];
-        }
-        //parts.addAll(demoParts);
-        
-        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
-        markedPoints = new ArrayList<>();
-        
+        /*        
         /*try {
             String path = xmlFileName + ".json";
             byte[] encoded = Files.readAllBytes(Paths.get(path));
