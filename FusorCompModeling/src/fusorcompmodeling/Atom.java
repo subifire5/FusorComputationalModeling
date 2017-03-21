@@ -10,25 +10,22 @@ package fusorcompmodeling;
  * @author sfreisem-kirov
  */
 public class Atom {
+    public Atom(){
+    
+    }
     public static Point position;
-    public static VectorVelocity Velocity;
-    public static VectorAcceleration Acceleration;
+    public static Vector Velocity;
     public static void setPos(Point Position){
         position = Position;
     }
     public static Point getPos(){
         return position;
     }
-    public static void setVelocity(VectorVelocity Vel){
+    public static void setVelocity(Vector Vel){
         Velocity = Vel;
     }
-    public static VectorVelocity getVelocity(){
+    public static Vector getVelocity(){
         return Velocity;
     }
-    public static void setAcceleration(VectorAcceleration Acc){
-        Acceleration = Acc;
-    }
-    public static VectorAcceleration getAcceleration(){
-        return Acceleration;
-    }
+
 }
