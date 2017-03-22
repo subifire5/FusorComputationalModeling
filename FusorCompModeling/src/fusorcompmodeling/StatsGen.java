@@ -12,9 +12,6 @@ import static fusorcompmodeling.PointDistributer.electricPotential;
  * @author sfreisem-kirov
  */
 public class StatsGen {
-    public StatsGen() {
-    
-    }
     public static double avgPotential(Point[] points, int charge){
         double avgPotential;
         double totalPotential = 0;

@@ -5,18 +5,34 @@
  */
 package fusorcompmodeling;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author sfreisem-kirov
  */
 public class Controller {
-    int length = 0;
-    public Atom[] Atoms = new Atom[length];
+    EField e = new EField();
+//    Solver s = new euler();  
+    static ArrayList<Atom> Atoms = new ArrayList();
     
-    public Controller(int numAtoms){
-        length = numAtoms;
+    public Controller(Point[] points, double voltageAnnode, double voltageCathode){
+        e.setkQ(voltageAnnode,voltageCathode,points);
     }
-    public static void stepForeward(int numPSecs){
-        
+    
+    public static void stepAllForeward(int numPSecs){
+        for(int i = 0; i < Atoms.size(); i++){
+            
+        }
+    }
+    public static void addAtom(Point pos){
+        Vector v = new Vector();
+        v.x=0;
+        v.y=0;
+        v.z=0;
+        Atom a = new Atom();
+        a.position = pos;
+        a.Velocity = v;
     }
 }

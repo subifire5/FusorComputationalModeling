@@ -9,11 +9,6 @@ package fusorcompmodeling;
  *
  * @author sfreisem-kirov
  */
-public class Atom {
-    public Atom(){
-    
-    }
-    public static double mass;
-    public static Point position;
-    public static Vector Velocity;
+public interface Solver {
+    public Atom moveForward(Point[] points,int timeStep,Atom a, EField e);
 }

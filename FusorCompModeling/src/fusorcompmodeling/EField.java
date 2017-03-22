@@ -17,7 +17,7 @@ public class EField {
         
     }
     public static double kQ;
-    
+    public static Vector EForce;
     
     public static void setkQ(double voltageAnnode, double voltageCathode, Point[] points) {
         double DeltaPhi = getDeltaPhi(avgPotential(points, 1), avgPotential(points, -1));
@@ -57,7 +57,7 @@ public class EField {
         }
 
 
-        
+        EForce = eSum;
         return eSum;
     }
 }
