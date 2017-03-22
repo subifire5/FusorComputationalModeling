@@ -111,10 +111,10 @@ public class FusorVis extends Application {
     
     // Efield generation stats
     
-    double sliceWidth = 96/16;
-    double sliceHeight = 54/16;
+    double sliceWidth = 6;
+    double sliceHeight = 3.75;
     double imageConversionFactor = 256;
-    double blockSideLength = 16;
+    double blockSideLength = 32;
                             
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -309,8 +309,8 @@ public class FusorVis extends Application {
         double[] maxValues = {0.0, 0.0, 0.0};
         Random r = new Random();
         
-        for (int i = 0; i < arrayWidth; i++) {
-            for (int k = 0; k < arrayHeight; k++) {
+        for (int i = arrayWidth-1; i > 0; i--) {
+            for (int k = arrayHeight-1; k > 0; k--) {
                 Point p = new Point((-(sliceWidth/2) + i * widthUnit), (-(sliceHeight/2) + k * widthUnit), 0);
                 System.out.println("Old point: " + p.toString());
                 p = translateEFieldPixel(p);
@@ -339,15 +339,15 @@ public class FusorVis extends Application {
 
         System.out.println("Ranges calculated. x: [" + range[0] + "], y: [" + range[1] + "], z: [" + range[2] + "]");
 
-        for (int i = 0; i < arrayWidth; i++) {
-            for (int k = 0; k < arrayHeight; k++) {
+        for (int i = arrayWidth-1; i > 0; i--) {
+            for (int k = arrayHeight-1; k > 0; k--) {
                 Color c = new Color(((fieldGrid[i][k][0] - minValues[0]) / range[0]),
                                   ((fieldGrid[i][k][1] - minValues[1]) / range[1]), 
                                   ((fieldGrid[i][k][2] - minValues[2]) / range[2]),
                                   1.0);
                 for (int j = 0; j < blockSideLength; j++) {
                     for (int l = 0; l < blockSideLength; l++) {
-                        eFieldPixelWriter.setColor(i * 16 + j, k * 16 + l, c);
+                        eFieldPixelWriter.setColor(i * (int) blockSideLength + j, k *  (int) blockSideLength + l, c);
                     }
                 }
             }
@@ -610,8 +610,8 @@ public class FusorVis extends Application {
     }
     
     public void buildEFieldSlice() {
-        final int baseWidth = 48;
-        final int baseHeight = 27;
+        final int baseWidth = 24;
+        final int baseHeight = 27/2;
         
         final PhongMaterial planeMaterial = new PhongMaterial();
         planeMaterial.setDiffuseColor(new Color(0.5,0.5,0.5,0.5));
@@ -800,7 +800,7 @@ public class FusorVis extends Application {
         
         primaryStage.setTitle("Fusor Electric Field Visualizer");
         primaryStage.setScene(scene);
-        primaryStage.show();
+        //primaryStage.show();
         //primaryStage.setFullScreen(true);
         scene.setCamera(camera);
     }
