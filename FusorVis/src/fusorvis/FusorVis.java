@@ -496,7 +496,10 @@ public class FusorVis extends Application {
                         deutron.setTranslateX(50);
                         deutron.setTranslateY(50);
                         deutron.setTranslateZ(50);
-
+                        
+                        Controller c = new Controller(points,annodeVoltage,cathodeVoltage);
+                        c.addAtom()
+                        
                         world.getChildren().add(deutron);
                         // Insert code for updating positions in this runnable
                         Runnable r = new Runnable() {

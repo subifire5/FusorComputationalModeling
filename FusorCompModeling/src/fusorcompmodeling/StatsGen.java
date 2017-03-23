@@ -38,11 +38,4 @@ public class StatsGen {
         return vAcc;
     }
 
-//    public static VectorVelocity getVelocity(Point[] points, Point r, double mass, double t, VectorVelocity initialV){
-//        VectorVelocity vVel = new VectorVelocity();
-//        vVel.setXVelocity(initialV.getXVelocity() - (getAcceleration(points, r, mass).getXAcceleration()*t));
-//        vVel.setYVelocity(initialV.getYVelocity() - (getAcceleration(points, r, mass).getYAcceleration()*t));
-//        vVel.setZVelocity(initialV.getZVelocity() - (getAcceleration(points, r, mass).getZAcceleration()*t));
-//        return vVel;
-//    }
 }

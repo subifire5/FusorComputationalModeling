@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Controller {
     EField e = new EField();
-//    Solver s = new euler();  
+    Solver s = new euler();  
     static ArrayList<Atom> Atoms = new ArrayList();
     
     public Controller(Point[] points, double voltageAnnode, double voltageCathode){
@@ -26,7 +26,7 @@ public class Controller {
             
         }
     }
-    public static void addAtom(Point pos){
+    public static void addAtom(Point pos, double mass){
         Vector v = new Vector();
         v.x=0;
         v.y=0;
@@ -34,5 +34,6 @@ public class Controller {
         Atom a = new Atom();
         a.position = pos;
         a.Velocity = v;
+        a.mass = mass;
     }
 }
