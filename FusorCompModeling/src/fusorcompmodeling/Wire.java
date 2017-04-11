@@ -67,7 +67,7 @@ public class Wire {
         MathJSONObject lastObj = new MathJSONObject(); // Needs to be initialized or Netbeans will be sad
         
         Vector currentPlane = originalPlane;
-        System.out.println(originalPlane.toString());
+        System.out.println("Current plane: " + originalPlane.toString());
         
         for (int i = 0; i < bends.length(); i++) {
             Vector s;
@@ -148,6 +148,7 @@ public class Wire {
                             finalPoint.z - lastGC.pos.z);
 
                     Vector d = lastGCDirection.crossProduct(sliceDirection).convertToSphericalCoords();
+                    System.out.println("Vector dir: " + d.toString());
                     try {
                          if (lastObj.getBoolean("invert")) {
                              d.phi *= -1;
@@ -172,6 +173,7 @@ public class Wire {
                         if (lastObj.getBoolean("smartinver")) {
                             d.theta = Math.PI - d.theta;
                             d.phi += Math.PI;
+                            System.out.println("Performed a smart inversion!");
                         }
                     } catch (Exception e) {} // Nothing will occur if flipdir was not set
                     
@@ -193,9 +195,8 @@ public class Wire {
                 parts.add(c);
                 lastObj = currentObj;
             } else if ("bend".equals(currentObj.getString("type"))) {
-                
-                // R1 could be anything, but we pick this to make our life down
-                // thre road easier
+                System.out.println("Current direction for torus: " + s.phi + ", " + s.theta);
+
                 double r1 = currentObj.getMath("radius");
                 
                 /* To find the center of our torus, we need to take the cross
@@ -252,11 +253,16 @@ public class Wire {
                 double angleToStart = sRay.getAngleBetweenVectors(segmentStart);
 
                 try {
-                    if (currentObj.getBoolean("invertangle")) {
-                        angleToStart *= -1;
-                    }
+                   double a = currentObj.getMath("angletostart");
+                   angleToStart = a;
                    } catch (Exception e) {} // Nothing will occur if invert was not set
                 
+                try {
+                   if (currentObj.getBoolean("invertdegree")) {
+                        angleToStart = Math.PI + currentObj.getMath("angle");
+                        System.out.println("Inverted angle!");
+                    }
+                   } catch (Exception e) {} // Nothing will occur if invert was not set
                 // Combine all our data for the position into a single vector
                 // This will be fed right into our torus segment untouched
                 
@@ -267,9 +273,9 @@ public class Wire {
                         currentPlane.phi,
                         currentPlane.theta);
                                 
-                TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
+                final TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
                         currentObj.getMath("angle"), wireradius, charge);
-                
+                System.out.println("Rotation attributes: " + tP.phi + ", " + angleToStart);
                 parts.add(tS);
                 
                 lastObj = currentObj;

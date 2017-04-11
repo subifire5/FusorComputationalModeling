@@ -677,8 +677,8 @@ public class FusorVis extends Application {
     @Override
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 2000;
-        int optimizations = 10;
+        int pointCount = 8000;
+        int optimizations = 50;
         
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
@@ -734,6 +734,8 @@ public class FusorVis extends Application {
                 }
             }
         }
+        //parts.add(new TorusSegment(new Vector(0.5, 22, 1, 0, Math.PI), 12, Math.PI + 0.01, 0.5*Math.PI, 0.45, 1));
+        //parts.add(new fusorcompmodeling.Cylinder(new Vector(50, 50, 0, 0, 0), 1, 5, -1));
         
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
@@ -786,8 +788,8 @@ public class FusorVis extends Application {
         buildScene();
         //buildTextWindow(primaryStage);
         buildStage(primaryStage);
-        buildEFieldSlice();
-        buildEFieldStage(primaryStage, points);
+        //buildEFieldSlice();
+        //buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
