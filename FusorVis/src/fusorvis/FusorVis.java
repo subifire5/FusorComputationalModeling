@@ -2,10 +2,6 @@ package fusorvis;
 
 import fusorcompmodeling.*;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-
 import java.util.List;
 
 import javafx.application.Application;
@@ -50,20 +46,18 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -116,6 +110,8 @@ public class FusorVis extends Application {
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
     double blockSideLength = 16;
+
+    ProgressBar pb = new ProgressBar();
 
     private static final double CAMERA_INITIAL_DISTANCE = -450;
     private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
@@ -309,7 +305,6 @@ public class FusorVis extends Application {
         double[][][] fieldGrid = new double[arrayWidth][arrayHeight][3];
         double[] minValues = {0.0, 0.0, 0.0}; // Goes X, Y, Z
         double[] maxValues = {0.0, 0.0, 0.0};
-        Random r = new Random();
 
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
@@ -502,7 +497,28 @@ public class FusorVis extends Application {
                         break;
                     case X:
                         if (event.isControlDown()) {
-                            printShapesXML.printShapes(parts);
+                            FileChooser fileChooser = new FileChooser();
+                            System.out.println("IN FILE CHOOSER");
+                            fileChooser.setTitle("Save file");
+                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML Files", "*.XML"));
+                            File savedFile = fileChooser.showSaveDialog(primaryStage);
+                            if (savedFile != null) {
+                                try {
+                                    String txt = printShapesXML.printShapes(parts);
+                                    savedFile.createNewFile();
+                                    PrintStream stream = new PrintStream(savedFile, "UTF-8");
+                                    stream.println(txt);
+                                    stream.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    System.out.println("An ERROR occurred while saving the file!"
+                                            + savedFile.toString());
+                                    return;
+                                }
+                                System.out.println("File saved: " + savedFile.toString());
+                            } else {
+                                System.out.println("File save cancelled.");
+                            }
                         }
                         break;
                     case P: // Seed points
@@ -806,8 +822,8 @@ public class FusorVis extends Application {
         buildScene();
         //buildTextWindow(primaryStage);
         buildStage(primaryStage);
-        //buildEFieldSlice();
-        //buildEFieldStage(primaryStage, points);
+        buildEFieldSlice();
+        buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
