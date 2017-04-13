@@ -94,9 +94,7 @@ public class FusorVis extends Application {
     String xmlFileName = "SimpleXML";
     
     double timeStepMCS = 1;
-    
-    Sphere deutron = new Sphere(1.0);
-        
+            
     Point[] points;
     List<GridComponent> parts;
     
@@ -138,7 +136,7 @@ public class FusorVis extends Application {
     
     double annodeVoltage = 0;
     double cathodeVoltage = -500;
-    
+    Controller c;
     // Render vars
     
     double electronRadius = 1.0;
@@ -428,6 +426,10 @@ public class FusorVis extends Application {
             }
         });
     }
+    
+    boolean flag = false;
+    public static ArrayList<Sphere> Deuterons = new ArrayList();
+    
     private void handleKeyboard(Scene scene, Stage stage) {
         final boolean moveCamera = true;
         
@@ -489,29 +491,49 @@ public class FusorVis extends Application {
                         // Insert code for setting up particles here
                         
                         final PhongMaterial deutronMaterial = new PhongMaterial();
-                        deutronMaterial.setDiffuseColor(Color.CORAL);
-                        deutronMaterial.setSpecularColor(Color.PURPLE);
-                        
+                        deutronMaterial.setDiffuseColor(Color.PURPLE);
+                        Sphere deutron = new Sphere(1.0);
                         deutron.setMaterial(deutronMaterial);
-                        deutron.setTranslateX(50);
-                        deutron.setTranslateY(50);
-                        deutron.setTranslateZ(50);
                         
-                        Controller c = new Controller(points,annodeVoltage,cathodeVoltage);
-                        c.addAtom()
+                        if (!flag) {
+                            c = new Controller(points,annodeVoltage,cathodeVoltage);
+                        }
+                        Deuterons.add(deutron);
                         
+                        Point pos = new Point();
+                        pos.x = 0;
+                        pos.y = 18;
+                        pos.z = 6;
+                        c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
+                        deutron.setTranslateX(pos.x);
+                        deutron.setTranslateY(pos.y);
+                        deutron.setTranslateZ(pos.z);
                         world.getChildren().add(deutron);
+                        
                         // Insert code for updating positions in this runnable
+                        if (!flag) {
+                            flag = true;
+                        } else {
+                            break;
+                        }
                         Runnable r = new Runnable() {
                             public void run() {
                                 // Code for updating positions goes here
-                                Point p = new Point(deutron.getTranslateX(), deutron.getTranslateY(), deutron.getTranslateZ());
-                                //Vector v = StatsGen.getVelocity(points, 0, -20000.0, 0, p, ONE_FRAME);
+                                c.stepAllForeward(points,0.01);
+                                    System.out.println("Running once, size of Deuterons is " + Deuterons.size());
+                                    //System.out.println("Stepping all points forward! There are " + Deuterons.size() + " deutrons and " + c.Atoms.size() + " atoms.");
+                                    for(int i = 0; i < Deuterons.size(); i++){
+                                        Deuterons.get(i).setTranslateX(c.atoms[i].position.x);
+                                        Deuterons.get(i).setTranslateY(c.atoms[i].position.y);
+                                        Deuterons.get(i).setTranslateZ(c.atoms[i].position.z);
+                                        //System.out.println("Position of deuteron " + i + " is " + Deuterons.get(i).getTranslateX() + " in the x dimension, while its atom is at " + c.atoms[i].position.x);
+                                    }
+                                
                             }
                         };
                         
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                        executor.scheduleAtFixedRate(r, 0, 50, TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(r, 0, 1000, TimeUnit.MILLISECONDS);
                         break;
                     case F:
                         if (event.isControlDown()) {

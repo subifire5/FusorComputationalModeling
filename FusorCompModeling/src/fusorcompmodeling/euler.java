@@ -12,7 +12,7 @@ package fusorcompmodeling;
 public class euler implements Solver{
 
     @Override
-    public Atom moveForward(Point[] points, int TS, Atom a, EField e) {
+    public Atom moveForward(Point[] points, double TS, Atom a, EField e) {
         Vector v0 = a.Velocity;
         Vector g = StatsGen.FToAcc(points, a.position,a.mass,e.EForce);
         

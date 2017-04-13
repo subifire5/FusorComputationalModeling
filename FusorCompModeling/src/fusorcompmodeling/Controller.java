@@ -13,20 +13,24 @@ import java.util.List;
  * @author sfreisem-kirov
  */
 public class Controller {
-    EField e = new EField();
-    Solver s = new euler();  
-    static ArrayList<Atom> Atoms = new ArrayList();
+    public static EField e = new EField();
+    public static Solver s = new euler();  
+    public Atom[] atoms = new Atom[50];
+    int atomsInArray = 0;
     
     public Controller(Point[] points, double voltageAnnode, double voltageCathode){
         e.setkQ(voltageAnnode,voltageCathode,points);
     }
     
-    public static void stepAllForeward(int numPSecs){
-        for(int i = 0; i < Atoms.size(); i++){
-            
+    public void stepAllForeward(Point[] points,double numPSecs){
+        double ts = 0.000000000001*numPSecs;
+        for(int i = 0; i < atomsInArray; i++){
+            Atom newAtom = s.moveForward(points,ts, atoms[i],e);
+            atoms[i] = newAtom;
+            System.out.println("Loop just ran once, atoms in array is " + atomsInArray);
         }
     }
-    public static void addAtom(Point pos, double mass){
+    public void addAtom(Point pos, double mass){
         Vector v = new Vector();
         v.x=0;
         v.y=0;
@@ -35,5 +39,7 @@ public class Controller {
         a.position = pos;
         a.Velocity = v;
         a.mass = mass;
+        atoms[atomsInArray] = a;
+        atomsInArray = atomsInArray + 1;
     }
 }

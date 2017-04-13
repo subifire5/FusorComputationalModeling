@@ -10,5 +10,5 @@ package fusorcompmodeling;
  * @author sfreisem-kirov
  */
 public interface Solver {
-    public Atom moveForward(Point[] points,int timeStep,Atom a, EField e);
+    public Atom moveForward(Point[] points,double timeStep,Atom a, EField e);
 }
