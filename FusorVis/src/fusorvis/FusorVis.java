@@ -677,8 +677,8 @@ public class FusorVis extends Application {
     @Override
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 8000;
-        int optimizations = 50;
+        int pointCount = 1000;
+        int optimizations = 0;
         
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
@@ -710,6 +710,9 @@ public class FusorVis extends Application {
                 translationObj.getDouble("y"),
                 translationObj.getDouble("z"));
                 
+                boolean flip_yz = infoObj.getBoolean("flip_yz");
+                boolean reflect = infoObj.getBoolean("flip_vertical");
+                
                 TriangleMesh mesh = imp.getImport();
                 imp.close();
                 float[] fA = null;
@@ -723,8 +726,15 @@ public class FusorVis extends Application {
                     Point p2 = new Point(fA[iA[k+2]*3], fA[iA[k+2]*3 + 1], fA[iA[k+2]*3 + 2]);
                     Point p3 = new Point(fA[iA[k+4]*3], fA[iA[k+4]*3 + 1], fA[iA[k+4]*3 + 2]);
                     Point[] verts = {p1, p2, p3};
-                    
                     for (Point p : verts) { // Apply transformations
+                        if (flip_yz) {
+                            double oldy = p.y;
+                            p.y = p.z;
+                            p.z = oldy;
+                        }
+                        if (reflect) {
+                            p.y *= -1;
+                        }
                         p.scale(scaleFactor);
                         p.sum(translation);
                     }
