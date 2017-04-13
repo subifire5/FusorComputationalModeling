@@ -164,12 +164,6 @@ public class Wire {
                          }
                     } catch (Exception e) {} // Nothing will occur if invertangle was not set
                     try {
-                        if (lastObj.getBoolean("flipdir")) {
-                            flipdir = true;
-                        }
-                    } catch (Exception e) {} // Nothing will occur if flipdir was not set
-
-                    try {
                         if (lastObj.getBoolean("smartinver")) {
                             d.theta = Math.PI - d.theta;
                             d.phi += Math.PI;
@@ -261,6 +255,13 @@ public class Wire {
                    if (currentObj.getBoolean("invertdegree")) {
                         angleToStart = Math.PI + currentObj.getMath("angle");
                         System.out.println("Inverted angle!");
+                    }
+                   } catch (Exception e) {} // Nothing will occur if invert was not set
+
+                try {
+                   if (currentObj.getBoolean("transangle")) {
+                        tRay.x -= 2 * currentObj.getMath("radius");
+                        System.out.println("Translated angle!");
                     }
                    } catch (Exception e) {} // Nothing will occur if invert was not set
                 // Combine all our data for the position into a single vector
