@@ -57,7 +57,10 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -80,11 +83,11 @@ public class FusorVis extends Application {
     final Xform cameraXform2 = new Xform();
     final Xform cameraXform3 = new Xform();
 
-    StackPane textFieldRoot = new StackPane();
+    TextFlow textFieldRoot = new TextFlow();
     Stage textFieldStage = new Stage();
     Stage eFieldStage = new Stage();
 
-    HashMap<String, String> output = new HashMap<>();
+    SortedMap<String, String> output = new TreeMap<String, String>();
 
     Text consoleDump = new Text();
 
@@ -258,16 +261,16 @@ public class FusorVis extends Application {
     }
 
     private void buildTextWindow(Stage primaryStage) {
-
-        consoleDump.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        compileOutput();
-        textFieldRoot.getChildren().add(consoleDump);
+        String output = compileOutput();
+        Text txt = new Text(output);
+        txt.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        textFieldRoot.getChildren().add(txt);
 
         textFieldStage.setTitle("Model statistics");
-        textFieldStage.setScene(new Scene(textFieldRoot, 600, 300));
+        textFieldStage.setScene(new Scene(textFieldRoot));
         textFieldStage.initOwner(primaryStage);
         textFieldStage.initModality(Modality.APPLICATION_MODAL);
-        textFieldStage.setAlwaysOnTop(true);
+        textFieldStage.setAlwaysOnTop(false);
         textFieldStage.show();
         primaryStage.toFront();
     }
@@ -650,6 +653,9 @@ public class FusorVis extends Application {
         final int baseWidth = 48;
         final int baseHeight = 27;
 
+        output.put("E-Field Slice Width", Integer.toString(baseWidth));
+        output.put("E-Field Slice Height", Integer.toString(baseHeight));
+
         final PhongMaterial planeMaterial = new PhongMaterial();
         planeMaterial.setDiffuseColor(new Color(0.5, 0.5, 0.5, 0.5));
 
@@ -669,6 +675,13 @@ public class FusorVis extends Application {
         eFieldTransforms[2] = rz;
 
         eFieldSlice.getTransforms().addAll(eFieldTransforms);
+
+        output.put("E-Field Slice Translation X", Double.toString(eFieldSlice.getTranslateX()));
+        output.put("E-Field Slice Translation Y", Double.toString(eFieldSlice.getTranslateY()));
+        output.put("E-Field Slice Translation Z", Double.toString(eFieldSlice.getTranslateZ()));
+        output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
+        output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
+        output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
 
         world.getChildren().add(eFieldSlice);
     }
@@ -702,7 +715,7 @@ public class FusorVis extends Application {
         return t;
     }
 
-    public void compileOutput() {
+    public String compileOutput() {
         Iterator it = output.entrySet().iterator();
         String textOutput = "";
         while (it.hasNext()) {
@@ -710,6 +723,7 @@ public class FusorVis extends Application {
             textOutput += pair.getKey() + ": " + pair.getValue() + "\n";
         }
         consoleDump.setText(textOutput);
+        return textOutput;
     }
 
     @Override
@@ -820,10 +834,10 @@ public class FusorVis extends Application {
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
-        //buildTextWindow(primaryStage);
         buildStage(primaryStage);
         buildEFieldSlice();
         buildEFieldStage(primaryStage, points);
+        buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
