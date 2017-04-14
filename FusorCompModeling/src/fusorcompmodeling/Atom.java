@@ -13,7 +13,7 @@ public class Atom {
     public Atom(){
     
     }
-    public static double mass;
+    //public static double mass;
     public static Point position;
-    public static Vector Velocity;
+    //public static Vector Velocity;
 }
