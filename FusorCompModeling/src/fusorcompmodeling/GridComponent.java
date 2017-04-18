@@ -17,6 +17,7 @@ public abstract class GridComponent {
     public int charge;
     public ComponentType type;
     public double height;
+    public boolean flipVertical;
     
     public abstract Point getRandomPoint(Random r);
     

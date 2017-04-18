@@ -686,7 +686,7 @@ public class FusorVis extends Application {
         //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
-        String jsonPath = "cube.json";
+        String jsonPath = "Bent Sphere.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
         
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));

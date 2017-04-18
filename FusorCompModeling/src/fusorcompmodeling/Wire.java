@@ -29,12 +29,14 @@ public class Wire {
     JSONArray bends;
     int charge;
     Vector originalPlane;
+    boolean flipVertical;
 
     public Wire (String json) {
         MathJSONObject obj = new MathJSONObject(json);
         
         wireradius = obj.getMath("radius");
         charge = obj.getInt("charge");
+        flipVertical = obj.getBoolean("flip_vertical");
         
         MathJSONObject jsonStart = new MathJSONObject(obj.getJSONObject("start"));
         start = new Vector(
@@ -185,7 +187,7 @@ public class Wire {
             // we need to again treat torus segments and cylinders differently
             
             if ("straight".equals(currentObj.getString("type"))) {
-                Cylinder c = new Cylinder(s, wireradius, currentObj.getMath("height"), charge);
+                Cylinder c = new Cylinder(s, wireradius, currentObj.getMath("height"), charge, flipVertical);
                 parts.add(c);
                 lastObj = currentObj;
             } else if ("bend".equals(currentObj.getString("type"))) {
@@ -275,7 +277,7 @@ public class Wire {
                         currentPlane.theta);
                                 
                 final TorusSegment tS = new TorusSegment(tP, r1, angleToStart,
-                        currentObj.getMath("angle"), wireradius, charge);
+                        currentObj.getMath("angle"), wireradius, charge, flipVertical);
                 System.out.println("Rotation attributes: " + tP.phi + ", " + angleToStart);
                 parts.add(tS);
                 
