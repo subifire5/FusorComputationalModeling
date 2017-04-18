@@ -167,31 +167,6 @@ public class FusorVis extends Application {
         world.getChildren().addAll(chargeGroup);
     }
 
-    private void buildWireComponents() {
-        final PhongMaterial wireMaterial = new PhongMaterial();
-        wireMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
-        wireMaterial.setSpecularColor(Color.LIGHTGREY);
-
-        for (GridComponent part : parts) {
-            if (part.type == ComponentType.Cylinder) {
-                // Render a cylinder
-                final Cylinder c = new Cylinder(part.radius, part.height);
-                c.setMaterial(wireMaterial);
-                c.setTranslateX(part.pos.x);
-                // Need to add half height because JavaFX centers are at
-                // the centers of cylinders, not at the bases
-                c.setTranslateY(part.pos.y + part.height / 2);
-                c.setTranslateZ(part.pos.z);
-                // Apply rotations
-                c.getTransforms().add(new Rotate(radToDeg(-part.pos.theta), part.pos.x, part.pos.y - part.height / 2, part.pos.z, Rotate.Z_AXIS));
-                c.getTransforms().add(new Rotate(radToDeg(part.pos.phi), part.pos.x, part.pos.y - part.height / 2, part.pos.z, Rotate.X_AXIS));
-                componentGroup.getChildren().add(c);
-            }
-        }
-        componentGroup.setVisible(true);
-        world.getChildren().addAll(componentGroup);
-    }
-
     private void buildAxes() { // Red = x, green = y, blue = z
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
@@ -827,7 +802,6 @@ public class FusorVis extends Application {
 
         buildCamera();
         buildElectrons(points);
-        //buildWireComponents(parts);
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
