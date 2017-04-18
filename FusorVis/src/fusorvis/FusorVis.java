@@ -89,8 +89,6 @@ public class FusorVis extends Application {
     
     HashMap<String, String> output = new HashMap<>();
     
-    ArrayList<Point> testPoints = new ArrayList<>();
-    
     Text consoleDump = new Text();
     
     String xmlFileName = "SimpleXML";
@@ -138,11 +136,10 @@ public class FusorVis extends Application {
     
     double annodeVoltage = 0;
     double cathodeVoltage = -500;
-    
+    Controller c;
     // Render vars
     
     double electronRadius = 1.0;
-    Controller c;
     
     private void buildElectrons(Point[] points) {
         final PhongMaterial redMaterial = new PhongMaterial();
@@ -491,26 +488,23 @@ public class FusorVis extends Application {
                         }
                         break;
                     case P: // Seed points
+                        // Insert code for setting up particles here
                         
                         final PhongMaterial deutronMaterial = new PhongMaterial();
-                        deutronMaterial.setDiffuseColor(Color.CORAL);
-
+                        deutronMaterial.setDiffuseColor(Color.PURPLE);
                         Sphere deutron = new Sphere(1.0);
                         deutron.setMaterial(deutronMaterial);
                         
-                        Deuterons.add(deutron);
-                        if (!flag) {  
+                        if (!flag) {
                             c = new Controller(points,annodeVoltage,cathodeVoltage);
                         }
+                        Deuterons.add(deutron);
+                        
                         Point pos = new Point();
                         pos.x = 0;
                         pos.y = 18;
                         pos.z = 6;
-                        //Atom a = new Atom();
-                        //a.position = pos;
-                        //c.Atoms.add(a);
-                        //c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
-                        c.atoms.add(pos);
+                        c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
                         deutron.setTranslateX(pos.x);
                         deutron.setTranslateY(pos.y);
                         deutron.setTranslateZ(pos.z);
@@ -525,22 +519,21 @@ public class FusorVis extends Application {
                         Runnable r = new Runnable() {
                             public void run() {
                                 // Code for updating positions goes here
-                                
-                                    //c.stepAllForeward(points,0.01);
-                                    
-                                    for(int i = 0; i < testPoints.size(); i++){
-                                        Deuterons.get(i).setTranslateX(c.atoms.get(i).x);
-                                        Deuterons.get(i).setTranslateY(c.atoms.get(i).y);
-                                        Deuterons.get(i).setTranslateZ(c.atoms.get(i).z);
-                                        c.atoms.get(i).x+=2;
-                                        //Deuterons.get(i).setTranslateX(Deuterons.get(i).getTranslateX() + 2);
+                                c.stepAllForeward(points,0.01);
+                                    System.out.println("Running once, size of Deuterons is " + Deuterons.size());
+                                    //System.out.println("Stepping all points forward! There are " + Deuterons.size() + " deutrons and " + c.Atoms.size() + " atoms.");
+                                    for(int i = 0; i < Deuterons.size(); i++){
+                                        Deuterons.get(i).setTranslateX(c.atoms[i].position.x);
+                                        Deuterons.get(i).setTranslateY(c.atoms[i].position.y);
+                                        Deuterons.get(i).setTranslateZ(c.atoms[i].position.z);
+                                        //System.out.println("Position of deuteron " + i + " is " + Deuterons.get(i).getTranslateX() + " in the x dimension, while its atom is at " + c.atoms[i].position.x);
                                     }
                                 
                             }
                         };
                         
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                        executor.scheduleAtFixedRate(r, 0, 500, TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(r, 0, 1000, TimeUnit.MILLISECONDS);
                         break;
                     case F:
                         if (event.isControlDown()) {

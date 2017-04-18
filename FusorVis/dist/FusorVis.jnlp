@@ -8,8 +8,8 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="FusorVis.jar" size="24757" download="eager" />
-    <jar href="lib\FusorCompModeling.jar" size="49695" download="eager" />
+    <jar href="FusorVis.jar" size="25069" download="eager" />
+    <jar href="lib\FusorCompModeling.jar" size="51193" download="eager" />
     <jar href="lib\Jama-1.0.3.jar" size="35981" download="eager" />
     <jar href="lib\MathEval.jar" size="25301" download="eager" />
     <jar href="lib\jimStlMeshImporterJFX.jar" size="20847" download="eager" />
