@@ -504,7 +504,20 @@ public class FusorVis extends Application {
                         pos.x = 0;
                         pos.y = 18;
                         pos.z = 6;
-                        c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
+                        //c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
+                        // Code for addAtom has been moved out here
+                        Vector v = new Vector();
+                        v.x=0;
+                        v.y=0;
+                        v.z=0;
+                        Atom a = new Atom();
+                        a.position = pos;
+                        a.Velocity = v;
+                        a.mass = Double.valueOf("3.34449439655E-27");
+                        c.atoms[c.atomsInArray] = a;
+                        c.atomsInArray += 1;
+                        
+                        // addAtom code ends here
                         deutron.setTranslateX(pos.x);
                         deutron.setTranslateY(pos.y);
                         deutron.setTranslateZ(pos.z);
@@ -519,10 +532,11 @@ public class FusorVis extends Application {
                         Runnable r = new Runnable() {
                             public void run() {
                                 // Code for updating positions goes here
-                                c.stepAllForeward(points,0.01);
+                                //c.stepAllForeward(points, 0.01);
                                     System.out.println("Running once, size of Deuterons is " + Deuterons.size());
                                     //System.out.println("Stepping all points forward! There are " + Deuterons.size() + " deutrons and " + c.Atoms.size() + " atoms.");
                                     for(int i = 0; i < Deuterons.size(); i++){
+                                        c.atoms[i].position.x++;
                                         Deuterons.get(i).setTranslateX(c.atoms[i].position.x);
                                         Deuterons.get(i).setTranslateY(c.atoms[i].position.y);
                                         Deuterons.get(i).setTranslateZ(c.atoms[i].position.z);
@@ -533,7 +547,7 @@ public class FusorVis extends Application {
                         };
                         
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                        executor.scheduleAtFixedRate(r, 0, 1000, TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(r, 0, 20, TimeUnit.MILLISECONDS);
                         break;
                     case F:
                         if (event.isControlDown()) {

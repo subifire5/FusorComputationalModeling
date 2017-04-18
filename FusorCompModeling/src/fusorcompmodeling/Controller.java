@@ -15,8 +15,8 @@ import java.util.List;
 public class Controller {
     public static EField e = new EField();
     public static Solver s = new euler();  
-    public Atom[] atoms = new Atom[50];
-    int atomsInArray = 0;
+    public Atom[] atoms = new Atom[4];
+    public int atomsInArray = 0;
     
     public Controller(Point[] points, double voltageAnnode, double voltageCathode){
         e.setkQ(voltageAnnode,voltageCathode,points);
