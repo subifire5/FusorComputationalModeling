@@ -167,31 +167,6 @@ public class FusorVis extends Application {
         world.getChildren().addAll(chargeGroup);
     }
 
-    private void buildWireComponents() {
-        final PhongMaterial wireMaterial = new PhongMaterial();
-        wireMaterial.setDiffuseColor(Color.LIGHTSLATEGREY);
-        wireMaterial.setSpecularColor(Color.LIGHTGREY);
-
-        for (GridComponent part : parts) {
-            if (part.type == ComponentType.Cylinder) {
-                // Render a cylinder
-                final Cylinder c = new Cylinder(part.radius, part.height);
-                c.setMaterial(wireMaterial);
-                c.setTranslateX(part.pos.x);
-                // Need to add half height because JavaFX centers are at
-                // the centers of cylinders, not at the bases
-                c.setTranslateY(part.pos.y + part.height / 2);
-                c.setTranslateZ(part.pos.z);
-                // Apply rotations
-                c.getTransforms().add(new Rotate(radToDeg(-part.pos.theta), part.pos.x, part.pos.y - part.height / 2, part.pos.z, Rotate.Z_AXIS));
-                c.getTransforms().add(new Rotate(radToDeg(part.pos.phi), part.pos.x, part.pos.y - part.height / 2, part.pos.z, Rotate.X_AXIS));
-                componentGroup.getChildren().add(c);
-            }
-        }
-        componentGroup.setVisible(true);
-        world.getChildren().addAll(componentGroup);
-    }
-
     private void buildAxes() { // Red = x, green = y, blue = z
         final PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.DARKRED);
@@ -729,16 +704,16 @@ public class FusorVis extends Application {
     @Override
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
-        int pointCount = 2000;
-        int optimizations = 10;
-
+        int pointCount = 1000;
+        int optimizations = 0;
+        
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
         //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
-        String jsonPath = "cube.json";
+        String jsonPath = "Bent Sphere.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -757,10 +732,14 @@ public class FusorVis extends Application {
                 }
                 double scaleFactor = infoObj.getDouble("scalefactor");
                 JSONObject translationObj = infoObj.getJSONObject("positionadj");
-                Point translation = new Point(
+
+                Point translation = new Point (
                         translationObj.getDouble("x"),
                         translationObj.getDouble("y"),
                         translationObj.getDouble("z"));
+                
+                boolean flip_yz = infoObj.getBoolean("flip_yz");
+                boolean reflect = infoObj.getBoolean("flip_vertical");
 
                 TriangleMesh mesh = imp.getImport();
                 imp.close();
@@ -777,6 +756,14 @@ public class FusorVis extends Application {
                     Point[] verts = {p1, p2, p3};
 
                     for (Point p : verts) { // Apply transformations
+                        if (flip_yz) {
+                            double oldy = p.y;
+                            p.y = p.z;
+                            p.z = oldy;
+                        }
+                        if (reflect) {
+                            p.y *= -1;
+                        }
                         p.scale(scaleFactor);
                         p.sum(translation);
                     }
@@ -786,24 +773,9 @@ public class FusorVis extends Application {
                 }
             }
         }
-
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         markedPoints = new ArrayList<>();
 
-        /*        
-        /*try {
-            String path = xmlFileName + ".json";
-            byte[] encoded = Files.readAllBytes(Paths.get(path));
-            JSONArray jsonPoints = new JSONArray(new String(encoded, Charset.defaultCharset()));
-            for (int i = 0; i < jsonPoints.length(); i++) {
-                JSONObject o = jsonPoints.getJSONObject(i);
-                points[i] = new Point(o.getDouble("x"),o.getDouble("y"),o.getDouble("z"), o.getInt("charge"));
-            }
-            System.out.println("Prior file found! Imported it.");
-        } catch (IOException e) {
-            System.out.println("No prior file found! Generating a new one...");
-            points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
-        }*/
         double posAvgPotential = StatsGen.avgPotential(points, 1);
         double negAvgPotential = StatsGen.avgPotential(points, -1);
 
@@ -830,14 +802,14 @@ public class FusorVis extends Application {
 
         buildCamera();
         buildElectrons(points);
-        //buildWireComponents(parts);
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
         buildStage(primaryStage);
-        buildEFieldSlice();
-        buildEFieldStage(primaryStage, points);
-        buildTextWindow(primaryStage);
+        
+        //buildEFieldSlice();
+        //buildEFieldStage(primaryStage, points);
+        //buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);

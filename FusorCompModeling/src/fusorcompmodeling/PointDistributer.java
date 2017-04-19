@@ -24,6 +24,7 @@ public class PointDistributer {
         while (reps < endCon) {
             int changesMade = balanceCharges(points, parts);
             reps++;
+            System.out.println("Shook up points, " + reps + "/" + endCon + " shakes complete, made " + changesMade + " changes");
         }
         return points;
     }
