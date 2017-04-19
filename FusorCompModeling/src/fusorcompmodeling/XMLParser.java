@@ -78,12 +78,12 @@ public class XMLParser {
         switch (type) {
             case "Cylinder":            
                 double height = parseDouble(element, "height");
-                return new Cylinder(v, radius, height, charge);
+                return new Cylinder(v, radius, height, charge, false);
             case "TorusSegment":
                 double radius2 = parseDouble(element, "radius2");
                 double phi2 = parseDouble(element, "phi2");
                 double phi3 = parseDouble(element, "phi3");
-                return new TorusSegment(v, radius, phi2, phi3, radius2, charge);
+                return new TorusSegment(v, radius, phi2, phi3, radius2, charge, true);
             case "Sphere":            
                 return new Sphere(v, radius, charge);
             default:
