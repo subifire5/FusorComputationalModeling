@@ -106,9 +106,25 @@ public class Point {
         rP.y += v.y;
         rP.z += v.z;
         rP.charge = charge;
-        
+                
         return rP;
+        
+        
     }
+    
+    public Point invertRAP(Vector v) {
+        Point rP = new Point();
+        rP.z -= v.z;
+        rP.y -= v.y;
+        rP.x -= v.x;
+        Vector sphericalCoords = rP.convertToSphericalCoords();
+        double radius = Math.sqrt(rP.x*rP.x + rP.y*rP.y + rP.z*rP.z);
+        sphericalCoords.phi -= v.phi;
+        sphericalCoords.theta -= v.theta;
+        Point oP = new Point(sphericalCoords, radius);
+        return new Point(oP.x + v.x, oP.y + v.y, oP.z + v.z);
+    }
+    
     
     public Point crossProduct(Point p) {
         Point nP = new Point();
