@@ -57,12 +57,15 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+
+import java.util.Collections;
 
 /**
  *
@@ -271,7 +274,26 @@ public class FusorVis extends Application {
         eFieldBuilt = true;
 
     }
-
+    private int indexOf(double[] arr, double item) {
+        // Simple binary search
+        int low = 0;
+        int high = arr.length - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (item < arr[mid]) {
+                high = mid - 1;
+            } else if (item > arr[mid]) {
+                low = mid + 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1; // Will never get here
+    }
+    private double toColor(int index, int length) {
+        // Return a val between 0.0 and 1.0
+        return (double) index / (double) (length - 1);
+    }
     private void updateEField(Point[] points) {
         EField e = new EField();
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
@@ -283,45 +305,39 @@ public class FusorVis extends Application {
         double heightUnit = sliceHeight / arrayHeight;
 
         double[][][] fieldGrid = new double[arrayWidth][arrayHeight][3];
-        double[] minValues = {0.0, 0.0, 0.0}; // Goes X, Y, Z
-        double[] maxValues = {0.0, 0.0, 0.0};
-
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
                 Point p = new Point((-(sliceWidth / 2) + i * widthUnit), (-(sliceHeight / 2) + k * widthUnit), 0);
-                System.out.println("Old point: " + p.toString());
                 p = translateEFieldPixel(p);
-                System.out.println("New point: " + p.toString());
                 Vector efield = EField.EFieldSum(points, p);
-
-                minValues[0] = Math.min(efield.x, minValues[0]);
-                minValues[1] = Math.min(efield.y, minValues[1]);
-                minValues[2] = Math.min(efield.z, minValues[2]);
-                maxValues[0] = Math.max(efield.x, maxValues[0]);
-                maxValues[1] = Math.max(efield.y, maxValues[1]);
-                maxValues[2] = Math.max(efield.z, maxValues[2]);
+                
                 fieldGrid[i][k][0] = efield.x;
                 fieldGrid[i][k][1] = efield.y;
                 fieldGrid[i][k][2] = efield.z;
             }
         }
-        System.out.println("Data recieved and stored in temporary storage");
-
-        double[] range = new double[3];
-        for (int i = 0; i < 3; i++) {
-            range[i] = maxValues[i] - minValues[i];
+        double[][] sorted = new double[3][arrayWidth * arrayHeight];
+        for (int i = 0; i < arrayWidth; i++) {
+            for (int k = 0; k < arrayHeight; k++) {
+                for (int j = 0; j < 3; j++) {
+                    sorted[j][k * arrayWidth + i] = fieldGrid[i][k][j];
+                    
+                }
+            }
         }
-        System.out.println("Maximums calculated. x: [" + maxValues[0] + "], y: [" + maxValues[1] + "], z: [" + maxValues[2] + "]");
-        System.out.println("Minimums calculated. x: [" + minValues[0] + "], y: [" + minValues[1] + "], z: [" + minValues[2] + "]");
-
-        System.out.println("Ranges calculated. x: [" + range[0] + "], y: [" + range[1] + "], z: [" + range[2] + "]");
+        
+        for (int j = 0; j < 3; j++) {
+            Arrays.sort(sorted[j]);
+        }
 
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
-                Color c = new Color(((fieldGrid[i][k][0] - minValues[0]) / range[0]),
-                        ((fieldGrid[i][k][1] - minValues[1]) / range[1]),
-                        ((fieldGrid[i][k][2] - minValues[2]) / range[2]),
+                Color c = new Color(
+                        toColor(indexOf(sorted[0], fieldGrid[i][k][0]), sorted[0].length),
+                        toColor(indexOf(sorted[1], fieldGrid[i][k][1]), sorted[1].length),
+                        toColor(indexOf(sorted[2], fieldGrid[i][k][2]), sorted[2].length),
                         1.0);
+                
                 for (int j = 0; j < blockSideLength; j++) {
                     for (int l = 0; l < blockSideLength; l++) {
                         eFieldPixelWriter.setColor(i * 16 + j, k * 16 + l, c);
@@ -751,7 +767,7 @@ public class FusorVis extends Application {
         //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
-        String jsonPath = "Bent Sphere.json";
+        String jsonPath = "Circles.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -821,7 +837,7 @@ public class FusorVis extends Application {
         q.x = 0.0;
         q.y = 0.0;
         q.z = 0.0;
-
+  
         Vector efield = new Vector();
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
         efield = EField.EFieldSum(points, q);
