@@ -13,11 +13,12 @@ import java.util.*;
  */
 public class Cylinder extends GridComponent {
 
-    public Cylinder(Vector pos, double radius, double height, int charge) {
+    public Cylinder(Vector pos, double radius, double height, int charge, boolean fV) {
         this.pos = pos;
         this.radius = radius;
         this.height = height;
         this.charge = charge;
+        this.flipVertical = fV;
         this.type = ComponentType.Cylinder;
     }
 
@@ -33,8 +34,11 @@ public class Cylinder extends GridComponent {
         p.x = pos.x + radius * Math.cos(pointPhi);
         p.z = pos.z + radius * Math.sin(pointPhi);
         p.charge = charge;
+        p = p.rotateAroundVector(pos);
         
-        return p.rotateAroundVector(pos);
+        if (flipVertical) {p.y *= -1;}
+        
+        return p;
     }
     
     public Cylinder() {

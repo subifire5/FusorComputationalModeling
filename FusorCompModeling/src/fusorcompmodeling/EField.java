@@ -40,11 +40,11 @@ public class EField {
         for(int i = 0; i < points.length; i++){
             r = Vector.Difference(s,points[i]);
             rLen= Vector.getLength(s, points[i]);
-            
+
             e.x = r.x/(rLen*rLen*rLen);
             e.y = r.y/(rLen*rLen*rLen);
             e.z = r.z/(rLen*rLen*rLen);
-            
+
             e.x *=kQ * points[i].charge;
             e.y *=kQ * points[i].charge;
             e.z *=kQ * points[i].charge;
