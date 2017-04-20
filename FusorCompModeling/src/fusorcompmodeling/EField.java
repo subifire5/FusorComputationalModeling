@@ -22,7 +22,7 @@ public class EField {
         double DeltaPhi = getDeltaPhi(avgPotential(points, 1), avgPotential(points, -1));
         double KQ;
         double DeltaVoltage = voltageAnnode - voltageCathode;
-        KQ = (DeltaVoltage / DeltaPhi) * 0.01;//m/cm  
+        KQ = (DeltaVoltage / DeltaPhi) * 0.001;//m/mm  
         kQ=KQ;
     }
     

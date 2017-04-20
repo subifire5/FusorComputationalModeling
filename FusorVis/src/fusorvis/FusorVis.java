@@ -547,7 +547,7 @@ public class FusorVis extends Application {
                         };
                         
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                        executor.scheduleAtFixedRate(r, 0, 10, TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(r, 0, 5, TimeUnit.MILLISECONDS);
                         break;
                     case F:
                         if (event.isControlDown()) {
