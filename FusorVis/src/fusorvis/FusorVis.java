@@ -64,6 +64,8 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
+import java.util.Collections;
+
 /**
  *
  * @author guberti
@@ -281,9 +283,6 @@ public class FusorVis extends Application {
         double heightUnit = sliceHeight / arrayHeight;
 
         double[][][] fieldGrid = new double[arrayWidth][arrayHeight][3];
-        double[] minValues = {0.0, 0.0, 0.0}; // Goes X, Y, Z
-        double[] maxValues = {0.0, 0.0, 0.0};
-
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
                 Point p = new Point((-(sliceWidth / 2) + i * widthUnit), (-(sliceHeight / 2) + k * widthUnit), 0);
@@ -292,12 +291,6 @@ public class FusorVis extends Application {
                 System.out.println("New point: " + p.toString());
                 Vector efield = EField.EFieldSum(points, p);
 
-                minValues[0] = Math.min(efield.x, minValues[0]);
-                minValues[1] = Math.min(efield.y, minValues[1]);
-                minValues[2] = Math.min(efield.z, minValues[2]);
-                maxValues[0] = Math.max(efield.x, maxValues[0]);
-                maxValues[1] = Math.max(efield.y, maxValues[1]);
-                maxValues[2] = Math.max(efield.z, maxValues[2]);
                 fieldGrid[i][k][0] = efield.x;
                 fieldGrid[i][k][1] = efield.y;
                 fieldGrid[i][k][2] = efield.z;
@@ -305,6 +298,7 @@ public class FusorVis extends Application {
         }
         System.out.println("Data recieved and stored in temporary storage");
 
+        double[][] sorted = new double[arrayWidth * arrayHeight][3];
         double[] range = new double[3];
         for (int i = 0; i < 3; i++) {
             range[i] = maxValues[i] - minValues[i];
@@ -783,7 +777,7 @@ public class FusorVis extends Application {
         q.x = 0.0;
         q.y = 0.0;
         q.z = 0.0;
-
+  
         Vector efield = new Vector();
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
         efield = EField.EFieldSum(points, q);
