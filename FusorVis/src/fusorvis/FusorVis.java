@@ -522,18 +522,13 @@ public class FusorVis extends Application {
                         pos.x = 0;
                         pos.y = 18;
                         pos.z = 6;
-                        //c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
+                        c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
                         // Code for addAtom has been moved out here
                         Vector v = new Vector();
                         v.x=0;
                         v.y=0;
                         v.z=0;
-                        Atom a = new Atom();
-                        a.position = pos;
-                        a.Velocity = v;
-                        a.mass = Double.valueOf("3.34449439655E-27");
-                        c.atoms[c.atomsInArray] = a;
-                        c.atomsInArray += 1;
+                        
                         
                         // addAtom code ends here
                         deutron.setTranslateX(pos.x);
@@ -565,7 +560,7 @@ public class FusorVis extends Application {
                         };
 
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                        executor.scheduleAtFixedRate(r, 0, 5, TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(r, 0, 2, TimeUnit.MILLISECONDS);
                         break;
                     case F:
                         if (event.isControlDown()) {
