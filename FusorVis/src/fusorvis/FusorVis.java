@@ -288,7 +288,7 @@ public class FusorVis extends Application {
         }
         return -1; // Will never get here
     }
-    private double toColor(int length, int index) {
+    private double toColor(int index, int length) {
         // Return a val between 0.0 and 1.0
         return (double) index / (double) (length - 1);
     }
@@ -306,9 +306,7 @@ public class FusorVis extends Application {
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
                 Point p = new Point((-(sliceWidth / 2) + i * widthUnit), (-(sliceHeight / 2) + k * widthUnit), 0);
-                System.out.println("Old point: " + p.toString());
                 p = translateEFieldPixel(p);
-                System.out.println("New point: " + p.toString());
                 Vector efield = EField.EFieldSum(points, p);
                 
                 fieldGrid[i][k][0] = efield.x;
@@ -316,8 +314,6 @@ public class FusorVis extends Application {
                 fieldGrid[i][k][2] = efield.z;
             }
         }
-        System.out.println("Data recieved and stored in temporary storage");
-
         double[][] sorted = new double[3][arrayWidth * arrayHeight];
         for (int i = 0; i < arrayWidth; i++) {
             for (int k = 0; k < arrayHeight; k++) {
@@ -733,7 +729,7 @@ public class FusorVis extends Application {
         //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
-        String jsonPath = "Bent Sphere.json";
+        String jsonPath = "Circles.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
