@@ -572,7 +572,7 @@ public class FusorVis extends Application {
                             }
                         } else {
                             if (!eFieldBuilt) {
-                                //buildEFieldSlice();
+                                buildEFieldSlice();
                                 eFieldBuilt = true;
                             }
                         }
@@ -845,8 +845,8 @@ public class FusorVis extends Application {
         buildScene();
         buildStage(primaryStage);
         
-        //buildEFieldSlice();
-        //buildEFieldStage(primaryStage, points);
+        buildEFieldSlice();
+        buildEFieldStage(primaryStage, points);
         //buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
