@@ -13,9 +13,9 @@ import java.util.List;
  * @author sfreisem-kirov
  */
 public class Controller {
-    public static EField e = new EField();
-    public static Solver s = new euler();  
-    public Atom[] atoms = new Atom[4];
+    public EField e = new EField();
+    public Solver s = new euler();  
+    public Atom[] atoms = new Atom[50];
     public int atomsInArray = 0;
     
     public Controller(Point[] points, double voltageAnnode, double voltageCathode){

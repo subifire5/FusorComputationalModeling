@@ -14,7 +14,7 @@ public class euler implements Solver{
     @Override
     public Atom moveForward(Point[] points, double TS, Atom a, EField e) {
         Vector v0 = a.Velocity;
-        Vector g = StatsGen.FToAcc(points, a.position,a.mass,e.EForce);
+        Vector g = StatsGen.FToAcc(points, a.position,a.mass,e.EFieldSum(points, a.position));
         
         a.position.x += (v0.x*TS) + ((g.x*TS*TS)/2);
         a.position.y += (v0.y*TS) + ((g.y*TS*TS)/2);

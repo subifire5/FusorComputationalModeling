@@ -17,7 +17,6 @@ public class EField {
         
     }
     public static double kQ;
-    public static Vector EForce;
     
     public static void setkQ(double voltageAnnode, double voltageCathode, Point[] points) {
         double DeltaPhi = getDeltaPhi(avgPotential(points, 1), avgPotential(points, -1));
@@ -46,18 +45,15 @@ public class EField {
             e.y = r.y/(rLen*rLen*rLen);
             e.z = r.z/(rLen*rLen*rLen);
             
-            e.x *=kQ;
-            e.y *=kQ;
-            e.z *=kQ;
+            e.x *=kQ * points[i].charge;
+            e.y *=kQ * points[i].charge;
+            e.z *=kQ * points[i].charge;
             
             eSum.x+= e.x;
             eSum.y+=e.y;
             eSum.z+=e.z;
             
         }
-
-
-        EForce = eSum;
         return eSum;
     }
 }
