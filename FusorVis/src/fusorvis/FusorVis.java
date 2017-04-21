@@ -540,10 +540,7 @@ public class FusorVis extends Application {
                         pos.z = 6;
                         c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
                         // Code for addAtom has been moved out here
-                        Vector v = new Vector();
-                        v.x=0;
-                        v.y=0;
-                        v.z=0;
+              
                         
                         
                         // addAtom code ends here
