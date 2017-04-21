@@ -640,11 +640,23 @@ public class FusorVis extends Application {
                         } else {
                             scaleStep = 1.05;
                         }
-                        System.out.println(eFieldSlice.getScaleX());
                         eFieldSlice.setScaleX(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleY(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleZ(eFieldSlice.getScaleX() * scaleStep);
                         break;
+                        
+                    case I:
+                        if (event.isControlDown()) {
+                            eFieldSlice.setScaleX(1.0);
+                            eFieldSlice.setScaleY(1.0);
+                            eFieldSlice.setScaleZ(1.0);
+                            eFieldSlice.setTranslateX(0);
+                            eFieldSlice.setTranslateY(0);
+                            eFieldSlice.setTranslateZ(0);
+                            for (int i = 0; i < 3; i++) {
+                                eFieldTransforms[i].setAngle(0.0);
+                            }
+                        }
                 }
             }
         });
