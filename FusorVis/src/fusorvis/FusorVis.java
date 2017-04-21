@@ -110,7 +110,7 @@ public class FusorVis extends Application {
     Rotate[] eFieldTransforms;
 
     // Efield generation stats
-    double sliceWidth = 96 / 16;
+    double sliceWidth = 96 / 16; // -3 to 3
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
     double blockSideLength = 16;
@@ -640,6 +640,7 @@ public class FusorVis extends Application {
                         } else {
                             scaleStep = 1.05;
                         }
+                        System.out.println(eFieldSlice.getScaleX());
                         eFieldSlice.setScaleX(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleY(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleZ(eFieldSlice.getScaleX() * scaleStep);
@@ -679,16 +680,14 @@ public class FusorVis extends Application {
     }
 
     public void buildEFieldSlice() {
-        final int baseWidth = 48;
-        final int baseHeight = 27;
 
-        output.put("E-Field Slice Width", Integer.toString(baseWidth));
-        output.put("E-Field Slice Height", Integer.toString(baseHeight));
+        output.put("E-Field Slice Width", Double.toString(sliceWidth));
+        output.put("E-Field Slice Height", Double.toString(sliceHeight));
 
         final PhongMaterial planeMaterial = new PhongMaterial();
         planeMaterial.setDiffuseColor(new Color(0.5, 0.5, 0.5, 0.5));
 
-        eFieldSlice = new Box(baseWidth, baseHeight, 0.025);
+        eFieldSlice = new Box(sliceWidth, sliceHeight, 0.025);
         eFieldSlice.setMaterial(planeMaterial);
 
         Rotate rx = new Rotate();
