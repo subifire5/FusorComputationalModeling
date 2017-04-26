@@ -65,8 +65,6 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
-import java.util.Collections;
-
 /**
  *
  * @author guberti
@@ -113,7 +111,7 @@ public class FusorVis extends Application {
     double sliceWidth = 96 / 16; // -3 to 3
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
-    double blockSideLength = 16;
+    int blockSideLength = 16;
 
     ProgressBar pb = new ProgressBar();
 
@@ -340,13 +338,12 @@ public class FusorVis extends Application {
                 
                 for (int j = 0; j < blockSideLength; j++) {
                     for (int l = 0; l < blockSideLength; l++) {
-                        eFieldPixelWriter.setColor(i * 16 + j, k * 16 + l, c);
+                        eFieldPixelWriter.setColor(i * blockSideLength + j, k * blockSideLength + l, c);
                     }
                 }
             }
         }
 
-        System.out.println("Pixel values assigned");
     }
 
     private void buildStage(Stage primaryStage) {
@@ -637,11 +634,23 @@ public class FusorVis extends Application {
                         } else {
                             scaleStep = 1.05;
                         }
-                        System.out.println(eFieldSlice.getScaleX());
                         eFieldSlice.setScaleX(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleY(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleZ(eFieldSlice.getScaleX() * scaleStep);
                         break;
+                        
+                    case I:
+                        if (event.isControlDown()) {
+                            eFieldSlice.setScaleX(1.0);
+                            eFieldSlice.setScaleY(1.0);
+                            eFieldSlice.setScaleZ(1.0);
+                            eFieldSlice.setTranslateX(0);
+                            eFieldSlice.setTranslateY(0);
+                            eFieldSlice.setTranslateZ(0);
+                            for (int i = 0; i < 3; i++) {
+                                eFieldTransforms[i].setAngle(0.0);
+                            }
+                        }
                 }
             }
         });
@@ -857,9 +866,9 @@ public class FusorVis extends Application {
         buildScene();
         buildStage(primaryStage);
         
-        buildEFieldSlice();
-        buildEFieldStage(primaryStage, points);
-        //buildTextWindow(primaryStage);
+        //buildEFieldSlice();
+        //buildEFieldStage(primaryStage, points);
+        buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
