@@ -111,7 +111,7 @@ public class FusorVis extends Application {
     double sliceWidth = 96 / 16; // -3 to 3
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
-    int blockSideLength = 16;
+    int blockSideLength = 4;
 
     ProgressBar pb = new ProgressBar();
 
@@ -654,6 +654,7 @@ public class FusorVis extends Application {
                                 eFieldTransforms[i].setAngle(0.0);
                             }
                         }
+                        break;
                 }
             }
         });
@@ -719,7 +720,6 @@ public class FusorVis extends Application {
         output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
         output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
         output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
-
         world.getChildren().add(eFieldSlice);
     }
 
@@ -775,7 +775,7 @@ public class FusorVis extends Application {
         //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
-        String jsonPath = "Circles.json";
+        String jsonPath = "Bent Sphere.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -869,8 +869,8 @@ public class FusorVis extends Application {
         buildScene();
         buildStage(primaryStage);
         
-        //buildEFieldSlice();
-        //buildEFieldStage(primaryStage, points);
+        buildEFieldSlice();
+        buildEFieldStage(primaryStage, points);
         buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
