@@ -6,7 +6,9 @@
 package fusorcompmodeling;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -92,8 +94,12 @@ public class PointDistributer {
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
         
+        Map<Integer, List<GridComponent>> rS = new HashMap<>();
+        rS.put(-1, getReachableShapes(-1, parts));
+        rS.put(1, getReachableShapes(1, parts));
+        
         for (int i = 0; i < points.length; i++) {            
-            Point newPoint = getRandomPoint(getReachableShapes(points[i].charge, parts), points[i].charge);
+            Point newPoint = getRandomPoint(rS.get(points[i].charge), points[i].charge);
             double currentEP = electricPotential(points, points[i]);
 
             double newEP = electricPotential(points, newPoint);
