@@ -16,11 +16,21 @@ import java.util.Random;
  * @author guberti
  */
 public class PointDistributer {
+    static Map<Integer, List<GridComponent>> reachableShapes;
+    static Map<Integer, Double> totalSurfaceArea;
 
     public PointDistributer() {
     }
 
     public static Point[] shakeUpPoints(List<GridComponent> parts, int pointsPerCharge, int endCon) {
+        reachableShapes = new HashMap<>();
+        reachableShapes.put(-1, getReachableShapes(-1, parts));
+        reachableShapes.put(1, getReachableShapes(1, parts));
+
+        totalSurfaceArea = new HashMap<>();
+        totalSurfaceArea.put(-1, totalSurfaceArea(parts, -1));
+        totalSurfaceArea.put(1, totalSurfaceArea(parts, 1));
+        
         Point[] points = distributePoints(parts, pointsPerCharge);
         int reps = 0;
         while (reps < endCon) {
@@ -42,8 +52,7 @@ public class PointDistributer {
     }
 
     public static Point getRandomPoint(List<GridComponent> parts, int charge) {
-        
-        double area = totalSurfaceArea(parts, charge);
+        double area = totalSurfaceArea.get(charge);
         Random generator = new Random();
 
         double rand = generator.nextDouble() * area;
@@ -94,12 +103,8 @@ public class PointDistributer {
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
         
-        Map<Integer, List<GridComponent>> rS = new HashMap<>();
-        rS.put(-1, getReachableShapes(-1, parts));
-        rS.put(1, getReachableShapes(1, parts));
-        
         for (int i = 0; i < points.length; i++) {            
-            Point newPoint = getRandomPoint(rS.get(points[i].charge), points[i].charge);
+            Point newPoint = getRandomPoint(reachableShapes.get(points[i].charge), points[i].charge);
             double currentEP = electricPotential(points, points[i]);
 
             double newEP = electricPotential(points, newPoint);
