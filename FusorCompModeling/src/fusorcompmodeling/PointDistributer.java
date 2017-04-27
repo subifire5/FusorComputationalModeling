@@ -49,7 +49,7 @@ public class PointDistributer {
         double rand = generator.nextDouble() * area;
         for (int i = 0; i < parts.size(); i++) {
             if (parts.get(i).charge == charge) {
-                rand -= parts.get(i).getSurfaceArea();
+                rand -= parts.get(i).surfaceArea;
 
                 if (rand <= (double) 0.0) {
                     return parts.get(i).getRandomPoint(new Random());
@@ -63,7 +63,7 @@ public class PointDistributer {
         double surfaceArea = 0;
         for (int i = 0; i < parts.size(); i++) {
             if (parts.get(i).charge == charge) {
-                surfaceArea += parts.get(i).getSurfaceArea();
+                surfaceArea += parts.get(i).surfaceArea;
             }
         }
         return surfaceArea;
