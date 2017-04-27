@@ -18,7 +18,8 @@ import java.util.Random;
 public class PointDistributer {
     static Map<Integer, List<GridComponent>> reachableShapes;
     static Map<Integer, Double> totalSurfaceArea;
-
+    static Map<Integer, double[][]> cumulativeSurfaceAreas;
+    
     public PointDistributer() {
     }
 
@@ -31,6 +32,8 @@ public class PointDistributer {
         totalSurfaceArea.put(-1, totalSurfaceArea(parts, -1));
         totalSurfaceArea.put(1, totalSurfaceArea(parts, 1));
         
+        calculateCumSurfaceAreas(parts);
+        
         Point[] points = distributePoints(parts, pointsPerCharge);
         int reps = 0;
         while (reps < endCon) {
@@ -40,7 +43,37 @@ public class PointDistributer {
         }
         return points;
     }
-
+    public static void calculateCumSurfaceAreas(List<GridComponent> parts) {
+        int[] charges = {-1, 1};
+        int partsIndex = 0;
+        
+        for (int charge : charges) {
+            double cSAs [][] = new double[2][countPointsForCharge(parts, charge)];
+            
+            for (int i = 0; i < cSAs.length; i++) {
+                // First, we must get the first part with the correct charge
+                while (parts.get(partsIndex).charge != charge) {
+                    partsIndex++;
+                }
+                cSAs[0][i] = parts.get(partsIndex).surfaceArea;
+                
+                if (i != 0) {
+                    cSAs[0][i] += cSAs[0][i - 1];
+                }
+                cSAs[1][i] = partsIndex;
+            }
+            cumulativeSurfaceAreas.put(charge, cSAs);
+        }
+    }
+    
+    private static int countPointsForCharge(List<GridComponent> parts, int charge) {
+        int count = 0;
+        for (GridComponent p : parts) {
+            if (p.charge == charge) {count++;}
+        }
+        return count;
+    }
+    
     public static Point[] distributePoints(List<GridComponent> parts, int pointsForEachCharge) {
         Point[] totalPoints = new Point[pointsForEachCharge*2];
         Random newRand = new Random();
@@ -56,18 +89,26 @@ public class PointDistributer {
         Random generator = new Random();
 
         double rand = generator.nextDouble() * area;
-        for (int i = 0; i < parts.size(); i++) {
-            if (parts.get(i).charge == charge) {
-                rand -= parts.get(i).surfaceArea;
-
-                if (rand <= (double) 0.0) {
-                    return parts.get(i).getRandomPoint(new Random());
-                }
-            }
-        }
-        return null; // Code will never reach here, but this line is required
+        int partIndex = getValAbove(rand, charge);
+        return parts.get(partIndex).getRandomPoint(generator);
     }
 
+    private static int getValAbove(double rand, int charge) {
+        // Basic binary search, modified from algoritm for efield generation
+        int low = 0;
+        int high = cumulativeSurfaceAreas.get(charge)[0].length - 1;
+        while (low < high) {
+            int mid = (high + low) / 2;
+            double val = cumulativeSurfaceAreas.get(charge)[0][mid];
+            if (rand > val) {
+                low = mid;
+            } else if (rand < val) {
+                high = mid - 1;
+            }
+        }
+        return low;
+    }
+    
     public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
         double surfaceArea = 0;
         for (int i = 0; i < parts.size(); i++) {
