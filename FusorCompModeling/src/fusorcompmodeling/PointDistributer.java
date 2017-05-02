@@ -6,6 +6,7 @@
 package fusorcompmodeling;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,18 +17,13 @@ import java.util.Random;
  * @author guberti
  */
 public class PointDistributer {
-    static Map<Integer, List<GridComponent>> reachableShapes;
     static Map<Integer, Double> totalSurfaceArea;
     static Map<Integer, double[][]> cumulativeSurfaceAreas;
     
     public PointDistributer() {
     }
-
+    
     public static Point[] shakeUpPoints(List<GridComponent> parts, int pointsPerCharge, int endCon) {
-        reachableShapes = new HashMap<>();
-        reachableShapes.put(-1, getReachableShapes(-1, parts));
-        reachableShapes.put(1, getReachableShapes(1, parts));
-
         totalSurfaceArea = new HashMap<>();
         totalSurfaceArea.put(-1, totalSurfaceArea(parts, -1));
         totalSurfaceArea.put(1, totalSurfaceArea(parts, 1));
@@ -45,12 +41,12 @@ public class PointDistributer {
     }
     public static void calculateCumSurfaceAreas(List<GridComponent> parts) {
         int[] charges = {-1, 1};
-        int partsIndex = 0;
+        cumulativeSurfaceAreas = new HashMap<>();
         
         for (int charge : charges) {
+            int partsIndex = 0;
             double cSAs [][] = new double[2][countPointsForCharge(parts, charge)];
-            
-            for (int i = 0; i < cSAs.length; i++) {
+            for (int i = 0; i < cSAs[0].length; i++) {
                 // First, we must get the first part with the correct charge
                 while (parts.get(partsIndex).charge != charge) {
                     partsIndex++;
@@ -60,12 +56,19 @@ public class PointDistributer {
                 if (i != 0) {
                     cSAs[0][i] += cSAs[0][i - 1];
                 }
+                
                 cSAs[1][i] = partsIndex;
+                
+                partsIndex++;
             }
             cumulativeSurfaceAreas.put(charge, cSAs);
         }
     }
     
+    private static int chargeToIndex(int charge) {
+        if (charge == -1) {return 0;}
+        return charge;
+    }
     private static int countPointsForCharge(List<GridComponent> parts, int charge) {
         int count = 0;
         for (GridComponent p : parts) {
@@ -89,24 +92,30 @@ public class PointDistributer {
         Random generator = new Random();
 
         double rand = generator.nextDouble() * area;
-        int partIndex = getValAbove(rand, charge);
-        return parts.get(partIndex).getRandomPoint(generator);
+        int partIndex = getValAbove(rand, charge); // This is broken
+        
+        GridComponent g = parts.get(partIndex);
+        Point p = g.getRandomPoint(generator);
+        return p;
     }
 
     private static int getValAbove(double rand, int charge) {
-        // Basic binary search, modified from algoritm for efield generation
+        double[] arr = cumulativeSurfaceAreas.get(charge)[0];
+        
         int low = 0;
-        int high = cumulativeSurfaceAreas.get(charge)[0].length - 1;
-        while (low < high) {
+        int high = arr.length - 1;
+        while (low <= high) {
             int mid = (high + low) / 2;
-            double val = cumulativeSurfaceAreas.get(charge)[0][mid];
-            if (rand > val) {
-                low = mid;
-            } else if (rand < val) {
+            
+            if (arr[mid] >= rand && (mid == 0 || arr[mid-1] < rand)) { // If we're at the right location
+                return (int) cumulativeSurfaceAreas.get(charge)[1][mid];
+            } else if (arr[mid] < rand) {
+                low = mid + 1;
+            } else {
                 high = mid - 1;
             }
         }
-        return low;
+        return -1; // Should never get here
     }
     
     public static double totalSurfaceArea(List<GridComponent> parts, int charge) {
@@ -144,8 +153,8 @@ public class PointDistributer {
     public static int balanceCharges(Point[] points, List<GridComponent> parts) {
         int changes = 0;
         
-        for (int i = 0; i < points.length; i++) {            
-            Point newPoint = getRandomPoint(reachableShapes.get(points[i].charge), points[i].charge);
+        for (int i = 0; i < points.length; i++) {
+            Point newPoint = getRandomPoint(parts, points[i].charge);
             double currentEP = electricPotential(points, points[i]);
 
             double newEP = electricPotential(points, newPoint);
@@ -165,17 +174,5 @@ public class PointDistributer {
             }
         }
         return changes;
-    }
-
-    public static List<GridComponent> getReachableShapes(int charge, List<GridComponent> parts) {
-        List<GridComponent> ReachableShapes = new ArrayList<>();
-        int i = 0;
-        while (i < parts.size()) {
-            if (charge == parts.get(i).charge) {
-                ReachableShapes.add(parts.get(i));
-            }
-            i++;
-        }
-        return ReachableShapes;
     }
 }
