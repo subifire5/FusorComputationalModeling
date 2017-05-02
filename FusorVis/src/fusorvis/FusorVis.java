@@ -140,7 +140,7 @@ public class FusorVis extends Application {
     Controller c;
 
     // Render vars
-    double electronRadius = 1.0;
+    double electronRadius = 0.2;
 
     private void buildElectrons(Point[] points) {
         final PhongMaterial redMaterial = new PhongMaterial();
@@ -668,12 +668,13 @@ public class FusorVis extends Application {
 
     public void scaleElectrons(double scale) {
         for (int i = 0; i < chargeGroup.getChildren().size(); i++) {
-            double xScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            double yScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            double zScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            chargeGroup.getChildren().get(i).setScaleX(xScale);
-            chargeGroup.getChildren().get(i).setScaleY(yScale);
-            chargeGroup.getChildren().get(i).setScaleZ(zScale);
+            double revScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
+            revScale = Math.min(revScale, 40*electronRadius);
+            revScale = Math.max(revScale, electronRadius/5);
+            
+            chargeGroup.getChildren().get(i).setScaleX(revScale);
+            chargeGroup.getChildren().get(i).setScaleY(revScale);
+            chargeGroup.getChildren().get(i).setScaleZ(revScale);
 
         }
     }
