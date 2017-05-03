@@ -47,6 +47,8 @@ public class EFieldVisualizer {
         this.w = w;
     }
     
+    
+    
     public double[][][] calcSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
 
         double[][][] fieldGrid = new double[aW][aH][3];
@@ -156,6 +158,34 @@ public class EFieldVisualizer {
             }
         }
     }
+    
+    public void renderElectricPotential(Rotate[] eFieldTransforms, Box eFieldSlice) {
+        double[][] fieldGrid = new double[aW][aH];
+        double[] sorted = new double[aW * aH];
+
+        for (int i = 0; i < aW; i++) {
+            for (int k = 0; k < aH; k++) {
+                Point p = new Point((-(sW / 2) + i * wU), (-(sH / 2) + k * hU), 0);
+                p = translateEFieldPixel(p, eFieldTransforms, eFieldSlice);
+                
+                fieldGrid[i][k] = PointDistributer.electricPotential(points, p);
+                sorted[k * aW + i] = fieldGrid[i][k];
+            }
+        }
+
+        Arrays.sort(sorted);
+                
+        for (int i = 0; i < aW; i++) {
+            for (int k = 0; k < aH; k++) {
+                double gV = toColor(indexOf(sorted, fieldGrid[i][k]), sorted.length);
+                
+                Color c = new Color(gV, 0.0, 1.0 - gV, 1.0);
+                
+                drawBlock(i, k, c);
+            }
+        }
+    }
+    
     private void drawBlock(int i, int k, Color c) {
         for (int j = 0; j < blockSideLength; j++) {
             for (int l = 0; l < blockSideLength; l++) {
@@ -166,6 +196,12 @@ public class EFieldVisualizer {
     private double toColor(int index, int length) {
         // Return a val between 0.0 and 1.0
         return (double) index / (double) (length - 1);
+    }
+    
+    private void reverse(double[][] arrs) {
+        for (double[] arr : arrs) {
+            //ArrayUtils.reverse(arr);
+        }
     }
     
     private int indexOf(double[] arr, double item) {

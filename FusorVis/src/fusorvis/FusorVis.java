@@ -276,7 +276,7 @@ public class FusorVis extends Application {
 
     }
     private void updateEField(Point[] points) {
-        eVis.renderIntensitiesContrasted(eFieldTransforms, eFieldSlice);
+        eVis.renderElectricPotential(eFieldTransforms, eFieldSlice);
     }
 
     private void buildStage(Stage primaryStage) {
@@ -683,7 +683,7 @@ public class FusorVis extends Application {
 
         parts = new ArrayList<>();
 
-        String jsonPath = "Circles.json";
+        String jsonPath = "Bent Sphere.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
