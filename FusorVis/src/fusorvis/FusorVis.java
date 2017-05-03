@@ -576,6 +576,9 @@ public class FusorVis extends Application {
                         break;
                         
                     case I:
+                        if (!eFieldBuilt) {
+                            break;
+                        }
                         if (event.isControlDown()) {
                             eFieldSlice.setScaleX(1.0);
                             eFieldSlice.setScaleY(1.0);
@@ -586,6 +589,8 @@ public class FusorVis extends Application {
                             for (int i = 0; i < 3; i++) {
                                 eFieldTransforms[i].setAngle(0.0);
                             }
+                        } else {
+                            eFieldSlice.setVisible(!eFieldSlice.visibleProperty().getValue());
                         }
                         break;
                 }
