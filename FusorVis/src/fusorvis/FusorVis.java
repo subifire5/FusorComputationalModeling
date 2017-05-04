@@ -112,7 +112,8 @@ public class FusorVis extends Application {
     double sliceWidth = 96 / 16; // -3 to 3
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
-    int blockSideLength = 4;
+    int blockSideLength = 24;
+    boolean autoUpdate = true;
 
     ProgressBar pb = new ProgressBar();
 
@@ -362,7 +363,7 @@ public class FusorVis extends Application {
         final boolean moveCamera = true;
 
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            double translateStep = 0.2;
+            double translateStep = 1.5;
             double rotateStep = 1;
 
             @Override
@@ -542,6 +543,9 @@ public class FusorVis extends Application {
                                 eFieldSlice.setTranslateZ(eFieldSlice.getTranslateZ() + step);
                                 break;
                         }
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
                         break;
                     case R:
                     case T:
@@ -561,6 +565,9 @@ public class FusorVis extends Application {
                                 eFieldTransforms[2].setAngle(eFieldTransforms[2].getAngle() + rotStep);
                                 break;
                         }
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
                         break;
                     case U:
                         double scaleStep;
@@ -573,6 +580,9 @@ public class FusorVis extends Application {
                         eFieldSlice.setScaleX(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleY(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleZ(eFieldSlice.getScaleX() * scaleStep);
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
                         break;
                         
                     case I:
@@ -591,6 +601,9 @@ public class FusorVis extends Application {
                             }
                         } else {
                             eFieldSlice.setVisible(!eFieldSlice.visibleProperty().getValue());
+                        }
+                        if (autoUpdate) {
+                            updateEField(points);
                         }
                         break;
                 }
@@ -683,7 +696,7 @@ public class FusorVis extends Application {
 
         parts = new ArrayList<>();
 
-        String jsonPath = "Bent Sphere.json";
+        String jsonPath = "Circles.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
