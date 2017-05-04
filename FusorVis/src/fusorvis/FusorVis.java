@@ -106,12 +106,14 @@ public class FusorVis extends Application {
     Box eFieldSlice;
     public boolean eFieldBuilt = false;
     Rotate[] eFieldTransforms;
+    EFieldVisualizer eVis;
 
     // Efield generation stats
     double sliceWidth = 96 / 16; // -3 to 3
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
-    int blockSideLength = 16;
+    int blockSideLength = 24;
+    boolean autoUpdate = true;
 
     ProgressBar pb = new ProgressBar();
 
@@ -261,6 +263,8 @@ public class FusorVis extends Application {
         final Canvas canvas = new Canvas(96 * 16, 54 * 16);
         eFieldPixels = canvas.getGraphicsContext2D();
         eFieldPixelWriter = eFieldPixels.getPixelWriter();
+        eVis = new EFieldVisualizer(sliceWidth, sliceHeight, imageConversionFactor, blockSideLength, eFieldPixelWriter, points);
+        
         r.getChildren().add(canvas);
 
         eFieldStage.initOwner(primaryStage);
@@ -272,78 +276,8 @@ public class FusorVis extends Application {
         eFieldBuilt = true;
 
     }
-    private int indexOf(double[] arr, double item) {
-        // Simple binary search
-        int low = 0;
-        int high = arr.length - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (item < arr[mid]) {
-                high = mid - 1;
-            } else if (item > arr[mid]) {
-                low = mid + 1;
-            } else {
-                return mid;
-            }
-        }
-        return -1; // Will never get here
-    }
-    private double toColor(int index, int length) {
-        // Return a val between 0.0 and 1.0
-        return (double) index / (double) (length - 1);
-    }
     private void updateEField(Point[] points) {
-        EField e = new EField();
-        EField.setkQ(annodeVoltage, cathodeVoltage, points);
-
-        int arrayWidth = (int) ((int) sliceWidth * imageConversionFactor / blockSideLength);
-        int arrayHeight = (int) ((int) sliceHeight * imageConversionFactor / blockSideLength);
-
-        double widthUnit = sliceWidth / arrayWidth;
-        double heightUnit = sliceHeight / arrayHeight;
-
-        double[][][] fieldGrid = new double[arrayWidth][arrayHeight][3];
-        for (int i = 0; i < arrayWidth; i++) {
-            for (int k = 0; k < arrayHeight; k++) {
-                Point p = new Point((-(sliceWidth / 2) + i * widthUnit), (-(sliceHeight / 2) + k * widthUnit), 0);
-                p = translateEFieldPixel(p);
-                Vector efield = EField.EFieldSum(points, p);
-                
-                fieldGrid[i][k][0] = efield.x;
-                fieldGrid[i][k][1] = efield.y;
-                fieldGrid[i][k][2] = efield.z;
-            }
-        }
-        double[][] sorted = new double[3][arrayWidth * arrayHeight];
-        for (int i = 0; i < arrayWidth; i++) {
-            for (int k = 0; k < arrayHeight; k++) {
-                for (int j = 0; j < 3; j++) {
-                    sorted[j][k * arrayWidth + i] = fieldGrid[i][k][j];
-                    
-                }
-            }
-        }
-        
-        for (int j = 0; j < 3; j++) {
-            Arrays.sort(sorted[j]);
-        }
-
-        for (int i = 0; i < arrayWidth; i++) {
-            for (int k = 0; k < arrayHeight; k++) {
-                Color c = new Color(
-                        toColor(indexOf(sorted[0], fieldGrid[i][k][0]), sorted[0].length),
-                        toColor(indexOf(sorted[1], fieldGrid[i][k][1]), sorted[1].length),
-                        toColor(indexOf(sorted[2], fieldGrid[i][k][2]), sorted[2].length),
-                        1.0);
-                
-                for (int j = 0; j < blockSideLength; j++) {
-                    for (int l = 0; l < blockSideLength; l++) {
-                        eFieldPixelWriter.setColor(i * blockSideLength + j, k * blockSideLength + l, c);
-                    }
-                }
-            }
-        }
-
+        eVis.renderElectricPotential(eFieldTransforms, eFieldSlice);
     }
 
     private void buildStage(Stage primaryStage) {
@@ -429,7 +363,7 @@ public class FusorVis extends Application {
         final boolean moveCamera = true;
 
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            double translateStep = 0.2;
+            double translateStep = 1.5;
             double rotateStep = 1;
 
             @Override
@@ -599,6 +533,9 @@ public class FusorVis extends Application {
                                 eFieldSlice.setTranslateZ(eFieldSlice.getTranslateZ() + step);
                                 break;
                         }
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
                         break;
                     case R:
                     case T:
@@ -618,6 +555,9 @@ public class FusorVis extends Application {
                                 eFieldTransforms[2].setAngle(eFieldTransforms[2].getAngle() + rotStep);
                                 break;
                         }
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
                         break;
                     case U:
                         double scaleStep;
@@ -630,9 +570,15 @@ public class FusorVis extends Application {
                         eFieldSlice.setScaleX(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleY(eFieldSlice.getScaleX() * scaleStep);
                         eFieldSlice.setScaleZ(eFieldSlice.getScaleX() * scaleStep);
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
                         break;
                         
                     case I:
+                        if (!eFieldBuilt) {
+                            break;
+                        }
                         if (event.isControlDown()) {
                             eFieldSlice.setScaleX(1.0);
                             eFieldSlice.setScaleY(1.0);
@@ -643,7 +589,13 @@ public class FusorVis extends Application {
                             for (int i = 0; i < 3; i++) {
                                 eFieldTransforms[i].setAngle(0.0);
                             }
+                        } else {
+                            eFieldSlice.setVisible(!eFieldSlice.visibleProperty().getValue());
                         }
+                        if (autoUpdate) {
+                            updateEField(points);
+                        }
+                        break;
                 }
             }
         });
@@ -710,37 +662,7 @@ public class FusorVis extends Application {
         output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
         output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
         output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
-
         world.getChildren().add(eFieldSlice);
-    }
-
-    public Point translateEFieldPixel(Point p) {
-        Point r = new Point(p.x, p.y, p.z);
-        double c = 1;
-
-        r.y = r.y * Math.cos(eFieldTransforms[0].getAngle() * c) - r.z * Math.sin(eFieldTransforms[0].getAngle() * c);
-        r.z = r.y * Math.sin(eFieldTransforms[0].getAngle() * c) + r.z * Math.cos(eFieldTransforms[0].getAngle() * c);
-
-        r.z = r.z * Math.cos(eFieldTransforms[1].getAngle() * c) - r.x * Math.sin(eFieldTransforms[1].getAngle() * c);
-        r.x = r.z * Math.sin(eFieldTransforms[1].getAngle() * c) + r.x * Math.cos(eFieldTransforms[1].getAngle() * c);
-
-        r.x = r.x * Math.cos(eFieldTransforms[2].getAngle() * c) - r.y * Math.sin(eFieldTransforms[2].getAngle() * c);
-        r.y = r.x * Math.sin(eFieldTransforms[2].getAngle() * c) + r.y * Math.cos(eFieldTransforms[2].getAngle() * c);
-
-        assert !Double.isNaN(r.x);
-
-        Vector v = r.convertToSphericalCoordsExc();
-        v.length *= eFieldSlice.getScaleX();
-
-        Point t = v.convertRayToCartesian(v.length);
-
-        assert !Double.isNaN(r.x);
-
-        t.x += eFieldSlice.getTranslateX();
-        t.y += eFieldSlice.getTranslateY();
-        t.z += eFieldSlice.getTranslateZ();
-
-        return t;
     }
 
     public String compileOutput() {
@@ -763,7 +685,6 @@ public class FusorVis extends Application {
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
-        //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
         String jsonPath = "Bent Sphere.json";
@@ -828,9 +749,8 @@ public class FusorVis extends Application {
         }
         long start = System.nanoTime();
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
-        long elapsedTime = System.nanoTime() - start;
         
-        System.out.println("Took " + elapsedTime + " nanoseconds to parse the bent sphere with " + pointCount * 2 + " points and " + optimizations + " shakeups");
+        EField.setkQ(annodeVoltage, cathodeVoltage, points);
         markedPoints = new ArrayList<>();
 
         double posAvgPotential = StatsGen.avgPotential(points, 1);
@@ -841,9 +761,7 @@ public class FusorVis extends Application {
         q.y = 0.0;
         q.z = 0.0;
   
-        Vector efield = new Vector();
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
-        efield = EField.EFieldSum(points, q);
 
         output.put("Points", String.valueOf(points.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
@@ -853,9 +771,6 @@ public class FusorVis extends Application {
 
         Point[] referencePoints = {};
 
-        output.put("Sample point x e-field", String.valueOf(efield.x));
-        output.put("Sample point y e-field", String.valueOf(efield.y));
-        output.put("Sample point z e-field", String.valueOf(efield.z));
 
         buildCamera();
         buildElectrons(points);
@@ -864,8 +779,8 @@ public class FusorVis extends Application {
         buildScene();
         buildStage(primaryStage);
         
-        //buildEFieldSlice();
-        //buildEFieldStage(primaryStage, points);
+        buildEFieldSlice();
+        buildEFieldStage(primaryStage, points);
         buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
@@ -873,18 +788,13 @@ public class FusorVis extends Application {
         handleMouse(scene, world);
         handleKeyboard(scene, primaryStage);
 
-        //primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-        //primaryStage.setFullScreenExitHint("");
         primaryStage.setTitle("Fusor Electric Field Visualizer");
         primaryStage.setScene(scene);
         primaryStage.show();
-        //primaryStage.setFullScreen(true);
         scene.setCamera(camera);
     }
 
-    /**
-     * Java main for when running without JavaFX launcher
-     */
+     // Java main for when running without JavaFX launcher
     public static void main(String[] args) {
         launch(args);
     }
