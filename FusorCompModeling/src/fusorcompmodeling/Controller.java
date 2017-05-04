@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class Controller {
     public EField e = new EField();
-    public Solver s = new euler();  
+    public Solver s = new RungeKutta();  
     public Atom[] atoms = new Atom[50];
     public int atomsInArray = 0;
     
