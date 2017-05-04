@@ -142,7 +142,7 @@ public class FusorVis extends Application {
     Controller c;
 
     // Render vars
-    double electronRadius = 1.0;
+    double electronRadius = 0.2;
 
     private void buildElectrons(Point[] points) {
         final PhongMaterial redMaterial = new PhongMaterial();
@@ -453,37 +453,30 @@ public class FusorVis extends Application {
                     case P: // Seed points
                         // Insert code for setting up particles here
 
-                        final PhongMaterial deutronMaterial = new PhongMaterial();
+                        final PhongMaterial deuteronMaterial = new PhongMaterial();
 
-                        deutronMaterial.setDiffuseColor(Color.PURPLE);
-                        Sphere deutron = new Sphere(1.0);
+                        deuteronMaterial.setDiffuseColor(Color.PURPLE);
+                        Sphere deuteron = new Sphere(1.0);
 
-                        deutron.setMaterial(deutronMaterial);
+                        deuteron.setMaterial(deuteronMaterial);
                         
                         if (!flag) {
                             c = new Controller(points,annodeVoltage,cathodeVoltage);
                         }
-                        Deuterons.add(deutron);
+                        Deuterons.add(deuteron);
                         
                         Point pos = new Point();
                         pos.x = 0;
                         pos.y = 18;
                         pos.z = 6;
                         c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
-                        // Code for addAtom has been moved out here
-                        Vector v = new Vector();
-                        v.x=0;
-                        v.y=0;
-                        v.z=0;
-                        
                         
                         // addAtom code ends here
-                        deutron.setTranslateX(pos.x);
-                        deutron.setTranslateY(pos.y);
-                        deutron.setTranslateZ(pos.z);
-                        world.getChildren().add(deutron);
+                        deuteron.setTranslateX(pos.x);
+                        deuteron.setTranslateY(pos.y);
+                        deuteron.setTranslateZ(pos.z);
+                        world.getChildren().add(deuteron);
                         
-                        // Insert code for updating positions in this runnable
                         if (!flag) {
                             flag = true;
                         } else {
@@ -494,13 +487,10 @@ public class FusorVis extends Application {
                                 // Code for updating positions goes here
                                 c.stepAllForeward(points, 0.01);
                                     System.out.println("Running once, size of Deuterons is " + Deuterons.size());
-                                    //System.out.println("Stepping all points forward! There are " + Deuterons.size() + " deutrons and " + c.Atoms.size() + " atoms.");
                                     for(int i = 0; i < Deuterons.size(); i++){
-                                        //c.atoms[i].position.x++;
                                         Deuterons.get(i).setTranslateX(c.atoms[i].position.x);
                                         Deuterons.get(i).setTranslateY(c.atoms[i].position.y);
                                         Deuterons.get(i).setTranslateZ(c.atoms[i].position.z);
-                                        //System.out.println("Position of deuteron " + i + " is " + Deuterons.get(i).getTranslateX() + " in the x dimension, while its atom is at " + c.atoms[i].position.x);
                                     }
                                 
                             }
@@ -630,12 +620,13 @@ public class FusorVis extends Application {
 
     public void scaleElectrons(double scale) {
         for (int i = 0; i < chargeGroup.getChildren().size(); i++) {
-            double xScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            double yScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            double zScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            chargeGroup.getChildren().get(i).setScaleX(xScale);
-            chargeGroup.getChildren().get(i).setScaleY(yScale);
-            chargeGroup.getChildren().get(i).setScaleZ(zScale);
+            double revScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
+            revScale = Math.min(revScale, 40*electronRadius);
+            revScale = Math.max(revScale, electronRadius/5);
+            
+            chargeGroup.getChildren().get(i).setScaleX(revScale);
+            chargeGroup.getChildren().get(i).setScaleY(revScale);
+            chargeGroup.getChildren().get(i).setScaleZ(revScale);
 
         }
     }
@@ -689,14 +680,14 @@ public class FusorVis extends Application {
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
         int pointCount = 1000;
-        int optimizations = 0;
+        int optimizations = 20;
         
         double annodeVoltage = 0;
         double cathodeVoltage = -500;
 
         parts = new ArrayList<>();
 
-        String jsonPath = "Circles.json";
+        String jsonPath = "Bent Sphere.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -756,6 +747,7 @@ public class FusorVis extends Application {
                 }
             }
         }
+        long start = System.nanoTime();
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
