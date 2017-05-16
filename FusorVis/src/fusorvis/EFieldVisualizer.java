@@ -29,19 +29,22 @@ public class EFieldVisualizer {
     int blockSideLength;
     PixelWriter w;
     Point[] points;
-        
+    VisualizationType vis;
+
     final int[] xRange = {-20, 20};
     final int[] yRange = {-20, 20};
     final int[] zRange = {-5, 5};
     
     final int rangeStep = 1;
     
-    double[] refVals;
+    EFieldData[] refVals;
+    EFieldData[][] data;
     
     int l = ((xRange[1] - xRange[0])*(yRange[1] - yRange[0])*(zRange[1] - zRange[0])) / ((int) Math.pow(rangeStep, 3));
     
     public EFieldVisualizer(double sliceWidth, double sliceHeight, double cF, int blockSideLength, PixelWriter w, Point[] points) {
-        System.out.println(EField.kQ);
+        this.vis = new PotentialEnergyVisualization();
+        
         this.aW = (int) ((int) sliceWidth * cF / blockSideLength);
         this.aH = (int) ((int) sliceHeight * cF / blockSideLength);
 
@@ -55,32 +58,24 @@ public class EFieldVisualizer {
         this.blockSideLength = blockSideLength;
         this.w = w;
         
-        refVals = new double[((xRange[1] - xRange[0])*(yRange[1] - yRange[0])*(zRange[1] - zRange[0])) / ((int) Math.pow(rangeStep, 3))];
+        refVals = new EFieldData[((xRange[1] - xRange[0])*(yRange[1] - yRange[0])*(zRange[1] - zRange[0])) / ((int) Math.pow(rangeStep, 3))];
+        data = new EFieldData[aW][aH];
         
         getEFieldRange();
-        int foo = 1;
     }
     
     
     
-    public double[][][] calcSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
-
-        double[][][] fieldGrid = new double[aW][aH][3];
-        
+    public void calcSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
         for (int i = 0; i < aW; i++) {
             for (int k = 0; k < aH; k++) {
+                
                 Point p = new Point((-(sW / 2) + i * wU), (-(sH / 2) + k * hU), 0);
                 p = translateEFieldPixel(p, eFieldTransforms, eFieldSlice);
                 
-                Vector efield = EField.EFieldSum(points, p);
-                
-                fieldGrid[i][k][0] = efield.x;
-                fieldGrid[i][k][1] = efield.y;
-                fieldGrid[i][k][2] = efield.z;
+                data[i][k] = vis.calcPoint(points, p);
             }
-        }
-        
-        return fieldGrid;
+        }        
     }
     
     public void getEFieldRange() {
@@ -94,14 +89,26 @@ public class EFieldVisualizer {
                     ind += jMult * ((j - yRange[0]) / rangeStep);
                     ind += iMult * ((i - xRange[0]) / rangeStep);
                     
-                    refVals[ind] = PointDistributer.electricPotential(points, new Point(i, j, k));
+                    refVals[ind] = vis.calcPoint(points, new Point(i, j, k));
                 }
             }
         }
-        Arrays.sort(refVals);
+        vis.sortRefPoints(refVals);
     }
     
-    public void renderRGBCodedVectors(Rotate[] eFieldTransforms, Box eFieldSlice) {
+    public void renderSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
+        calcSlice(eFieldTransforms, eFieldSlice);
+        
+        for (int i = 0; i < aW; i++) {
+            for (int k = 0; k < aH; k++) {                
+                Color c = vis.calcColor(refVals, data, data[i][k]);
+                
+                drawBlock(i, k, c);
+            }
+        }
+    }
+    
+    /*public void renderRGBCodedVectors(Rotate[] eFieldTransforms, Box eFieldSlice) {
         
         double[][][] fieldGrid = calcSlice(eFieldTransforms, eFieldSlice);
         
@@ -189,30 +196,7 @@ public class EFieldVisualizer {
                 drawBlock(i, k, c);
             }
         }
-    }
-    
-    public void renderElectricPotential(Rotate[] eFieldTransforms, Box eFieldSlice) {
-        double[][] fieldGrid = new double[aW][aH];
-
-        for (int i = 0; i < aW; i++) {
-            for (int k = 0; k < aH; k++) {
-                Point p = new Point((-(sW / 2) + i * wU), (-(sH / 2) + k * hU), 0);
-                p = translateEFieldPixel(p, eFieldTransforms, eFieldSlice);
-                
-                fieldGrid[i][k] = PointDistributer.electricPotential(points, p);
-            }
-        }
-                
-        for (int i = 0; i < aW; i++) {
-            for (int k = 0; k < aH; k++) {
-                double gV = toColor(closestIndex(refVals, fieldGrid[i][k]), refVals.length);
-                
-                Color c = new Color(gV, 0.0, 1.0 - gV, 1.0);
-                
-                drawBlock(i, k, c);
-            }
-        }
-    }
+    }*/
     
     private void drawBlock(int i, int k, Color c) {
         for (int j = 0; j < blockSideLength; j++) {
@@ -229,11 +213,6 @@ public class EFieldVisualizer {
     private void reverse2DArr (double[][] arrs) {
         for (double[] arr : arrs) {
             revSingleArr(arr);
-        }
-        for (int i = 0; i < (int) arrs.length/2; i++) {
-            double[] t = arrs[i];
-            arrs[i] = arrs[(arrs.length - 1) - i];
-            arrs[(arrs.length - 1) - i] = t;
         }
     }
     

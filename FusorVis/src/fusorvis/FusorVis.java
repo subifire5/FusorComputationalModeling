@@ -57,7 +57,6 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javafx.scene.control.ProgressBar;
@@ -88,7 +87,7 @@ public class FusorVis extends Application {
     Stage textFieldStage = new Stage();
     Stage eFieldStage = new Stage();
 
-    SortedMap<String, String> output = new TreeMap<String, String>();
+    SortedMap<String, TextLogicContainer> output = new TreeMap<>();
 
     Text consoleDump = new Text();
 
@@ -113,7 +112,7 @@ public class FusorVis extends Application {
     double sliceHeight = 54 / 16;
     double imageConversionFactor = 256;
     int blockSideLength = 24;
-    boolean autoUpdate = true;
+    boolean autoUpdate = false;
 
     ProgressBar pb = new ProgressBar();
 
@@ -228,7 +227,10 @@ public class FusorVis extends Application {
         cameraXform2.getChildren().add(cameraXform3);
         cameraXform3.getChildren().add(camera);
         cameraXform3.setRotateZ(180.0);
-
+        
+        output.put("Camera phi", new TextLogicContainer() {@Override
+        public double calc() {return cameraXform.ry.getAngle();}});
+        
         camera.setNearClip(CAMERA_NEAR_CLIP);
         camera.setFarClip(CAMERA_FAR_CLIP);
         camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
@@ -241,10 +243,9 @@ public class FusorVis extends Application {
     }
 
     private void buildTextWindow(Stage primaryStage) {
-        String output = compileOutput();
-        Text txt = new Text(output);
-        txt.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        textFieldRoot.getChildren().add(txt);
+        compileOutput();
+        consoleDump.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        textFieldRoot.getChildren().add(consoleDump);
 
         textFieldStage.setTitle("Model statistics");
         textFieldStage.setScene(new Scene(textFieldRoot));
@@ -277,7 +278,8 @@ public class FusorVis extends Application {
 
     }
     private void updateEField(Point[] points) {
-        eVis.renderElectricPotential(eFieldTransforms, eFieldSlice);
+        eVis.renderSlice(eFieldTransforms, eFieldSlice);
+        compileOutput();
     }
 
     private void buildStage(Stage primaryStage) {
@@ -306,7 +308,7 @@ public class FusorVis extends Application {
         return (radians * 180) / Math.PI;
     }
 
-    private void handleMouse(Scene scene, final Node root) {
+    private void handleMouse(Scene scene) {
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent me) {
@@ -340,9 +342,6 @@ public class FusorVis extends Application {
                 if (me.isPrimaryButtonDown()) {
                     cameraXform.ry.setAngle(cameraXform.ry.getAngle() - mouseDeltaX * modifierFactor * modifier * 2.0);  // +
                     cameraXform.rx.setAngle(cameraXform.rx.getAngle() + mouseDeltaY * modifierFactor * modifier * 2.0);  // -
-
-                    output.put("Camera phi", String.valueOf(cameraXform.ry.getAngle()));
-                    output.put("Camera theta", String.valueOf(cameraXform.rx.getAngle()));
 
                 } else if (me.isSecondaryButtonDown()) {
                     double z = camera.getTranslateZ();
@@ -633,9 +632,12 @@ public class FusorVis extends Application {
 
     public void buildEFieldSlice() {
 
-        output.put("E-Field Slice Width", Double.toString(sliceWidth));
-        output.put("E-Field Slice Height", Double.toString(sliceHeight));
-
+        output.put("E-Field Slice Width", new TextLogicContainer() {@Override
+        public double calc() {return sliceWidth;}});
+        
+        output.put("E-Field Slice Width", new TextLogicContainer() {@Override
+        public double calc() {return sliceWidth;}});
+        
         final PhongMaterial planeMaterial = new PhongMaterial();
         planeMaterial.setDiffuseColor(new Color(0.5, 0.5, 0.5, 0.5));
 
@@ -656,24 +658,35 @@ public class FusorVis extends Application {
 
         eFieldSlice.getTransforms().addAll(eFieldTransforms);
 
-        output.put("E-Field Slice Translation X", Double.toString(eFieldSlice.getTranslateX()));
-        output.put("E-Field Slice Translation Y", Double.toString(eFieldSlice.getTranslateY()));
-        output.put("E-Field Slice Translation Z", Double.toString(eFieldSlice.getTranslateZ()));
-        output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
-        output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
-        output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
+        output.put("E-Field Slice Translation X", new TextLogicContainer() {@Override
+        public double calc() {System.out.println("Updated efield translation to " + eFieldSlice.getTranslateX()); return eFieldSlice.getTranslateX();}});
+        output.put("E-Field Slice Translation Y", new TextLogicContainer() {@Override
+        public double calc() {return eFieldSlice.getTranslateY();}});
+        output.put("E-Field Slice Translation Z", new TextLogicContainer() {@Override
+        public double calc() {return eFieldSlice.getTranslateZ();}});
+
+        output.put("E-Field Slice Rotation X", new TextLogicContainer() {@Override
+        public double calc() {return rx.getPivotX();}});
+        output.put("E-Field Slice Rotation Y", new TextLogicContainer() {@Override
+        public double calc() {return ry.getPivotY();}});
+        output.put("E-Field Slice Rotation Z", new TextLogicContainer() {@Override
+        public double calc() {return rz.getPivotZ();}});
+        
         world.getChildren().add(eFieldSlice);
     }
 
-    public String compileOutput() {
+    public void compileOutput() {
+        System.out.println("FOOOOOOOOOOOOO " + eFieldTransforms[0].getPivotX());
         Iterator it = output.entrySet().iterator();
         String textOutput = "";
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            textOutput += pair.getKey() + ": " + pair.getValue() + "\n";
+            Map.Entry<String, TextLogicContainer> pair = (Map.Entry) it.next();
+            double val = pair.getValue().calc();
+            System.out.println("Key is " + pair.getKey() + ", val is " + val);
+            textOutput += pair.getKey() + ": " + val + "\n";
         }
         consoleDump.setText(textOutput);
-        return textOutput;
+        System.out.println("Output compiled");
     }
 
     @Override
@@ -763,11 +776,17 @@ public class FusorVis extends Application {
   
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
 
-        output.put("Points", String.valueOf(points.length));
-        output.put("Parts in grid", String.valueOf(parts.size()));
-        output.put("Optimizations", String.valueOf(optimizations));
-        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential * 1 / 1));
-        output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+        output.put("Points", new TextLogicContainer() {@Override
+        public double calc() {System.out.println("Updated point count"); return points.length;}});
+        output.put("E-Field Slice Rotation Z", new TextLogicContainer() {@Override
+        public double calc() {return parts.size();}});
+        output.put("Optimizations", new TextLogicContainer() {@Override
+        public double calc() {return optimizations;}});
+        
+        output.put("Avg. potential of pos. points", new TextLogicContainer() {@Override
+        public double calc() {return posAvgPotential;}});
+        output.put("Avg. potential of neg. points", new TextLogicContainer() {@Override
+        public double calc() {return negAvgPotential;}});
 
         Point[] referencePoints = {};
 
@@ -781,11 +800,11 @@ public class FusorVis extends Application {
         
         buildEFieldSlice();
         buildEFieldStage(primaryStage, points);
-        buildTextWindow(primaryStage);
-
+        buildTextWindow(eFieldStage);
+        
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
-        handleMouse(scene, world);
+        handleMouse(scene);
         handleKeyboard(scene, primaryStage);
 
         primaryStage.setTitle("Fusor Electric Field Visualizer");
