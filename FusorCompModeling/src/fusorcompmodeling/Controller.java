@@ -13,16 +13,18 @@ import java.util.List;
  */
 public class Controller {
     public EField e = new EField();
-    public Solver s = new RungeKutta();  
+    public RungeKutta s = new RungeKutta();  
     public Atom[] atoms = new Atom[50];
     public int atomsInArray = 0;
     
     public Controller(Point[] points, double voltageAnnode, double voltageCathode){
-        e.setkQ(voltageAnnode,voltageCathode,points);
+        e.setPoints(points);
+        e.setkQ(voltageAnnode,voltageCathode);
+        s.setEField(e);
     }
     
     public void stepAllForeward(Point[] points,double numPSecs){
-        double ts = 0.000000000001*numPSecs;
+        double ts = 0.00000000000000000001*numPSecs;
         for(int i = 0; i < atomsInArray; i++){
             Atom newAtom = s.moveForward(points,ts, atoms[i],e);
             atoms[i] = newAtom;

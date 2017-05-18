@@ -29,13 +29,9 @@ public class StatsGen {
         DeltaPhi = posAvgPot - negAvgPot;
         return DeltaPhi;
     }
-
-    public static Vector FToAcc(Point[] points, Point r, double mass, Vector force){
-        Vector vAcc = new Vector();
-        vAcc.x = EField.EFieldSum(points, r).x/mass;
-        vAcc.y = EField.EFieldSum(points, r).y/mass;
-        vAcc.z = EField.EFieldSum(points, r).z/mass;
-        return vAcc;
+    
+    public static double normalizedVector(Vector v) {
+        return Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2) + Math.pow(v.z, 2));
     }
 
 }

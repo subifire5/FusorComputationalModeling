@@ -96,7 +96,7 @@ public class FusorVis extends Application {
 
     double timeStepMCS = 1;
 
-    Point[] points;
+    EField e;
     List<GridComponent> parts;
 
     List<Point> markedPoints;
@@ -294,7 +294,8 @@ public class FusorVis extends Application {
     }
     private void updateEField(Point[] points) {
         EField e = new EField();
-        EField.setkQ(annodeVoltage, cathodeVoltage, points);
+        e.setPoints(points);
+        e.setkQ(annodeVoltage, cathodeVoltage);
 
         int arrayWidth = (int) ((int) sliceWidth * imageConversionFactor / blockSideLength);
         int arrayHeight = (int) ((int) sliceHeight * imageConversionFactor / blockSideLength);
@@ -307,7 +308,7 @@ public class FusorVis extends Application {
             for (int k = 0; k < arrayHeight; k++) {
                 Point p = new Point((-(sliceWidth / 2) + i * widthUnit), (-(sliceHeight / 2) + k * widthUnit), 0);
                 p = translateEFieldPixel(p);
-                Vector efield = EField.EFieldSum(points, p);
+                Vector efield = e.EFieldSum(p);
                 
                 fieldGrid[i][k][0] = efield.x;
                 fieldGrid[i][k][1] = efield.y;
@@ -527,14 +528,14 @@ public class FusorVis extends Application {
                         deuteron.setMaterial(deuteronMaterial);
                         
                         if (!flag) {
-                            c = new Controller(points,annodeVoltage,cathodeVoltage);
+                            c = new Controller(e.p,annodeVoltage,cathodeVoltage);
                         }
                         Deuterons.add(deuteron);
                         
                         Point pos = new Point();
-                        pos.x = 0;
-                        pos.y = 18;
-                        pos.z = 6;
+                        pos.x = 5;
+                        pos.y = 6;
+                        pos.z = 7;
                         c.addAtom(pos,Double.valueOf("3.34449439655E-27"));
                         
                         // addAtom code ends here
@@ -551,8 +552,8 @@ public class FusorVis extends Application {
                         Runnable r = new Runnable() {
                             public void run() {
                                 // Code for updating positions goes here
-                                c.stepAllForeward(points, 0.01);
-                                    System.out.println("Running once, size of Deuterons is " + Deuterons.size());
+                                c.stepAllForeward(e.p, 0.01);
+                                    //System.out.println("Running once, size of Deuterons is " + Deuterons.size());
                                     for(int i = 0; i < Deuterons.size(); i++){
                                         Deuterons.get(i).setTranslateX(c.atoms[i].position.x);
                                         Deuterons.get(i).setTranslateY(c.atoms[i].position.y);
@@ -568,10 +569,10 @@ public class FusorVis extends Application {
                     case F:
                         if (event.isControlDown()) {
                             if (!eFieldBuilt) {
-                                buildEFieldStage(primaryStage, points);
+                                buildEFieldStage(primaryStage, e.p);
                             } else {
                                 System.out.println("Updating e-field!");
-                                updateEField(points);
+                                updateEField(e.p);
                             }
                         } else {
                             if (!eFieldBuilt) {
@@ -651,7 +652,7 @@ public class FusorVis extends Application {
 
     private String exportPointsAsJSON() {
         JSONArray arr = new JSONArray();
-        for (Point p : points) {
+        for (Point p : e.p) {
             JSONObject obj = new JSONObject();
             obj.put("x", p.x);
             obj.put("y", p.y);
@@ -766,7 +767,7 @@ public class FusorVis extends Application {
         //List<GridComponent> parts = p.parseObjects();
         parts = new ArrayList<>();
 
-        String jsonPath = "Bent Sphere.json";
+        String jsonPath = "Circles.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -827,14 +828,15 @@ public class FusorVis extends Application {
             }
         }
         long start = System.nanoTime();
-        points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
+        this.e = new EField();
+        e.setPoints(PointDistributer.shakeUpPoints(parts, pointCount, optimizations));
         long elapsedTime = System.nanoTime() - start;
         
         System.out.println("Took " + elapsedTime + " nanoseconds to parse the bent sphere with " + pointCount * 2 + " points and " + optimizations + " shakeups");
         markedPoints = new ArrayList<>();
 
-        double posAvgPotential = StatsGen.avgPotential(points, 1);
-        double negAvgPotential = StatsGen.avgPotential(points, -1);
+        double posAvgPotential = StatsGen.avgPotential(e.p, 1);
+        double negAvgPotential = StatsGen.avgPotential(e.p, -1);
 
         Point q = new Point();
         q.x = 0.0;
@@ -842,10 +844,10 @@ public class FusorVis extends Application {
         q.z = 0.0;
   
         Vector efield = new Vector();
-        EField.setkQ(annodeVoltage, cathodeVoltage, points);
-        efield = EField.EFieldSum(points, q);
+        e.setkQ(annodeVoltage, cathodeVoltage);
+        efield = e.EFieldSum(q);
 
-        output.put("Points", String.valueOf(points.length));
+        output.put("Points", String.valueOf(e.p.length));
         output.put("Parts in grid", String.valueOf(parts.size()));
         output.put("Optimizations", String.valueOf(optimizations));
         output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential * 1 / 1));
@@ -858,7 +860,7 @@ public class FusorVis extends Application {
         output.put("Sample point z e-field", String.valueOf(efield.z));
 
         buildCamera();
-        buildElectrons(points);
+        buildElectrons(e.p);
         buildAxes();
         buildReferencePoints(referencePoints);
         buildScene();
