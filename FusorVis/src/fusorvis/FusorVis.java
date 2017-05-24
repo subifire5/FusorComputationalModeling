@@ -436,7 +436,7 @@ public class FusorVis extends Application {
             @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
-                    case Z: // CTRL+X closes window
+                    case Z: // CTRL+X closes windowp
                         if (event.isControlDown()) {
                             // Close down window
                             stage.close();
@@ -552,7 +552,7 @@ public class FusorVis extends Application {
                         Runnable r = new Runnable() {
                             public void run() {
                                 // Code for updating positions goes here
-                                c.stepAllForeward(e.p, 0.01);
+                                c.stepAllForeward(e.p);
                                     //System.out.println("Running once, size of Deuterons is " + Deuterons.size());
                                     for(int i = 0; i < Deuterons.size(); i++){
                                         Deuterons.get(i).setTranslateX(c.atoms[i].position.x);
@@ -564,7 +564,7 @@ public class FusorVis extends Application {
                         };
 
                         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                        executor.scheduleAtFixedRate(r, 0, 2, TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(r, 0, 5, TimeUnit.MILLISECONDS);
                         break;
                     case F:
                         if (event.isControlDown()) {

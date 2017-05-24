@@ -28,6 +28,9 @@ public class RungeKutta implements Solver {
 
     @Override
     public Atom moveForward(Point[] points, double timeStep, Atom a, EField e) {
+        System.out.println("Position is (" + a.position.x + ", " + a.position.y + ", " + a.position.z + ")");
+        System.out.println("Velocity is (" + a.Velocity.x + ", " + a.Velocity.y + ", " + a.Velocity.z + ")");
+        System.out.println("Timestep: " + timeStep);
         double[] y0 = {a.position.x, a.position.y, a.position.z, a.Velocity.x, a.Velocity.y, a.Velocity.z};
         double[] k1 = f(y0, a.mass);
         double[] y1 = helper(timeStep, k1, y0, 0.5);
