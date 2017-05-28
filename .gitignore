@@ -8,7 +8,5 @@
 FusorVis/build/*
 FusorVis/dist/*
 FusorVis/dist/run/*
-lib/JFX3DModelImporters/*
-*.jar
 OpenCL test/build/*
 OpenCL test/nbproject/private/*
