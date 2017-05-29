@@ -52,12 +52,12 @@ public class Mandelbrot {
     /**
      * Constant for the default image size in x-direction
      */
-    private static final int DEFAULT_SIZE_X = 256;
+    private static final int DEFAULT_SIZE_X = 800;
 
     /**
      * Constant for the default image size in y-direction
      */
-    private static final int DEFAULT_SIZE_Y = 256;
+    private static final int DEFAULT_SIZE_Y = 800;
 
     /**
      * Constant for the default tile size
@@ -67,7 +67,7 @@ public class Mandelbrot {
     /**
      * Constant for the default number of iterations
      */
-    private static final int DEFAULT_MAX_ITERATIONS = 100;
+    private static final int DEFAULT_MAX_ITERATIONS = 1000;
 
     /**
      * A flag indicating whether some sort of "benchmarking" information should
@@ -736,6 +736,7 @@ public class Mandelbrot {
             return;
         }
         int numPlatforms = numPlatformsArray[0];
+        //numPlatforms = 1;
 
         // Obtain a platform ID
         cl_platform_id platforms[] = new cl_platform_id[numPlatforms];
@@ -753,6 +754,7 @@ public class Mandelbrot {
         int numDevicesArray[] = new int[1];
         clGetDeviceIDs(platform, deviceType, 0, null, numDevicesArray);
         numDevices = numDevicesArray[0];
+        //numDevices = 1;
 
         // Obtain the device IDs 
         cl_device_id devices[] = new cl_device_id[numDevices];
