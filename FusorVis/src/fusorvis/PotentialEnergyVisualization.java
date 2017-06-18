@@ -31,4 +31,9 @@ public class PotentialEnergyVisualization extends VisualizationType {
     public void sortRefPoints(EFieldData[] refVals) {
         sortDoubleArray(refVals);
     }
+
+    @Override
+    public String toHumanReadable(EFieldData d) {
+        return Double.toString(d.d);
+    }
 }

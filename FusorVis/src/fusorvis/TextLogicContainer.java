@@ -10,5 +10,8 @@ package fusorvis;
  * @author guberti
  */
 public abstract class TextLogicContainer {
-    public abstract double calc();
+    public double calc() {return 0.0;};
+    public String getText() {
+        return Double.toString(calc());
+    }
 }

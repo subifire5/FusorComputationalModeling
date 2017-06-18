@@ -63,6 +63,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import java.awt.event.MouseMotionListener;
 
 /**
  *
@@ -134,7 +135,9 @@ public class FusorVis extends Application {
     double mouseOldY;
     double mouseDeltaX;
     double mouseDeltaY;
-
+    
+    String eFieldString;
+    
     double annodeVoltage = 0;
     double cathodeVoltage = -500;
 
@@ -252,6 +255,12 @@ public class FusorVis extends Application {
         textFieldStage.initOwner(primaryStage);
         textFieldStage.initModality(Modality.APPLICATION_MODAL);
         textFieldStage.setAlwaysOnTop(false);
+        
+        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+        
+        textFieldStage.setX(primaryScreenBounds.getMinX() + primaryScreenBounds.getWidth() - 450);
+        textFieldStage.setY(primaryScreenBounds.getMinY() + primaryScreenBounds.getHeight() - 600);
+        
         textFieldStage.show();
         primaryStage.toFront();
     }
@@ -259,8 +268,15 @@ public class FusorVis extends Application {
     private void buildEFieldStage(Stage primaryStage, Point[] points) {
         eFieldStage.setTitle("Electric Field");
         Group r = new Group();
-
-        eFieldStage.setScene(new Scene(r, 96 * 16, 54 * 16));
+        Scene s = new Scene(r, 96 * 16, 54 * 16);
+        s.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                eFieldString = eVis.getHumanReadableVal(e.getX(), e.getY());
+                compileOutput();
+            }
+        });
+        eFieldStage.setScene(s);
         final Canvas canvas = new Canvas(96 * 16, 54 * 16);
         eFieldPixels = canvas.getGraphicsContext2D();
         eFieldPixelWriter = eFieldPixels.getPixelWriter();
@@ -671,26 +687,25 @@ public class FusorVis extends Application {
         public double calc() {return ry.getPivotY();}});
         output.put("E-Field Slice Rotation Z", new TextLogicContainer() {@Override
         public double calc() {return rz.getPivotZ();}});
+        output.put("Current E-field Value", new TextLogicContainer() {@Override
+        public String getText() {return eFieldString;}});
         
         world.getChildren().add(eFieldSlice);
     }
 
     public void compileOutput() {
-        System.out.println("FOOOOOOOOOOOOO " + eFieldTransforms[0].getPivotX());
         Iterator it = output.entrySet().iterator();
         String textOutput = "";
         while (it.hasNext()) {
             Map.Entry<String, TextLogicContainer> pair = (Map.Entry) it.next();
-            double val = pair.getValue().calc();
+            String val = pair.getValue().getText();
             System.out.println("Key is " + pair.getKey() + ", val is " + val);
             textOutput += pair.getKey() + ": " + val + "\n";
         }
         consoleDump.setText(textOutput);
-        System.out.println("Output compiled");
     }
 
     @Override
-    @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
         int pointCount = 1000;
         int optimizations = 20;
@@ -700,7 +715,7 @@ public class FusorVis extends Application {
 
         parts = new ArrayList<>();
 
-        String jsonPath = "Bent Sphere.json";
+        String jsonPath = "Circles.json";
         byte[] encoded = Files.readAllBytes(Paths.get(jsonPath));
 
         JSONArray pieceArr = new JSONArray(new String(encoded, Charset.defaultCharset()));
@@ -799,8 +814,8 @@ public class FusorVis extends Application {
         buildStage(primaryStage);
         
         buildEFieldSlice();
+        buildTextWindow(primaryStage);
         buildEFieldStage(primaryStage, points);
-        buildTextWindow(eFieldStage);
         
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);

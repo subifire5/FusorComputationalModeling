@@ -18,6 +18,7 @@ public abstract class VisualizationType {
     public abstract EFieldData calcPoint(Point[] points, Point p);
     public abstract void sortRefPoints(EFieldData[] refVals);
     public abstract Color calcColor(EFieldData[] refVals, EFieldData[][] data, EFieldData item);
+    public abstract String toHumanReadable(EFieldData d);
     public void sortDoubleArray(EFieldData[] d) {
         EFieldData[] copy = d.clone();
         int moved = 0;

@@ -37,6 +37,8 @@ public class EFieldVisualizer {
     
     final int rangeStep = 1;
     
+    final boolean localize = false;
+    
     EFieldData[] refVals;
     EFieldData[][] data;
     
@@ -64,7 +66,11 @@ public class EFieldVisualizer {
         getEFieldRange();
     }
     
-    
+    public String getHumanReadableVal(double x, double y) {
+        System.out.println(x);
+        EFieldData v = data[((int) x) / blockSideLength][((int) y) / blockSideLength];
+        return vis.toHumanReadable(v);
+    }
     
     public void calcSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
         for (int i = 0; i < aW; i++) {
@@ -99,9 +105,21 @@ public class EFieldVisualizer {
     public void renderSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
         calcSlice(eFieldTransforms, eFieldSlice);
         
+        EFieldData[] contrastVals = refVals;
+        
+        if (localize) {
+            contrastVals = new EFieldData[aW*aH];
+            for (int i = 0; i < aW; i++) {
+                for (int k = 0; k < aH; k++) {
+                    contrastVals[i*aH+k] = data[i][k];
+                }
+            }
+            vis.sortRefPoints(contrastVals);
+        }
+        
         for (int i = 0; i < aW; i++) {
             for (int k = 0; k < aH; k++) {                
-                Color c = vis.calcColor(refVals, data, data[i][k]);
+                Color c = vis.calcColor(contrastVals, data, data[i][k]);
                 
                 drawBlock(i, k, c);
             }
