@@ -111,8 +111,9 @@ public class FusorVis extends Application {
     // Efield generation stats
     double sliceWidth = 96 / 16; // -3 to 3
     double sliceHeight = 54 / 16;
+    //
     double imageConversionFactor = 256;
-    int blockSideLength = 24;
+    int blockSideLength = 1;
     boolean autoUpdate = false;
 
     ProgressBar pb = new ProgressBar();

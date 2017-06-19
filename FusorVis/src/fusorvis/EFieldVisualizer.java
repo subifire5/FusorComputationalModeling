@@ -37,6 +37,8 @@ public class EFieldVisualizer {
     
     final int rangeStep = 1;
     
+    final int NUM_THREADS = 128; // Number of threads must evenly divide number of pixels
+    
     final boolean localize = false;
     
     EFieldData[] refVals;
@@ -73,15 +75,55 @@ public class EFieldVisualizer {
     }
     
     public void calcSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
+        // Currently, this multithreading turns the 2D grid of points
+        // into a 1D array and then transforms it back. If we can just keep
+        // it as a 2D array the whole time, we'll have better performance
+        
+        long startTime = System.nanoTime();
+        
+        Point[] tasks = new Point[aW*aH];
+        CalcThread[] threads = new CalcThread[NUM_THREADS];
+        EFieldData[] linearData = new EFieldData[aW*aH];
+        
+        
         for (int i = 0; i < aW; i++) {
             for (int k = 0; k < aH; k++) {
-                
                 Point p = new Point((-(sW / 2) + i * wU), (-(sH / 2) + k * hU), 0);
                 p = translateEFieldPixel(p, eFieldTransforms, eFieldSlice);
-                
-                data[i][k] = vis.calcPoint(points, p);
+                tasks[i*aH+k] = p;
             }
-        }        
+        }
+        for (int i = 0; i < NUM_THREADS; i++) {
+            int taskStart = (i*aW*aH) / NUM_THREADS;
+            int taskEnd = ((i+1)*aW*aH) / NUM_THREADS;
+            threads[i] = new CalcThread(tasks, taskStart, taskEnd, points, vis);
+            threads[i].start();
+        }
+        
+        int threadsComplete = 0;
+        while (threadsComplete < NUM_THREADS) {
+            for (CalcThread thread : threads) {
+                if (thread.finished && !thread.reintegrated) {
+                    thread.reintegrated = true;
+                    threadsComplete++;
+                    int index = 0;
+                    for (int i = thread.taskStart; i < thread.taskEnd; i++) {
+                        linearData[i] = thread.results[index];
+                        index++;
+                    }
+                }
+            }
+        }
+        
+        // Reassemble back into 2D array
+        for (int i = 0; i < aW; i++) {
+            for (int k = 0; k < aH; k++) {
+                data[i][k] = linearData[i*aH+k];
+            }
+        }
+        
+        long elapsedTime = (System.nanoTime() - startTime)/1000; // In millis
+        System.out.println("Calculated " + aW*aH + " pixels with " + NUM_THREADS + " threads in " + elapsedTime + " milliseconds"); 
     }
     
     public void getEFieldRange() {
@@ -102,7 +144,7 @@ public class EFieldVisualizer {
         vis.sortRefPoints(refVals);
     }
     
-    public void renderSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {
+    public void renderSlice(Rotate[] eFieldTransforms, Box eFieldSlice) {        
         calcSlice(eFieldTransforms, eFieldSlice);
         
         EFieldData[] contrastVals = refVals;
