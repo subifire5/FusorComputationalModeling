@@ -10,3 +10,4 @@ FusorVis/dist/*
 FusorVis/dist/run/*
 OpenCL test/build/*
 OpenCL test/nbproject/private/*
+/NeutronScatteringSimulation/nbproject/private/
