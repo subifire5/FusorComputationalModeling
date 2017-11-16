@@ -446,14 +446,14 @@ public class NeutronScatteringSimulation extends Application {
         System.out.println("Theta:" + theta + " Phi:" + phi);
 
         line.getTransforms().add(new Translate((p2.x+p1.x)/2,(p2.y+p1.y)/2,(p2.z+p1.z)/2));
-        line.getTransforms().add(new Rotate(90 + phi, new Point3D(0, 0, 1)));
+        line.getTransforms().add(new Rotate(180- phi, new Point3D(0, 0, 1)));
         line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
         world.getChildren().add(line);
     }
 
     void example() {
         Vector3 p1 = new Vector3(30, 30, 30);
-        Vector3 p2 = new Vector3(60, 60, 60);
+        Vector3 p2 = new Vector3(-100, -60, -60);
 
         showPoint(p1, Color.RED);
         showPoint(p2, Color.RED);
