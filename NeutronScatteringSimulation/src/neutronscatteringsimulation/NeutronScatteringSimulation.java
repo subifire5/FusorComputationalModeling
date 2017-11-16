@@ -10,15 +10,20 @@ import java.util.Random;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.ObservableFloatArray;
+import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
 
 /**
  *
@@ -398,6 +403,9 @@ public class NeutronScatteringSimulation extends Application {
         root.setDepthTest(DepthTest.ENABLE);
         buildCamera();
 
+        buildAxes();
+        example();
+        
         buildIgloo();
         runSimulation(1);
 
@@ -423,5 +431,63 @@ public class NeutronScatteringSimulation extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+     void drawLine(Vector3 p1, Vector3 p2, Color c) {
+        Vector3 v = p2.subtract(p1);
+        final double REACHFACTOR =0.97;
+
+        Cylinder line = new Cylinder(1, v.length()*REACHFACTOR);
+        PhongMaterial pm = new PhongMaterial(c);
+        line.setMaterial(pm);
+
+        System.out.println("x:" + v.x + " y:" + v.y + " z:" + v.z);
+        double phi = Math.atan2(v.x, v.y) * 180 / Math.PI;
+        double theta = Math.acos(v.z / v.length()) * 180 / Math.PI;
+        System.out.println("Theta:" + theta + " Phi:" + phi);
+
+        line.getTransforms().add(new Translate((p2.x+p1.x)/2,(p2.y+p1.y)/2,(p2.z+p1.z)/2));
+        line.getTransforms().add(new Rotate(90 + phi, new Point3D(0, 0, 1)));
+        line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
+        world.getChildren().add(line);
+    }
+
+    void example() {
+        Vector3 p1 = new Vector3(30, 30, 30);
+        Vector3 p2 = new Vector3(60, 60, 60);
+
+        showPoint(p1, Color.RED);
+        showPoint(p2, Color.RED);
+        drawLine(p1, p2, Color.GOLDENROD);
+    }
+
+    void buildAxes() {
+        Cylinder cx = new Cylinder(1, 100);
+        PhongMaterial pmx = new PhongMaterial(Color.RED);
+        cx.setMaterial(pmx);
+        cx.setRotationAxis(new Point3D(0, 0, 1));
+        cx.setRotate(90);
+        world.getChildren().add(cx);
+        showPoint(new Vector3(50, 0, 0), Color.BLACK);
+
+        Cylinder cy = new Cylinder(1, 100);
+        PhongMaterial pmy = new PhongMaterial(Color.GREEN);
+        cy.setMaterial(pmy);
+        world.getChildren().add(cy);
+        showPoint(new Vector3(0, 50, 0), Color.BLACK);
+
+        Cylinder cz = new Cylinder(1, 100);
+        PhongMaterial pmz = new PhongMaterial(Color.BLUE);
+        cz.setMaterial(pmz);
+        cz.setRotationAxis(new Point3D(1, 0, 0));
+        cz.setRotate(90);
+        world.getChildren().add(cz);
+        showPoint(new Vector3(0, 0, 50), Color.BLACK);
+
+        Box b = new Box(60, 30, 10);
+        PhongMaterial pb = new PhongMaterial(Color.YELLOW);
+        b.setMaterial(pb);
+        world.getChildren().add(b);
+    }
+
 
 }
