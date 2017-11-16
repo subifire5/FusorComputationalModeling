@@ -324,13 +324,13 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     private double sigmaScatteringParaffin(Vector3 R) {
-        return .015;
+        return .55;
     }
 
     private double sigmaAbsorptionParaffin(Vector3 R) {
         return .007;
     }
-    
+
     private Vector3 scatter(Vector3 R) {
         return randomDir();
     }
@@ -339,6 +339,7 @@ public class NeutronScatteringSimulation extends Application {
         for (; numNeutrons > 0; numNeutrons--) {
             boolean insideBlock = false;
             Vector3 O = new Vector3(55, 55, -44);
+            Vector3 last = O;
             showPoint(O, Color.BLUE);
             Vector3 R = randomDir();
             ParaffinBlock nextBlock = null;
@@ -357,6 +358,9 @@ public class NeutronScatteringSimulation extends Application {
                     }
                     if (minDistance == Double.MAX_VALUE) {
                         System.out.println("neutron escaped!!! watch out");
+                        O = last.add(R.normalize().multiply(200));
+                        drawLine(last, O, Color.BLACK);
+
                         break;
                     }
                     showPoints(nextBlock);
@@ -380,10 +384,12 @@ public class NeutronScatteringSimulation extends Application {
                     if ((sigmaScattering / sigmaTotal) > random.nextDouble()) {
                         System.out.println("   scattering!");
                         R = scatter(R);
+
                         showPoint(O, Color.GREEN);
                     } else {
-                        System.out.println("   absorpted - we're safe!");
+                        System.out.println("   absorbed - we're safe!");
                         showPoint(O, Color.GOLD);
+                        drawLine(last, O, Color.BLACK);
                         break;
                     }
                 } else {
@@ -392,6 +398,8 @@ public class NeutronScatteringSimulation extends Application {
                     System.out.println("moving on");
                     insideBlock = !insideBlock;
                 }
+                drawLine(last, O, Color.BLACK);
+                last = O;
             }
             System.out.println();
         }
@@ -399,15 +407,16 @@ public class NeutronScatteringSimulation extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        random.setSeed(System.currentTimeMillis());
         root.getChildren().add(world);
         root.setDepthTest(DepthTest.ENABLE);
         buildCamera();
 
-        buildAxes();
-        example();
-        
+//        buildAxes();
+//        example();
+
         buildIgloo();
-        runSimulation(1);
+        runSimulation(10);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.LIGHTGRAY);
@@ -431,22 +440,22 @@ public class NeutronScatteringSimulation extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    
-     void drawLine(Vector3 p1, Vector3 p2, Color c) {
-        Vector3 v = p2.subtract(p1);
-        final double REACHFACTOR =0.97;
 
-        Cylinder line = new Cylinder(1, v.length()*REACHFACTOR);
+    void drawLine(Vector3 p1, Vector3 p2, Color c) {
+        Vector3 v = p2.subtract(p1);
+        final double REACHFACTOR = 0.97;
+
+        Cylinder line = new Cylinder(1, v.length() * REACHFACTOR);
         PhongMaterial pm = new PhongMaterial(c);
         line.setMaterial(pm);
 
-        System.out.println("x:" + v.x + " y:" + v.y + " z:" + v.z);
+//        System.out.println("x:" + v.x + " y:" + v.y + " z:" + v.z);
         double phi = Math.atan2(v.x, v.y) * 180 / Math.PI;
         double theta = Math.acos(v.z / v.length()) * 180 / Math.PI;
-        System.out.println("Theta:" + theta + " Phi:" + phi);
+//        System.out.println("Theta:" + theta + " Phi:" + phi);
 
-        line.getTransforms().add(new Translate((p2.x+p1.x)/2,(p2.y+p1.y)/2,(p2.z+p1.z)/2));
-        line.getTransforms().add(new Rotate(180- phi, new Point3D(0, 0, 1)));
+        line.getTransforms().add(new Translate((p2.x + p1.x) / 2, (p2.y + p1.y) / 2, (p2.z + p1.z) / 2));
+        line.getTransforms().add(new Rotate(180 - phi, new Point3D(0, 0, 1)));
         line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
         world.getChildren().add(line);
     }
@@ -488,6 +497,5 @@ public class NeutronScatteringSimulation extends Application {
         b.setMaterial(pb);
         world.getChildren().add(b);
     }
-
 
 }
