@@ -5,13 +5,19 @@
  */
 package neutronscatteringsimulation;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
-import javafx.scene.*;
+import javafx.scene.DepthTest;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
@@ -55,7 +61,7 @@ public class NeutronScatteringSimulation extends Application {
     double mouseDeltaX;
     double mouseDeltaY;
 
-    ArrayList<ParaffinBlock> blocks = new ArrayList<>();
+    ArrayList<Block> blocks = new ArrayList<>();
 
     private void buildCamera() {
         root.getChildren().add(cameraXform);
@@ -125,7 +131,7 @@ public class NeutronScatteringSimulation extends Application {
         }
     }
 
-    private double minDistance(Vector3 O, Vector3 R, ParaffinBlock block) {
+    private double minDistance(Vector3 O, Vector3 R, Block block) {
         double minDistance = Double.MAX_VALUE;
         double D, t, distance;
         Vector3 v0, v1, v2;
@@ -181,7 +187,7 @@ public class NeutronScatteringSimulation extends Application {
         return minDistance;
     }
 
-    private double minDistance(ParaffinBlock topBlock, ParaffinBlock bottomBlock, Vector3 R) {
+    private double minDistance(Block topBlock, Block bottomBlock, Vector3 R) {
         double minDistance;
 
         minDistance = Double.MAX_VALUE;
@@ -192,37 +198,37 @@ public class NeutronScatteringSimulation extends Application {
         return minDistance;
     }
 
-    private void moveCloser(ArrayList<ParaffinBlock> currentBlocks, ArrayList<ParaffinBlock> lastBlocks, Vector3 axis1) {
+    private void moveCloser(ArrayList<Block> currentBlocks, ArrayList<Block> lastBlocks, Vector3 axis1) {
         double minDistance = Double.MAX_VALUE;
-        for (ParaffinBlock b1 : currentBlocks) {
-            for (ParaffinBlock b2 : lastBlocks) {
+        for (Block b1 : currentBlocks) {
+            for (Block b2 : lastBlocks) {
                 minDistance = Math.min(minDistance, Math.min(minDistance(b1, b2, axis1), minDistance(b2, b1, axis1)));
             }
         }
         addAll(currentBlocks, new Vector3(-(minDistance), -(minDistance), -(minDistance)).multiply(axis1));
     }
 
-    private void addAll(ArrayList<ParaffinBlock> bs, Vector3 v) {
-        for (ParaffinBlock b : bs) {
+    private void addAll(ArrayList<Block> bs, Vector3 v) {
+        for (Block b : bs) {
             b.updatePoints(v);
         }
     }
 
-    private ArrayList<ParaffinBlock> buildWall(int rows, int cols, Vector3 axis1, Vector3 axis2, double WIDTH, double LENGTH, double DEPTH, double TRISIZE, double MAXBUMP) {
+    private ArrayList<Block> buildWall(int rows, int cols, Vector3 axis1, Vector3 axis2, double WIDTH, double LENGTH, double DEPTH, double TRISIZE, double MAXBUMP) {
         // all units in cm
         final Vector3 dimensions = new Vector3(WIDTH, LENGTH, DEPTH);
 
-        ParaffinBlock block, lastBlock;
+        Block block, lastBlock;
         MeshView view;
-        ArrayList<ParaffinBlock> lastBlocks = new ArrayList<>();
-        ArrayList<ParaffinBlock> currentBlocks = new ArrayList<>();
-        ArrayList<ParaffinBlock> allBlocks = new ArrayList<>();
+        ArrayList<Block> lastBlocks = new ArrayList<>();
+        ArrayList<Block> currentBlocks = new ArrayList<>();
+        ArrayList<Block> allBlocks = new ArrayList<>();
 
         double minDistance;
         for (int i = 0; i < rows; i++) {
             lastBlock = null;
             for (int j = 0; j < cols; j++) {
-                block = new ParaffinBlock(WIDTH, LENGTH, DEPTH, TRISIZE, MAXBUMP);
+                block = new Block(WIDTH, LENGTH, DEPTH, TRISIZE, MAXBUMP);
                 block.updatePoints(dimensions.add(MAXBUMP * 2).multiply(axis1).multiply(i));
                 block.updatePoints(dimensions.add(MAXBUMP * 2).multiply(axis2).multiply(j));
 
@@ -260,7 +266,7 @@ public class NeutronScatteringSimulation extends Application {
         final Vector3 Y = new Vector3(0, 1, 0);
         final Vector3 Z = new Vector3(0, 0, -1);
 
-        ArrayList<ParaffinBlock> newBlocks;
+        ArrayList<Block> newBlocks;
         blocks.addAll(buildWall(2, 5, X, Y, WIDTH, LENGTH, DEPTH, TRISIZE, MAXBUMP));
 
         newBlocks = buildWall(1, 3, X, Z, WIDTH, LENGTH, DEPTH, TRISIZE, MAXBUMP);
@@ -342,14 +348,14 @@ public class NeutronScatteringSimulation extends Application {
             Vector3 last = O;
             showPoint(O, Color.BLUE);
             Vector3 R = randomDir();
-            ParaffinBlock nextBlock = null;
+            Block nextBlock = null;
             double minDistance, distance;
             double sigmaScattering, sigmaAbsorption, sigmaTotal, distanceCovered;
             while (true) {
                 if (!insideBlock) {
                     minDistance = Double.MAX_VALUE;
                     nextBlock = null;
-                    for (ParaffinBlock block : blocks) {
+                    for (Block block : blocks) {
                         distance = minDistance(O, R, block);
                         if (distance < minDistance) {
                             minDistance = distance;
@@ -406,7 +412,7 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException {
         random.setSeed(System.currentTimeMillis());
         root.getChildren().add(world);
         root.setDepthTest(DepthTest.ENABLE);
@@ -414,9 +420,16 @@ public class NeutronScatteringSimulation extends Application {
 
 //        buildAxes();
 //        example();
+//
+//        buildIgloo();
+//        runSimulation(10);
 
-        buildIgloo();
-        runSimulation(10);
+        ArrayList<TriangleMesh> meshes = ObjConverter.convert(new File("test.obj"));
+        MeshView view;
+        for (TriangleMesh mesh : meshes) {
+            view = new MeshView(mesh);
+            world.getChildren().add(view);
+        }
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.LIGHTGRAY);
@@ -491,11 +504,6 @@ public class NeutronScatteringSimulation extends Application {
         cz.setRotate(90);
         world.getChildren().add(cz);
         showPoint(new Vector3(0, 0, 50), Color.BLACK);
-
-        Box b = new Box(60, 30, 10);
-        PhongMaterial pb = new PhongMaterial(Color.YELLOW);
-        b.setMaterial(pb);
-        world.getChildren().add(b);
     }
 
 }

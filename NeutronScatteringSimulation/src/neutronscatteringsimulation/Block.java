@@ -12,12 +12,12 @@ import javafx.scene.shape.TriangleMesh;
  *
  * @author jfellows
  */
-public class ParaffinBlock extends TriangleMesh {
+public class Block extends TriangleMesh {
 
     ArrayList<Vector3> points;
     ArrayList<Face> faces;
 
-    public ParaffinBlock(double width, double length, double depth, double triSize, double maxBump) {
+    public Block(double width, double length, double depth, double triSize, double maxBump) {
         points = new ArrayList<>();
         faces = new ArrayList<>();
         ArrayList<Side> sides = new ArrayList<>();
