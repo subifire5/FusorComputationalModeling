@@ -7,9 +7,6 @@ import java.util.List;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-
 import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 
@@ -20,16 +17,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
-import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Box;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
@@ -39,10 +31,6 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.shape.TriangleMesh;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -57,11 +45,6 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -79,18 +62,11 @@ public class FusorVis extends Application {
     GraphicsContext eFieldPixels;
     PixelWriter eFieldPixelWriter;
     final Xform world = new Xform();
-    final PerspectiveCamera camera = new PerspectiveCamera(true);
-    final Xform cameraXform = new Xform();
-    final Xform cameraXform2 = new Xform();
-    final Xform cameraXform3 = new Xform();
-
-    TextFlow textFieldRoot = new TextFlow();
-    Stage textFieldStage = new Stage();
+    
+    CameraManager camera = new CameraManager();
+    
     Stage eFieldStage = new Stage();
-
-    SortedMap<String, String> output = new TreeMap<String, String>();
-
-    Text consoleDump = new Text();
+    TextFieldWindow text;
 
     String xmlFileName = "SimpleXML";
 
@@ -115,14 +91,6 @@ public class FusorVis extends Application {
     int blockSideLength = 24;
     boolean autoUpdate = true;
 
-    ProgressBar pb = new ProgressBar();
-
-    private static final double CAMERA_INITIAL_DISTANCE = -450;
-    private static final double CAMERA_INITIAL_X_ANGLE = 70.0;
-    private static final double CAMERA_INITIAL_Y_ANGLE = 320.0;
-    private static final double CAMERA_NEAR_CLIP = 0.1;
-    private static final double CAMERA_FAR_CLIP = 10000.0;
-
     // Mouse + keyboard vars
     double ONE_FRAME = 1.0 / 24.0;
     double DELTA_MULTIPLIER = 200.0;
@@ -140,6 +108,7 @@ public class FusorVis extends Application {
     double cathodeVoltage = -500;
 
     Controller c;
+    
 
     // Render vars
     double electronRadius = 0.2;
@@ -222,39 +191,10 @@ public class FusorVis extends Application {
         world.getChildren().addAll(referenceGroup);
     }
 
-    private void buildCamera() {
-        root.getChildren().add(cameraXform);
-        cameraXform.getChildren().add(cameraXform2);
-        cameraXform2.getChildren().add(cameraXform3);
-        cameraXform3.getChildren().add(camera);
-        cameraXform3.setRotateZ(180.0);
-
-        camera.setNearClip(CAMERA_NEAR_CLIP);
-        camera.setFarClip(CAMERA_FAR_CLIP);
-        camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
-        cameraXform.ry.setAngle(CAMERA_INITIAL_Y_ANGLE);
-        cameraXform.rx.setAngle(CAMERA_INITIAL_X_ANGLE);
-    }
-
     private void buildScene() {
         root.getChildren().add(world);
     }
-
-    private void buildTextWindow(Stage primaryStage) {
-        String output = compileOutput();
-        Text txt = new Text(output);
-        txt.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        textFieldRoot.getChildren().add(txt);
-
-        textFieldStage.setTitle("Model statistics");
-        textFieldStage.setScene(new Scene(textFieldRoot));
-        textFieldStage.initOwner(primaryStage);
-        textFieldStage.initModality(Modality.APPLICATION_MODAL);
-        textFieldStage.setAlwaysOnTop(false);
-        textFieldStage.show();
-        primaryStage.toFront();
-    }
-
+    
     private void buildEFieldStage(Stage primaryStage, Point[] points) {
         eFieldStage.setTitle("Electric Field");
         Group r = new Group();
@@ -288,17 +228,6 @@ public class FusorVis extends Application {
         primaryStage.setY(bounds.getMinY());
         primaryStage.setWidth(bounds.getWidth());
         primaryStage.setHeight(bounds.getHeight());
-
-        primaryStage.focusedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    textFieldStage.setAlwaysOnTop(true);
-                } else {
-                    textFieldStage.setAlwaysOnTop(false);
-                }
-            }
-        });
     }
 
     // Helper functions
@@ -338,21 +267,21 @@ public class FusorVis extends Application {
                     modifier = 10.0;
                 }
                 if (me.isPrimaryButtonDown()) {
-                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() - mouseDeltaX * modifierFactor * modifier * 2.0);  // +
-                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() + mouseDeltaY * modifierFactor * modifier * 2.0);  // -
+                    camera.cameraXform.ry.setAngle(camera.cameraXform.ry.getAngle() - mouseDeltaX * modifierFactor * modifier * 2.0);  // +
+                    camera.cameraXform.rx.setAngle(camera.cameraXform.rx.getAngle() + mouseDeltaY * modifierFactor * modifier * 2.0);  // -
 
-                    output.put("Camera phi", String.valueOf(cameraXform.ry.getAngle()));
-                    output.put("Camera theta", String.valueOf(cameraXform.rx.getAngle()));
+                    text.output.put("Camera phi", String.valueOf(camera.cameraXform.ry.getAngle()));
+                    text.output.put("Camera theta", String.valueOf(camera.cameraXform.rx.getAngle()));
 
                 } else if (me.isSecondaryButtonDown()) {
-                    double z = camera.getTranslateZ();
+                    double z = camera.camera.getTranslateZ();
                     double newZ = z + mouseDeltaX * modifierFactor * modifier;
-                    camera.setTranslateZ(newZ);
+                    camera.camera.setTranslateZ(newZ);
                 } else if (me.isMiddleButtonDown()) {
-                    cameraXform2.t.setX(cameraXform2.t.getX() + mouseDeltaX * modifierFactor * modifier * 0.3);  // -
-                    cameraXform2.t.setY(cameraXform2.t.getY() + mouseDeltaY * modifierFactor * modifier * 0.3);  // -
+                    camera.cameraXform2.t.setX(camera.cameraXform2.t.getX() + mouseDeltaX * modifierFactor * modifier * 0.3);  // -
+                    camera.cameraXform2.t.setY(camera.cameraXform2.t.getY() + mouseDeltaY * modifierFactor * modifier * 0.3);  // -
                 }
-                compileOutput();
+                text.compileOutput();
             }
         });
     }
@@ -360,7 +289,6 @@ public class FusorVis extends Application {
     public ArrayList<Sphere> Deuterons = new ArrayList();
 
     private void handleKeyboard(Scene scene, Stage stage) {
-        final boolean moveCamera = true;
 
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             double translateStep = 1.5;
@@ -373,13 +301,6 @@ public class FusorVis extends Application {
                         if (event.isControlDown()) {
                             // Close down window
                             stage.close();
-                        }
-                        break;
-                    case O:
-                        if (event.isControlDown()) {
-                            textFieldStage.setTitle("My New Stage Title");
-                            textFieldStage.setScene(new Scene(textFieldRoot, 450, 450));
-                            textFieldStage.show();
                         }
                         break;
                     case S:
@@ -633,8 +554,8 @@ public class FusorVis extends Application {
 
     public void buildEFieldSlice() {
 
-        output.put("E-Field Slice Width", Double.toString(sliceWidth));
-        output.put("E-Field Slice Height", Double.toString(sliceHeight));
+        text.output.put("E-Field Slice Width", Double.toString(sliceWidth));
+        text.output.put("E-Field Slice Height", Double.toString(sliceHeight));
 
         final PhongMaterial planeMaterial = new PhongMaterial();
         planeMaterial.setDiffuseColor(new Color(0.5, 0.5, 0.5, 0.5));
@@ -656,34 +577,21 @@ public class FusorVis extends Application {
 
         eFieldSlice.getTransforms().addAll(eFieldTransforms);
 
-        output.put("E-Field Slice Translation X", Double.toString(eFieldSlice.getTranslateX()));
-        output.put("E-Field Slice Translation Y", Double.toString(eFieldSlice.getTranslateY()));
-        output.put("E-Field Slice Translation Z", Double.toString(eFieldSlice.getTranslateZ()));
-        output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
-        output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
-        output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
+        text.output.put("E-Field Slice Translation X", Double.toString(eFieldSlice.getTranslateX()));
+        text.output.put("E-Field Slice Translation Y", Double.toString(eFieldSlice.getTranslateY()));
+        text.output.put("E-Field Slice Translation Z", Double.toString(eFieldSlice.getTranslateZ()));
+        text.output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
+        text.output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
+        text.output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
         world.getChildren().add(eFieldSlice);
-    }
-
-    public String compileOutput() {
-        Iterator it = output.entrySet().iterator();
-        String textOutput = "";
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            textOutput += pair.getKey() + ": " + pair.getValue() + "\n";
-        }
-        consoleDump.setText(textOutput);
-        return textOutput;
     }
 
     @Override
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
+        
         int pointCount = 1000;
         int optimizations = 20;
-        
-        double annodeVoltage = 0;
-        double cathodeVoltage = -500;
 
         parts = new ArrayList<>();
 
@@ -763,16 +671,21 @@ public class FusorVis extends Application {
   
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
 
-        output.put("Points", String.valueOf(points.length));
-        output.put("Parts in grid", String.valueOf(parts.size()));
-        output.put("Optimizations", String.valueOf(optimizations));
-        output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential * 1 / 1));
-        output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
+        text = new TextFieldWindow();
+        
+        text.output.put("Points", String.valueOf(points.length));
+        text.output.put("Parts in grid", String.valueOf(parts.size()));
+        text.output.put("Optimizations", String.valueOf(optimizations));
+        text.output.put("Avg. potential of pos. points", String.valueOf(posAvgPotential * 1 / 1));
+        text.output.put("Avg. potential of neg. points", String.valueOf(negAvgPotential));
 
+        text.compileOutput();
+        text.buildWindow(primaryStage);
+        
         Point[] referencePoints = {};
 
 
-        buildCamera();
+        root.getChildren().add(camera.buildCamera());
         buildElectrons(points);
         buildAxes();
         buildReferencePoints(referencePoints);
@@ -781,7 +694,6 @@ public class FusorVis extends Application {
         
         buildEFieldSlice();
         buildEFieldStage(primaryStage, points);
-        buildTextWindow(primaryStage);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
@@ -791,7 +703,7 @@ public class FusorVis extends Application {
         primaryStage.setTitle("Fusor Electric Field Visualizer");
         primaryStage.setScene(scene);
         primaryStage.show();
-        scene.setCamera(camera);
+        scene.setCamera(camera.camera);
     }
 
      // Java main for when running without JavaFX launcher

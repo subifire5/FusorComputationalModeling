@@ -13,7 +13,11 @@
             <file>file:/C:/Users/gmein/Documents/GitHub/FusorComputationalModeling/FusorVis/nbproject/project.properties</file>
         </group>
         <group>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorVis/src/fusorvis/EFieldVisualizer.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorVis/src/fusorvis/CameraManager.java</file>
             <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorVis/src/fusorvis/FusorVis.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorVis/src/fusorvis/Xform.java</file>
+            <file>file:/C:/Users/guberti/Documents/GitHub/FusorComputationalModeling/FusorVis/src/fusorvis/TextFieldWindow.java</file>
         </group>
     </open-files>
 </project-private>
