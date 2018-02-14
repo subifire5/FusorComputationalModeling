@@ -59,14 +59,12 @@ public class FusorVis extends Application {
     final Xform componentGroup = new Xform();
     final Xform axisGroup = new Xform();
     final Xform referenceGroup = new Xform();
-    GraphicsContext eFieldPixels;
-    PixelWriter eFieldPixelWriter;
     final Xform world = new Xform();
     
     CameraManager camera = new CameraManager();
     
-    Stage eFieldStage = new Stage();
     TextFieldWindow text;
+    EFieldManager eFieldManager;
 
     String xmlFileName = "SimpleXML";
 
@@ -78,18 +76,6 @@ public class FusorVis extends Application {
     List<Point> markedPoints;
 
     Stage primaryStage;
-
-    Box eFieldSlice;
-    public boolean eFieldBuilt = false;
-    Rotate[] eFieldTransforms;
-    EFieldVisualizer eVis;
-
-    // Efield generation stats
-    double sliceWidth = 96 / 16; // -3 to 3
-    double sliceHeight = 54 / 16;
-    double imageConversionFactor = 256;
-    int blockSideLength = 24;
-    boolean autoUpdate = true;
 
     // Mouse + keyboard vars
     double ONE_FRAME = 1.0 / 24.0;
@@ -195,30 +181,6 @@ public class FusorVis extends Application {
         root.getChildren().add(world);
     }
     
-    private void buildEFieldStage(Stage primaryStage, Point[] points) {
-        eFieldStage.setTitle("Electric Field");
-        Group r = new Group();
-
-        eFieldStage.setScene(new Scene(r, 96 * 16, 54 * 16));
-        final Canvas canvas = new Canvas(96 * 16, 54 * 16);
-        eFieldPixels = canvas.getGraphicsContext2D();
-        eFieldPixelWriter = eFieldPixels.getPixelWriter();
-        eVis = new EFieldVisualizer(sliceWidth, sliceHeight, imageConversionFactor, blockSideLength, eFieldPixelWriter, points);
-        
-        r.getChildren().add(canvas);
-
-        eFieldStage.initOwner(primaryStage);
-        eFieldStage.initModality(Modality.APPLICATION_MODAL);
-        eFieldStage.show();
-        primaryStage.toFront();
-        updateEField(points);
-
-        eFieldBuilt = true;
-
-    }
-    private void updateEField(Point[] points) {
-        eVis.renderElectricPotential(eFieldTransforms, eFieldSlice);
-    }
 
     private void buildStage(Stage primaryStage) {
         Screen screen = Screen.getPrimary();
@@ -293,6 +255,7 @@ public class FusorVis extends Application {
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             double translateStep = 1.5;
             double rotateStep = 1;
+            Box slice = eFieldManager.eFieldSlice;
 
             @Override
             public void handle(KeyEvent event) {
@@ -422,16 +385,15 @@ public class FusorVis extends Application {
                         break;
                     case F:
                         if (event.isControlDown()) {
-                            if (!eFieldBuilt) {
-                                buildEFieldStage(primaryStage, points);
+                            if (!eFieldManager.eFieldBuilt) {
+                                eFieldManager.buildEFieldStage(primaryStage, points);
                             } else {
                                 System.out.println("Updating e-field!");
-                                updateEField(points);
+                                eFieldManager.updateEField(points);
                             }
                         } else {
-                            if (!eFieldBuilt) {
-                                buildEFieldSlice();
-                                eFieldBuilt = true;
+                            if (!eFieldManager.eFieldBuilt) {
+                                eFieldManager.buildEFieldSlice(text);
                             }
                         }
                         break;
@@ -445,17 +407,17 @@ public class FusorVis extends Application {
                         }
                         switch (event.getCode()) {
                             case Q:
-                                eFieldSlice.setTranslateX(eFieldSlice.getTranslateX() + step);
+                                slice.setTranslateX(slice.getTranslateX() + step);
                                 break;
                             case W:
-                                eFieldSlice.setTranslateY(eFieldSlice.getTranslateY() + step);
+                                slice.setTranslateY(slice.getTranslateY() + step);
                                 break;
                             case E:
-                                eFieldSlice.setTranslateZ(eFieldSlice.getTranslateZ() + step);
+                                slice.setTranslateZ(slice.getTranslateZ() + step);
                                 break;
                         }
-                        if (autoUpdate) {
-                            updateEField(points);
+                        if (eFieldManager.autoUpdate) {
+                            eFieldManager.updateEField(points);
                         }
                         break;
                     case R:
@@ -465,19 +427,20 @@ public class FusorVis extends Application {
                         if (event.isControlDown()) {
                             rotStep *= -1;
                         }
+                        Rotate[] transforms = eFieldManager.eFieldTransforms;
                         switch (event.getCode()) {
                             case R:
-                                eFieldTransforms[0].setAngle(eFieldTransforms[0].getAngle() + rotStep);
+                                transforms[0].setAngle(transforms[0].getAngle() + rotStep);
                                 break;
                             case T:
-                                eFieldTransforms[1].setAngle(eFieldTransforms[1].getAngle() + rotStep);
+                                transforms[1].setAngle(transforms[1].getAngle() + rotStep);
                                 break;
                             case Y:
-                                eFieldTransforms[2].setAngle(eFieldTransforms[2].getAngle() + rotStep);
+                                transforms[2].setAngle(transforms[2].getAngle() + rotStep);
                                 break;
                         }
-                        if (autoUpdate) {
-                            updateEField(points);
+                        if (eFieldManager.autoUpdate) {
+                            eFieldManager.updateEField(points);
                         }
                         break;
                     case U:
@@ -488,33 +451,34 @@ public class FusorVis extends Application {
                         } else {
                             scaleStep = 1.05;
                         }
-                        eFieldSlice.setScaleX(eFieldSlice.getScaleX() * scaleStep);
-                        eFieldSlice.setScaleY(eFieldSlice.getScaleX() * scaleStep);
-                        eFieldSlice.setScaleZ(eFieldSlice.getScaleX() * scaleStep);
-                        if (autoUpdate) {
-                            updateEField(points);
+                        
+                        slice.setScaleX(slice.getScaleX() * scaleStep);
+                        slice.setScaleY(slice.getScaleX() * scaleStep);
+                        slice.setScaleZ(slice.getScaleX() * scaleStep);
+                        if (eFieldManager.autoUpdate) {
+                            eFieldManager.updateEField(points);
                         }
                         break;
                         
                     case I:
-                        if (!eFieldBuilt) {
+                        if (!eFieldManager.eFieldBuilt) {
                             break;
                         }
                         if (event.isControlDown()) {
-                            eFieldSlice.setScaleX(1.0);
-                            eFieldSlice.setScaleY(1.0);
-                            eFieldSlice.setScaleZ(1.0);
-                            eFieldSlice.setTranslateX(0);
-                            eFieldSlice.setTranslateY(0);
-                            eFieldSlice.setTranslateZ(0);
+                            slice.setScaleX(1.0);
+                            slice.setScaleY(1.0);
+                            slice.setScaleZ(1.0);
+                            slice.setTranslateX(0);
+                            slice.setTranslateY(0);
+                            slice.setTranslateZ(0);
                             for (int i = 0; i < 3; i++) {
-                                eFieldTransforms[i].setAngle(0.0);
+                                eFieldManager.eFieldTransforms[i].setAngle(0.0);
                             }
                         } else {
-                            eFieldSlice.setVisible(!eFieldSlice.visibleProperty().getValue());
+                            slice.setVisible(!slice.visibleProperty().getValue());
                         }
-                        if (autoUpdate) {
-                            updateEField(points);
+                        if (eFieldManager.autoUpdate) {
+                            eFieldManager.updateEField(points);
                         }
                         break;
                 }
@@ -550,40 +514,6 @@ public class FusorVis extends Application {
             chargeGroup.getChildren().get(i).setScaleZ(revScale);
 
         }
-    }
-
-    public void buildEFieldSlice() {
-
-        text.output.put("E-Field Slice Width", Double.toString(sliceWidth));
-        text.output.put("E-Field Slice Height", Double.toString(sliceHeight));
-
-        final PhongMaterial planeMaterial = new PhongMaterial();
-        planeMaterial.setDiffuseColor(new Color(0.5, 0.5, 0.5, 0.5));
-
-        eFieldSlice = new Box(sliceWidth, sliceHeight, 0.025);
-        eFieldSlice.setMaterial(planeMaterial);
-
-        Rotate rx = new Rotate();
-        rx.setAxis(Rotate.X_AXIS);
-        Rotate ry = new Rotate();
-        ry.setAxis(Rotate.Y_AXIS);
-        Rotate rz = new Rotate();
-        rz.setAxis(Rotate.Z_AXIS);
-
-        eFieldTransforms = new Rotate[3];
-        eFieldTransforms[0] = rx;
-        eFieldTransforms[1] = ry;
-        eFieldTransforms[2] = rz;
-
-        eFieldSlice.getTransforms().addAll(eFieldTransforms);
-
-        text.output.put("E-Field Slice Translation X", Double.toString(eFieldSlice.getTranslateX()));
-        text.output.put("E-Field Slice Translation Y", Double.toString(eFieldSlice.getTranslateY()));
-        text.output.put("E-Field Slice Translation Z", Double.toString(eFieldSlice.getTranslateZ()));
-        text.output.put("E-Field Slice Rotation X", Double.toString(rx.getPivotX()));
-        text.output.put("E-Field Slice Rotation Y", Double.toString(ry.getPivotY()));
-        text.output.put("E-Field Slice Rotation Z", Double.toString(rz.getPivotZ()));
-        world.getChildren().add(eFieldSlice);
     }
 
     @Override
@@ -692,8 +622,10 @@ public class FusorVis extends Application {
         buildScene();
         buildStage(primaryStage);
         
-        buildEFieldSlice();
-        buildEFieldStage(primaryStage, points);
+        eFieldManager = new EFieldManager();
+        
+        root.getChildren().add(eFieldManager.buildEFieldSlice(text));
+        eFieldManager.buildEFieldStage(primaryStage, points);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.GREY);
