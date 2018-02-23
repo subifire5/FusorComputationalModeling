@@ -1,14 +1,4 @@
 /XMLtoJava/*
-/FusorCompModeling/build/
-/FusorCompModeling/dist/
-/FusorCompModeling/nbproject/private/
-/MathEval/nbproject/private/*
-/MathEval/build/*
-/MathEval/dist/*
-FusorVis/build/*
-FusorVis/dist/*
-FusorVis/dist/run/*
-OpenCL test/build/*
-OpenCL test/nbproject/private/*
-/NeutronScatteringSimulation/nbproject/private/
-*
+/**/build/*
+/**/dist/*
+/**/nbproject/private/*
