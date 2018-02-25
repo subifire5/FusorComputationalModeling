@@ -129,9 +129,9 @@ public class NeutronScatteringSimulation extends Application {
         world.getChildren().add(cz);
     }
 
-    private void showPoint(Point3D p, Color c) {
+    private void showPoint(Point3D p, Color c, double r) {
         PhongMaterial red = new PhongMaterial(c);
-        Sphere sphere = new Sphere(1);
+        Sphere sphere = new Sphere(r);
         sphere.setTranslateX(p.getX());
         sphere.setTranslateY(p.getY());
         sphere.setTranslateZ(p.getZ());
@@ -156,9 +156,8 @@ public class NeutronScatteringSimulation extends Application {
 
     private void drawLine(Point3D p1, Point3D p2, Color c) {
         Point3D v = p2.subtract(p1);
-        final double REACHFACTOR = 0.97;
 
-        Cylinder line = new Cylinder(1, v.magnitude() * REACHFACTOR);
+        Cylinder line = new Cylinder(1, v.magnitude());
         PhongMaterial pm = new PhongMaterial(c);
         line.setMaterial(pm);
 
@@ -186,12 +185,15 @@ public class NeutronScatteringSimulation extends Application {
 
     private boolean rayIntersectsBoundingSphere(Point3D O, Point3D R, Block b) {
         Point3D L = b.center.subtract(O);
+        if (L.magnitude() < b.radius) {
+            return true;
+        }
         double tca = L.dotProduct(R);
         if (tca < 0) {
             return false;
         }
         double d2 = L.dotProduct(L) - tca * tca;
-        return d2 <= b.radius * b.radius;
+        return d2 < b.radius * b.radius;
     }
 
     private double minDistance(Point3D O, Point3D R, Block block) {
@@ -303,11 +305,11 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     private double sigmaScatteringAir(Point3D R) {
-        return .05;
+        return .007;
     }
 
     private double sigmaAbsorptionAir(Point3D R) {
-        return .02;
+        return .005;
     }
 
     private double sigmaScatteringParaffin(Point3D R) {
@@ -315,7 +317,7 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     private double sigmaAbsorptionParaffin(Point3D R) {
-        return .05;
+        return .007;
     }
 
     private Point3D scatter(Point3D R) {
@@ -324,9 +326,10 @@ public class NeutronScatteringSimulation extends Application {
 
     private void runSimulation(int numNeutrons) {
         for (; numNeutrons > 0; numNeutrons--) {
+            Color c = Color.color(random.nextDouble(), random.nextDouble(), random.nextDouble(), .5);
             boolean insideBlock = false;
             Point3D O = new Point3D(0, 0, 0);
-            showPoint(O, Color.BLUE);
+            showPoint(O, Color.BLUE, 1.5);
             Point3D R = randomDir();
             Block nextBlock = null;
             double minDistance, distance;
@@ -345,10 +348,10 @@ public class NeutronScatteringSimulation extends Application {
                         }
                     }
                     if (minDistance == Double.MAX_VALUE) {
-                        System.out.println("neutron escaped!!! watch out");
+                        // neutron escaped
+                        drawLine(O, O.add(R.multiply(100)), c);
                         break;
                     }
-                    showPoints(nextBlock);
 
                     sigmaScattering = sigmaScatteringAir(R);
                     sigmaAbsorption = sigmaAbsorptionAir(R);
@@ -362,27 +365,29 @@ public class NeutronScatteringSimulation extends Application {
 
                 sigmaTotal = sigmaScattering + sigmaAbsorption;
                 distanceCovered = -(1 / sigmaTotal) * Math.log(random.nextDouble());
+                Point3D pastO = O;
 
                 if (distanceCovered < minDistance) {
                     O = O.add(R.multiply(distanceCovered));
+                    drawLine(pastO, O, c);
                     // hit hydrogen
                     if ((sigmaScattering / sigmaTotal) > random.nextDouble()) {
                         // scattering
                         R = scatter(R);
-                        showPoint(O, Color.GREEN);
+                        showPoint(O, Color.GREEN, 1.5);
                     } else {
                         // absorbed
-                        showPoint(O, Color.GOLD);
+                        showPoint(O, Color.GOLD, 1.5);
                         break;
                     }
                 } else {
-                    showPoint(intersectionPoint, Color.PURPLE);
+                    showPoint(intersectionPoint, Color.PURPLE, 1.5);
                     O = intersectionPoint.add(R.multiply(0.1));
+                    drawLine(pastO, O, c);
                     // going into or out of a block
                     insideBlock = !insideBlock;
                 }
             }
-            System.out.println();
         }
     }
 
@@ -396,7 +401,7 @@ public class NeutronScatteringSimulation extends Application {
         buildAxes();
         loadIgloo();
         collapseIgloo();
-        runSimulation(1);
+        runSimulation(10000);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.LIGHTGRAY);
