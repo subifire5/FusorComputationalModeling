@@ -15,7 +15,6 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.scene.PerspectiveCamera;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 import javafx.scene.input.KeyEvent;
@@ -23,11 +22,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.Node;
 import javafx.scene.shape.Box;
 import javafx.scene.transform.Rotate;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.PixelWriter;
 import javafx.scene.shape.TriangleMesh;
 
 import java.util.ArrayList;
@@ -47,21 +42,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import static javafx.application.Application.launch;
 
-/**
- *
- * @author guberti
- */
 public class FusorVis extends Application {
 
     final Group root = new Group();
-    final Xform chargeGroup = new Xform();
-    final Xform componentGroup = new Xform();
-    final Xform axisGroup = new Xform();
     final Xform referenceGroup = new Xform();
     final Xform world = new Xform();
     
     CameraManager camera = new CameraManager();
+    AxisManager axes = new AxisManager(120, 2);
+    ElectronManager electrons;
     
     TextFieldWindow text;
     EFieldManager eFieldManager;
@@ -97,85 +88,6 @@ public class FusorVis extends Application {
     
 
     // Render vars
-    double electronRadius = 0.2;
-
-    private void buildElectrons(Point[] points) {
-        final PhongMaterial redMaterial = new PhongMaterial();
-        redMaterial.setDiffuseColor(Color.BLACK);
-        redMaterial.setSpecularColor(Color.DARKGREY);
-
-        final PhongMaterial blackMaterial = new PhongMaterial();
-
-        blackMaterial.setDiffuseColor(Color.DARKRED);
-        blackMaterial.setSpecularColor(Color.RED);
-        
-
-        for (Point point : points) {
-            final Sphere electron = new Sphere(electronRadius);
-            electron.setTranslateX(point.x);
-            electron.setTranslateY(point.y);
-            electron.setTranslateZ(point.z);
-            if (point.charge == 1) { // Positive charge
-                electron.setMaterial(redMaterial); // Red
-            } else { // Negative charge
-                electron.setMaterial(blackMaterial); // Black
-            }
-
-            chargeGroup.getChildren().add(electron);
-        }
-        chargeGroup.setVisible(true);
-        world.getChildren().addAll(chargeGroup);
-    }
-
-    private void buildAxes() { // Red = x, green = y, blue = z
-        final PhongMaterial redMaterial = new PhongMaterial();
-        redMaterial.setDiffuseColor(Color.DARKRED);
-        redMaterial.setSpecularColor(Color.RED);
-
-        final PhongMaterial greenMaterial = new PhongMaterial();
-        greenMaterial.setDiffuseColor(Color.DARKGREEN);
-        greenMaterial.setSpecularColor(Color.GREEN);
-
-        final PhongMaterial blueMaterial = new PhongMaterial();
-        blueMaterial.setDiffuseColor(Color.DARKBLUE);
-        blueMaterial.setSpecularColor(Color.BLUE);
-
-        final Box xAxis = new Box(240.0, 1, 1);
-        final Box yAxis = new Box(1, 240.0, 1);
-        final Box zAxis = new Box(1, 1, 240.0);
-        final Sphere posXAxis = new Sphere(2.0);
-        final Sphere posYAxis = new Sphere(2.0);
-        final Sphere posZAxis = new Sphere(2.0);
-
-        xAxis.setMaterial(redMaterial);
-        yAxis.setMaterial(greenMaterial);
-        zAxis.setMaterial(blueMaterial);
-        posXAxis.setMaterial(redMaterial);
-        posXAxis.setTranslateX(120);
-        posYAxis.setMaterial(greenMaterial);
-        posYAxis.setTranslateY(120);
-        posZAxis.setMaterial(blueMaterial);
-        posZAxis.setTranslateZ(120);
-
-        axisGroup.getChildren().addAll(xAxis, yAxis, zAxis, posXAxis, posZAxis, posYAxis);
-        world.getChildren().addAll(axisGroup);
-    }
-
-    private void buildReferencePoints(Point[] referencePoints) {
-
-        for (Point p : referencePoints) {
-            final PhongMaterial m = new PhongMaterial();
-            m.setDiffuseColor(Color.BLACK);
-            m.setDiffuseColor(Color.GREY);
-            final Sphere s = new Sphere(0.2);
-            s.setTranslateX(p.x);
-            s.setTranslateY(p.y);
-            s.setTranslateZ(p.z);
-
-            referenceGroup.getChildren().add(s);
-        }
-        world.getChildren().addAll(referenceGroup);
-    }
 
     private void buildScene() {
         root.getChildren().add(world);
@@ -294,19 +206,18 @@ public class FusorVis extends Application {
                         }
                         break;
                     case PAGE_UP: // Get larger
-                        scaleElectrons(1.1);
+                        electrons.scaleElectrons(1.1);
                         break;
                     case PAGE_DOWN: // Get smaller
-                        scaleElectrons(0.9);
+                        electrons.scaleElectrons(0.9);
                         break;
                     case H: // Toggle wireframe visibility
-                        toggleXform(componentGroup);
                         break;
                     case C: // Toggle electron visibility
-                        toggleXform(chargeGroup);
+                        electrons.chargeGroup.toggle();
                         break;
                     case A: // Toggle axis visibility
-                        toggleXform(axisGroup);
+                        axes.axisGroup.toggle();
                         break;
                     case X:
                         if (event.isControlDown()) {
@@ -499,23 +410,6 @@ public class FusorVis extends Application {
         return arr.toString();
     }
 
-    private void toggleXform(Xform g) {
-        g.setVisible(!g.visibleProperty().get());
-    }
-
-    public void scaleElectrons(double scale) {
-        for (int i = 0; i < chargeGroup.getChildren().size(); i++) {
-            double revScale = chargeGroup.getChildren().get(i).getScaleX() * scale;
-            revScale = Math.min(revScale, 40*electronRadius);
-            revScale = Math.max(revScale, electronRadius/5);
-            
-            chargeGroup.getChildren().get(i).setScaleX(revScale);
-            chargeGroup.getChildren().get(i).setScaleY(revScale);
-            chargeGroup.getChildren().get(i).setScaleZ(revScale);
-
-        }
-    }
-
     @Override
     @SuppressWarnings("empty-statement")
     public void start(Stage primaryStage) throws Exception {
@@ -585,7 +479,6 @@ public class FusorVis extends Application {
                 }
             }
         }
-        long start = System.nanoTime();
         points = PointDistributer.shakeUpPoints(parts, pointCount, optimizations);
         
         EField.setkQ(annodeVoltage, cathodeVoltage, points);
@@ -616,9 +509,11 @@ public class FusorVis extends Application {
 
 
         root.getChildren().add(camera.buildCamera());
-        buildElectrons(points);
-        buildAxes();
-        buildReferencePoints(referencePoints);
+        world.getChildren().add(axes.getAxisGroup());
+        
+        electrons = new ElectronManager(points);
+        world.getChildren().addAll(electrons.chargeGroup);
+        
         buildScene();
         buildStage(primaryStage);
         

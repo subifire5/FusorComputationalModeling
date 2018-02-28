@@ -25,10 +25,10 @@ import Jama.*;
 public class Wire {
     // All units in mm
     double wireradius;
-    Vector start;
+    Ray start;
     JSONArray bends;
     int charge;
-    Vector originalPlane;
+    Ray originalPlane;
     boolean flipVertical;
 
     public Wire (String json) {
@@ -39,14 +39,14 @@ public class Wire {
         flipVertical = obj.getBoolean("flip_vertical");
         
         MathJSONObject jsonStart = new MathJSONObject(obj.getJSONObject("start"));
-        start = new Vector(
+        start = new Ray(
                 jsonStart.getMath("x"),
                 jsonStart.getMath("y"),
                 jsonStart.getMath("z"),
                 jsonStart.getMath("phi"),
                 jsonStart.getMath("theta"));
         
-        originalPlane = new Vector(
+        originalPlane = new Ray(
                 jsonStart.getMath("planePhi"), 
                 jsonStart.getMath("planeTheta"));
         
@@ -68,11 +68,11 @@ public class Wire {
         
         MathJSONObject lastObj = new MathJSONObject(); // Needs to be initialized or Netbeans will be sad
         
-        Vector currentPlane = originalPlane;
+        Ray currentPlane = originalPlane;
         System.out.println("Current plane: " + originalPlane.toString());
         
         for (int i = 0; i < bends.length(); i++) {
-            Vector s;
+            Ray s;
             MathJSONObject currentObj = new MathJSONObject(bends.getJSONObject(i));
             
             if (i == 0) {
@@ -86,7 +86,7 @@ public class Wire {
                 // to the ending props of the last component in the array
                 GridComponent lastGC = parts.get(parts.size() - 1);
                 
-                s = new Vector();
+                s = new Ray();
                
                 // If it is a straight part
                 if ("straight".equals(lastObj.getString("type"))) {
@@ -149,7 +149,7 @@ public class Wire {
                             finalPoint.y - lastGC.pos.y,
                             finalPoint.z - lastGC.pos.z);
 
-                    Vector d = lastGCDirection.crossProduct(sliceDirection).convertToSphericalCoords();
+                    Ray d = lastGCDirection.crossProduct(sliceDirection).convertToSphericalCoords();
                     System.out.println("Vector dir: " + d.toString());
                     try {
                          if (lastObj.getBoolean("invert")) {
@@ -179,7 +179,7 @@ public class Wire {
                     }
 
                     // We're done now, stick all our stuff into one ray
-                    s = new Vector(finalPoint, d.phi, d.theta);
+                    s = new Ray(finalPoint, d.phi, d.theta);
                     
                 }
             }
@@ -234,7 +234,7 @@ public class Wire {
                 
                 */
                 
-                Vector segmentStartSpherical = new Vector(
+                Ray segmentStartSpherical = new Ray(
                         currentPlane.phi + Math.PI/2,
                         currentPlane.theta + Math.PI/2);
                 
@@ -269,7 +269,7 @@ public class Wire {
                 // Combine all our data for the position into a single vector
                 // This will be fed right into our torus segment untouched
                 
-                Vector tP = new Vector(
+                Ray tP = new Ray(
                         tRay.x + s.x,
                         tRay.y + s.y,
                         tRay.z + s.z,
@@ -284,7 +284,7 @@ public class Wire {
                 lastObj = currentObj;
                 
             } else if ("planeredef".equals(currentObj.getString("type"))) {
-                currentPlane = new Vector(currentObj.getMath("phi"), currentObj.getMath("theta"));
+                currentPlane = new Ray(currentObj.getMath("phi"), currentObj.getMath("theta"));
             }
         }
         

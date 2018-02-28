@@ -12,7 +12,7 @@ import java.util.Random;
  * @author guberti
  */
 public abstract class GridComponent {
-    public Vector pos; // Location
+    public Ray pos; // Location
     public double radius;
     public int charge;
     public ComponentType type;

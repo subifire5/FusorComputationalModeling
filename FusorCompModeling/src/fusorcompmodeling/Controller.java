@@ -30,13 +30,13 @@ public class Controller {
         }
     }
     public void addAtom(Point pos, double mass){
-        Vector v = new Vector();
+        Ray v = new Ray();
         v.x=0;
         v.y=0;
         v.z=0;
         Atom a = new Atom();
         a.position = pos;
-        a.Velocity = v;
+        a.velocity = v;
         a.mass = mass;
         atoms[atomsInArray] = a;
         atomsInArray = atomsInArray + 1;

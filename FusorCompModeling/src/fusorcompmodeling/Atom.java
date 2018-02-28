@@ -15,5 +15,5 @@ public class Atom {
     }
     public double mass;
     public Point position;
-    public Vector Velocity;
+    public Ray velocity;
 }

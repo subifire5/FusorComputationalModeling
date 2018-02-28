@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class Sphere extends GridComponent {
 
-    public Sphere(Vector pos, double radius, int charge) {
+    public Sphere(Ray pos, double radius, int charge) {
         this.pos = pos;
         this.radius = radius;
         this.charge = charge;

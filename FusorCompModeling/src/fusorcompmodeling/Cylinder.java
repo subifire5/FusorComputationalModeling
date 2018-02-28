@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class Cylinder extends GridComponent {
 
-    public Cylinder(Vector pos, double radius, double height, int charge, boolean fV) {
+    public Cylinder(Ray pos, double radius, double height, int charge, boolean fV) {
         this.pos = pos;
         this.radius = radius;
         this.height = height;

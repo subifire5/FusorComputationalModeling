@@ -179,7 +179,9 @@ public class Xform extends Group {
         ip.setY(0.0);
         ip.setZ(0.0);
     }
-
+    public void toggle() {
+        setVisible(!visibleProperty().get());
+    }
     @Override public String toString() {
         return "Xform[t = (" +
                            t.getX() + ", " +

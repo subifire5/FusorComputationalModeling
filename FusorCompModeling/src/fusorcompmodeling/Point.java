@@ -40,7 +40,7 @@ public class Point {
         this.z = z;
     }
     
-    public Point(Vector v, double r) {
+    public Point(Ray v, double r) {
         this.x = r * Math.sin(v.theta) * Math.cos(v.phi);
         this.y = r * Math.cos(v.theta);
         this.z = r * Math.sin(v.theta) * Math.sin(v.phi);
@@ -48,7 +48,7 @@ public class Point {
     
     public Point() {}
     
-    public Point rotateAroundVector(Vector v) {
+    public Point rotateAroundVector(Ray v) {
         /* Note to future self: the code below is an abomination. It was
         written based on incorrect formulas, but instead of finding correct
         ones I chose to fix the errors generated here in later parts of the
@@ -89,14 +89,14 @@ public class Point {
         return rP;
     }
     
-    // Vector v's phi and theta describe how much to rotate, and the vector's location
+    // Ray v's phi and theta describe how much to rotate, and the vector's location
     // describes what to rotate around
     
-    public Point rotateAroundPoint(Vector v) {
+    public Point rotateAroundPoint(Ray v) {
         
         Point mP = new Point(x - v.x, y - v.y, z - v.z);
         
-        Vector sphericalCoords = mP.convertToSphericalCoords();
+        Ray sphericalCoords = mP.convertToSphericalCoords();
         sphericalCoords.phi += v.phi;
         sphericalCoords.theta += v.theta;
         double radius = Math.sqrt(mP.x*mP.x + mP.y*mP.y + mP.z*mP.z);
@@ -124,19 +124,19 @@ public class Point {
         return x*p.x + y*p.y + z*p.z;
     }
     
-    public Vector convertToSphericalCoords() { // Faster, used by Wire class
-        Vector v = new Vector();
+    public Ray convertToSphericalCoords() { // Faster, used by Wire class
+        Ray v = new Ray();
         v.phi = Math.atan(z/x);
         v.theta = Math.atan(Math.sqrt(x*x+z*z)/y);
         v.length = Math.sqrt(x*x + y*y + z*z);
         return v;
     }
     
-    public Vector convertToSphericalCoordsExc() { // Slower, but works for all values
-        Vector v = new Vector();
+    public Ray convertToSphericalCoordsExc() { // Slower, but works for all values
+        Ray v = new Ray();
         
         if (x == 0 && y == 0 && z == 0) {
-            return new Vector(0, 0, 0);
+            return new Ray(0, 0, 0);
         }
         
         if (x == 0 && z == 0) {

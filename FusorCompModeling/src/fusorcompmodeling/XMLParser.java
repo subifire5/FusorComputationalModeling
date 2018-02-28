@@ -64,7 +64,7 @@ public class XMLParser {
     GridComponent parseElement(Element element) {
         // All elements have x, y, z, phi, theta, radius, and type
         String type = element.getElementsByTagName("type").item(0).getTextContent();
-        Vector v = new Vector();
+        Ray v = new Ray();
         v.x = Double.parseDouble(element.getElementsByTagName("x").item(0).getTextContent());
         v.y = Double.parseDouble(element.getElementsByTagName("y").item(0).getTextContent());
         v.z = Double.parseDouble(element.getElementsByTagName("z").item(0).getTextContent());

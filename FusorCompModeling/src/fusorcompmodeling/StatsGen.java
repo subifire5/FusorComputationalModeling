@@ -30,8 +30,8 @@ public class StatsGen {
         return DeltaPhi;
     }
 
-    public static Vector FToAcc(Point[] points, Point r, double mass, Vector force){
-        Vector vAcc = new Vector();
+    public static Ray FToAcc(Point[] points, Point r, double mass, Ray force){
+        Ray vAcc = new Ray();
         vAcc.x = EField.EFieldSum(points, r).x/mass;
         vAcc.y = EField.EFieldSum(points, r).y/mass;
         vAcc.z = EField.EFieldSum(points, r).z/mass;

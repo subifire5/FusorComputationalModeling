@@ -72,7 +72,7 @@ public class EFieldVisualizer {
                 Point p = new Point((-(sW / 2) + i * wU), (-(sH / 2) + k * hU), 0);
                 p = translateEFieldPixel(p, eFieldTransforms, eFieldSlice);
                 
-                Vector efield = EField.EFieldSum(points, p);
+                Ray efield = EField.EFieldSum(points, p);
                 
                 fieldGrid[i][k][0] = efield.x;
                 fieldGrid[i][k][1] = efield.y;
@@ -300,7 +300,7 @@ public class EFieldVisualizer {
 
         assert !Double.isNaN(r.x);
 
-        Vector v = r.convertToSphericalCoordsExc();
+        Ray v = r.convertToSphericalCoordsExc();
         v.length *= eFieldSlice.getScaleX();
 
         Point t = v.convertRayToCartesian(v.length);
