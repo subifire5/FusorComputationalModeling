@@ -299,25 +299,23 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     private Point3D randomDir() {
-        double t = Math.acos(2 * random.nextDouble() - 1);
-        double p = 2 * Math.PI * random.nextDouble();
-        return new Point3D(Math.cos(t) * Math.sin(p), Math.sin(t) * Math.sin(p), Math.cos(p));
+        return new Point3D(random.nextGaussian(), random.nextGaussian(), random.nextGaussian()).normalize();
     }
 
     private double sigmaScatteringAir(Point3D R) {
-        return .001;
+        return 0.002;
     }
 
     private double sigmaAbsorptionAir(Point3D R) {
-        return .0005;
+        return 0.0005;
     }
 
     private double sigmaScatteringParaffin(Point3D R) {
-        return .55;
+        return 0.4;
     }
 
     private double sigmaAbsorptionParaffin(Point3D R) {
-        return .002;
+        return 0.01;
     }
 
     private Point3D scatter(Point3D R) {
@@ -347,12 +345,6 @@ public class NeutronScatteringSimulation extends Application {
                             }
                         }
                     }
-                    if (minDistance == Double.MAX_VALUE) {
-                        // neutron escaped
-                        drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
-                        break;
-                    }
-
                     sigmaScattering = sigmaScatteringAir(R);
                     sigmaAbsorption = sigmaAbsorptionAir(R);
                 } else {
@@ -361,8 +353,12 @@ public class NeutronScatteringSimulation extends Application {
                     sigmaScattering = sigmaScatteringParaffin(R);
                     sigmaAbsorption = sigmaAbsorptionParaffin(R);
                 }
+                if (minDistance == Double.MAX_VALUE) {
+                    // neutron escaped
+                    drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
+                    break;
+                }
                 Point3D intersectionPoint = O.add(R.normalize().multiply(minDistance));
-
                 sigmaTotal = sigmaScattering + sigmaAbsorption;
                 distanceCovered = -(1 / sigmaTotal) * Math.log(random.nextDouble());
                 Point3D pastO = O;
@@ -382,7 +378,7 @@ public class NeutronScatteringSimulation extends Application {
                     }
                 } else {
                     showPoint(intersectionPoint, Color.PURPLE, 1.5);
-                    O = intersectionPoint.add(R.normalize().multiply(0.1));
+                    O = intersectionPoint.add(R.normalize().multiply(0.01));
                     drawLine(pastO, O, c);
                     // going into or out of a block
                     insideBlock = !insideBlock;
@@ -401,7 +397,7 @@ public class NeutronScatteringSimulation extends Application {
         buildAxes();
         loadIgloo();
         collapseIgloo();
-        runSimulation(10);
+        runSimulation(100);
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.LIGHTGRAY);
