@@ -6,9 +6,12 @@
 package neutronscatteringsimulation;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -274,13 +277,12 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     ArrayList<Block> blocks;
-    private final String FILENAME = "test.obj";
     private final boolean LINE_MODE = true;
 
-    private void loadIgloo() {
+    private void loadIgloo(String filename) {
         ArrayList<TriangleMesh> meshes;
         try {
-            meshes = ObjConverter.convert(new File(FILENAME));
+            meshes = ObjConverter.convert(new File(filename));
             blocks = new ArrayList<>();
             MeshView view;
             Block block;
@@ -298,8 +300,10 @@ public class NeutronScatteringSimulation extends Application {
         }
     }
 
-    private Point3D randomDir() {
-        return new Point3D(random.nextGaussian(), random.nextGaussian(), random.nextGaussian()).normalize();
+    private Point3D randomDir(double magnitude) {
+        double theta = random.nextDouble() * 2 * Math.PI;
+        double phi = Math.acos(random.nextDouble() * 2 - 1);
+        return new Point3D(magnitude * Math.cos(theta) * Math.sin(phi), magnitude * Math.sin(theta) * Math.sin(phi), magnitude * Math.cos(phi));
     }
 
     private double sigmaScatteringAir(Point3D R) {
@@ -315,20 +319,37 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     private double sigmaAbsorptionParaffin(Point3D R) {
-        return 0.01;
+        return 0.02;
+    }
+    
+    double BOLTZMANN_CONSTANT = 8.617 * 0.0001; // eV/K
+    double ROOM_TEMPERATURE = 293.15; // K
+    double PROTON_MASS = 1.007276; // u
+    double NEUTRON_MASS = 1.008664; // u
+
+    private Point3D scatter(Point3D neutron) {
+        double protonEnergy = random.nextGaussian() * ((BOLTZMANN_CONSTANT * ROOM_TEMPERATURE) / 2);
+        Point3D proton = randomDir(protonEnergy);
+        Point3D referenceFrame = neutron.multiply(NEUTRON_MASS).add(proton.multiply(PROTON_MASS)).multiply(1 / (NEUTRON_MASS + PROTON_MASS));
+        Point3D neutronRef = neutron.subtract(referenceFrame);
+        Point3D scatteredRef = randomDir(neutronRef.magnitude());
+        Point3D scattered = scatteredRef.add(referenceFrame);
+        return scattered;
     }
 
-    private Point3D scatter(Point3D R) {
-        return randomDir();
-    }
+    // units in eV
+    double THERMAL_NEUTRON_ENERGY = 0.025;
+    double INITIAL_NEUTRON_ENERGY = 2.45 * 100_000_000;
+    ArrayList<NeutronResultData> results;
 
     private void runSimulation(int numNeutrons) {
+        results = new ArrayList<>();
         for (; numNeutrons > 0; numNeutrons--) {
             Color c = Color.color(random.nextDouble(), random.nextDouble(), random.nextDouble(), .5);
             boolean insideBlock = false;
             Point3D O = new Point3D(0, 0, 0);
             showPoint(O, Color.BLUE, 1.5);
-            Point3D R = randomDir();
+            Point3D R = randomDir(INITIAL_NEUTRON_ENERGY);
             Block nextBlock = null;
             double minDistance, distance;
             double sigmaScattering, sigmaAbsorption, sigmaTotal, distanceCovered;
@@ -356,6 +377,7 @@ public class NeutronScatteringSimulation extends Application {
                 if (minDistance == Double.MAX_VALUE) {
                     // neutron escaped
                     drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
+                    results.add(new NeutronResultData(numNeutrons, NeutronResult.ESCAPED, R.magnitude()));
                     break;
                 }
                 Point3D intersectionPoint = O.add(R.normalize().multiply(minDistance));
@@ -374,6 +396,7 @@ public class NeutronScatteringSimulation extends Application {
                     } else {
                         // absorbed
                         showPoint(O, Color.GOLD, 1.5);
+                        results.add(new NeutronResultData(numNeutrons, NeutronResult.ABSORBED, R.magnitude()));
                         break;
                     }
                 } else {
@@ -386,6 +409,22 @@ public class NeutronScatteringSimulation extends Application {
             }
         }
     }
+    
+    private void writeResults() {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd kk-mm-ss").format(new Date());
+        File file = new File(timestamp + ".csv");
+        try {
+            file.createNewFile();
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write("Number,Status,Energy (eV)\n");
+                for (NeutronResultData data : results) {
+                    writer.write(data + "\n");
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(NeutronScatteringSimulation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -395,9 +434,10 @@ public class NeutronScatteringSimulation extends Application {
 
         // build and run simulation
         buildAxes();
-        loadIgloo();
+        loadIgloo("test.obj");
         collapseIgloo();
         runSimulation(100);
+        writeResults();
 
         Scene scene = new Scene(root, 1024, 768, true);
         scene.setFill(Color.LIGHTGRAY);
@@ -420,5 +460,27 @@ public class NeutronScatteringSimulation extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private enum NeutronResult {
+        ESCAPED, ABSORBED
+    }
+
+    private static class NeutronResultData {
+
+        final int num;
+        final NeutronResult result;
+        final double escapeEnergy;
+
+        public NeutronResultData(int num, NeutronResult result, double escapeEnergy) {
+            this.num = num;
+            this.result = result;
+            this.escapeEnergy = escapeEnergy;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("%d,%s,%.2f", num, result, escapeEnergy);
+        }
     }
 }
