@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -178,7 +179,7 @@ public class NeutronScatteringSimulation extends Application {
         s.setTranslateX(b.center.getX());
         s.setTranslateY(b.center.getY());
         s.setTranslateZ(b.center.getZ());
-        s.setMaterial(new PhongMaterial(new Color(0, 0, 1, .5)));
+        s.setMaterial(new PhongMaterial(new Color(0, 0, 1, .1)));
         world.getChildren().add(s);
     }
 
@@ -187,16 +188,20 @@ public class NeutronScatteringSimulation extends Application {
     }
 
     private boolean rayIntersectsBoundingSphere(Point3D O, Point3D R, Block b) {
-        Point3D L = b.center.subtract(O);
-        if (L.magnitude() < b.radius) {
-            return true;
+        Point3D vcO = b.center.subtract(O);
+        double dot = vcO.dotProduct(R);
+
+        if (dot < 0) {
+            if (vcO.magnitude() >= b.radius) {
+                return false;
+            } else {
+                Point3D Oc = O.add(R.multiply(dot));
+                if (b.center.subtract(Oc).magnitude() >= b.radius) {
+                    return false;
+                }
+            }
         }
-        double tca = L.dotProduct(R);
-        if (tca < 0) {
-            return false;
-        }
-        double d2 = L.dotProduct(L) - tca * tca;
-        return d2 < b.radius * b.radius;
+        return true;
     }
 
     private double minDistance(Point3D O, Point3D R, Block block) {
@@ -306,24 +311,22 @@ public class NeutronScatteringSimulation extends Application {
         return new Point3D(magnitude * Math.cos(theta) * Math.sin(phi), magnitude * Math.sin(theta) * Math.sin(phi), magnitude * Math.cos(phi));
     }
 
-    private double sigmaScatteringAir(Point3D R) {
-        return 0.002;
+    Material PARAFFIN, AIR;
+
+    void setupDensities() {
+        HashMap<String, Double> paraffinComp = new HashMap<>();
+        paraffinComp.put("H-1", 0.148605);
+        paraffinComp.put("C-12", 0.851395);
+        PARAFFIN = new Material(0.93, paraffinComp);
+
+        HashMap<String, Double> airComp = new HashMap<>();
+        airComp.put("N-14", 0.7547);
+        airComp.put("O-16", 0.2320);
+        AIR = new Material(0.001292, airComp);
     }
 
-    private double sigmaAbsorptionAir(Point3D R) {
-        return 0.0005;
-    }
-
-    private double sigmaScatteringParaffin(Point3D R) {
-        return 0.4;
-    }
-
-    private double sigmaAbsorptionParaffin(Point3D R) {
-        return 0.02;
-    }
-    
     double BOLTZMANN_CONSTANT = 8.617 * 0.0001; // eV/K
-    double ROOM_TEMPERATURE = 293.15; // K
+    double ROOM_TEMPERATURE = 293.16; // K
     double PROTON_MASS = 1.007276; // u
     double NEUTRON_MASS = 1.008664; // u
 
@@ -337,9 +340,7 @@ public class NeutronScatteringSimulation extends Application {
         return scattered;
     }
 
-    // units in eV
-    double THERMAL_NEUTRON_ENERGY = 0.025;
-    double INITIAL_NEUTRON_ENERGY = 2.45 * 100_000_000;
+    double INITIAL_NEUTRON_ENERGY = 2.45 * 1E6; // eV
     ArrayList<NeutronResultData> results;
 
     private void runSimulation(int numNeutrons) {
@@ -352,7 +353,7 @@ public class NeutronScatteringSimulation extends Application {
             Point3D R = randomDir(INITIAL_NEUTRON_ENERGY);
             Block nextBlock = null;
             double minDistance, distance;
-            double sigmaScattering, sigmaAbsorption, sigmaTotal, distanceCovered;
+            double sigmaScattering, sigmaTotal, distanceCovered;
             while (true) {
                 if (!insideBlock) {
                     minDistance = Double.MAX_VALUE;
@@ -366,13 +367,12 @@ public class NeutronScatteringSimulation extends Application {
                             }
                         }
                     }
-                    sigmaScattering = sigmaScatteringAir(R);
-                    sigmaAbsorption = sigmaAbsorptionAir(R);
+                    sigmaScattering = AIR.sigmaElasticScattering(R);
+                    sigmaTotal = AIR.sigmaTotal(R);
                 } else {
                     minDistance = minDistance(O, R, nextBlock);
-
-                    sigmaScattering = sigmaScatteringParaffin(R);
-                    sigmaAbsorption = sigmaAbsorptionParaffin(R);
+                    sigmaScattering = PARAFFIN.sigmaElasticScattering(R);
+                    sigmaTotal = PARAFFIN.sigmaTotal(R);
                 }
                 if (minDistance == Double.MAX_VALUE) {
                     // neutron escaped
@@ -381,7 +381,6 @@ public class NeutronScatteringSimulation extends Application {
                     break;
                 }
                 Point3D intersectionPoint = O.add(R.normalize().multiply(minDistance));
-                sigmaTotal = sigmaScattering + sigmaAbsorption;
                 distanceCovered = -(1 / sigmaTotal) * Math.log(random.nextDouble());
                 Point3D pastO = O;
 
@@ -409,7 +408,7 @@ public class NeutronScatteringSimulation extends Application {
             }
         }
     }
-    
+
     private void writeResults() {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd kk-mm-ss").format(new Date());
         File file = new File(timestamp + ".csv");
@@ -436,7 +435,8 @@ public class NeutronScatteringSimulation extends Application {
         buildAxes();
         loadIgloo("test.obj");
         collapseIgloo();
-        runSimulation(100);
+        setupDensities();
+        runSimulation(20);
         writeResults();
 
         Scene scene = new Scene(root, 1024, 768, true);
@@ -477,7 +477,7 @@ public class NeutronScatteringSimulation extends Application {
             this.result = result;
             this.escapeEnergy = escapeEnergy;
         }
-        
+
         @Override
         public String toString() {
             return String.format("%d,%s,%.2f", num, result, escapeEnergy);
