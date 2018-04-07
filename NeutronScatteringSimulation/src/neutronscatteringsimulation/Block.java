@@ -13,47 +13,49 @@ import javafx.scene.shape.TriangleMesh;
  *
  * @author jfellows
  */
-public abstract class Block extends TriangleMesh {
+public class Block extends TriangleMesh {
 
     ArrayList<Point3D> points;
     ArrayList<Face> faces;
     Point3D center;
     double radius;
 
-    public Block(TriangleMesh mesh, double input, double maxBump) {
+    public Block(TriangleMesh mesh, Tiler tiler, double maxBump) {
         points = new ArrayList<>();
         for (int i = 0; i < mesh.getPoints().size(); i += 3) {
             points.add(new Point3D((double) mesh.getPoints().get(i), (double) mesh.getPoints().get(i + 1), (double) mesh.getPoints().get(i + 2)));
         }
         
         getBoundingSphere(points);
+        buildFaces(mesh, tiler);
 
+        getTexCoords().addAll(0, 0);
+        bumpify(maxBump);
+        update();
+    }
+    
+    private void buildFaces(TriangleMesh mesh, Tiler tiler) {
+        tiler.setBlock(this);
         faces = new ArrayList<>();
         int i0, i1, i2;
         for (int i = 0; i < mesh.getFaces().size(); i += 6) {
             i0 = mesh.getFaces().get(i);
             i1 = mesh.getFaces().get(i + 2);
             i2 = mesh.getFaces().get(i + 4);
-            triangulate(i0, i1, i2, input);
+            tiler.tile(i0, i1, i2);
         }
-
-        getTexCoords().addAll(0, 0);
-        bumpify(maxBump);
-        update();
     }
 
     double randomBump(double maxBump) {
         return NeutronScatteringSimulation.random.nextDouble() * maxBump;
     }
 
-    void bumpify(double maxBump) {
+    private void bumpify(double maxBump) {
         for (int i = 0; i < points.size(); i++) {
             // move the point in a random amounnt towards the center
             points.set(i, points.get(i).subtract(points.get(i).subtract(center).normalize().multiply(randomBump(maxBump))));
         }
     }
-
-    abstract void triangulate(int i0, int i1, int i2, double maxArea);
 
     private void update() {
         getPoints().clear();

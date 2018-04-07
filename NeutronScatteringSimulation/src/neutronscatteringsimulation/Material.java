@@ -13,6 +13,9 @@ import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
 
 /**
@@ -21,26 +24,26 @@ import javafx.geometry.Point3D;
  */
 public class Material {
 
-    private final Map<String, Double> massPercentages;
+    public final ObservableList<Element> elements;
     private final HashMap<String, CrossSection> totals;
     private final HashMap<String, CrossSection> elastics;
     double density;
 
-    public Material(double density, Map<String, Double> massPercentages) {
+    public Material(double density, ObservableList<Element> elements) {
         totals = new HashMap<>();
         elastics = new HashMap<>();
-        for (String k : massPercentages.keySet()) {
-            totals.put(k, new CrossSection(k + " N,TOT"));
-            elastics.put(k, new CrossSection(k + " N,EL"));
+        for (Element e : elements) {
+            totals.put(e.isotope.get(), new CrossSection(e.isotope.get() + " N,TOT"));
+            elastics.put(e.isotope.get(), new CrossSection(e.isotope.get() + " N,EL"));
         }
         this.density = density; // g/cm3
-        this.massPercentages = massPercentages;
+        this.elements = elements;
     }
     
     public double sigmaTotal(Point3D R) {
         double sigma = 0;
-        for (Map.Entry<String, Double> entry : massPercentages.entrySet()) {
-            sigma += entry.getValue() * totals.get(entry.getKey()).get(R.magnitude());
+        for (Element e : elements) {
+            sigma += e.massPercentage.get() * totals.get(e.isotope.get()).get(R.magnitude());
         }
         sigma *= density;
         return sigma;
@@ -48,8 +51,8 @@ public class Material {
     
     public double sigmaElasticScattering(Point3D R) {
         double sigma = 0;
-        for (Map.Entry<String, Double> entry : massPercentages.entrySet()) {
-            sigma += entry.getValue() * elastics.get(entry.getKey()).get(R.magnitude());
+        for (Element e : elements) {
+            sigma += e.massPercentage.get() * elastics.get(e.isotope.get()).get(R.magnitude());
         }
         sigma *= density;
         return sigma;
@@ -81,6 +84,17 @@ public class Material {
             Map.Entry<Double, Double> floor = pointsMap.floorEntry(energy);
             double crossSection = ((ceiling.getValue() - floor.getValue()) * (energy - floor.getKey())) / (ceiling.getKey() - floor.getKey()) + floor.getValue(); // b
             return crossSection;
+        }
+    }
+
+    public static class Element {
+
+        public final SimpleStringProperty isotope;
+        public final SimpleDoubleProperty massPercentage;
+
+        public Element(String isotope, double massPercentage) {
+            this.isotope = new SimpleStringProperty(isotope);
+            this.massPercentage = new SimpleDoubleProperty(massPercentage);
         }
     }
 

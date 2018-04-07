@@ -6,37 +6,44 @@
 package neutronscatteringsimulation;
 
 import javafx.geometry.Point3D;
-import javafx.scene.shape.TriangleMesh;
 
-public class RecursiveTiler extends Block {
+public class RecursiveTiler implements Tiler {
     
-    public RecursiveTiler(TriangleMesh mesh, double maxArea, double maxBump) {
-        super(mesh, maxArea, maxBump);
+    final double MAX_AREA;
+    Block block;
+    
+    public RecursiveTiler(double MAX_AREA) {
+        this.MAX_AREA = MAX_AREA;
+    }
+    
+    @Override
+    public void setBlock(Block block) {
+        this.block = block;
     }
 
     @Override
-    void triangulate(int i0, int i1, int i2, double maxArea) {
+    public void tile(int i0, int i1, int i2) {
         Point3D p0, p1, p2, centroid, a, b, normal;
         int ic;
         double area;
-        p0 = points.get(i0);
-        p1 = points.get(i1);
-        p2 = points.get(i2);
+        p0 = block.points.get(i0);
+        p1 = block.points.get(i1);
+        p2 = block.points.get(i2);
 
         a = p0.subtract(p1);
         b = p0.subtract(p2);
         normal = a.crossProduct(b);
         area = .5 * normal.magnitude();
-        if (area > maxArea) {
+        if (area > MAX_AREA) {
             centroid = p0.add(p1.add(p2)).multiply(1.0 / 3);
-            ic = points.size();
-            points.add(centroid);
+            ic = block.points.size();
+            block.points.add(centroid);
 
-            triangulate(i0, i1, ic, maxArea);
-            triangulate(i1, i2, ic, maxArea);
-            triangulate(i2, i0, ic, maxArea);
+            tile(i0, i1, ic);
+            tile(i1, i2, ic);
+            tile(i2, i0, ic);
             return;
         }
-        faces.add(new Face(i0, i1, i2));
+        block.faces.add(block.new Face(i0, i1, i2));
     }
 }
