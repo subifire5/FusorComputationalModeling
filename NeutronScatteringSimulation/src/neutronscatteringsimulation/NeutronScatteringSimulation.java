@@ -11,6 +11,8 @@ import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,6 +22,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -33,7 +36,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -155,13 +157,28 @@ public class NeutronScatteringSimulation extends Application {
                 TILER = new RecursiveTiler(Integer.parseUnsignedInt(tilerInputField.getText()));
             }
             final double MAX_BUMP = Double.parseDouble(maxBumpField.getText());
-            Simulation sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, LINE_MODE, AXES);
-            SubScene simScene = sim.run();
-            Pane pane = new Pane();
-            pane.getChildren().add(simScene);
-            simScene.heightProperty().bind(pane.heightProperty());
-            simScene.widthProperty().bind(pane.widthProperty());
-            main.setCenter(pane);
+            
+            Service process = new Service() {
+                @Override
+                protected Task createTask() {
+                    return new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, LINE_MODE, AXES);
+                }
+            };
+            
+            ProgressBar bar = new ProgressBar();
+            bar.progressProperty().bind(process.progressProperty());
+            main.setCenter(bar);
+
+            process.setOnSucceeded(s -> {
+                SubScene simScene = (SubScene) process.getValue();
+                Pane pane = new Pane();
+                pane.getChildren().add(simScene);
+                simScene.heightProperty().bind(pane.heightProperty());
+                simScene.widthProperty().bind(pane.widthProperty());
+                main.setCenter(pane);
+            });
+            
+            process.start();
         });
 
         Scene scene = new Scene(main);

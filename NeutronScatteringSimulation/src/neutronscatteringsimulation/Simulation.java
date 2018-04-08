@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import javafx.geometry.Point3D;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
@@ -37,7 +38,7 @@ import static neutronscatteringsimulation.NeutronScatteringSimulation.random;
  *
  * @author jfellows
  */
-public class Simulation {
+public class Simulation extends Task<SubScene> {
 
     final Group root = new Group();
     final Xform world = new Xform();
@@ -135,7 +136,8 @@ public class Simulation {
         this.AXES = AXES;
     }
 
-    public SubScene run() {
+    @Override
+    public SubScene call() {
         root.getChildren().add(world);
         root.setDepthTest(DepthTest.ENABLE);
         buildCamera();
@@ -158,6 +160,7 @@ public class Simulation {
     private void runSimulation(int numNeutrons) {
         results = new ArrayList<>();
         for (; numNeutrons > 0; numNeutrons--) {
+            updateProgress(this.numNeutrons - numNeutrons, this.numNeutrons);
             Color c = Color.color(random.nextDouble(), random.nextDouble(), random.nextDouble(), .5);
             boolean insideBlock = false;
             Point3D O = new Point3D(0, 0, 0);
