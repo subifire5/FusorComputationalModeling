@@ -15,6 +15,7 @@ import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContentDisplay;
@@ -28,8 +29,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -102,23 +106,23 @@ public class NeutronScatteringSimulation extends Application {
         });
         form.add(chooseFile, 0, 10);
         form.add(fileName, 1, 10);
-        
+
         form.add(new Label("Bumpiness:"), 0, 11);
         TextField maxBumpField = createNumericField("2");
         form.add(maxBumpField, 1, 11);
-        
+
         form.add(new Label("Tiler:"), 0, 12);
         String fragmentTilerName = "Fragment Tiler";
         String recursiveTilerName = "Recursive Tiler";
         ChoiceBox tilerChoice = new ChoiceBox(FXCollections.observableArrayList(fragmentTilerName, recursiveTilerName));
         form.add(tilerChoice, 1, 12);
-        
+
         Label tilerInputLabel = new Label();
         form.add(tilerInputLabel, 0, 13);
         TextField tilerInputField = createNumericField("");
         form.add(tilerInputField, 1, 13);
         form.add(new Separator(), 0, 14, 2, 1);
-        
+
         tilerChoice.getSelectionModel().selectedItemProperty().addListener((obx, oldItem, newItem) -> {
             if (newItem.equals(fragmentTilerName)) {
                 tilerInputLabel.setText("Recursion Level:");
@@ -136,6 +140,9 @@ public class NeutronScatteringSimulation extends Application {
         hb.getChildren().add(run);
         form.add(hb, 1, 15);
 
+        BorderPane main = new BorderPane();
+        main.setLeft(form);
+
         run.setOnAction(e -> {
             final int NUM_NEUTRONS = Integer.parseUnsignedInt(numNeutronsField.getText());
             final double INITIAL_NEUTRON_ENERGY = Double.parseDouble(initialEnergyField.getText());
@@ -149,12 +156,18 @@ public class NeutronScatteringSimulation extends Application {
             }
             final double MAX_BUMP = Double.parseDouble(maxBumpField.getText());
             Simulation sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, LINE_MODE, AXES);
-            sim.run().show();
+            SubScene simScene = sim.run();
+            Pane pane = new Pane();
+            pane.getChildren().add(simScene);
+            simScene.heightProperty().bind(pane.heightProperty());
+            simScene.widthProperty().bind(pane.widthProperty());
+            main.setCenter(pane);
         });
-        
-        Scene scene = new Scene(form, 1024, 768);
+
+        Scene scene = new Scene(main);
         stage.setTitle("Neutron Scattering Simulation!");
         stage.setScene(scene);
+        stage.setMaximized(true);
         stage.show();
     }
 

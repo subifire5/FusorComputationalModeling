@@ -19,7 +19,8 @@ import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -30,7 +31,6 @@ import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
-import javafx.stage.Stage;
 import static neutronscatteringsimulation.NeutronScatteringSimulation.random;
 
 /**
@@ -75,7 +75,7 @@ public class Simulation {
         cameraXform.rx.setAngle(CAMERA_INITIAL_X_ANGLE);
     }
 
-    private void handleMouse(Scene scene, final Node root) {
+    private void handleMouse(SubScene scene, final Node root) {
         scene.setOnMousePressed((MouseEvent me) -> {
             mousePosX = me.getSceneX();
             mousePosY = me.getSceneY();
@@ -135,7 +135,7 @@ public class Simulation {
         this.AXES = AXES;
     }
 
-    public Stage run() {
+    public SubScene run() {
         root.getChildren().add(world);
         root.setDepthTest(DepthTest.ENABLE);
         buildCamera();
@@ -148,17 +148,11 @@ public class Simulation {
         runSimulation(numNeutrons);
         writeResults();
 
-        Scene scene = new Scene(root, 1024, 768, true);
+        SubScene scene = new SubScene(root, 1024, 768, true, SceneAntialiasing.BALANCED);
         scene.setFill(Color.LIGHTGRAY);
         handleMouse(scene, world);
-
-        Stage stage = new Stage();
-        stage.setMaximized(true);
-        stage.setTitle("Simulation");
-        stage.setScene(scene);
         scene.setCamera(camera);
-
-        return stage;
+        return scene;
     }
 
     private void runSimulation(int numNeutrons) {
