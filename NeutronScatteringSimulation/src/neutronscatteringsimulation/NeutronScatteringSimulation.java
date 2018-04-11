@@ -11,7 +11,6 @@ import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -158,19 +157,14 @@ public class NeutronScatteringSimulation extends Application {
             }
             final double MAX_BUMP = Double.parseDouble(maxBumpField.getText());
             
-            Service process = new Service() {
-                @Override
-                protected Task createTask() {
-                    return new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, LINE_MODE, AXES);
-                }
-            };
-            
+            Task sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, LINE_MODE, AXES);
+
             ProgressBar bar = new ProgressBar();
-            bar.progressProperty().bind(process.progressProperty());
+            bar.progressProperty().bind(sim.progressProperty());
             main.setCenter(bar);
 
-            process.setOnSucceeded(s -> {
-                SubScene simScene = (SubScene) process.getValue();
+            sim.setOnSucceeded(s -> {
+                SubScene simScene = (SubScene) sim.getValue();
                 Pane pane = new Pane();
                 pane.getChildren().add(simScene);
                 simScene.heightProperty().bind(pane.heightProperty());
@@ -178,7 +172,9 @@ public class NeutronScatteringSimulation extends Application {
                 main.setCenter(pane);
             });
             
-            process.start();
+            Thread th = new Thread(sim);
+            th.setDaemon(true);
+            th.start();
         });
 
         Scene scene = new Scene(main);
