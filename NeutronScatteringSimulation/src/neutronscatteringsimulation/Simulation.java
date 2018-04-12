@@ -38,7 +38,7 @@ import static neutronscatteringsimulation.NeutronScatteringSimulation.random;
  *
  * @author jfellows
  */
-public class Simulation extends Task<SubScene> {
+public class Simulation extends Task {
 
     final Group root = new Group();
     final Xform world = new Xform();
@@ -112,7 +112,6 @@ public class Simulation extends Task<SubScene> {
     private final File IGLOO_FILE;
     private final Tiler TILER;
     private final double MAX_BUMP;
-    private final boolean LINE_MODE;
     private final boolean AXES;
 
     private final double LENGTH = 150;
@@ -124,7 +123,7 @@ public class Simulation extends Task<SubScene> {
     private ArrayList<Block> blocks;
     private ArrayList<NeutronResultData> results;
 
-    public Simulation(int numNeutrons, double INITIAL_NEUTRON_ENERGY, Material BLOCK, Material AIR, File IGLOO_FILE, Tiler TILER, double MAX_BUMP, boolean LINE_MODE, boolean AXES) {
+    public Simulation(int numNeutrons, double INITIAL_NEUTRON_ENERGY, Material BLOCK, Material AIR, File IGLOO_FILE, Tiler TILER, double MAX_BUMP, boolean AXES) {
         this.numNeutrons = numNeutrons;
         this.INITIAL_NEUTRON_ENERGY = INITIAL_NEUTRON_ENERGY;
         this.BLOCK = BLOCK;
@@ -132,8 +131,16 @@ public class Simulation extends Task<SubScene> {
         this.IGLOO_FILE = IGLOO_FILE;
         this.TILER = TILER;
         this.MAX_BUMP = MAX_BUMP;
-        this.LINE_MODE = LINE_MODE;
         this.AXES = AXES;
+    }
+    
+    public void setWireframe(boolean wireframe) {
+        for (Node n : world.getChildren()) {
+            if (n instanceof MeshView) {
+                MeshView view = (MeshView) n;
+                view.setDrawMode(wireframe ? DrawMode.LINE : DrawMode.FILL);
+            }
+        }
     }
 
     @Override
@@ -156,7 +163,7 @@ public class Simulation extends Task<SubScene> {
         scene.setCamera(camera);
         return scene;
     }
-
+    
     private void runSimulation(int numNeutrons) {
         results = new ArrayList<>();
         for (; numNeutrons > 0; numNeutrons--) {
@@ -259,7 +266,7 @@ public class Simulation extends Task<SubScene> {
 
     private void showPoint(Point3D p, Color c, double r) {
         PhongMaterial red = new PhongMaterial(c);
-        Sphere sphere = new Sphere(r);
+        Sphere sphere = new Sphere(r, 10);
         sphere.setTranslateX(p.getX());
         sphere.setTranslateY(p.getY());
         sphere.setTranslateZ(p.getZ());
@@ -270,7 +277,7 @@ public class Simulation extends Task<SubScene> {
     private void drawLine(Point3D p1, Point3D p2, Color c) {
         Point3D v = p2.subtract(p1);
 
-        Cylinder line = new Cylinder(1, v.magnitude());
+        Cylinder line = new Cylinder(1, v.magnitude(), 4);
         PhongMaterial pm = new PhongMaterial(c);
         line.setMaterial(pm);
 
@@ -314,9 +321,6 @@ public class Simulation extends Task<SubScene> {
             block = new Block(mesh, TILER, MAX_BUMP);
             view = new MeshView(block);
             world.getChildren().add(view);
-            if (LINE_MODE) {
-                view.setDrawMode(DrawMode.LINE);
-            }
             blocks.add(block);
         }
     }

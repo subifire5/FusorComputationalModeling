@@ -18,6 +18,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -63,7 +64,6 @@ public class NeutronScatteringSimulation extends Application {
         iglooFile = new File("test.obj");
 
         final double DEFAULT_INITIAL_NEUTRON_ENERGY = 2.45; // MeV
-        final boolean LINE_MODE = true;
         final boolean AXES = true;
 
         GridPane form = new GridPane();
@@ -156,8 +156,8 @@ public class NeutronScatteringSimulation extends Application {
                 TILER = new RecursiveTiler(Integer.parseUnsignedInt(tilerInputField.getText()));
             }
             final double MAX_BUMP = Double.parseDouble(maxBumpField.getText());
-            
-            Task sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, LINE_MODE, AXES);
+
+            Simulation sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, AXES);
 
             ProgressBar bar = new ProgressBar();
             bar.progressProperty().bind(sim.progressProperty());
@@ -170,8 +170,15 @@ public class NeutronScatteringSimulation extends Application {
                 simScene.heightProperty().bind(pane.heightProperty());
                 simScene.widthProperty().bind(pane.widthProperty());
                 main.setCenter(pane);
+                
+                CheckBox wireframe = new CheckBox();
+                wireframe.setOnAction(w -> {
+                    sim.setWireframe(wireframe.isSelected());
+                });
+                HBox display = new HBox(10, new Label("Wireframe:"), wireframe);
+                form.add(display, 0, 17, 2, 1);
             });
-            
+
             Thread th = new Thread(sim);
             th.setDaemon(true);
             th.start();
