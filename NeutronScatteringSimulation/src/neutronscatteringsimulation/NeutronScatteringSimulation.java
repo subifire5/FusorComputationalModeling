@@ -140,6 +140,9 @@ public class NeutronScatteringSimulation extends Application {
         hb.setAlignment(Pos.BOTTOM_RIGHT);
         hb.getChildren().add(run);
         form.add(hb, 1, 15);
+        
+        HBox display = new HBox(10);
+        form.add(display, 0, 17, 2, 1);
 
         BorderPane main = new BorderPane();
         main.setLeft(form);
@@ -175,8 +178,8 @@ public class NeutronScatteringSimulation extends Application {
                 wireframe.setOnAction(w -> {
                     sim.setWireframe(wireframe.isSelected());
                 });
-                HBox display = new HBox(10, new Label("Wireframe:"), wireframe);
-                form.add(display, 0, 17, 2, 1);
+                display.getChildren().clear();
+                display.getChildren().addAll(new Label("Wireframe:"), wireframe);
             });
 
             Thread th = new Thread(sim);
