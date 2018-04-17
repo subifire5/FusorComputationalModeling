@@ -17,6 +17,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
+import static neutronscatteringsimulation.NeutronScatteringSimulation.ATOMIC_WEIGHTS;
 
 /**
  *
@@ -28,11 +29,14 @@ public class Material {
     private final HashMap<String, CrossSection> totals;
     private final HashMap<String, CrossSection> elastics;
     double density;
+    
+    private static final double AVOGADROS_NUMBER = 6.022 * 1E23;
 
     public Material(double density, ObservableList<Element> elements) {
         totals = new HashMap<>();
         elastics = new HashMap<>();
         for (Element e : elements) {
+            e.atomicNumberDensity = (density * e.massPercentage.get() * AVOGADROS_NUMBER) /  ATOMIC_WEIGHTS.get(e.isotope.get());
             totals.put(e.isotope.get(), new CrossSection(e.isotope.get() + " N,TOT"));
             elastics.put(e.isotope.get(), new CrossSection(e.isotope.get() + " N,EL"));
         }
@@ -43,18 +47,16 @@ public class Material {
     public double sigmaTotal(Point3D R) {
         double sigma = 0;
         for (Element e : elements) {
-            sigma += e.massPercentage.get() * totals.get(e.isotope.get()).get(R.magnitude());
+            sigma += e.atomicNumberDensity * totals.get(e.isotope.get()).get(R.magnitude());
         }
-        sigma *= density;
         return sigma;
     }
     
     public double sigmaElasticScattering(Point3D R) {
         double sigma = 0;
         for (Element e : elements) {
-            sigma += e.massPercentage.get() * elastics.get(e.isotope.get()).get(R.magnitude());
+            sigma += e.atomicNumberDensity * elastics.get(e.isotope.get()).get(R.magnitude());
         }
-        sigma *= density;
         return sigma;
     }
 
@@ -82,8 +84,8 @@ public class Material {
             // energy in eV
             Map.Entry<Double, Double> ceiling = pointsMap.ceilingEntry(energy);
             Map.Entry<Double, Double> floor = pointsMap.floorEntry(energy);
-            double crossSection = ((ceiling.getValue() - floor.getValue()) * (energy - floor.getKey())) / (ceiling.getKey() - floor.getKey()) + floor.getValue(); // b
-            return crossSection;
+            double crossSection = ((ceiling.getValue() - floor.getValue()) * (energy - floor.getKey())) / (ceiling.getKey() - floor.getKey()) + floor.getValue();
+            return crossSection * 1E-24; // cm2
         }
     }
 
@@ -91,6 +93,7 @@ public class Material {
 
         public final SimpleStringProperty isotope;
         public final SimpleDoubleProperty massPercentage;
+        double atomicNumberDensity;
 
         public Element(String isotope, double massPercentage) {
             this.isotope = new SimpleStringProperty(isotope);

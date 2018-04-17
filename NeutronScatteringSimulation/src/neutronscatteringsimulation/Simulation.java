@@ -22,6 +22,9 @@ import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -115,7 +118,7 @@ public class Simulation extends Task {
     private final boolean AXES;
 
     private final double LENGTH = 150;
-    private final double BOLTZMANN_CONSTANT = 8.617 * 0.0001; // eV/K
+    private final double BOLTZMANN_CONSTANT = 8.617 * 1E-4; // eV/K
     private final double ROOM_TEMPERATURE = 293.16; // K
     private final double PROTON_MASS = 1.007276; // u
     private final double NEUTRON_MASS = 1.008664; // u
@@ -209,7 +212,7 @@ public class Simulation extends Task {
                 if (distanceCovered < minDistance) {
                     O = O.add(R.normalize().multiply(distanceCovered));
                     drawLine(pastO, O, c);
-                    // hit hydrogen
+                    // hit something
                     if ((sigmaScattering / sigmaTotal) > random.nextDouble()) {
                         // scattering
                         R = scatter(R);
@@ -420,6 +423,27 @@ public class Simulation extends Task {
         } catch (IOException ex) {
             Logger.getLogger(NeutronScatteringSimulation.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public ScatterChart buildChart() {
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        ScatterChart chart = new ScatterChart(xAxis, yAxis);
+        chart.setTitle("Neutron Energies");
+        xAxis.setLabel("Final Energy (eV)");
+        yAxis.setLabel("Num");
+        XYChart.Series absorbed = new XYChart.Series();
+        XYChart.Series escaped = new XYChart.Series();
+        absorbed.setName("Absorbed");
+        escaped.setName("Escaped");
+        
+        for (NeutronResultData result : results) {
+            XYChart.Series series = result.result == NeutronResult.ABSORBED ? absorbed : escaped;
+            series.getData().add(new XYChart.Data(result.escapeEnergy, result.num));
+        }
+        
+        chart.getData().addAll(absorbed, escaped);
+        return chart;
     }
 
     private enum NeutronResult {

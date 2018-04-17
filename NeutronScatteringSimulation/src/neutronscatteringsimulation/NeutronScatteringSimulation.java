@@ -6,12 +6,13 @@
 package neutronscatteringsimulation;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -53,9 +54,15 @@ public class NeutronScatteringSimulation extends Application {
 
     static Random random = new Random();
     private File iglooFile;
+    public static final Map<String, Double> ATOMIC_WEIGHTS = new HashMap<>();
 
     @Override
     public void start(Stage stage) {
+        ATOMIC_WEIGHTS.put("H-1", 1.007);
+        ATOMIC_WEIGHTS.put("C-12", 12.0);
+        ATOMIC_WEIGHTS.put("N-14", 14.007);
+        ATOMIC_WEIGHTS.put("O-16", 16.995);
+        
         ObservableList<Element> paraffinComp = FXCollections.observableArrayList(new Element("H-1", 0.148605), new Element("C-12", 0.851395));
         final double PARAFFIN_DENSITY = 0.93;
         ObservableList<Element> airComp = FXCollections.observableArrayList(new Element("N-14", 0.7547), new Element("O-16", 0.2320));
@@ -140,7 +147,7 @@ public class NeutronScatteringSimulation extends Application {
         hb.setAlignment(Pos.BOTTOM_RIGHT);
         hb.getChildren().add(run);
         form.add(hb, 1, 15);
-        
+
         HBox display = new HBox(10);
         form.add(display, 0, 17, 2, 1);
 
@@ -149,7 +156,7 @@ public class NeutronScatteringSimulation extends Application {
 
         run.setOnAction(e -> {
             final int NUM_NEUTRONS = Integer.parseUnsignedInt(numNeutronsField.getText());
-            final double INITIAL_NEUTRON_ENERGY = Double.parseDouble(initialEnergyField.getText());
+            final double INITIAL_NEUTRON_ENERGY = Double.parseDouble(initialEnergyField.getText()) * 1E6;
             final Material PARAFFIN = new Material(Double.parseDouble(paraffinDensityField.getText()), paraffinComp);
             final Material AIR = new Material(Double.parseDouble(airDensityField.getText()), airComp);
             final Tiler TILER;
@@ -173,6 +180,8 @@ public class NeutronScatteringSimulation extends Application {
                 simScene.heightProperty().bind(pane.heightProperty());
                 simScene.widthProperty().bind(pane.widthProperty());
                 main.setCenter(pane);
+
+                main.setRight(sim.buildChart());
                 
                 CheckBox wireframe = new CheckBox();
                 wireframe.setOnAction(w -> {
