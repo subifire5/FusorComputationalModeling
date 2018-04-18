@@ -22,8 +22,9 @@ import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -148,12 +149,12 @@ public class Simulation extends Task {
 
     @Override
     public SubScene call() {
-        root.getChildren().add(world);
-        root.setDepthTest(DepthTest.ENABLE);
-        buildCamera();
+//        root.getChildren().add(world);
+//        root.setDepthTest(DepthTest.ENABLE);
+//        buildCamera();
 
         if (AXES) {
-            buildAxes();
+//            buildAxes();
         }
         loadIgloo(IGLOO_FILE);
         collapseIgloo();
@@ -161,9 +162,9 @@ public class Simulation extends Task {
         writeResults();
 
         SubScene scene = new SubScene(root, 1024, 768, true, SceneAntialiasing.BALANCED);
-        scene.setFill(Color.LIGHTGRAY);
-        handleMouse(scene, world);
-        scene.setCamera(camera);
+//        scene.setFill(Color.LIGHTGRAY);
+//        handleMouse(scene, world);
+//        scene.setCamera(camera);
         return scene;
     }
     
@@ -174,7 +175,7 @@ public class Simulation extends Task {
             Color c = Color.color(random.nextDouble(), random.nextDouble(), random.nextDouble(), .5);
             boolean insideBlock = false;
             Point3D O = new Point3D(0, 0, 0);
-            showPoint(O, Color.BLUE, 1.5);
+//            showPoint(O, Color.BLUE, 1.5);
             Point3D R = randomDir(INITIAL_NEUTRON_ENERGY);
             Block nextBlock = null;
             double minDistance, distance;
@@ -201,7 +202,7 @@ public class Simulation extends Task {
                 }
                 if (minDistance == Double.MAX_VALUE) {
                     // neutron escaped
-                    drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
+//                    drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
                     results.add(new NeutronResultData(numNeutrons, NeutronResult.ESCAPED, R.magnitude()));
                     break;
                 }
@@ -211,22 +212,22 @@ public class Simulation extends Task {
 
                 if (distanceCovered < minDistance) {
                     O = O.add(R.normalize().multiply(distanceCovered));
-                    drawLine(pastO, O, c);
+//                    drawLine(pastO, O, c);
                     // hit something
                     if ((sigmaScattering / sigmaTotal) > random.nextDouble()) {
                         // scattering
                         R = scatter(R);
-                        showPoint(O, Color.GREEN, 1.5);
+//                        showPoint(O, Color.GREEN, 1.5);
                     } else {
                         // absorbed
-                        showPoint(O, Color.GOLD, 1.5);
+//                        showPoint(O, Color.GOLD, 1.5);
                         results.add(new NeutronResultData(numNeutrons, NeutronResult.ABSORBED, R.magnitude()));
                         break;
                     }
                 } else {
-                    showPoint(intersectionPoint, Color.PURPLE, 1.5);
+//                    showPoint(intersectionPoint, Color.PURPLE, 1.5);
                     O = intersectionPoint.add(R.normalize().multiply(0.001));
-                    drawLine(pastO, O, c);
+//                    drawLine(pastO, O, c);
                     // going into or out of a block
                     insideBlock = !insideBlock;
                 }
@@ -267,52 +268,52 @@ public class Simulation extends Task {
         return true;
     }
 
-    private void showPoint(Point3D p, Color c, double r) {
-        PhongMaterial red = new PhongMaterial(c);
-        Sphere sphere = new Sphere(r, 10);
-        sphere.setTranslateX(p.getX());
-        sphere.setTranslateY(p.getY());
-        sphere.setTranslateZ(p.getZ());
-        sphere.setMaterial(red);
-        world.getChildren().addAll(sphere);
-    }
+//    private void showPoint(Point3D p, Color c, double r) {
+//        PhongMaterial red = new PhongMaterial(c);
+//        Sphere sphere = new Sphere(r, 10);
+//        sphere.setTranslateX(p.getX());
+//        sphere.setTranslateY(p.getY());
+//        sphere.setTranslateZ(p.getZ());
+//        sphere.setMaterial(red);
+//        world.getChildren().addAll(sphere);
+//    }
 
-    private void drawLine(Point3D p1, Point3D p2, Color c) {
-        Point3D v = p2.subtract(p1);
+//    private void drawLine(Point3D p1, Point3D p2, Color c) {
+//        Point3D v = p2.subtract(p1);
+//
+//        Cylinder line = new Cylinder(1, v.magnitude(), 4);
+//        PhongMaterial pm = new PhongMaterial(c);
+//        line.setMaterial(pm);
+//
+//        double phi = Math.atan2(v.getX(), v.getY()) * 180 / Math.PI;
+//        double theta = Math.acos(v.getZ() / v.magnitude()) * 180 / Math.PI;
+//
+//        line.getTransforms().add(new Translate((p2.getX() + p1.getX()) / 2, (p2.getY() + p1.getY()) / 2, (p2.getZ() + p1.getZ()) / 2));
+//        line.getTransforms().add(new Rotate(180 - phi, new Point3D(0, 0, 1)));
+//        line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
+//        world.getChildren().add(line);
+//    }
 
-        Cylinder line = new Cylinder(1, v.magnitude(), 4);
-        PhongMaterial pm = new PhongMaterial(c);
-        line.setMaterial(pm);
-
-        double phi = Math.atan2(v.getX(), v.getY()) * 180 / Math.PI;
-        double theta = Math.acos(v.getZ() / v.magnitude()) * 180 / Math.PI;
-
-        line.getTransforms().add(new Translate((p2.getX() + p1.getX()) / 2, (p2.getY() + p1.getY()) / 2, (p2.getZ() + p1.getZ()) / 2));
-        line.getTransforms().add(new Rotate(180 - phi, new Point3D(0, 0, 1)));
-        line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
-        world.getChildren().add(line);
-    }
-
-    private void buildAxes() {
-        Cylinder cx = new Cylinder(1, LENGTH);
-        PhongMaterial pmx = new PhongMaterial(Color.RED);
-        cx.setMaterial(pmx);
-        cx.setRotationAxis(new Point3D(0, 0, 1));
-        cx.setRotate(90);
-        world.getChildren().add(cx);
-
-        Cylinder cy = new Cylinder(1, LENGTH);
-        PhongMaterial pmy = new PhongMaterial(Color.GREEN);
-        cy.setMaterial(pmy);
-        world.getChildren().add(cy);
-
-        Cylinder cz = new Cylinder(1, LENGTH);
-        PhongMaterial pmz = new PhongMaterial(Color.BLUE);
-        cz.setMaterial(pmz);
-        cz.setRotationAxis(new Point3D(1, 0, 0));
-        cz.setRotate(90);
-        world.getChildren().add(cz);
-    }
+//    private void buildAxes() {
+//        Cylinder cx = new Cylinder(1, LENGTH);
+//        PhongMaterial pmx = new PhongMaterial(Color.RED);
+//        cx.setMaterial(pmx);
+//        cx.setRotationAxis(new Point3D(0, 0, 1));
+//        cx.setRotate(90);
+//        world.getChildren().add(cx);
+//
+//        Cylinder cy = new Cylinder(1, LENGTH);
+//        PhongMaterial pmy = new PhongMaterial(Color.GREEN);
+//        cy.setMaterial(pmy);
+//        world.getChildren().add(cy);
+//
+//        Cylinder cz = new Cylinder(1, LENGTH);
+//        PhongMaterial pmz = new PhongMaterial(Color.BLUE);
+//        cz.setMaterial(pmz);
+//        cz.setRotationAxis(new Point3D(1, 0, 0));
+//        cz.setRotate(90);
+//        world.getChildren().add(cz);
+//    }
 
     private void loadIgloo(File file) {
         ArrayList<TriangleMesh> meshes;
@@ -425,21 +426,35 @@ public class Simulation extends Task {
         }
     }
 
-    public ScatterChart buildChart() {
-        NumberAxis xAxis = new NumberAxis();
+    public BarChart buildChart() {
+        CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
-        ScatterChart chart = new ScatterChart(xAxis, yAxis);
+        BarChart chart = new BarChart(xAxis, yAxis);
         chart.setTitle("Neutron Energies");
-        xAxis.setLabel("Final Energy (eV)");
-        yAxis.setLabel("Num");
+        xAxis.setLabel("Energy (keV)");
+        yAxis.setLabel("log(Num)");
         XYChart.Series absorbed = new XYChart.Series();
         XYChart.Series escaped = new XYChart.Series();
         absorbed.setName("Absorbed");
         escaped.setName("Escaped");
         
+        double bucketSize = 50 * 1E3;
+        int numBuckets = (int) (INITIAL_NEUTRON_ENERGY / bucketSize) + 1;
+        int[] absorbedBuckets = new int[numBuckets];
+        int[] escapedBuckets = new int[numBuckets];
+        
         for (NeutronResultData result : results) {
-            XYChart.Series series = result.result == NeutronResult.ABSORBED ? absorbed : escaped;
-            series.getData().add(new XYChart.Data(result.escapeEnergy, result.num));
+            int[] buckets = result.result == NeutronResult.ABSORBED ? absorbedBuckets : escapedBuckets;
+            int index = (int) (result.finalEnergy / bucketSize);
+            buckets[index] += 1;
+        }
+        
+        for (int i = 0; i < numBuckets; i++) {
+            String label = String.format("%dkEv-%dkEv", (int) (bucketSize * i / 1E3), (int) (bucketSize * (i + 1) / 1E3));
+            double logAbsorbed = Math.log(absorbedBuckets[i]);
+            absorbed.getData().add(new XYChart.Data(label, logAbsorbed > 0 ? logAbsorbed : 0));
+            double logEscaped = Math.log(escapedBuckets[i]);
+            escaped.getData().add(new XYChart.Data(label, logEscaped > 0 ? logEscaped : 0));
         }
         
         chart.getData().addAll(absorbed, escaped);
@@ -454,17 +469,17 @@ public class Simulation extends Task {
 
         final int num;
         final NeutronResult result;
-        final double escapeEnergy;
+        final double finalEnergy;
 
         public NeutronResultData(int num, NeutronResult result, double escapeEnergy) {
             this.num = num;
             this.result = result;
-            this.escapeEnergy = escapeEnergy;
+            this.finalEnergy = escapeEnergy;
         }
 
         @Override
         public String toString() {
-            return String.format("%d,%s,%.2f", num, result, escapeEnergy);
+            return String.format("%d,%s,%.2f", num, result, finalEnergy);
         }
     }
 }

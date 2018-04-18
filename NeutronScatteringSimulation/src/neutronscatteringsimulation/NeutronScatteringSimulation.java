@@ -174,12 +174,12 @@ public class NeutronScatteringSimulation extends Application {
             main.setCenter(bar);
 
             sim.setOnSucceeded(s -> {
-                SubScene simScene = (SubScene) sim.getValue();
-                Pane pane = new Pane();
-                pane.getChildren().add(simScene);
-                simScene.heightProperty().bind(pane.heightProperty());
-                simScene.widthProperty().bind(pane.widthProperty());
-                main.setCenter(pane);
+//                SubScene simScene = (SubScene) sim.getValue();
+//                Pane pane = new Pane();
+//                pane.getChildren().add(simScene);
+//                simScene.heightProperty().bind(pane.heightProperty());
+//                simScene.widthProperty().bind(pane.widthProperty());
+//                main.setCenter(pane);
 
                 main.setRight(sim.buildChart());
                 
