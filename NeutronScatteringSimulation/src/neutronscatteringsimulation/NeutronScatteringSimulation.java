@@ -62,7 +62,7 @@ public class NeutronScatteringSimulation extends Application {
         ATOMIC_WEIGHTS.put("C-12", 12.0);
         ATOMIC_WEIGHTS.put("N-14", 14.007);
         ATOMIC_WEIGHTS.put("O-16", 16.995);
-        
+
         ObservableList<Element> paraffinComp = FXCollections.observableArrayList(new Element("H-1", 0.148605), new Element("C-12", 0.851395));
         final double PARAFFIN_DENSITY = 0.93;
         ObservableList<Element> airComp = FXCollections.observableArrayList(new Element("N-14", 0.7547), new Element("O-16", 0.2320));
@@ -142,14 +142,23 @@ public class NeutronScatteringSimulation extends Application {
         });
         tilerChoice.setValue(fragmentTilerName);
 
+        form.add(new Label("Build 3D Model:"), 0, 15);
+        CheckBox buildModel = new CheckBox();
+        buildModel.setSelected(true);
+        form.add(buildModel, 1, 15);
+
+        form.add(new Label("Build Graph:"), 0, 16);
+        CheckBox buildGraph = new CheckBox();
+        form.add(buildGraph, 1, 16);
+
         Button run = new Button("Run Simulation");
         HBox hb = new HBox(10);
         hb.setAlignment(Pos.BOTTOM_RIGHT);
         hb.getChildren().add(run);
-        form.add(hb, 1, 15);
+        form.add(hb, 1, 17);
 
         HBox display = new HBox(10);
-        form.add(display, 0, 17, 2, 1);
+        form.add(display, 0, 19, 2, 1);
 
         BorderPane main = new BorderPane();
         main.setLeft(form);
@@ -166,29 +175,34 @@ public class NeutronScatteringSimulation extends Application {
                 TILER = new RecursiveTiler(Integer.parseUnsignedInt(tilerInputField.getText()));
             }
             final double MAX_BUMP = Double.parseDouble(maxBumpField.getText());
+            final boolean BUILD_MODEL = buildModel.selectedProperty().get();
 
-            Simulation sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, AXES);
+            Simulation sim = new Simulation(NUM_NEUTRONS, INITIAL_NEUTRON_ENERGY, PARAFFIN, AIR, iglooFile, TILER, MAX_BUMP, AXES, BUILD_MODEL);
 
             ProgressBar bar = new ProgressBar();
             bar.progressProperty().bind(sim.progressProperty());
             main.setCenter(bar);
 
             sim.setOnSucceeded(s -> {
-//                SubScene simScene = (SubScene) sim.getValue();
-//                Pane pane = new Pane();
-//                pane.getChildren().add(simScene);
-//                simScene.heightProperty().bind(pane.heightProperty());
-//                simScene.widthProperty().bind(pane.widthProperty());
-//                main.setCenter(pane);
+                main.setCenter(null);
+                if (BUILD_MODEL) {
+                    SubScene simScene = (SubScene) sim.getValue();
+                    Pane pane = new Pane();
+                    pane.getChildren().add(simScene);
+                    simScene.heightProperty().bind(pane.heightProperty());
+                    simScene.widthProperty().bind(pane.widthProperty());
+                    main.setCenter(pane);
 
-                main.setRight(sim.buildChart());
-                
-                CheckBox wireframe = new CheckBox();
-                wireframe.setOnAction(w -> {
-                    sim.setWireframe(wireframe.isSelected());
-                });
-                display.getChildren().clear();
-                display.getChildren().addAll(new Label("Wireframe:"), wireframe);
+                    CheckBox wireframe = new CheckBox();
+                    wireframe.setOnAction(w -> {
+                        sim.setWireframe(wireframe.isSelected());
+                    });
+                    display.getChildren().clear();
+                    display.getChildren().addAll(new Label("Wireframe:"), wireframe);
+                }
+                if (buildGraph.selectedProperty().get()) {
+                    main.setRight(sim.buildChart());
+                }
             });
 
             Thread th = new Thread(sim);

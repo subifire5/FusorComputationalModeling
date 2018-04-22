@@ -118,6 +118,8 @@ public class Simulation extends Task {
     private final double MAX_BUMP;
     private final boolean AXES;
 
+    private final boolean BUILD_MODEL;
+
     private final double LENGTH = 150;
     private final double BOLTZMANN_CONSTANT = 8.617 * 1E-4; // eV/K
     private final double ROOM_TEMPERATURE = 293.16; // K
@@ -127,7 +129,7 @@ public class Simulation extends Task {
     private ArrayList<Block> blocks;
     private ArrayList<NeutronResultData> results;
 
-    public Simulation(int numNeutrons, double INITIAL_NEUTRON_ENERGY, Material BLOCK, Material AIR, File IGLOO_FILE, Tiler TILER, double MAX_BUMP, boolean AXES) {
+    public Simulation(int numNeutrons, double INITIAL_NEUTRON_ENERGY, Material BLOCK, Material AIR, File IGLOO_FILE, Tiler TILER, double MAX_BUMP, boolean AXES, boolean BUILD_MODEL) {
         this.numNeutrons = numNeutrons;
         this.INITIAL_NEUTRON_ENERGY = INITIAL_NEUTRON_ENERGY;
         this.BLOCK = BLOCK;
@@ -136,8 +138,9 @@ public class Simulation extends Task {
         this.TILER = TILER;
         this.MAX_BUMP = MAX_BUMP;
         this.AXES = AXES;
+        this.BUILD_MODEL = BUILD_MODEL;
     }
-    
+
     public void setWireframe(boolean wireframe) {
         for (Node n : world.getChildren()) {
             if (n instanceof MeshView) {
@@ -149,25 +152,31 @@ public class Simulation extends Task {
 
     @Override
     public SubScene call() {
-//        root.getChildren().add(world);
-//        root.setDepthTest(DepthTest.ENABLE);
-//        buildCamera();
+        if (BUILD_MODEL) {
+            root.getChildren().add(world);
+            root.setDepthTest(DepthTest.ENABLE);
+            buildCamera();
 
-        if (AXES) {
-//            buildAxes();
+            if (AXES) {
+                buildAxes();
+            }
         }
+
         loadIgloo(IGLOO_FILE);
         collapseIgloo();
         runSimulation(numNeutrons);
         writeResults();
 
-        SubScene scene = new SubScene(root, 1024, 768, true, SceneAntialiasing.BALANCED);
-//        scene.setFill(Color.LIGHTGRAY);
-//        handleMouse(scene, world);
-//        scene.setCamera(camera);
+        SubScene scene = null;
+        if (BUILD_MODEL) {
+            scene = new SubScene(root, 1024, 768, true, SceneAntialiasing.BALANCED);
+            scene.setFill(Color.LIGHTGRAY);
+            handleMouse(scene, world);
+            scene.setCamera(camera);
+        }
         return scene;
     }
-    
+
     private void runSimulation(int numNeutrons) {
         results = new ArrayList<>();
         for (; numNeutrons > 0; numNeutrons--) {
@@ -202,7 +211,9 @@ public class Simulation extends Task {
                 }
                 if (minDistance == Double.MAX_VALUE) {
                     // neutron escaped
-//                    drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
+                    if (BUILD_MODEL) {
+                        drawLine(O, O.add(R.normalize().multiply(LENGTH)), c);
+                    }
                     results.add(new NeutronResultData(numNeutrons, NeutronResult.ESCAPED, R.magnitude()));
                     break;
                 }
@@ -212,22 +223,30 @@ public class Simulation extends Task {
 
                 if (distanceCovered < minDistance) {
                     O = O.add(R.normalize().multiply(distanceCovered));
-//                    drawLine(pastO, O, c);
+                    if (BUILD_MODEL) {
+                        drawLine(pastO, O, c);
+                    }
                     // hit something
                     if ((sigmaScattering / sigmaTotal) > random.nextDouble()) {
                         // scattering
                         R = scatter(R);
-//                        showPoint(O, Color.GREEN, 1.5);
+                        if (BUILD_MODEL) {
+                            showPoint(O, Color.GREEN, 1.5);
+                        }
                     } else {
                         // absorbed
-//                        showPoint(O, Color.GOLD, 1.5);
+                        if (BUILD_MODEL) {
+                            showPoint(O, Color.GOLD, 1.5);
+                        }
                         results.add(new NeutronResultData(numNeutrons, NeutronResult.ABSORBED, R.magnitude()));
                         break;
                     }
                 } else {
-//                    showPoint(intersectionPoint, Color.PURPLE, 1.5);
                     O = intersectionPoint.add(R.normalize().multiply(0.001));
-//                    drawLine(pastO, O, c);
+                    if (BUILD_MODEL) {
+                        showPoint(intersectionPoint, Color.PURPLE, 1.5);
+                        drawLine(pastO, O, c);
+                    }
                     // going into or out of a block
                     insideBlock = !insideBlock;
                 }
@@ -268,52 +287,52 @@ public class Simulation extends Task {
         return true;
     }
 
-//    private void showPoint(Point3D p, Color c, double r) {
-//        PhongMaterial red = new PhongMaterial(c);
-//        Sphere sphere = new Sphere(r, 10);
-//        sphere.setTranslateX(p.getX());
-//        sphere.setTranslateY(p.getY());
-//        sphere.setTranslateZ(p.getZ());
-//        sphere.setMaterial(red);
-//        world.getChildren().addAll(sphere);
-//    }
+    private void showPoint(Point3D p, Color c, double r) {
+        PhongMaterial red = new PhongMaterial(c);
+        Sphere sphere = new Sphere(r, 10);
+        sphere.setTranslateX(p.getX());
+        sphere.setTranslateY(p.getY());
+        sphere.setTranslateZ(p.getZ());
+        sphere.setMaterial(red);
+        world.getChildren().addAll(sphere);
+    }
 
-//    private void drawLine(Point3D p1, Point3D p2, Color c) {
-//        Point3D v = p2.subtract(p1);
-//
-//        Cylinder line = new Cylinder(1, v.magnitude(), 4);
-//        PhongMaterial pm = new PhongMaterial(c);
-//        line.setMaterial(pm);
-//
-//        double phi = Math.atan2(v.getX(), v.getY()) * 180 / Math.PI;
-//        double theta = Math.acos(v.getZ() / v.magnitude()) * 180 / Math.PI;
-//
-//        line.getTransforms().add(new Translate((p2.getX() + p1.getX()) / 2, (p2.getY() + p1.getY()) / 2, (p2.getZ() + p1.getZ()) / 2));
-//        line.getTransforms().add(new Rotate(180 - phi, new Point3D(0, 0, 1)));
-//        line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
-//        world.getChildren().add(line);
-//    }
+    private void drawLine(Point3D p1, Point3D p2, Color c) {
+        Point3D v = p2.subtract(p1);
 
-//    private void buildAxes() {
-//        Cylinder cx = new Cylinder(1, LENGTH);
-//        PhongMaterial pmx = new PhongMaterial(Color.RED);
-//        cx.setMaterial(pmx);
-//        cx.setRotationAxis(new Point3D(0, 0, 1));
-//        cx.setRotate(90);
-//        world.getChildren().add(cx);
-//
-//        Cylinder cy = new Cylinder(1, LENGTH);
-//        PhongMaterial pmy = new PhongMaterial(Color.GREEN);
-//        cy.setMaterial(pmy);
-//        world.getChildren().add(cy);
-//
-//        Cylinder cz = new Cylinder(1, LENGTH);
-//        PhongMaterial pmz = new PhongMaterial(Color.BLUE);
-//        cz.setMaterial(pmz);
-//        cz.setRotationAxis(new Point3D(1, 0, 0));
-//        cz.setRotate(90);
-//        world.getChildren().add(cz);
-//    }
+        Cylinder line = new Cylinder(1, v.magnitude(), 4);
+        PhongMaterial pm = new PhongMaterial(c);
+        line.setMaterial(pm);
+
+        double phi = Math.atan2(v.getX(), v.getY()) * 180 / Math.PI;
+        double theta = Math.acos(v.getZ() / v.magnitude()) * 180 / Math.PI;
+
+        line.getTransforms().add(new Translate((p2.getX() + p1.getX()) / 2, (p2.getY() + p1.getY()) / 2, (p2.getZ() + p1.getZ()) / 2));
+        line.getTransforms().add(new Rotate(180 - phi, new Point3D(0, 0, 1)));
+        line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
+        world.getChildren().add(line);
+    }
+
+    private void buildAxes() {
+        Cylinder cx = new Cylinder(1, LENGTH);
+        PhongMaterial pmx = new PhongMaterial(Color.RED);
+        cx.setMaterial(pmx);
+        cx.setRotationAxis(new Point3D(0, 0, 1));
+        cx.setRotate(90);
+        world.getChildren().add(cx);
+
+        Cylinder cy = new Cylinder(1, LENGTH);
+        PhongMaterial pmy = new PhongMaterial(Color.GREEN);
+        cy.setMaterial(pmy);
+        world.getChildren().add(cy);
+
+        Cylinder cz = new Cylinder(1, LENGTH);
+        PhongMaterial pmz = new PhongMaterial(Color.BLUE);
+        cz.setMaterial(pmz);
+        cz.setRotationAxis(new Point3D(1, 0, 0));
+        cz.setRotate(90);
+        world.getChildren().add(cz);
+    }
 
     private void loadIgloo(File file) {
         ArrayList<TriangleMesh> meshes;
@@ -437,18 +456,18 @@ public class Simulation extends Task {
         XYChart.Series escaped = new XYChart.Series();
         absorbed.setName("Absorbed");
         escaped.setName("Escaped");
-        
+
         double bucketSize = 50 * 1E3;
         int numBuckets = (int) (INITIAL_NEUTRON_ENERGY / bucketSize) + 1;
         int[] absorbedBuckets = new int[numBuckets];
         int[] escapedBuckets = new int[numBuckets];
-        
+
         for (NeutronResultData result : results) {
             int[] buckets = result.result == NeutronResult.ABSORBED ? absorbedBuckets : escapedBuckets;
             int index = (int) (result.finalEnergy / bucketSize);
             buckets[index] += 1;
         }
-        
+
         for (int i = 0; i < numBuckets; i++) {
             String label = String.format("%dkEv-%dkEv", (int) (bucketSize * i / 1E3), (int) (bucketSize * (i + 1) / 1E3));
             double logAbsorbed = Math.log(absorbedBuckets[i]);
@@ -456,7 +475,7 @@ public class Simulation extends Task {
             double logEscaped = Math.log(escapedBuckets[i]);
             escaped.getData().add(new XYChart.Data(label, logEscaped > 0 ? logEscaped : 0));
         }
-        
+
         chart.getData().addAll(absorbed, escaped);
         return chart;
     }
