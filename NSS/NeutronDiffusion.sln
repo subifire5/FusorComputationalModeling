@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NeutronDiffusion", "NeutronDiffusion\NeutronDiffusion.fsproj", "{44BDBA2C-A4E4-45DA-91BD-9EF342816925}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{44BDBA2C-A4E4-45DA-91BD-9EF342816925}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44BDBA2C-A4E4-45DA-91BD-9EF342816925}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44BDBA2C-A4E4-45DA-91BD-9EF342816925}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44BDBA2C-A4E4-45DA-91BD-9EF342816925}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {02560A80-1618-46E4-85D9-98FB34C4FA52}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,170 @@
+solid "controlparaffin"
+  facet normal -1 0 0
+    outer loop
+      vertex 3.5527136788e-15 2.83122062683e-07 8.94069671631e-08
+      vertex 3.5527136788e-15 48.5999984741 43.5
+      vertex 3.5527136788e-15 48.5999984741 8.94069671631e-08
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.5527136788e-15 48.5999984741 43.5
+      vertex 3.5527136788e-15 2.83122062683e-07 8.94069671631e-08
+      vertex 3.5527136788e-15 2.83122062683e-07 43.5
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.5527136788e-15 48.5999984741 43.5
+      vertex 49.5 2.83122062683e-07 43.5
+      vertex 49.5 48.5999984741 43.5
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 49.5 2.83122062683e-07 43.5
+      vertex 3.5527136788e-15 48.5999984741 43.5
+      vertex 3.5527136788e-15 2.83122062683e-07 43.5
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 49.5 2.83122062683e-07 43.5
+      vertex 49.5 48.5999984741 8.94069671631e-08
+      vertex 49.5 48.5999984741 43.5
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 49.5 48.5999984741 8.94069671631e-08
+      vertex 49.5 2.83122062683e-07 43.5
+      vertex 49.5 2.83122062683e-07 8.94069671631e-08
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 49.5 48.5999984741 8.94069671631e-08
+      vertex 3.5527136788e-15 48.5999984741 43.5
+      vertex 49.5 48.5999984741 43.5
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.5527136788e-15 48.5999984741 43.5
+      vertex 49.5 48.5999984741 8.94069671631e-08
+      vertex 3.5527136788e-15 48.5999984741 8.94069671631e-08
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.5527136788e-15 2.83122062683e-07 8.94069671631e-08
+      vertex 49.5 48.5999984741 8.94069671631e-08
+      vertex 49.5 2.83122062683e-07 8.94069671631e-08
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 49.5 48.5999984741 8.94069671631e-08
+      vertex 3.5527136788e-15 2.83122062683e-07 8.94069671631e-08
+      vertex 3.5527136788e-15 48.5999984741 8.94069671631e-08
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.5527136788e-15 2.83122062683e-07 8.94069671631e-08
+      vertex 49.5 2.83122062683e-07 43.5
+      vertex 3.5527136788e-15 2.83122062683e-07 43.5
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 49.5 2.83122062683e-07 43.5
+      vertex 3.5527136788e-15 2.83122062683e-07 8.94069671631e-08
+      vertex 49.5 2.83122062683e-07 8.94069671631e-08
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 14.8999996185 9.80000114441 30.75
+      vertex 14.8999996185 38.7999992371 12.75
+      vertex 14.8999996185 38.7999992371 30.75
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 14.8999996185 38.7999992371 12.75
+      vertex 14.8999996185 9.80000114441 30.75
+      vertex 14.8999996185 9.80000114441 12.75
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 14.8999996185 9.80000114441 30.75
+      vertex 34.9000015259 38.7999992371 30.75
+      vertex 34.9000015259 9.80000114441 30.75
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 34.9000015259 38.7999992371 30.75
+      vertex 14.8999996185 9.80000114441 30.75
+      vertex 14.8999996185 38.7999992371 30.75
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 34.9000015259 9.80000114441 12.75
+      vertex 34.9000015259 38.7999992371 30.75
+      vertex 34.9000015259 38.7999992371 12.75
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 34.9000015259 38.7999992371 30.75
+      vertex 34.9000015259 9.80000114441 12.75
+      vertex 34.9000015259 9.80000114441 30.75
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 14.8999996185 38.7999992371 12.75
+      vertex 34.9000015259 9.80000114441 12.75
+      vertex 34.9000015259 38.7999992371 12.75
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 34.9000015259 9.80000114441 12.75
+      vertex 14.8999996185 38.7999992371 12.75
+      vertex 14.8999996185 9.80000114441 12.75
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 34.9000015259 9.80000114441 12.75
+      vertex 14.8999996185 9.80000114441 30.75
+      vertex 34.9000015259 9.80000114441 30.75
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 14.8999996185 9.80000114441 30.75
+      vertex 34.9000015259 9.80000114441 12.75
+      vertex 14.8999996185 9.80000114441 12.75
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 14.8999996185 38.7999992371 12.75
+      vertex 34.9000015259 38.7999992371 30.75
+      vertex 14.8999996185 38.7999992371 30.75
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 34.9000015259 38.7999992371 30.75
+      vertex 14.8999996185 38.7999992371 12.75
+      vertex 34.9000015259 38.7999992371 12.75
+    endloop
+  endfacet
+endsolid "controlparaffin"
