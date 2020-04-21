@@ -17,7 +17,7 @@ public class Block extends TriangleMesh {
 
     ArrayList<Point3D> points;
     ArrayList<Face> faces;
-    Point3D center;
+    Point3D center; // this is a 3d point
     double radius;
 
     public Block(TriangleMesh mesh, Tiler tiler, double maxBump) {
