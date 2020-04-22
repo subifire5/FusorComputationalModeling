@@ -5,6 +5,8 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import org.apache.commons.math3.geometry.euclidean.threed.*;
+
 /**
  *
  * @author gunnar
@@ -12,6 +14,6 @@ package org.eastsideprep.javaneutrons;
 public class Event {
     Neutron neutron;
     Element element; 
-    RealVector position;
+    Vector3D position;
     // todo: scattering, absorption, evaporation
 }

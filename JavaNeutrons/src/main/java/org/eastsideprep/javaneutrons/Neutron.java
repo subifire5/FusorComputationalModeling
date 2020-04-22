@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import org.apache.commons.math3.geometry.euclidean.threed;
+import org.apache.commons.math3.geometry.euclidean.threed.*;
 /**
  *
  * @author gunnar
