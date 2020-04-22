@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import org.apache.commons.math4.geometry.euclidean.threed;
+import org.apache.commons.math3.geometry.euclidean.threed;
 /**
  *
  * @author gunnar
@@ -13,6 +13,6 @@ import org.apache.commons.math4.geometry.euclidean.threed;
 public class Neutron {
     double energy; // unit: eV
     Vector3D unitvector; // no units
-    RealVector position; // unit: (cm,cm,cm)
+    Vector3D position; // unit: (cm,cm,cm)
     // history
 }
