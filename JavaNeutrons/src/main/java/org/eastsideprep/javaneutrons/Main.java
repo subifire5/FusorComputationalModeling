@@ -9,8 +9,7 @@ package org.eastsideprep.javaneutrons;
  *
  * @author svernon
  */
-public class Main {
-    
+public class Main  {
     public static void main(String[] args){
         App.main(args);
     }
