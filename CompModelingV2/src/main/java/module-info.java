@@ -1,4 +1,9 @@
-module org.eastsideprep.compmodelingv2 {
+module com.mycompany.CompModelingV2 {
     requires javafx.controls;
-    exports org.eastsideprep.compmodelingv2;
+    requires java.xml;
+    requires org.json;
+    requires jama;
+    requires jimStlMeshImporterJFX;
+    requires opencsv;
+    exports com.mycompany.CompModelingV2;
 }
