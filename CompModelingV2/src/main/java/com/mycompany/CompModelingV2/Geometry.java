@@ -9,7 +9,6 @@ package com.mycompany.CompModelingV2;
  *
  * @author subif
  */
-
 import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
 import java.io.File;
 import java.nio.file.Path;
@@ -19,8 +18,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 import javafx.scene.shape.TriangleMesh;
+
 public class Geometry {
-   
+
     public List<Triangle> positiveTriangles;
     public List<Triangle> negativeTriangles;
     public List<Triangle> triangles = new ArrayList();
@@ -32,25 +32,19 @@ public class Geometry {
     public Double positiveSA;
     public Double negativeSA;
     public Double totalSA;
-    
-    public Geometry(String positiveStl, Double positiveCharge, String negativeStl, Double negativeCharge){
+
+    public Geometry(String positiveStl, Double positiveCharge, String negativeStl, Double negativeCharge) {
         positiveMesh = importObject(positiveStl);
         negativeMesh = importObject(negativeStl);
-        
-    }
-    /**
-     * call this first
-     */
-    public void initialize(){
         positiveTriangles = getTriangles(positiveMesh, 1);
         negativeTriangles = getTriangles(negativeMesh, -1);
         triangleSumSA = new ArrayList();
         positiveSumSA = new ArrayList();
         negativeSumSA = new ArrayList();
-
     }
-    
-     public TriangleMesh importObject(String fileName) {
+
+
+    public TriangleMesh importObject(String fileName) {
         Path path = Paths.get(fileName);
         StlMeshImporter meshImporter = new StlMeshImporter();
         File file = path.toFile();
@@ -119,6 +113,7 @@ public class Geometry {
         }
         return ts;
     }
+
     public void translatePositiveTriangles(Vector offset) {
         for (Triangle t : triangles) {
             if (t.polarity > 0) {
@@ -140,6 +135,7 @@ public class Geometry {
             t.translate(offset);
         }
     }
+
     // for each polarity
     // make two lists
     // one with triangles, which you add to for each triangle of that polarity
@@ -160,7 +156,7 @@ public class Geometry {
                 negativeTriangles.add(triangles.get(i));
                 negativeSumSA.add(negativeSA);
             }
-            triangleSumSA.add(triangles.get(i).surfaceArea);          
+            triangleSumSA.add(triangles.get(i).surfaceArea);
         }
         Double previous = positiveSumSA.get(0);
         Double current;
@@ -175,7 +171,7 @@ public class Geometry {
                 previous = current;
             }
         }
-        totalSA = positiveSA+negativeSA;
+        totalSA = positiveSA + negativeSA;
         /*for(Triangle t: triangles){
             System.out.print(t);
             System.out.println("SA: " + t.getSurfaceArea());
@@ -185,6 +181,7 @@ public class Geometry {
         System.out.println("collections binary search: " + Collections.binarySearch(positiveSumSA, 5.0));
         System.out.println("my binary search: " + binarySearch(positiveSumSA, 5.0));
     }
+
     public int binarySearch(List<Double> d, Double target) {
         Boolean first = true;
         Boolean done = false;
@@ -247,7 +244,7 @@ public class Geometry {
         //System.out.println("SA: " + SA);
         SA *= positiveSA;
         index = binarySearch(positiveSumSA, SA);
-        
+
         t = positiveTriangles.get(index);
 
         return t.genRandCharge();
@@ -270,12 +267,11 @@ public class Geometry {
         Random SAGen = new Random();
         int index;
         double SA = totalSA;
-        Triangle t;    
+        Triangle t;
         SA *= SAGen.nextDouble();
         index = binarySearch(triangleSumSA, SA);
         t = triangles.get(index);
         return t.genRandCharge();
     }
-
 
 }

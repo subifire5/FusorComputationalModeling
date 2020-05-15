@@ -16,22 +16,23 @@ import java.util.Collections;
 
 public class ChargeDistributer {
 
-
     // surface areas of triangles summed
     List<Charge> charges;
     double changes = 0;
+    final Double k;  // Coulombs Constant
+    double scaleDistance;
     Geometry geometry;
-    Double scaleDistance;
+
     public ChargeDistributer() {
+        this.k = 8.9875517923E9;
     }
 
-    public ChargeDistributer(Geometry geometry, Double scaleDistance) {
+    public ChargeDistributer(Geometry geometry, Double scaleDistance, int charges) {
+        this.k = 8.9875517923E9;
         this.geometry = geometry;
         this.scaleDistance = scaleDistance;
+        distributeCharges(charges, charges);
     }
-
-
-
 
     // distributes charges randomly and uniformly;
     public void distributeCharges(int posCharges, int negCharges) {
@@ -55,7 +56,7 @@ public class ChargeDistributer {
         for (int i = 0; i < shakes; i++) {
             chargeShakeUp(charges, geometry);
             Double[] averageEP = averageElectricPotentials(charges);
-            System.out.println("Shakes Completed: " + (i+1) +"/" + shakes);
+            System.out.println("Shakes Completed: " + (i + 1) + "/" + shakes);
             System.out.println("Average Electric Potential: " + averageEP[0]);
             System.out.println("Average Positive Electric Potential: " + averageEP[1]);
             System.out.println("Average Negative Electric Potential: " + averageEP[2]);
@@ -82,7 +83,6 @@ public class ChargeDistributer {
         for (Charge c : charges) {
             if (c.polarity < 0) {
                 Charge t = geometry.getRandomNegativeCharge();
-                
 
                 if (electricPotentialEnergy(t, c) < electricPotentialEnergy(c, c)) {
                     c.setPosition(t);
@@ -99,37 +99,36 @@ public class ChargeDistributer {
 
             }
         }
-        
-        
+
     }
+
     /**
-     * 
+     *
      * @param charges
      * @return the average overall, average positive and average negative EP
      */
-    public Double[] averageElectricPotentials(List<Charge> charges){
+    public Double[] averageElectricPotentials(List<Charge> charges) {
         Double[] averageEP = {0.0, 0.0, 0.0};
         int total = 0;
         int positive = 0;
         int negative = 0;
-        for(Charge c: charges){
+        for (Charge c : charges) {
             Double ep = electricPotential(c, c);
             averageEP[0] += ep;
-            if(c.polarity>0){
+            if (c.polarity > 0) {
                 averageEP[1] += ep;
                 positive++;
-            }else{
+            } else {
                 averageEP[2] += ep;
                 negative++;
             }
             total++;
         }
-        averageEP[0]/=total;
-        averageEP[1]/=positive;
-        averageEP[2]/=negative;
+        averageEP[0] /= total;
+        averageEP[1] /= positive;
+        averageEP[2] /= negative;
         return averageEP;
     }
-    
 
     /**
      * The electric potential of a specific charge
@@ -140,13 +139,13 @@ public class ChargeDistributer {
     public double electricPotential(Charge c) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity / (c.distanceTo(t))) * c.polarity;
+            ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity;
         }
         return ePotential;
     }
 
     /**
-     * The electric potential of a specific point 
+     * The electric potential of a specific point
      *
      * @param v Selected point
      * @return electric potential of a given point
@@ -154,7 +153,7 @@ public class ChargeDistributer {
     public double electricPotential(Vector v) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += t.polarity / (v.distanceTo(t)*scaleDistance);
+            ePotential += (t.polarity * k) / (v.distanceTo(t) * scaleDistance);
         }
         return ePotential;
     }
@@ -171,7 +170,7 @@ public class ChargeDistributer {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += t.polarity / (c.distanceTo(t)*scaleDistance);
+                ePotential += (t.polarity * k) / (c.distanceTo(t) * scaleDistance);
             }
         }
         return ePotential;
@@ -189,7 +188,7 @@ public class ChargeDistributer {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += t.polarity / (v.distanceTo(t)*scaleDistance);
+                ePotential += (t.polarity * k) / (v.distanceTo(t) * scaleDistance);
             }
         }
         return ePotential;
@@ -208,7 +207,7 @@ public class ChargeDistributer {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity / (c.distanceTo(t)*scaleDistance)) * c.polarity;
+                ePotential += (t.polarity * k / (c.distanceTo(t) * scaleDistance)) * c.polarity;
             }
         }
         return ePotential;

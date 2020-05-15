@@ -19,11 +19,15 @@ public class EField {
 
     double vAnnode;
     double vCathode;
+    double scaleDistance;
     List<Charge> charges;
     Xform positiveCharges;
     Xform negativeCharges;
+    final Double k;  // Coulombs Constant
 
     public EField() {
+        this.k = 8.9875517923E9;
+
     }
 
     /**
@@ -32,18 +36,22 @@ public class EField {
      * @param vAnnode the + side voltage
      * @param vCathode the - side voltage
      */
-    public EField(List<Charge> charges, double vAnnode, double vCathode) {
+    public EField(List<Charge> charges, double vAnnode, double vCathode, double scaleDistance) {
         this.vAnnode = vAnnode;
         this.vCathode = vCathode;
         this.charges = charges;
+        this.k = 8.9875517923E9;
+        this.scaleDistance = scaleDistance;
 
     }
 
-    public EField(Xform positiveCharges, Xform negativeCharges, double vAnnode, double vCathode) {
+    public EField(Xform positiveCharges, Xform negativeCharges, double vAnnode, double vCathode, double scaleDistance) {
         this.vAnnode = vAnnode;
         this.vCathode = vCathode;
         this.positiveCharges = positiveCharges;
         this.negativeCharges = negativeCharges;
+        this.k = 8.9875517923E9;
+        this.scaleDistance = scaleDistance;
 
     }
 
@@ -111,7 +119,7 @@ public class EField {
         return sumOfField;
     }
 
-        /**
+    /**
      * The electric potential of a specific charge
      *
      * @param c Selected charge
@@ -120,7 +128,7 @@ public class EField {
     public double electricPotential(Charge c) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity / (c.distanceTo(t))) * c.polarity;
+            ePotential += (t.polarity*k / (c.distanceTo(t))) * c.polarity;
         }
         return ePotential;
     }
@@ -134,7 +142,7 @@ public class EField {
     public double electricPotential(Vector v) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += t.polarity / (v.distanceTo(t));
+            ePotential += (t.polarity*k) / (v.distanceTo(t)*scaleDistance);
         }
         return ePotential;
     }
@@ -151,7 +159,7 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += t.polarity / (c.distanceTo(t));
+                ePotential += (t.polarity*k) / (c.distanceTo(t)*scaleDistance);
             }
         }
         return ePotential;
@@ -169,7 +177,7 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += t.polarity / (v.distanceTo(t));
+                ePotential += (t.polarity*k) / (v.distanceTo(t)*scaleDistance);
             }
         }
         return ePotential;
@@ -188,9 +196,10 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity / (c.distanceTo(t))) * c.polarity;
+                ePotential += (t.polarity*k / (c.distanceTo(t)*scaleDistance)) * c.polarity;
             }
         }
         return ePotential;
     }
+
 }

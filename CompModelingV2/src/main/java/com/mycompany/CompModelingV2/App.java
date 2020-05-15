@@ -133,34 +133,26 @@ public class App extends Application {
         /*String chamberFilePath = "chamber.stl";
         String gridFilePath = "FusorCubeGrid.stl";
         Geometry geometry = new Geometry(chamberFilePath, 1.0, gridFilePath, -35000.0);
-        geometry.initialize();
         geometry.translateNegativeTriangles(new Vector(-30.0, 50.0, -80.0));
          */
         String leftPlatePath = "ThinPlate.stl";
-        String rightPlatePath = "ThinPlate.stl";
+        String rightPlatePath = "ThinRightPlate.stl";
         Geometry geometry = new Geometry(leftPlatePath, 1.0, rightPlatePath, -5.0);
-        geometry.initialize();
-        geometry.translateTriangles(new Vector(5.0, 0.0, 0.0));
-        geometry.translatePositiveTriangles(new Vector(1.0, 0.0, 0.0));
-        
-        //List<Triangle> triangles = testTriangleSet();
-        ChargeDistributer chargeDistributer = new ChargeDistributer(geometry, scaleDistance);
-        
         geometry.sumUpSurfaceArea();
-        chargeDistributer.distributeCharges(100, 100);
-        chargeDistributer.balanceCharges(10);
+
+        //List<Triangle> triangles = testTriangleSet();
+        ChargeDistributer chargeDistributer = new ChargeDistributer(geometry, scaleDistance, 100);
+        chargeDistributer.balanceCharges(100);
         EFieldFileWriter writer = new EFieldFileWriter(chargeDistributer);
         writer.writeCSV("outputFile10.csv");
-        
+
         //Don't Read from Output file
         buildCharges(chargeDistributer.charges);
 
         //Read from outputFile 
-        
         //EFieldFileParser parser = new EFieldFileParser();
         //buildCharges(parser.parseFile("outputFile.csv"));
-        
-        eField = new EField(positiveCharges, negativeCharges, 1, -35000);
+        eField = new EField(positiveCharges, negativeCharges, 1, -35000, scaleDistance);
         buildCamera();
         buildAxes();
         buildEFieldSlice();
