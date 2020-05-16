@@ -85,10 +85,31 @@ public class Triangle {
         charge.y = (points[0].y*(1-sqr1))+(points[1].y*(sqr1*(1-r2)))+(points[2].y*r2*sqr1);
         charge.z = (points[0].z*(1-sqr1))+(points[1].z*(sqr1*(1-r2)))+(points[2].z*r2*sqr1);
         charge.polarity = polarity;
-        Float f = 0.0f;
-        float fe = 0.0f;
+
         return charge;
     }   
+    
+    public Charge testGenRandCharge(){
+        // doesn't work right now
+        // if tested with the two files "ThinPlate.stl" and "ThinRightPlate.stl"
+        // creates a really neat x pattern instead of the squares
+        //https://jsfiddle.net/jniac/fmx8bz9y/
+        Charge charge = new Charge();
+        Random randGen = new Random();
+        double r1 = randGen.nextDouble();
+        double r2 = randGen.nextDouble();
+        if(r1+r2>1){
+            r1 = 1-r1;
+            r2 = 1-r2;
+        }
+        
+        charge.x = points[0].x + points[0].thisToThat(points[1]).x*r1 + points[1].thisToThat(points[2]).x*r2;
+        charge.y = points[0].y + points[0].thisToThat(points[1]).y*r1 + points[1].thisToThat(points[2]).y*r2;
+        charge.z = points[0].z + points[0].thisToThat(points[1]).z*r1 + points[1].thisToThat(points[2]).z*r2;
+        charge.polarity = polarity;
+        return charge;
+    }
+    
     @Override
     public String toString(){
         String triangle = "";

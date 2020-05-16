@@ -135,19 +135,24 @@ public class App extends Application {
         Geometry geometry = new Geometry(chamberFilePath, 1.0, gridFilePath, -35000.0);
         geometry.translateNegativeTriangles(new Vector(-30.0, 50.0, -80.0));
          */
-        String leftPlatePath = "ThinPlate.stl";
+        /*String leftPlatePath = "ThinPlate.stl";
         String rightPlatePath = "ThinRightPlate.stl";
         Geometry geometry = new Geometry(leftPlatePath, 1.0, rightPlatePath, -5.0);
         geometry.sumUpSurfaceArea();
 
-        //List<Triangle> triangles = testTriangleSet();
+        //Triangle[] triangles = testTriangleSet();
         ChargeDistributer chargeDistributer = new ChargeDistributer(geometry, scaleDistance, 100);
         chargeDistributer.balanceCharges(100);
         EFieldFileWriter writer = new EFieldFileWriter(chargeDistributer);
         writer.writeCSV("outputFile10.csv");
-
+        */
+        InputHandler input = new InputHandler();
+        input.getInput();
+        
+        
+        
         //Don't Read from Output file
-        buildCharges(chargeDistributer.charges);
+        buildCharges(input.charges);
 
         //Read from outputFile 
         //EFieldFileParser parser = new EFieldFileParser();
@@ -174,8 +179,8 @@ public class App extends Application {
 
     }
 
-    public List<Triangle> testTriangleSet() {
-        List<Triangle> tList = new ArrayList<Triangle>();
+    public Triangle[] testTriangleSet() {
+        Triangle[] tList = new Triangle[4];
         Vector topLeftForward = new Vector(0.0, 10.0, 10.0);
         Vector topLeftBack = new Vector(0.0, 10.0, 0.0);
         Vector topRightForward = new Vector(10.0, 10.0, 10.0);
@@ -185,10 +190,10 @@ public class App extends Application {
         Vector botRightForward = new Vector(10.0, 0.0, 10.0);
         Vector botRightBack = new Vector(10.0, 0.0, 0.0);
 
-        tList.add(new Triangle(topLeftForward, topRightForward, botLeftForward, 1));
-        tList.add(new Triangle(botLeftForward, botRightForward, topRightForward, 1));
-        tList.add(new Triangle(topLeftBack, topRightBack, botLeftBack, -1));
-        tList.add(new Triangle(botLeftBack, botRightBack, topRightBack, -1));
+        tList[0] = new Triangle(topLeftForward, topRightForward, botLeftForward, 1);
+        tList[1] = new Triangle(botLeftForward, botRightForward, topRightForward, 1);
+        tList[2] = new Triangle(topLeftBack, topRightBack, botLeftBack, -1);
+        tList[3] = new Triangle(botLeftBack, botRightBack, topRightBack, -1);
         return tList;
     }
 
@@ -492,15 +497,15 @@ public class App extends Application {
         cameraXform.rx.setAngle(CAMERA_INITIAL_X_ANGLE);
     }
 
-    public void buildCharges(List<Charge> charges) {
+    public void buildCharges(Charge[] charges) {
         world.getChildren().add(negativeCharges);
         world.getChildren().add(positiveCharges);
         final PhongMaterial BlueColor = new PhongMaterial(Color.BLUE);
         BlueColor.setSpecularColor(Color.BLUE);
         final PhongMaterial RedColor = new PhongMaterial(Color.RED);
         RedColor.setSpecularColor(Color.RED);
-        for (int i = 0; i < charges.size(); i++) {
-            Charge c = charges.get(i);
+        for (int i = 0; i < charges.length; i++) {
+            Charge c = charges[i];
             if (c.polarity < 0) {
                 final Sphere s = new Sphere(0.8);
                 s.setMaterial(RedColor);

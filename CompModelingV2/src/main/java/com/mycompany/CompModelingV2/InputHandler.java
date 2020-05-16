@@ -14,17 +14,36 @@ import java.util.Scanner;
 
 public class InputHandler {
 
+    int numCharges = 100;
+    String positiveFilePath = "ThinRightPlate.csv";
+    String negativeFilePath = "ThinPlate.csv";
+    String outputFilePath = "outputFile.csv";
+    String inputFilePath = "inputFilePath.csv";
+    Double posCharge = 100.0;
+    Double negCharge = 100.0;
+    Double scaleDistance = 0.01;
+    Double vAnnode;
+    Double vCathode;
+    int shakeUps = 100;
+    Geometry geometry;
+    ChargeDistributer chargeDistributer;
+    Scanner s;
+    EField eField;
+    Charge[] charges;
+    Charge[] positiveCharges;
+    Charge[] negativeCharges;
+
     public InputHandler() {
     }
 
     public void getInput() {
 
-        Scanner s = new Scanner(System.in);
+        s = new Scanner(System.in);
         Boolean inputRecieved = false;
         String input = "";
         while (!inputRecieved) {
             System.out.println("Would you like to read from an Efield file (R) or generate one (G)");
-            input = s.next();
+            input = s.nextLine();
             if (input.equals("R")) {
                 inputRecieved = true;
             } else if (input.equals("G")) {
@@ -33,57 +52,76 @@ public class InputHandler {
                 System.out.println("Please respond with (R) or (G)");
             }
         }
-        s.close();
         if (input.equals("R")) {
             readFromFile();
         } else {
             generateFile();
+
         }
+        s.close();
 
     }
 
     public void readFromFile() {
-        Scanner s = new Scanner(System.in);
-        System.out.println("Please type in the negative charged file name");
-        String negativeFileName = "";
-        negativeFileName = s.nextLine();
-        String positiveFileName = "";
-        System.out.println("Please type in the positively charged file name");
-        positiveFileName = s.nextLine();
+ 
 
-        /*Geometry geometry = new Geometry(negativeFileName, 1.0, positiveFileName, -35000.0);
-        geometry.initialize();        
-        geometry.translateNegativeTriangles(new Vector(-30.0, 50.0, -80.0));
-         */
-        s.close();
+ 
+
+        System.out.println("Please enter your input file location");
+        inputFilePath = s.nextLine();
+        File fileExists = new File(inputFilePath);
+        while (!fileExists.exists()) {
+            System.out.println("this file does not exist; please enter a valid file name");
+            inputFilePath = s.nextLine();
+            fileExists = new File(inputFilePath);
+        }
+
+        System.out.println("Please enter the annode (positive) voltage");
+        vAnnode = s.nextDouble();
+        
+        System.out.println("Please enter the cathode (negative) voltage");
+        vCathode = s.nextDouble();
+        
+        System.out.println("What is the distance, in meters, of 1 unit in the stl files?");
+        scaleDistance = s.nextDouble();
+        
+        EFieldFileParser parser = new EFieldFileParser();
+
+        Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
+        charges = chargeArrayArray[0];
+        positiveCharges = chargeArrayArray[1];
+        negativeCharges = chargeArrayArray[2];
+
+        eField = new EField(charges, vAnnode, vCathode, scaleDistance);
     }
 
     public void generateFile() {
-        String positiveFileName = "";
-        String negativeFileName = "";
-        String outputFileName = "";
-        Scanner s = new Scanner(System.in);
-        System.out.println("Please type cathode (negative) file name");
-        negativeFileName = s.nextLine();
-        // file Exists is just a way of testing if a given file exists.
-        File fileExists = new File(negativeFileName);
+        positiveFilePath = "";
+        negativeFilePath = "";
+        outputFilePath = "";
+        File fileExists;
+        
+        System.out.println("Please type in the annode (positive) file name");
+        positiveFilePath = s.nextLine();
+        fileExists = new File(positiveFilePath);
         while (!fileExists.exists()) {
             System.out.println("this file does not exist; please enter a valid file name");
-            negativeFileName = s.nextLine();
-            fileExists = new File(negativeFileName);
+            positiveFilePath = s.nextLine();
+            fileExists = new File(positiveFilePath);
         }
-
-        System.out.println("Please type in the positively charged file name");
-        positiveFileName = s.nextLine();
-        fileExists = new File(positiveFileName);
+        System.out.println("Please type cathode (negative) file name");
+        negativeFilePath = s.nextLine();
+        // file Exists is just a way of testing if a given file exists.
+        fileExists = new File(negativeFilePath);
         while (!fileExists.exists()) {
             System.out.println("this file does not exist; please enter a valid file name");
-            positiveFileName = s.nextLine();
-            fileExists = new File(positiveFileName);
+            negativeFilePath = s.nextLine();
+            fileExists = new File(negativeFilePath);
         }
 
         System.out.println("Please enter your output file location");
-        fileExists = new File(s.nextLine());
+        outputFilePath = s.nextLine();
+        fileExists = new File(outputFilePath);
         while (fileExists.exists()) {
             System.out.println("This file already exists; do you want to replace it? Y/N");
             String input = "";
@@ -92,30 +130,33 @@ public class InputHandler {
                 break;
             } else {
                 System.out.println("Please enter your output file location");
-                fileExists = new File(s.nextLine());
+                fileExists = new File(outputFilePath);
             }
 
         }
-        
-        System.out.println("How many charges do you want?");
-        int numCharges = s.nextInt();
-        
+
+        System.out.println("How many charges of each polarity do you want?");
+        numCharges = s.nextInt();
+
         System.out.println("What charge are the positive charges?");
-        Double posCharge =  s.nextDouble();
+        posCharge = s.nextDouble();
         System.out.println("What charge are the negative charges?");
-        Double negCharge = s.nextDouble();
-        
+        negCharge = s.nextDouble();
+
         System.out.println("What is the distance, in meters, of 1 unit in the stl files?");
-        Double scaleDistance = s.nextDouble();
-        
-        
+        scaleDistance = s.nextDouble();
+
         System.out.println("How many shake-ups do you want?");
-        int shakeUps = s.nextInt();
-        
-        
-        
-        
-        s.close();
+        shakeUps = s.nextInt();
+
+        geometry = new Geometry(positiveFilePath, negCharge, negativeFilePath, posCharge);
+        geometry.sumUpSurfaceArea();
+
+        chargeDistributer = new ChargeDistributer(geometry, scaleDistance, numCharges);
+        chargeDistributer.balanceCharges(shakeUps);
+        charges = chargeDistributer.charges;
+        EFieldFileWriter writer = new EFieldFileWriter(chargeDistributer);
+        writer.writeCSV(outputFilePath);
 
     }
 }

@@ -16,8 +16,7 @@ import java.util.Collections;
 
 public class ChargeDistributer {
 
-    // surface areas of triangles summed
-    List<Charge> charges;
+    Charge[] charges;
     double changes = 0;
     final Double k;  // Coulombs Constant
     double scaleDistance;
@@ -36,15 +35,15 @@ public class ChargeDistributer {
 
     // distributes charges randomly and uniformly;
     public void distributeCharges(int posCharges, int negCharges) {
-        charges = new ArrayList();
+        charges = new Charge[posCharges+negCharges];
         //System.out.println("Charges: " + posSumSA.get(2));
         //System.out.println("Charges: " + posSumSA.get(3));
 
         for (int i = 0; i < posCharges; i++) {
-            charges.add(geometry.getRandomPositiveCharge());
+            charges[i] =geometry.getRandomPositiveCharge();
         }
         for (int i = 0; i < negCharges; i++) {
-            charges.add(geometry.getRandomNegativeCharge());
+            charges[i+posCharges] = (geometry.getRandomNegativeCharge());
         }
 
     }
@@ -79,7 +78,7 @@ public class ChargeDistributer {
         System.out.println("changes: " + changes);
     }
 
-    public void chargeShakeUp(List<Charge> charges, Geometry geometry) {
+    public void chargeShakeUp(Charge[] charges, Geometry geometry) {
         for (Charge c : charges) {
             if (c.polarity < 0) {
                 Charge t = geometry.getRandomNegativeCharge();
@@ -107,7 +106,7 @@ public class ChargeDistributer {
      * @param charges
      * @return the average overall, average positive and average negative EP
      */
-    public Double[] averageElectricPotentials(List<Charge> charges) {
+    public Double[] averageElectricPotentials(Charge[] charges) {
         Double[] averageEP = {0.0, 0.0, 0.0};
         int total = 0;
         int positive = 0;

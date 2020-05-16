@@ -18,9 +18,9 @@ import java.io.IOException;
 
 
 public class EFieldFileWriter {
-    List<Charge> charges;
+    Charge[] charges;
     File file;
-    public EFieldFileWriter(List<Charge> charges){
+    public EFieldFileWriter(Charge[] charges){
         this.charges = charges;
     }
     
@@ -33,6 +33,7 @@ public class EFieldFileWriter {
         FileWriter outputFile = null;
         try {
             File file = new File(filePath);
+            file.createNewFile();
             outputFile = new FileWriter(file);
             CSVWriter writer = new CSVWriter(outputFile);
             

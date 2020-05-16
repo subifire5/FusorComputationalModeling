@@ -15,20 +15,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 import javafx.scene.shape.TriangleMesh;
 
 public class Geometry {
 
-    public List<Triangle> positiveTriangles;
-    public List<Triangle> negativeTriangles;
-    public List<Triangle> triangles = new ArrayList();
+    public Triangle[] positiveTriangles;
+    public Triangle[] negativeTriangles;
+    public Triangle[] triangles;
     TriangleMesh positiveMesh;
     TriangleMesh negativeMesh;
-    List<Double> positiveSumSA;
-    List<Double> negativeSumSA;
-    List<Double> triangleSumSA;
+    Double[] positiveSumSA;
+    Double[] negativeSumSA;
+    Double[] triangleSumSA;
     public Double positiveSA;
     public Double negativeSA;
     public Double totalSA;
@@ -36,13 +37,11 @@ public class Geometry {
     public Geometry(String positiveStl, Double positiveCharge, String negativeStl, Double negativeCharge) {
         positiveMesh = importObject(positiveStl);
         negativeMesh = importObject(negativeStl);
-        positiveTriangles = getTriangles(positiveMesh, 1);
-        negativeTriangles = getTriangles(negativeMesh, -1);
-        triangleSumSA = new ArrayList();
-        positiveSumSA = new ArrayList();
-        negativeSumSA = new ArrayList();
+        getTriangles();
+        triangleSumSA = new Double[triangles.length];
+        positiveSumSA = new Double[positiveTriangles.length];
+        negativeSumSA = new Double[negativeTriangles.length];
     }
-
 
     public TriangleMesh importObject(String fileName) {
         Path path = Paths.get(fileName);
@@ -54,21 +53,32 @@ public class Geometry {
         return mesh;
     }
 
-    public List<Triangle> getTriangles(TriangleMesh tMesh, int polarity) {
+    public void getTriangles() {
 
         // .getfaces/.getPoints/whatever all return Observable(Object)Arrays
         // to convert them into normal arrays
         // you pass them an array
         // then they return an array for you to use
-        float[] points = null;
-        points = tMesh.getPoints().toArray(points);
-        int[] faceIndeces = null;
-        List<Triangle> ts = new ArrayList();
-        faceIndeces = tMesh.getFaces().toArray(faceIndeces);
-        System.out.println("Points mod 3: " + points.length % 3);
-        System.out.println("Faces mod 6: " + faceIndeces.length % 6);
-        System.out.println("Triangle Mesh Vertex Format: " + tMesh.getVertexFormat());
-        System.out.println("point size: " + points.length);
+        float[] positivePoints = null;
+        positivePoints = positiveMesh.getPoints().toArray(positivePoints);
+        float[] negativePoints = null;
+        negativePoints = negativeMesh.getPoints().toArray(negativePoints);
+        int[] positiveFaceIndeces = null;
+        int[] negativeFaceIndeces = null;
+
+        positiveFaceIndeces = positiveMesh.getFaces().toArray(positiveFaceIndeces);
+        System.out.println("Points mod 3: " + positivePoints.length % 3);
+        System.out.println("Faces mod 6: " + positiveFaceIndeces.length % 6);
+        System.out.println("Triangle Mesh Vertex Format: " + positiveMesh.getVertexFormat());
+        System.out.println("point size: " + positivePoints.length);
+        negativeFaceIndeces = negativeMesh.getFaces().toArray(negativeFaceIndeces);
+        System.out.println("Points mod 3: " + negativePoints.length % 3);
+        System.out.println("Faces mod 6: " + negativeFaceIndeces.length % 6);
+        System.out.println("Triangle Mesh Vertex Format: " + negativeMesh.getVertexFormat());
+        System.out.println("point size: " + negativePoints.length);
+        triangles = new Triangle[(positiveFaceIndeces.length + negativeFaceIndeces.length) / 6];
+        positiveTriangles = new Triangle[(positiveFaceIndeces.length) / 6];
+        negativeTriangles = new Triangle[(negativeFaceIndeces.length) / 6];
 
         /*
         The Triangle Mesh Vertex Format is POINT_TEXCOORD in this case
@@ -99,19 +109,32 @@ public class Geometry {
 
         // this means poitns mod 9 should return 
          */
-        for (int i = 0; i < faceIndeces.length; i += 6) {
+        for (int i = 0; i < positiveFaceIndeces.length; i += 6) {
             // three values make up a vector
             // three vectors (9 values) for a triangle
-            Vector A = new Vector((double) points[faceIndeces[i] * 3], (double) points[faceIndeces[i] * 3 + 1], (double) points[faceIndeces[i] * 3 + 2]);
-            Vector B = new Vector((double) points[faceIndeces[i + 2] * 3], (double) points[faceIndeces[i + 2] * 3 + 1], (double) points[faceIndeces[i + 2] * 3 + 2]);
-            Vector C = new Vector((double) points[faceIndeces[i + 4] * 3], (double) points[faceIndeces[i + 4] * 3 + 1], (double) points[faceIndeces[i + 4] * 3 + 2]);
+            Vector A = new Vector((double) positivePoints[positiveFaceIndeces[i] * 3], (double) positivePoints[positiveFaceIndeces[i] * 3 + 1], (double) positivePoints[positiveFaceIndeces[i] * 3 + 2]);
+            Vector B = new Vector((double) positivePoints[positiveFaceIndeces[i + 2] * 3], (double) positivePoints[positiveFaceIndeces[i + 2] * 3 + 1], (double) positivePoints[positiveFaceIndeces[i + 2] * 3 + 2]);
+            Vector C = new Vector((double) positivePoints[positiveFaceIndeces[i + 4] * 3], (double) positivePoints[positiveFaceIndeces[i + 4] * 3 + 1], (double) positivePoints[positiveFaceIndeces[i + 4] * 3 + 2]);
 
-            Triangle t = new Triangle(A, B, C, polarity);
-            triangles.add(t);
-            ts.add(t);
+            Triangle t = new Triangle(A, B, C, 1);
+            triangles[i / 6] = t;
+            positiveTriangles[i / 6] = t;
 
         }
-        return ts;
+
+        for (int i = 0; i < negativeFaceIndeces.length; i += 6) {
+            // three values make up a vector
+            // three vectors (9 values) for a triangle
+            Vector A = new Vector((double) negativePoints[negativeFaceIndeces[i] * 3], (double) negativePoints[negativeFaceIndeces[i] * 3 + 1], (double) negativePoints[negativeFaceIndeces[i] * 3 + 2]);
+            Vector B = new Vector((double) negativePoints[negativeFaceIndeces[i + 2] * 3], (double) negativePoints[negativeFaceIndeces[i + 2] * 3 + 1], (double) negativePoints[negativeFaceIndeces[i + 2] * 3 + 2]);
+            Vector C = new Vector((double) negativePoints[negativeFaceIndeces[i + 4] * 3], (double) negativePoints[negativeFaceIndeces[i + 4] * 3 + 1], (double) negativePoints[negativeFaceIndeces[i + 4] * 3 + 2]);
+
+            Triangle t = new Triangle(A, B, C, -1);
+            triangles[(i+positiveFaceIndeces.length) / 6] = t;
+            negativeTriangles[i / 6] = t;
+
+        }
+
     }
 
     public void translatePositiveTriangles(Vector offset) {
@@ -145,24 +168,24 @@ public class Geometry {
     public void sumUpSurfaceArea() {
         positiveSA = 0.0;
         negativeSA = 0.0;
-        for (int i = 0; i < triangles.size(); i++) {
-            if (triangles.get(i).polarity > 0) {
-                positiveSA += triangles.get(i).surfaceArea;
-                positiveTriangles.add(triangles.get(i));
-                positiveSumSA.add(positiveSA);
+        for (int i = 0; i < triangles.length; i++) {
+            if (triangles[i].polarity > 0) {
+                positiveSA += triangles[i].surfaceArea;
+                positiveTriangles[i] = triangles[i];
+                positiveSumSA[i] = positiveSA;
 
-            } else if (triangles.get(i).polarity < 0) {
-                negativeSA += triangles.get(i).surfaceArea;
-                negativeTriangles.add(triangles.get(i));
-                negativeSumSA.add(negativeSA);
+            } else if (triangles[i].polarity < 0) {
+                negativeSA += triangles[i].surfaceArea;
+                negativeTriangles[i-positiveTriangles.length] = triangles[i];
+                negativeSumSA[i-positiveTriangles.length] = negativeSA;
             }
-            triangleSumSA.add(triangles.get(i).surfaceArea);
+            triangleSumSA[i] = triangles[i].surfaceArea;
         }
-        Double previous = positiveSumSA.get(0);
+        Double previous = positiveSumSA[0];
         Double current;
-        for (int i = 1; i < positiveSumSA.size(); i++) {
+        for (int i = 1; i < positiveSumSA.length; i++) {
 
-            current = positiveSumSA.get(i);
+            current = positiveSumSA[i];
             //System.out.println("current: " + current);
             if (previous > current) {
                 System.out.println("oijfodsijf;ldskf");
@@ -177,23 +200,23 @@ public class Geometry {
             System.out.println("SA: " + t.getSurfaceArea());
         }
          */
-        Collections.sort(positiveSumSA);
-        System.out.println("collections binary search: " + Collections.binarySearch(positiveSumSA, 5.0));
+        Arrays.sort(positiveSumSA);
+        System.out.println("arrays binary search: " + Arrays.binarySearch(positiveSumSA, 5.0));
         System.out.println("my binary search: " + binarySearch(positiveSumSA, 5.0));
     }
 
-    public int binarySearch(List<Double> d, Double target) {
+    public int binarySearch(Double[] d, Double target) {
         Boolean first = true;
         Boolean done = false;
         int leftEdge = 0;
-        int rightEdge = d.size() - 1;
+        int rightEdge = d.length - 1;
         int middle = (rightEdge + leftEdge) / 2;
 
         while (!done) {
             if (middle == rightEdge) {
                 if (first) {
                     first = false;
-                    if (d.get(leftEdge) > target) {
+                    if (d[leftEdge] > target) {
                         return rightEdge;
                     }
                 }
@@ -203,14 +226,14 @@ public class Geometry {
                 //System.out.println("left edge");
                 if (first) {
                     first = false;
-                    if (d.get(leftEdge) < target) {
+                    if (d[leftEdge] < target) {
                         return rightEdge;
                     }
                 }
                 done = true;
                 return leftEdge;
             }
-            Double m = d.get(middle);
+            Double m = d[middle];
             if (m > target) {
                 rightEdge = middle;
             } else if (m < target) {
@@ -220,7 +243,7 @@ public class Geometry {
                 return middle;
             }
             if (leftEdge + 1 == rightEdge) {
-                if (target > d.get(leftEdge)) {
+                if (target > d[leftEdge]) {
                     middle = rightEdge;
                 } else {
                     middle = leftEdge;
@@ -245,7 +268,7 @@ public class Geometry {
         SA *= positiveSA;
         index = binarySearch(positiveSumSA, SA);
 
-        t = positiveTriangles.get(index);
+        t = positiveTriangles[index];
 
         return t.genRandCharge();
 
@@ -259,7 +282,7 @@ public class Geometry {
         SA = SAGen.nextDouble();
         SA *= negativeSA;
         index = binarySearch(negativeSumSA, SA);
-        t = negativeTriangles.get(index);
+        t = negativeTriangles[index];
         return t.genRandCharge();
     }
 
@@ -270,7 +293,7 @@ public class Geometry {
         Triangle t;
         SA *= SAGen.nextDouble();
         index = binarySearch(triangleSumSA, SA);
-        t = triangles.get(index);
+        t = triangles[index];
         return t.genRandCharge();
     }
 

@@ -20,12 +20,14 @@ import java.util.List;
 
 public class EFieldFileParser {
 
-    public List<Charge> parseFile(String filePath) {
+    public Charge[][] parseFile(String filePath) {
         Reader reader;
         reader = null;
         List<String[]> rawCharges;
 
-        List<Charge> charges = new ArrayList<>();
+        Charge[] charges = null;
+        Charge[] posCharges = null;
+        Charge[] negCharges = null;
         try {
             reader = new FileReader(filePath);
             CSVReader csvReader = new CSVReaderBuilder(reader)
@@ -34,10 +36,22 @@ public class EFieldFileParser {
             rawCharges = csvReader.readAll();
             reader.close();
             csvReader.close();
-
+            charges = new Charge[rawCharges.size()];
+            posCharges = new Charge[rawCharges.size()/2];
+            negCharges = new Charge[rawCharges.size()/2];
+            int i = 0;
+            int j = 0; // positive charge counter
+            int k = 0; // negative charge counter
             for (String[] s : rawCharges) {
-                charges.add(new Charge(s));
-
+                charges[i] = (new Charge(s));
+                if(charges[i].polarity == 1){
+                    posCharges[j] = charges[i];
+                    j++;
+                }else{
+                    negCharges[k] = charges[i];
+                    k++;
+                }
+                i++;
             }
 
         } catch (FileNotFoundException ex) {
@@ -45,8 +59,9 @@ public class EFieldFileParser {
         } catch (IOException ex) {
             System.out.println("io exception");
         }
-
-        return charges;
+        Charge[][] chargeArrayArray = {charges, posCharges, negCharges};
+        
+        return chargeArrayArray;
 
     }
 

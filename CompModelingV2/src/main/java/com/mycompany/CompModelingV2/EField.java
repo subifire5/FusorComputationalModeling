@@ -20,7 +20,7 @@ public class EField {
     double vAnnode;
     double vCathode;
     double scaleDistance;
-    List<Charge> charges;
+    Charge[] charges;
     Xform positiveCharges;
     Xform negativeCharges;
     final Double k;  // Coulombs Constant
@@ -36,7 +36,7 @@ public class EField {
      * @param vAnnode the + side voltage
      * @param vCathode the - side voltage
      */
-    public EField(List<Charge> charges, double vAnnode, double vCathode, double scaleDistance) {
+    public EField(Charge[] charges, double vAnnode, double vCathode, double scaleDistance) {
         this.vAnnode = vAnnode;
         this.vCathode = vCathode;
         this.charges = charges;
