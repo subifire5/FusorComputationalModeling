@@ -62,9 +62,11 @@ import javafx.stage.Screen;
 * 7. change Triangle Random Point formula to this: https://jsfiddle.net/jniac/fmx8bz9y/ 
 * 8. Correct Charge values: Once you've finished charge balancing, the next
 *    step is to find the difference in voltage between your annode and cathode
-*    and keep that number as an offset. Then, when you have your average negative
-*    and positive potentials, find the scale factor you need to multiply your
-*    charges by to end up with the same difference in electric potential.
+*    and keep that number as an offset. Then, go to hte center of hte grid (liek the middle)
+*    That spot will have a really high electric potential. That spot is at the 
+*    voltage difference you want. Find the number which you have to multiply
+*    the electric potential there to get the voltage you want, and then
+*    multiply each charge's charge by that number.
 * 9. Electric Potential --> Electric Potential Energy
 *    Just switch from EP to EPE.
 * 10. Split this program in two
@@ -507,7 +509,7 @@ public class App extends Application {
         for (int i = 0; i < charges.length; i++) {
             Charge c = charges[i];
             if (c.polarity < 0) {
-                final Sphere s = new Sphere(0.8);
+                final Sphere s = new Sphere(0.4);
                 s.setMaterial(RedColor);
                 s.setTranslateX(c.x);
                 s.setTranslateY(c.y);
@@ -515,7 +517,7 @@ public class App extends Application {
                 negativeCharges.getChildren().add(s);
                 negativeCharges.setScale(NEGATIVE_SCALE);
             } else {
-                final Sphere s = new Sphere(0.8);
+                final Sphere s = new Sphere(0.4);
                 s.setMaterial(BlueColor);
                 s.setTranslateX(c.x);
                 s.setTranslateY(c.y);
