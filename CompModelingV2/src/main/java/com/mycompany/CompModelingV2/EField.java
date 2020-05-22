@@ -17,6 +17,7 @@ import javafx.scene.transform.Transform;
 
 public class EField {
 
+    double chargeFactor = 1.0;
     double vAnnode;
     double vCathode;
     double scaleDistance;
@@ -35,24 +36,70 @@ public class EField {
      * @param charges a list of charges generating the electric field
      * @param vAnnode the + side voltage
      * @param vCathode the - side voltage
+     * @param scaleDistance the distance in meters of one unit
+     * @param centerOfGrid a vector pointing to the center of the wire grid,
+     * defaults to origin
      */
-    public EField(Charge[] charges, double vAnnode, double vCathode, double scaleDistance) {
+    public EField(Charge[] charges, double vAnnode, double vCathode, double scaleDistance, Vector centerOfGrid) {
         this.vAnnode = vAnnode;
         this.vCathode = vCathode;
         this.charges = charges;
         this.k = 8.9875517923E9;
         this.scaleDistance = scaleDistance;
+        if (centerOfGrid == null) {
+            centerOfGrid = new Vector(0.0, 0.0, 0.0);
+        }
+        chargeFactor = (vAnnode - vCathode) / electricPotential(centerOfGrid);
 
     }
 
-    public EField(Xform positiveCharges, Xform negativeCharges, double vAnnode, double vCathode, double scaleDistance) {
+    public EField(Xform positiveCharges, Xform negativeCharges, double vAnnode, double vCathode, double scaleDistance, Vector centerOfGrid) {
         this.vAnnode = vAnnode;
         this.vCathode = vCathode;
         this.positiveCharges = positiveCharges;
         this.negativeCharges = negativeCharges;
         this.k = 8.9875517923E9;
         this.scaleDistance = scaleDistance;
+        if (centerOfGrid == null) {
+            centerOfGrid = new Vector(0.0, 0.0, 0.0);
+        }
+        chargeFactor = (vAnnode - vCathode) / electricPotential(centerOfGrid);
+    }
 
+    public Double[][] potentialTable(String axis, double lowerBound, double upperBound, int numberOfPotentials) {
+        Double[][] potentials = new Double[numberOfPotentials][2];
+        Double gap = (upperBound - lowerBound)/numberOfPotentials;
+        if (axis.equals("X") || axis.equals("x")) {
+            Double x = lowerBound;
+            for (int i = 0; i < numberOfPotentials; i++) {
+                Vector point = new Vector(x, 0.0, 0.0);
+                potentials[i][0] = x;
+                potentials[i][1] = electricPotential(point);
+                x += gap;
+
+            }
+        } else if (axis.equals("Y") || axis.equals("y")) {
+            Double y = lowerBound;
+            for (int i = 0; i < numberOfPotentials; i++) {
+                Vector point = new Vector(0.0, y, 0.0);
+                potentials[i][0] = y;
+                potentials[i][1] = electricPotential(point);
+                y += gap;
+
+            }
+
+        } else {
+            Double z = lowerBound;
+            for (int i = 0; i < numberOfPotentials; i++) {
+                Vector point = new Vector(0.0, 0.0, z);
+                potentials[i][0] = z;
+                potentials[i][1] = electricPotential(point);
+                z += gap;
+
+            }
+        }
+        return potentials;
+        
     }
 
     // uses the positioning of each charge in the JavaFX Scene
@@ -93,6 +140,7 @@ public class EField {
             effectOnPoint.z *= v / distanceSquared;
             sumOfField.plusEquals(effectOnPoint);
         }
+        sumOfField.scale(chargeFactor);
         return sumOfField;
 
     }
@@ -115,7 +163,7 @@ public class EField {
             effectOnPoint.z *= v / distanceSquared;
             sumOfField.plusEquals(effectOnPoint);
         }
-
+        sumOfField.scale(chargeFactor);
         return sumOfField;
     }
 
@@ -128,13 +176,13 @@ public class EField {
     public double electricPotential(Charge c) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity*k / (c.distanceTo(t))) * c.polarity;
+            ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity;
         }
-        return ePotential;
+        return ePotential * chargeFactor;
     }
 
     /**
-     * The electric potential of a specific point 
+     * The electric potential of a specific point
      *
      * @param v Selected point
      * @return electric potential of a given point
@@ -142,9 +190,9 @@ public class EField {
     public double electricPotential(Vector v) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity*k) / (v.distanceTo(t)*scaleDistance);
+            ePotential += (t.polarity * k) / (v.distanceTo(t) * scaleDistance);
         }
-        return ePotential;
+        return ePotential * chargeFactor;
     }
 
     /**
@@ -159,10 +207,10 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity*k) / (c.distanceTo(t)*scaleDistance);
+                ePotential += (t.polarity * k) / (c.distanceTo(t) * scaleDistance);
             }
         }
-        return ePotential;
+        return ePotential * chargeFactor;
     }
 
     /**
@@ -177,10 +225,10 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity*k) / (v.distanceTo(t)*scaleDistance);
+                ePotential += (t.polarity * k) / (v.distanceTo(t) * scaleDistance);
             }
         }
-        return ePotential;
+        return ePotential * chargeFactor;
 
     }
 
@@ -196,10 +244,10 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity*k / (c.distanceTo(t)*scaleDistance)) * c.polarity;
+                ePotential += (t.polarity * k / (c.distanceTo(t) * scaleDistance)) * c.polarity;
             }
         }
-        return ePotential;
+        return ePotential * chargeFactor;
     }
 
 }

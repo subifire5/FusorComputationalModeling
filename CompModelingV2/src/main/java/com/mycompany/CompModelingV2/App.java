@@ -56,17 +56,17 @@ import javafx.stage.Screen;
 *    by using the units to see what the capacitance should be, versus
 *    what your program says
 * 4. Show the average electric potential of the positive plate and the negative plate
-*       those two nubmers should approach each other.
+*       those two numbers should approach each other.
 * 5. create a CSV Reader for this program, so you can read and write to csvs
 * 6. don't hardcode the file paths, get them as inputs from terminal or something
 * 7. change Triangle Random Point formula to this: https://jsfiddle.net/jniac/fmx8bz9y/ 
 * 8. Correct Charge values: Once you've finished charge balancing, the next
 *    step is to find the difference in voltage between your annode and cathode
-*    and keep that number as an offset. Then, go to hte center of hte grid (liek the middle)
+*    and keep that number as an offset. Then, go to hte center of the wire grid (like the middle)
 *    That spot will have a really high electric potential. That spot is at the 
 *    voltage difference you want. Find the number which you have to multiply
 *    the electric potential there to get the voltage you want, and then
-*    multiply each charge's charge by that number.
+*    every time you get an electric potential, multiply it by that number.
 * 9. Electric Potential --> Electric Potential Energy
 *    Just switch from EP to EPE.
 * 10. Split this program in two
@@ -159,7 +159,8 @@ public class App extends Application {
         //Read from outputFile 
         //EFieldFileParser parser = new EFieldFileParser();
         //buildCharges(parser.parseFile("outputFile.csv"));
-        eField = new EField(positiveCharges, negativeCharges, 1, -35000, scaleDistance);
+        //eField = new EField(positiveCharges, negativeCharges, 1, -35000, scaleDistance, new Vector(0.0, 0.0, 0.0));
+        eField = input.eField;
         buildCamera();
         buildAxes();
         buildEFieldSlice();
