@@ -26,6 +26,13 @@ public class Vector {
         this.z = z;
     }
 
+    public Vector(String x, String y, String z) {
+        this.x = Double.valueOf(x);
+        this.y = Double.valueOf(y);
+        this.z = Double.valueOf(z);
+    }
+    
+
     public Vector(Vector v) {
         this(v.x, v.y, v.z);
     }
@@ -41,15 +48,15 @@ public class Vector {
     public Double distanceTo(Charge c) {
         return Math.sqrt(Math.pow(x - c.x, 2) + Math.pow(y - c.y, 2) + Math.pow(z - c.z, 2));
     }
-    
+
     public Double distanceSquared(Vector v) {
         return Math.pow(x - v.x, 2) + Math.pow(y - v.y, 2) + Math.pow(z - v.z, 2);
     }
 
-    public Double distanceSquared(Charge c){
+    public Double distanceSquared(Charge c) {
         return Math.pow(x - c.x, 2) + Math.pow(y - c.y, 2) + Math.pow(z - c.z, 2);
     }
-    
+
     public Double dotProduct(Vector v) {
         return (x * v.x) + (y * v.y) + (z * v.z);
     }
@@ -62,14 +69,14 @@ public class Vector {
         return c;
     }
 
-    public Double angle(Vector v){
-    
+    public Double angle(Vector v) {
+
         // ||a X b|| = ||a|||*|b||*sin(theta)
-        Double theta = Math.acos(crossProduct(v).norm()/(norm()*v.norm()));
+        Double theta = Math.acos(crossProduct(v).norm() / (norm() * v.norm()));
         return theta;
         // multiply brom of cross product by 1/2
     }
-    
+
     public Double angleBetween(Vector v) {
         // basic vector math
         // dot product can be found in two ways
@@ -81,22 +88,22 @@ public class Vector {
         // you get cos(theta)
         // and then you're done
         Double dot = dotProduct(v);
-        if(dot.isNaN()){
+        if (dot.isNaN()) {
             System.out.println("Dot is problem");
         }
         Double magnitudes = (this.norm() * v.norm());
-        if(this.norm() == 0.0){
+        if (this.norm() == 0.0) {
             System.out.println("this length is problem");
         }
-        
-        if(v.norm() == 0.0){
+
+        if (v.norm() == 0.0) {
             System.out.println("v length is problem");
         }
-        if(magnitudes == 0.0){
+        if (magnitudes == 0.0) {
             System.out.println("magnitudes is problem");
         }
         Double cosTheta = dot / magnitudes;
-        if(cosTheta.isNaN()){
+        if (cosTheta.isNaN()) {
             System.out.println("cosTheta is problem");
         }
         return Math.acos(cosTheta);
@@ -111,6 +118,7 @@ public class Vector {
     public Vector thatToThis(Vector v) {
         return new Vector((x - v.x), (y - v.y), (z - v.z));
     }
+
     /**
      * this - c a vector from c to this Vector: CThis
      *
@@ -120,7 +128,7 @@ public class Vector {
     public Vector thatToThis(Charge c) {
         return new Vector((x - c.x), (y - c.y), (z - c.z));
     }
-    
+
     /**
      * v-this draws a line from v to this Vector: ThisV
      *
@@ -130,8 +138,6 @@ public class Vector {
     public Vector thisToThat(Vector v) {
         return new Vector((v.x - x), (v.y - y), (v.z - z));
     }
-    
-    
 
     /**
      * c-this draws a line from c to this Vector: ThisC
@@ -158,63 +164,65 @@ public class Vector {
     }
 
     /**
-     * Adds another vector to this vector
-     * (the += sign)
+     * Adds another vector to this vector (the += sign)
+     *
      * @param v other vector
      */
-    public void plusEquals(Vector v){
+    public void plusEquals(Vector v) {
         this.x += v.x;
         this.y += v.y;
         this.z += v.z;
     }
+
     /**
-     * Adds a scalar to this vector
-     * (the += sign)
+     * Adds a scalar to this vector (the += sign)
+     *
      * @param s the scalar
      */
-    public void plusEquals(Double s){
+    public void plusEquals(Double s) {
         this.x += s;
         this.y += s;
         this.z += s;
     }
-    
+
     /**
-     * 
+     *
      * @param v addend
      * @return the sum of this vector and another vector
      */
-    public Vector sum(Vector v){
+    public Vector sum(Vector v) {
         Vector s = new Vector();
         s.x = this.x + v.x;
         s.y = this.y + v.y;
         s.z = this.z + v.z;
         return s;
     }
-    
-    public String toString(){
+
+    public String toString() {
         String vector = "";
         vector += "x: " + x;
-        vector += " y: " + y;        
+        vector += " y: " + y;
         vector += " z: " + z + " ";
         return vector;
     }
-    
-    public Boolean equals(Vector v){
+
+    public Boolean equals(Vector v) {
         Boolean same = true;
-        if(!this.x.equals(v.x)){
+        if (!this.x.equals(v.x)) {
             same = false;
         }
-        if(!this.y.equals(v.y)){
+        if (!this.y.equals(v.y)) {
             same = false;
         }
-        if(!this.z.equals(v.z)){
+        if (!this.z.equals(v.z)) {
             same = false;
         }
         return same;
     }
-    public void scale(Double s){
-        x*=s;
-        y*=s;
-        z*=s;
+
+    public void scale(Double s) {
+        x *= s;
+        y *= s;
+        z *= s;
     }
 }

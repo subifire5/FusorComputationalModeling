@@ -98,6 +98,81 @@ public class InputHandler {
         return filePath;
     }
 
+    String[] makeLineTable() {
+        String graphAxis = "";
+        Boolean inputRecieved = false;
+        while (!inputRecieved) {
+            System.out.println("Along which axis do you want your graph? (X/Y/Z)");
+
+            graphAxis = s.nextLine();
+            if (graphAxis.equals("Y") || graphAxis.equals("y")) {
+                inputRecieved = true;
+            } else if (graphAxis.equals("X") || graphAxis.equals("x")) {
+                inputRecieved = true;
+            } else if (graphAxis.equals("Z") || graphAxis.equals("z")) {
+                inputRecieved = true;
+            } else {
+                System.out.println("Please respond with (X), (Y) or (Z)");
+            }
+
+        }
+        inputRecieved = false;
+        System.out.println("How many points do you want plotted?");
+        String gaps = s.nextLine();
+
+        System.out.println("What is the lower bound");
+        String lowerBound = s.nextLine();
+
+        System.out.println("What is the upper bound?");
+        String upperBound = s.nextLine();
+
+        String tableFilePath = fileCreate("Please enter the table file location");
+        String[] tableSettings = {graphAxis, gaps, lowerBound, upperBound, tableFilePath};
+        return tableSettings;
+    }
+
+    String[] makeSliceTable() {
+        Boolean inputRecieved = false;
+        String graphPlane = "";
+        while (!inputRecieved) {
+            System.out.println("Do you want an XY slice or an XZ slice? (XY/XZ)");
+
+            graphPlane = s.nextLine();
+            if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
+                inputRecieved = true;
+            } else if (graphPlane.equals("XY") || graphPlane.equals("xy") || graphPlane.equals("xY") || graphPlane.equals("Xy")) {
+                inputRecieved = true;
+            } else {
+                System.out.println("Please respond with (XY) or (XZ)");
+            }
+
+        }
+
+        System.out.println("Give the Bottom lower Corner Coordinates");
+        System.out.println("x:");
+        String blcx = s.nextLine();
+        System.out.println("y:");
+        String blcy = s.nextLine();
+        System.out.println("z:");
+        String blcz = s.nextLine();
+
+        System.out.println("upper right corner");
+        System.out.println("x:");
+        String urcx = s.nextLine();
+        System.out.println("y:");
+        String urcy = s.nextLine();
+        System.out.println("z:");
+        String urcz = s.nextLine();
+
+        System.out.println("number of points");
+        String points = s.nextLine();
+
+        String tableFilePath = fileCreate("Please enter the table file location");
+
+        String[] tableSettings = {graphPlane, blcx, blcy, blcz, urcx, urcy, urcz, points, tableFilePath};
+        return tableSettings;
+    }
+
     public void readFromFile() {
         boolean inputRecieved = false;
         boolean makeGraph = false;
@@ -105,6 +180,11 @@ public class InputHandler {
         Double lowerBound = 0.0;
         Double upperBound = 0.0;
         Double[][] potentialsTable;
+        String graphAxis = "";
+        String graphPlane = "";
+        String[] tableSettings = {};
+        Boolean makeSlice = false;
+        Boolean makeLine = false;
         String tableFilePath = "";
         inputFilePath = fileNameGet("Please enter your input file location");
 
@@ -118,6 +198,7 @@ public class InputHandler {
         scaleDistance = Double.valueOf(s.nextLine());
 
         String input = "";
+        inputRecieved = false;
         while (!inputRecieved) {
             System.out.println("Do you want to create a table of potentials? (Y/N)");
 
@@ -131,36 +212,26 @@ public class InputHandler {
                 System.out.println("Please respond with (Y) or (N)");
             }
         }
-        String graphAxis = "";
+
         if (makeGraph) {
             inputRecieved = false;
             while (!inputRecieved) {
-                System.out.println("Along which axis do you want your graph? (X/Y/Z)");
+                System.out.println("Do you want a slice or a line? (S/L)");
 
-                graphAxis = s.nextLine();
-                if (graphAxis.equals("Y") || graphAxis.equals("y")) {
+                input = s.nextLine();
+                if (input.equals("S") || input.equals("s")) {
                     inputRecieved = true;
-                } else if (graphAxis.equals("X") || graphAxis.equals("x")) {
-                    inputRecieved = true;
-                } else if (graphAxis.equals("Z") || graphAxis.equals("z")) {
+                    makeSlice = true;
+                    tableSettings = makeSliceTable();
+                } else if (input.equals("L") || input.equals("l")) {
+                    makeLine = true;
+                    tableSettings = makeLineTable();
                     inputRecieved = true;
                 } else {
-                    System.out.println("Please respond with (X), (Y) or (Z)");
+                    System.out.println("Please respond with (Y) or (N)");
                 }
-
             }
             inputRecieved = false;
-            System.out.println("How many points do you want plotted?");
-            gaps = Integer.valueOf(s.nextLine());
-
-            System.out.println("What is the lower bound");
-            lowerBound = Double.valueOf(s.nextLine());
-
-            System.out.println("What is the upper bound?");
-            upperBound = Double.valueOf(s.nextLine());
-
-            tableFilePath = fileCreate("Please enter the table file location");
-
         }
 
         EFieldFileParser parser = new EFieldFileParser();
@@ -172,11 +243,35 @@ public class InputHandler {
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
 
-        if (makeGraph) {
+        if (makeLine) {
 
+            graphAxis = tableSettings[0];
+            gaps = Integer.valueOf(tableSettings[1]);
+            lowerBound = Double.valueOf(tableSettings[2]);
+            upperBound = Double.valueOf(tableSettings[3]);
+            tableFilePath = tableSettings[4];
             potentialsTable = eField.potentialTable(graphAxis, lowerBound, upperBound, gaps);
             TableGraphWriter tableGraphWriter = new TableGraphWriter();
-            String[] headers = {graphAxis+"-coordinate", "Electric Potential"};
+            String[] headers = {graphAxis + "-coordinate", "Electric Potential"};
+            tableGraphWriter.writeCSV(potentialsTable, headers, tableFilePath);
+        } else if (makeSlice) {
+            graphPlane = tableSettings[0];
+            Vector blc = new Vector(tableSettings[1], tableSettings[2], tableSettings[3]);
+            Vector urc = new Vector(tableSettings[4], tableSettings[5], tableSettings[6]);
+            gaps = Integer.valueOf(tableSettings[7]);
+            tableFilePath = tableSettings[8];
+            potentialsTable = eField.potentialSlice(graphPlane, blc, urc, gaps);
+            String[] headers;
+            if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
+                System.out.println("xz");
+                String[] headers2 = {"X-coordinate", "Z-coordinate", "Electric Potential"};
+                headers = headers2;
+            } else {
+                System.out.println("xy");
+                String[] headers2 = {"X-coordinate", "Y-coordinate", "Electric Potential"};
+                headers = headers2;
+            }
+            TableGraphWriter tableGraphWriter = new TableGraphWriter();
             tableGraphWriter.writeCSV(potentialsTable, headers, tableFilePath);
         }
     }

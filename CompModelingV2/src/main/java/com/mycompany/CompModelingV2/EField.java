@@ -66,9 +66,17 @@ public class EField {
         chargeFactor = (vAnnode - vCathode) / electricPotential(centerOfGrid);
     }
 
+    /**
+     *
+     * @param axis
+     * @param lowerBound
+     * @param upperBound
+     * @param numberOfPotentials
+     * @return
+     */
     public Double[][] potentialTable(String axis, double lowerBound, double upperBound, int numberOfPotentials) {
         Double[][] potentials = new Double[numberOfPotentials][2];
-        Double gap = (upperBound - lowerBound)/numberOfPotentials;
+        Double gap = (upperBound - lowerBound) / numberOfPotentials;
         if (axis.equals("X") || axis.equals("x")) {
             Double x = lowerBound;
             for (int i = 0; i < numberOfPotentials; i++) {
@@ -99,7 +107,59 @@ public class EField {
             }
         }
         return potentials;
-        
+    }
+
+    /**
+     *
+     * @param bottomLeftCorner
+     * @param upperRightCorner
+     * @param numberOfPotentials
+     * @return
+     */
+    public Double[][] potentialSlice(String graphPlane, Vector bottomLeftCorner, Vector upperRightCorner, int numberOfPotentials) {
+        if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
+            Double[][] potentials = new Double[numberOfPotentials*numberOfPotentials][3];
+            Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfPotentials;
+            Double zGap = (upperRightCorner.z - bottomLeftCorner.z) / numberOfPotentials;
+            Double x = bottomLeftCorner.x;
+            Double z = bottomLeftCorner.z;
+
+            for (int i = 0; i < numberOfPotentials; i++) {
+                x = bottomLeftCorner.x;
+                for (int j = 0; j < numberOfPotentials; j++) {
+                    Vector point = new Vector(x, bottomLeftCorner.y, z);
+                    potentials[(i*numberOfPotentials)+j][0] = x;
+                    potentials[(i*numberOfPotentials)+j][1] = z;
+                    potentials[(i*numberOfPotentials)+j][2] = electricPotential(point);
+                    x += xGap;
+                }
+                System.out.println(i + "/" + numberOfPotentials + " completed");
+                z += zGap;
+            }
+            System.out.println("returning potentials");
+            return potentials;
+        } else {
+
+            Double[][] potentials = new Double[numberOfPotentials*numberOfPotentials][3];
+            Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfPotentials;
+            Double yGap = (upperRightCorner.y - bottomLeftCorner.y) / numberOfPotentials;
+            Double x = bottomLeftCorner.x;
+            Double y = bottomLeftCorner.y;
+            for (int i = 0; i < numberOfPotentials; i++) {
+                x = bottomLeftCorner.x;
+                for (int j = 0; j < numberOfPotentials; j++) {
+                    Vector point = new Vector(x, y, bottomLeftCorner.z);
+                    potentials[(i*numberOfPotentials)+j][0] = x;
+                    potentials[(i*numberOfPotentials)+j][1] = y;
+                    potentials[(i*numberOfPotentials)+j][2] = electricPotential(point);
+                    x += xGap;
+                }
+                System.out.println(i + "/" + numberOfPotentials + " completed");
+
+                y += yGap;
+            }
+            return potentials;
+        }
     }
 
     // uses the positioning of each charge in the JavaFX Scene
