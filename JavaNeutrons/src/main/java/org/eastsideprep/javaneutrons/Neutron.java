@@ -25,33 +25,29 @@ public class Neutron {
     final double startingEnergy = 2.45e6; //eV
     
     public Vector3D randomDir(){
-        double theta = (rand.nextDouble()*2*Math.PI);
-        double phi = Math.acos(rand.nextDouble()*2*Math.PI - 1);
+        float theta = (float) (rand.nextFloat()*2*Math.PI);
+        float phi = (float) Math.acos(rand.nextFloat()*2*Math.PI - 1);
         return new Vector3D(Math.cos(theta)*Math.sin(phi), Math.sin(theta)*Math.sin(phi), Math.cos(phi));        
     }
     
-    public double pathLength(double sigma){
-        return -Math.log(rand.nextDouble()) / sigma;
+    public float pathLength(float sigma){
+        return (float) Math.log(rand.nextDouble()) / sigma*(-1);
     }
     
-    public Vector3D elasticScatter(Vector3D neutronVelocity, Element particle){
-        //random other particle:
-        double particleSpeed = rand.nextGaussian()*Math.sqrt(boltzmann*roomTemp*3/particle.mass);
-        Vector3D particleVelocity = randomDir().scalarMultiply(particleSpeed);
+    public Vector3D elasticScatter(Vector3D neutronDir, float neutronEnergy){ //double or float?
+        double protonEnergy = rand.nextGaussian() * boltzmann * roomTemp / 2;
+        Vector3D protonDir = randomDir();
         
-        //establish center of mass
-        //add velocity vectors / total mass 
-        Vector3D velocityCM = (neutronVelocity.scalarMultiply(neutronMass)
-                .add(particleVelocity.scalarMultiply(particle.mass)))
-                .scalarMultiply(1/(neutronMass + particle.mass));
-        //convert neutron and particle --> center of mass frame
-        neutronVelocity = neutronVelocity.subtract(velocityCM);
-        //calculate elastic collision
-        neutronVelocity = randomDir().scalarMultiply(neutronVelocity.getNorm());       
-        //convert into lab frame
-        neutronVelocity = neutronVelocity.add(velocityCM);
-        //return results
-        return neutronVelocity;
+        Vector3D neutron = neutronDir.scalarMultiply(neutronEnergy);
+        Vector3D proton = protonDir.scalarMultiply(protonEnergy);
+        
+        Vector3D referenceFrame = (neutron.scalarMultiply(neutronMass).add(proton.scalarMultiply(protonMass))).scalarMultiply(1 / (neutronMass + protonMass));        
+        Vector3D neutronRef = neutron.subtract(referenceFrame);
+        //where is the length method?? https://commons.apache.org/proper/commons-math/javadocs/api-3.3/org/apache/commons/math3/geometry/euclidean/threed/Vector3D.html
+        Vector3D scatteredRef = randomDir(); //.scalarMultiply(neutronRef.length());
+        Vector3D scattered = scatteredRef.add(referenceFrame);
+        
+        return scattered; //to be broken down into normalized vector and magnitude
     }
     
     //replace parameters with 1 Neutron object??
