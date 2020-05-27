@@ -5,15 +5,12 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.util.Random;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-
 /**
  *
- * @author gunnar
+ * @author svernon
  */
-public class MonteCarloSimulation {
-    
-
-
+public class Main  {
+    public static void main(String[] args){
+        App.main(args);
+    }
 }
