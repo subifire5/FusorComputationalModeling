@@ -12,6 +12,7 @@
             <properties>
                 <exec.args>-classpath %classpath org.eastsideprep.javaneutrons.Main</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.workingdir>C:\Users\tpylypenko\OneDrive - Eastside Preparatory School\Documents\GitHub\FusorComputationalModeling\JavaNeutrons\src\main\java\org\eastsideprep\javaneutrons</exec.workingdir>
             </properties>
         </action>
         <action>
@@ -27,6 +28,7 @@
                 <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath org.eastsideprep.javaneutrons.Main</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
+                <exec.workingdir>C:\Users\tpylypenko\OneDrive - Eastside Preparatory School\Documents\GitHub\FusorComputationalModeling\JavaNeutrons\src\main\java\org\eastsideprep\javaneutrons</exec.workingdir>
             </properties>
         </action>
         <action>
@@ -41,6 +43,7 @@
             <properties>
                 <exec.args>-classpath %classpath org.eastsideprep.javaneutrons.Main</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.workingdir>C:\Users\tpylypenko\OneDrive - Eastside Preparatory School\Documents\GitHub\FusorComputationalModeling\JavaNeutrons\src\main\java\org\eastsideprep\javaneutrons</exec.workingdir>
             </properties>
         </action>
     </actions>

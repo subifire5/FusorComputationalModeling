@@ -44,7 +44,7 @@ public class Element {
         
         this.entries = new ArrayList<Entry>(); //reset
         String line = br.readLine();
-        while (!line.equals("")) {
+        while (line != null) {
             String[] split = line.split(",");
             double energy = Double.parseDouble(split[0]);
             double area = Double.parseDouble(split[1]);
