@@ -72,6 +72,29 @@ import javafx.stage.Screen;
 * 10. Split this program in two
 *    Don't keep on having this program do both output of field
 *    AAAAND input, split it eventually.
+*  Graphs: make your graphs square instead of rectangular; the aspect ratio is off
+*  your XY and XZ plane graphs are 100 x 100, but look 80 x 150
+*  also, generate quiver graphs, the electric field graphs (using field lines on the quiver graphs basically)
+*  generating electric field line graphs is non-trivial, and Dr. Whitmer may
+*  have posted about it in Teams (Efield or Deuteron team)
+*  Then prep for orbits, by first getting knowledge of euclid's method
+*  Euclids method will give you a differential equation (given this field,
+*  with this acceleration, and this start position and velocity, where it end)
+*  It shouldn't stick to the grid as soon as it gets close. Think of it like this
+*  If you have a skateboard on a smooth hill, you'll go up, then down then
+*  back up, you won't just stop at the bottom immediately. same with the f
+*  orbit, it won't go from the edge to the grid then stay at the grid, it'll
+*  loop back around
+*  The looping won't happen on electric field lines, because deuterium has mass
+*  and the mass means momentum, so it'll take time for the acceleration to
+*  turn the ions around once it's shot past/through the grid, so it'll slide off
+*  the trajecory that field lines predict (they expect no mass)
+*  Then once you've got that as close as possible, move to Runge Kutta
+*  Runge Kutta takes a lot of time though
+*  after RK, compute orbits fully
+*  orbit lines are nearly infinitely thin, so they won't hit each other
+*  instead, they'll hit the grid, or a triangle of the grid more likely
+*  calculate when they'll do that.
  */
 /**
  * JavaFX App
