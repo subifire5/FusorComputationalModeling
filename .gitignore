@@ -7,6 +7,8 @@
 *.csv
 /**/.classpath
 /**/.project
+/**/.settings/*
+
 
 
 
