@@ -2,13 +2,8 @@
 /**/build/*
 /**/dist/*
 /**/nbproject/private/*
+/**/private/*
+/**/target/*
 *.csv
-/JavaNeutrons/target/
-FusorCompModeling/nbproject/private/private.properties
-FusorVis/nbproject/private/private.properties
-FusorVis/nbproject/private/private.xml
-FusorCompModeling/nbproject/private/private.xml
-FusorCompModeling/nbproject/private/private.properties
-FusorCompModeling/nbproject/private/private.xml
-FusorVis/nbproject/private/private.properties
-FusorVis/nbproject/private/private.xml
+
+
