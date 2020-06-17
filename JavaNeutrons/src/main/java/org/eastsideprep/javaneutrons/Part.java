@@ -10,7 +10,7 @@ package org.eastsideprep.javaneutrons;
  * @author gunnar
  */
 public class Part {
-    STLShape shape;
+    Shape shape;
     Material material;
     // todo: acceleration structure
     // like circumscribing sphere
