@@ -37,7 +37,7 @@ public class Material {
     }
     
  
-    public PointOfInterest nextPoint(Neutron n) {
+    public Event nextPoint(Neutron n) {
         double t = randomPathLength(n.energy);
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
         // todo:
@@ -51,9 +51,9 @@ public class Material {
         
         // todo: from bsearch index, also decide whether this was scatter or absorp
         // cop-out: scatter:
-        PointOfInterest.Code c = PointOfInterest.Code.Scatter;
+        Event.Code c = Event.Code.Scatter;
         
-        return new PointOfInterest(location, c, t, e);
+        return new Event(location, c, t, n, e);
     }
 
 }

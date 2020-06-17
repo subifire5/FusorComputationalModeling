@@ -35,24 +35,28 @@ public class Neutron {
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy*2/Neutron.mass));
     }
 
-    public static Vector3D elasticScatter(Vector3D neutronVelocity, Element particle) {
+    public Vector3D elasticScatter(Element particle) {
         //random other particle:
         double particleSpeed = Util.random.nextGaussian() * Math.sqrt(Physics.boltzmann * Physics.roomTemp * 3 / particle.mass);
         Vector3D particleVelocity = Physics.randomDir().scalarMultiply(particleSpeed);
 
         //establish center of mass
         //add velocity vectors / total mass 
-        Vector3D velocityCM = (neutronVelocity.scalarMultiply(Neutron.mass)
+        Vector3D velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
                 .add(particleVelocity.scalarMultiply(particle.mass)))
                 .scalarMultiply(1 / (Neutron.mass + particle.mass));
+        
         //convert neutron and particle --> center of mass frame
-        neutronVelocity = neutronVelocity.subtract(velocityCM);
+        this.velocity = this.velocity.subtract(velocityCM);
         //calculate elastic collision: entry speed = exit speed, random direction
-        neutronVelocity = Physics.randomDir().scalarMultiply(neutronVelocity.getNorm());
-        //convert into lab frame
-        neutronVelocity = neutronVelocity.add(velocityCM);
+        this.velocity = Physics.randomDir().scalarMultiply(this.velocity.getNorm());
+        //convert back into lab frame
+        this.velocity = this.velocity.add(velocityCM);
+        
+        // update myself (energy and direction)
+        this.setVelocity(this.velocity);
         //return results
-        return neutronVelocity;
+        return this.velocity;
     }
 
     //replace parameters with 1 Neutron object??

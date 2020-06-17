@@ -25,33 +25,36 @@ public class Part {
         return shape.rayIntersect(rayOrigin, rayDirection, goingOut);
     }
 
-    PointOfInterest evolveNeutronPath(Neutron n) {
+    Event evolveNeutronPath(Neutron n) {
         double t, t1, t2;
-        PointOfInterest poi = null;
+        Event event = null;
 
         do {
             t1 = rayIntersect(n.position, n.direction, true);
             assert (t1 != 0); // we are inside a material, unless it is NegativeSpace there should be an exit point
 
-            // this next line will do the scattering/absoprtion
-            poi = material.nextPoint(n); // todo: this needs to return a POI with the element
-            t2 = poi.t;
+            // this next line will figure out where to scatter/absorb
+            event = material.nextPoint(n); // todo: this needs to return a POI with the element
+            t2 = event.t;
 
             if (t1 > t2) {
                 // scattering / absorption did really happen, process it
+                if (event.code == Event.Code.Scatter) {
+                    n.elasticScatter(event.element);
+                }
                 // todo: add event to neutron history
                 t = t2;
             } else {
                 // process exit event
-                poi = new PointOfInterest(n.position.add(n.direction.scalarMultiply(t1)), PointOfInterest.Code.Exit);
+                event = new Event(n.position.add(n.direction.scalarMultiply(t1)), Event.Code.Exit);
                 t = t1;
             }
             processPathLength(t);
-        } while (poi.code != PointOfInterest.Code.Exit && poi.code != PointOfInterest.Code.Absorb);
+        } while (event.code != Event.Code.Exit && event.code != Event.Code.Absorb);
 
-        return poi;
+        return event;
     }
-    
+
     void processPathLength(double t) {
         // this is an empty method to be overridden by Detector class
     }
