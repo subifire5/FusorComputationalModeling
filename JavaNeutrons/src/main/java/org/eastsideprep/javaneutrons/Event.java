@@ -21,6 +21,7 @@ public class Event {
     Neutron neutron;
     Element element;
     Vector3D position;
+    double energyOut;
     double t; // how far along was this on the vector we took to get here
 
     public Event(double x, double y, double z, Event.Code c) {

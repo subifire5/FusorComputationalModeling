@@ -5,13 +5,12 @@
  */
 package org.eastsideprep.javaneutrons;
 
-/**
- *
- * @author svernon
- */
-public class Main  {
-    public static void main(String[] args){
-        App.main(args);
-        System.exit(0);
+import java.io.File;
+import java.net.URISyntaxException;
+
+public class CubeOBJ extends Shape {
+
+    CubeOBJ() throws URISyntaxException {
+        super(Test3D.class.getResource("/cube.obj"));
     }
 }

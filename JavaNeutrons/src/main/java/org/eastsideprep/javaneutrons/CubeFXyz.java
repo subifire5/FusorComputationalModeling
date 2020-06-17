@@ -4,14 +4,10 @@
  * and open the template in the editor.
  */
 package org.eastsideprep.javaneutrons;
+import org.fxyz3d.shapes.primitives.CuboidMesh;
 
-/**
- *
- * @author svernon
- */
-public class Main  {
-    public static void main(String[] args){
-        App.main(args);
-        System.exit(0);
+public class CubeFXyz extends Shape {
+    CubeFXyz(double w, double h, double d) {
+        super(new CuboidMesh(w,h,d));
     }
 }

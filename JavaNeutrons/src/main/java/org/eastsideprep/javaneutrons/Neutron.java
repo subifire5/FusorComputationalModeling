@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.util.ArrayList;
 import java.util.Random;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
@@ -13,14 +14,19 @@ import org.apache.commons.math3.geometry.euclidean.threed.*;
  * @author gunnar
  */
 public class Neutron {
+    final static double mass = 1.008664; // atomic mass units amu
+    final static double startingEnergy = 2.45e6; //eV
 
     double energy; // unit: eV
     Vector3D direction; // no units
     Vector3D position; // unit: (cm,cm,cm)
     Vector3D velocity; // kept in parallel with energy and direction, see set() methods
-
-    final static double mass = 1.008664; // atomic mass units amu
-    final static double startingEnergy = 2.45e6; //eV
+    
+    ArrayList<Event> history = new ArrayList<>();
+    
+    public void setPosition(Vector3D position) {
+        this.position = position;
+    }
 
     public void setVelocity(Vector3D velocity) {
         double speed = velocity.getNorm();
@@ -60,41 +66,7 @@ public class Neutron {
     }
 
     //replace parameters with 1 Neutron object??
-    public void recordEscape(int neutronNum, int eventNum, Vector3D pos, Vector3D dir, float energy) {
-        //increase count of escaped neutrons
-        //log.add(new Event(ESCAPE, neutronNum, eventNum, pos, dir, energy, energy));
-    }
-
-    public void recordElasticScatter(int neutronNum, int eventNum, Vector3D pos, Vector3D dir, float energy1, float energy2) {
-        //increase count of scattered neutrons
-        //log.add(new Event(SCATTER, neutronNum, eventNum, pos, dir, energy1, energy2));
-    }
-
-    public void recordAbsorb(int neutronNum, int eventNum, Vector3D pos, Vector3D dir, float energy) {
-        //increase count of absorbed neutrons
-        //log.add(new Event(ABSORB, neutronNum, eventNum, pos, dir, energy, energy))
-    }
-
-    //this function was used to account for 'lost' neutrons within blocks (glitches)
-    public void recordEscapeObj(int neutronNum, int eventNum, Vector3D pos, Vector3D dir, float energy) {
-        //increase count of escaped neutrons from object / lost neutrons
-        //log.add(new Event(LOST, neutronNum, eventNum, pos, dir, energy, energy));
-    }
-
-    //replace parameters w Neutron object?
-    public void scatter(int neutronNum, int eventNum, Vector3D pos, Vector3D dir, float energy, Part inside) { //do we want energy as double or float?
-        //if not inside a part (inside == null):
-        // intersection = scene.intersectScene in f#
-        //if inside the part:
-        // intersection = scene.intersectObj(inside) in f#
-
-        //if no intersection (intersection == null):
-        //if (inside==null) then recordEscape
-        //if (inside!=null) then recordEscapeObj (lost/glitched neutron)
-        //if some intersection:
-        //if (inside==null) then scatter (recurse with new inside parameter for the part it is in)
-        //if (inside != null) then we do some stuff (??)
-        //find cross sections and compare to energy and current intersection/inside info
-        //could end in elastic scatter, absorb, or recurse
+    public void record(Event e) {
+        history.add(e);
     }
 }

@@ -39,17 +39,24 @@ public class Part {
 
             if (t1 > t2) {
                 // scattering / absorption did really happen, process it
+                n.setPosition(event.position);
                 if (event.code == Event.Code.Scatter) {
                     n.elasticScatter(event.element);
+                } else {
+                    // anything to do for absorption?
                 }
-                // todo: add event to neutron history
+                event.energyOut = n.energy;
                 t = t2;
             } else {
                 // process exit event
                 event = new Event(n.position.add(n.direction.scalarMultiply(t1)), Event.Code.Exit);
                 t = t1;
             }
+            // call for Detector parts to record
             processPathLength(t);
+            
+            // also record event for the individual neutron
+             n.record(event);
         } while (event.code != Event.Code.Exit && event.code != Event.Code.Absorb);
 
         return event;
