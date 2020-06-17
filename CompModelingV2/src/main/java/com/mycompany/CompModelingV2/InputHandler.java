@@ -11,7 +11,7 @@ package com.mycompany.CompModelingV2;
  */
 import java.io.File;
 import java.util.Scanner;
-
+//TODO: ADD IN THE STUFF FOR MAKIGN TABLES OF FORCE VECTORS, LOOK FOR THE COMMENT LIKE THIS ONE
 public class InputHandler {
 
     int numCharges = 100;
@@ -176,10 +176,13 @@ public class InputHandler {
     public void readFromFile() {
         boolean inputRecieved = false;
         boolean makeGraph = false;
+        boolean makePotentials = false;
+        boolean makeForceVectors = false;
         Integer gaps = 0;
         Double lowerBound = 0.0;
         Double upperBound = 0.0;
         Double[][] potentialsTable;
+        Vector[][] forceVectorsTable;
         String graphAxis = "";
         String graphPlane = "";
         String[] tableSettings = {};
@@ -200,7 +203,7 @@ public class InputHandler {
         String input = "";
         inputRecieved = false;
         while (!inputRecieved) {
-            System.out.println("Do you want to create a table of potentials? (Y/N)");
+            System.out.println("Do you want to create a table? (Y/N)");
 
             input = s.nextLine();
             if (input.equals("Y") || input.equals("y")) {
@@ -212,8 +215,22 @@ public class InputHandler {
                 System.out.println("Please respond with (Y) or (N)");
             }
         }
-
         if (makeGraph) {
+            inputRecieved = false;
+            while (!inputRecieved) {
+                System.out.println("Do you want a table of potentials or force vectors? (P/F)");
+                input = s.nextLine();
+                if (input.equals("P") || input.equals("p")) {
+                    inputRecieved = true;
+                    makePotentials = true;
+                } else if (input.equals("F") || input.equals("f")) {
+                    inputRecieved = true;
+                    makeForceVectors = true;
+                } else {
+                    System.out.println("Please respond with (P) or (F)");
+                }
+
+            }
             inputRecieved = false;
             while (!inputRecieved) {
                 System.out.println("Do you want a slice or a line? (S/L)");
@@ -243,7 +260,29 @@ public class InputHandler {
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
 
-        if (makeLine) {
+        //EDITS TO BE ADDED HERE
+        if (makeForceVectors && makeLine) {
+            graphAxis = tableSettings[0];
+            gaps = Integer.valueOf(tableSettings[1]);
+            lowerBound = Double.valueOf(tableSettings[2]);
+            upperBound = Double.valueOf(tableSettings[3]);
+            tableFilePath = tableSettings[4];
+            potentialsTable = eField.potentialTable(graphAxis, lowerBound, upperBound, gaps);
+            TableGraphWriter tableGraphWriter = new TableGraphWriter();
+            String[] headers = {"X", "Y", "Z", "FX", "FY", "FZ", "Force"};
+            tableGraphWriter.writeCSV(potentialsTable, headers, tableFilePath);            
+            
+        } else if (makeForceVectors && makeSlice) {
+            graphPlane = tableSettings[0];
+            Vector blc = new Vector(tableSettings[1], tableSettings[2], tableSettings[3]);
+            Vector urc = new Vector(tableSettings[4], tableSettings[5], tableSettings[6]);
+            gaps = Integer.valueOf(tableSettings[7]);
+            tableFilePath = tableSettings[8];
+            forceVectorsTable = eField.forceVectorSlice(graphPlane, blc, urc, gaps);
+            String[] headers = {"X", "Y", "Z", "FX", "FY", "FZ", "Force"};
+            TableGraphWriter tableGraphWriter = new TableGraphWriter();
+            tableGraphWriter.writeCSV(forceVectorsTable, headers, tableFilePath);
+        } else if (makeLine) {
 
             graphAxis = tableSettings[0];
             gaps = Integer.valueOf(tableSettings[1]);

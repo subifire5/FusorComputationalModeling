@@ -19,8 +19,9 @@ public class TableGraphWriter {
 
     /**
      * Prints the charges into an output file
+     *
      * @param charges
-     * @param filePath 
+     * @param filePath
      */
     public void writeCSV(Charge[] charges, String filePath) {
         FileWriter outputFile = null;
@@ -48,10 +49,12 @@ public class TableGraphWriter {
         }
 
     }
+
     /**
      * Prints the charges into an output file
+     *
      * @param chargeDistributer
-     * @param filePath 
+     * @param filePath
      */
     public void writeCSV(ChargeDistributer chargeDistributer, String filePath) {
         Charge[] charges = chargeDistributer.charges;
@@ -105,6 +108,49 @@ public class TableGraphWriter {
                     csvString[i] = "" + d;
                     i++;
                 }
+                writer.writeNext(csvString);
+            }
+
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace(); // try catch for file stuff
+        } finally {
+            try {
+                outputFile.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+    }
+
+    /**
+     *
+     * @param table an array of arrays of Vectors, that will be printed into the
+     * csv
+     * @param columnTitles the titles of the columns of the tables (columns are
+     * vertical)
+     * @param filePath the file path for the csv
+     */
+    public void writeCSV(Vector[][] table, String[] columnTitles, String filePath) {
+        FileWriter outputFile = null;
+        try {
+            File file = new File(filePath);
+            file.createNewFile();
+            outputFile = new FileWriter(file);
+            CSVWriter writer = new CSVWriter(outputFile);
+
+            writer.writeNext(columnTitles);
+            for (Vector[] vecArray : table) {
+                String[] csvString = new String[vecArray.length * 7];
+                int i = 0;
+                for (Vector vec : vecArray) {
+                    csvString[i] = "" + vec.x;
+                    csvString[i+1] = "" + vec.y;
+                    csvString[i+2] = "" + vec.z;
+                    i+=3;
+                }
+                csvString[6] = "" + vecArray[1].norm();
                 writer.writeNext(csvString);
             }
 

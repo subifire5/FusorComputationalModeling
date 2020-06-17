@@ -40,6 +40,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 
 /* todo:
+*  FIRST RIGHT NOW GO TO INPUT HANDLER, THERE IS A TODO THERE THAT'S VITAL
 * Done. fix triangle bug: this bug is making it so that a triangle is missing
 *    from the thin plates I put in. No charges appear on that triangle, 
 *    NO BUENO, probably wouldn't even notice the bug if I only ran

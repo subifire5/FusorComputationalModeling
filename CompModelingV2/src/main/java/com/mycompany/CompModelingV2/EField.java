@@ -118,7 +118,7 @@ public class EField {
      */
     public Double[][] potentialSlice(String graphPlane, Vector bottomLeftCorner, Vector upperRightCorner, int numberOfPotentials) {
         if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
-            Double[][] potentials = new Double[numberOfPotentials*numberOfPotentials][3];
+            Double[][] potentials = new Double[numberOfPotentials * numberOfPotentials][3];
             Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfPotentials;
             Double zGap = (upperRightCorner.z - bottomLeftCorner.z) / numberOfPotentials;
             Double x = bottomLeftCorner.x;
@@ -128,9 +128,9 @@ public class EField {
                 x = bottomLeftCorner.x;
                 for (int j = 0; j < numberOfPotentials; j++) {
                     Vector point = new Vector(x, bottomLeftCorner.y, z);
-                    potentials[(i*numberOfPotentials)+j][0] = x;
-                    potentials[(i*numberOfPotentials)+j][1] = z;
-                    potentials[(i*numberOfPotentials)+j][2] = electricPotential(point);
+                    potentials[(i * numberOfPotentials) + j][0] = x;
+                    potentials[(i * numberOfPotentials) + j][1] = z;
+                    potentials[(i * numberOfPotentials) + j][2] = electricPotential(point);
                     x += xGap;
                 }
                 System.out.println(i + "/" + numberOfPotentials + " completed");
@@ -140,7 +140,7 @@ public class EField {
             return potentials;
         } else {
 
-            Double[][] potentials = new Double[numberOfPotentials*numberOfPotentials][3];
+            Double[][] potentials = new Double[numberOfPotentials * numberOfPotentials][3];
             Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfPotentials;
             Double yGap = (upperRightCorner.y - bottomLeftCorner.y) / numberOfPotentials;
             Double x = bottomLeftCorner.x;
@@ -149,9 +149,9 @@ public class EField {
                 x = bottomLeftCorner.x;
                 for (int j = 0; j < numberOfPotentials; j++) {
                     Vector point = new Vector(x, y, bottomLeftCorner.z);
-                    potentials[(i*numberOfPotentials)+j][0] = x;
-                    potentials[(i*numberOfPotentials)+j][1] = y;
-                    potentials[(i*numberOfPotentials)+j][2] = electricPotential(point);
+                    potentials[(i * numberOfPotentials) + j][0] = x;
+                    potentials[(i * numberOfPotentials) + j][1] = y;
+                    potentials[(i * numberOfPotentials) + j][2] = electricPotential(point);
                     x += xGap;
                 }
                 System.out.println(i + "/" + numberOfPotentials + " completed");
@@ -159,6 +159,86 @@ public class EField {
                 y += yGap;
             }
             return potentials;
+        }
+    }
+    
+    public Vector[][] forceVectorLine(String axis, double lowerBound, double upperBound, int numberOfVectors){
+        Vector[][] fVectors = new Vector[numberOfVectors][2];
+        Double gap = (upperBound - lowerBound) / numberOfVectors;
+        if (axis.equals("X") || axis.equals("x")) {
+            Double x = lowerBound;
+            for (int i = 0; i < numberOfVectors; i++) {
+                Vector point = new Vector(x, 0.0, 0.0);
+                fVectors[i][0] = point;
+                fVectors[i][1] = fieldAtPoint(point);
+                x += gap;
+
+            }
+        } else if (axis.equals("Y") || axis.equals("y")) {
+            Double y = lowerBound;
+            for (int i = 0; i < numberOfVectors; i++) {
+                Vector point = new Vector(0.0, y, 0.0);
+                fVectors[i][0] = point;
+                fVectors[i][1] = fieldAtPoint(point);
+                y += gap;
+
+            }
+
+        } else {
+            Double z = lowerBound;
+            for (int i = 0; i < numberOfVectors; i++) {
+                Vector point = new Vector(0.0, 0.0, z);
+                fVectors[i][0] = point;
+                fVectors[i][1] = fieldAtPoint(point);
+                z += gap;
+
+            }
+        }
+        return fVectors;    
+    }
+
+    public Vector[][] forceVectorSlice(String graphPlane, Vector bottomLeftCorner, Vector upperRightCorner, int numberOfVectors) {
+        if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
+            Vector[][] fVectors = new Vector[numberOfVectors * numberOfVectors][2];
+            Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfVectors;
+            Double zGap = (upperRightCorner.z - bottomLeftCorner.z) / numberOfVectors;
+            Double x = bottomLeftCorner.x;
+            Double z = bottomLeftCorner.z;
+
+            for (int i = 0; i < numberOfVectors; i++) {
+                x = bottomLeftCorner.x;
+                for (int j = 0; j < numberOfVectors; j++) {
+                    Vector point = new Vector(x, bottomLeftCorner.y, z);
+                    fVectors[(i * numberOfVectors) + j][0] = point;
+                    fVectors[(i * numberOfVectors) + j][1] = fieldAtPoint(point);
+                    x += xGap;
+                }
+                System.out.println(i + "/" + numberOfVectors + " completed");
+                z += zGap;
+            }
+            System.out.println("returning force vectors");
+            return fVectors;
+        } else {
+
+            Vector[][] fVectors = new Vector[numberOfVectors * numberOfVectors][2];
+            Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfVectors;
+            Double yGap = (upperRightCorner.y - bottomLeftCorner.y) / numberOfVectors;
+            Double x = bottomLeftCorner.x;
+            Double y = bottomLeftCorner.y;
+
+            for (int i = 0; i < numberOfVectors; i++) {
+                x = bottomLeftCorner.x;
+                for (int j = 0; j < numberOfVectors; j++) {
+                    Vector point = new Vector(x, y, bottomLeftCorner.z);
+                    fVectors[(i * numberOfVectors) + j][0] = point;
+                    fVectors[(i * numberOfVectors) + j][1] = fieldAtPoint(point);
+                    x += xGap;
+                }
+                System.out.println(i + "/" + numberOfVectors + " completed");
+                y += yGap;
+            }
+            System.out.println("returning force vectors");
+            return fVectors;
         }
     }
 
@@ -205,6 +285,28 @@ public class EField {
 
     }
 
+    public Vector fieldAtPoint(Vector v){
+        Vector sumOfField = new Vector(0.0, 0.0, 0.0);
+        double voltage;
+        double vol;
+        double distanceSquared;
+
+        for (Charge t : charges) {
+            voltage = vAnnode - vCathode;
+            vol = t.polarity * voltage;
+            distanceSquared = t.distanceSquared(v);
+            Vector effectOnPoint;
+            effectOnPoint = v.thisToThat(t).normalized();
+            effectOnPoint.scale(-1.0);
+            effectOnPoint.x *= vol / distanceSquared;
+            effectOnPoint.y *= vol / distanceSquared;
+            effectOnPoint.z *= vol / distanceSquared;
+            sumOfField.plusEquals(effectOnPoint);
+        }
+        sumOfField.scale(chargeFactor);
+        return sumOfField;
+    }
+    
     public Vector effectOnCharge(Charge c) {
         Vector sumOfField = new Vector(0.0, 0.0, 0.0);
         double voltage;
