@@ -10,15 +10,18 @@ package org.eastsideprep.javaneutrons;
  * @author gunnar
  */
 public class Element {
+
     String name;
     double mass; // g
     int atomicNumber;
     int neutrons;
-    
+
     Element(String name, double mass, int atomicNumber, int neutrons) {
         // todo fill this in
     }
-    
-    // todo how do we associate neutron cross-sections with this
-    
+
+    public double getCrossSection(double energy) {
+        // todo: this is Taras' job
+        return 0;
+    }
 }

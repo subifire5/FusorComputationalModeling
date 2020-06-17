@@ -5,7 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -22,8 +21,12 @@ public class Shape extends TriangleMesh {
     // rayIntersect
     //
     // goes through all the triangles in the shape to find the intersection
+    // returns t-parameter for the ray, or 0 if not intersecting
+    // todo: acceleration structure like hierarchy of volumes
     //
-    double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection) {
+    double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut) {
+        double tmin = 0;
+
         if (vertices == null) {
             vertices = getPoints().toArray(null);
         }
@@ -37,20 +40,19 @@ public class Shape extends TriangleMesh {
             Vector3D v1 = new Vector3D(vertices[faces[i + 2]], vertices[faces[i + 2] + 1], vertices[faces[i + 2] + 2]);
             Vector3D v2 = new Vector3D(vertices[faces[i + 4]], vertices[faces[i + 4] + 1], vertices[faces[i + 4] + 2]);
 
-            // test the front of the face triangle (going into the shape)
-            double t = rayTriangleIntersect(rayOrigin, rayDirection, v0, v1, v2);
+            // goingOut determines whether we test the counter-clockwise triangle (front face)
+            // or clockwise triangle (back face). We assume that all faces of a shape face outward. 
+            double t = rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
             if (t != 0) {
-                return t;
-            }
-
-            // test the backside of the shape (going out)
-            t = rayTriangleIntersect(rayOrigin, rayDirection, v0, v2, v1);
-            if (t != 0) {
-                return t;
+                if (tmin != 0) {
+                    tmin = Math.min(tmin, t);
+                } else {
+                    tmin = t;
+                }
             }
         }
 
-        return 0;
+        return tmin;
     }
 
     //
