@@ -14,7 +14,7 @@ public class Detector extends Part {
     public Detector(Vector3D location, float size) {
         // needs shape (cube?)
         // and material (some simple one-element stuff?)
-        super(new Cube(size), null);
+        super("Detector", new Cube(size), null);
         hist = new LogHistogram(-5,10,50);
     }
 

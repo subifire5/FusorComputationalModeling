@@ -64,6 +64,26 @@ public class Neutron {
         //return results
         return this.velocity;
     }
+    
+    public void evolve() {
+        
+        Event event = null;
+        do {
+            if (event.code == Event.Code.Exit) {
+                // find next part to enter
+                // case 1: part inside vacuum
+                // -  fast-forward into that part
+                // case 2: vacuum chamber is next
+                //   case a: odd number of intersections with chamber
+                //   -- means we are in vacuum, fast-forward to chamber
+                //   case b: even number
+                //   -- means we are currently in air, process scattering 
+                //      through special AirSpace part 
+                // case 3: other part is next
+                //   -- we are in air, process through AirSpace
+            }
+        } while(event.code != Event.Code.Absorb);
+    }
 
     //replace parameters with 1 Neutron object??
     public void record(Event e) {

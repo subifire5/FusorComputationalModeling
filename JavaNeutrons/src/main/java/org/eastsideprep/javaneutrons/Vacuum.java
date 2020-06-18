@@ -5,13 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.util.ArrayList;
-
-/**
- *
- * @author gunnar
- */
-public class Assembly {
-    ArrayList<Part> parts;
-    // todo: acceleration structure
+public class Vacuum extends Material{
+    
 }

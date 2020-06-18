@@ -5,7 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.util.Random;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -14,6 +13,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class MonteCarloSimulation {
     
-
+    MonteCarloSimulation(Fusor fusor, Vector3D origin, long n) {
+        
+    }
 
 }

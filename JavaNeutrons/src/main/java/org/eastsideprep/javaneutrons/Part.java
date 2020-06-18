@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.util.HashMap;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -13,12 +14,18 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class Part {
 
+    static HashMap<String, Part> namedParts = new HashMap<>();
     Shape shape;
     Material material;
 
-    public Part(Shape s, Material m) {
+    public Part(String name, Shape s, Material m) {
         this.shape = s;
         this.material = m;
+        namedParts.put(name, this);
+    }
+    
+    public static Part getByName(String name) {
+        return namedParts.get(name);
     }
 
     double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut) {

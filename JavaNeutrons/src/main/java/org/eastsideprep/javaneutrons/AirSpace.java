@@ -5,9 +5,9 @@
  */
 package org.eastsideprep.javaneutrons;
 
-public class NegativeSpace extends Part {
+public class AirSpace extends Part {
 
-    NegativeSpace() {
-        super(null, new Air());
+    AirSpace() {
+        super("AirSpace", null, new Air());
     }
 }
