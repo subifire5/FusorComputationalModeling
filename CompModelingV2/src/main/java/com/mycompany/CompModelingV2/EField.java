@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 package com.mycompany.CompModelingV2;
+// temp edits made to field effect at point
+//TEMPORARY FOR NOW
 
 /**
  *
@@ -161,8 +163,8 @@ public class EField {
             return potentials;
         }
     }
-    
-    public Vector[][] forceVectorLine(String axis, double lowerBound, double upperBound, int numberOfVectors){
+
+    public Vector[][] forceVectorLine(String axis, double lowerBound, double upperBound, int numberOfVectors) {
         Vector[][] fVectors = new Vector[numberOfVectors][2];
         Double gap = (upperBound - lowerBound) / numberOfVectors;
         if (axis.equals("X") || axis.equals("x")) {
@@ -194,7 +196,7 @@ public class EField {
 
             }
         }
-        return fVectors;    
+        return fVectors;
     }
 
     public Vector[][] forceVectorSlice(String graphPlane, Vector bottomLeftCorner, Vector upperRightCorner, int numberOfVectors) {
@@ -285,7 +287,7 @@ public class EField {
 
     }
 
-    public Vector fieldAtPoint(Vector v){
+    public Vector fieldAtPoint(Vector v) {
         Vector sumOfField = new Vector(0.0, 0.0, 0.0);
         double voltage;
         double vol;
@@ -293,11 +295,15 @@ public class EField {
 
         for (Charge t : charges) {
             voltage = vAnnode - vCathode;
-            vol = t.polarity * voltage;
+            if (t.polarity > 0) {
+                vol = -voltage;
+            } else {
+                vol = t.polarity * voltage;
+            }
             distanceSquared = t.distanceSquared(v);
             Vector effectOnPoint;
             effectOnPoint = v.thisToThat(t).normalized();
-            effectOnPoint.scale(-1.0);
+            //effectOnPoint.scale(-1.0);
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
             effectOnPoint.z *= vol / distanceSquared;
@@ -306,23 +312,28 @@ public class EField {
         sumOfField.scale(chargeFactor);
         return sumOfField;
     }
-    
+
     public Vector effectOnCharge(Charge c) {
         Vector sumOfField = new Vector(0.0, 0.0, 0.0);
         double voltage;
-        double v;
+        double vol;
         double distanceSquared;
 
         for (Charge t : charges) {
             voltage = vAnnode - vCathode;
-            v = c.polarity * t.polarity * voltage;
+            if (t.polarity > 0) {
+                vol = -c.polarity*voltage;
+            } else {
+                vol = c.polarity*t.polarity * voltage;
+            }
+            //vol = c.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(c);
             Vector effectOnPoint;
             effectOnPoint = c.thisToThat(t).normalized();
-            effectOnPoint.scale(-1.0);
-            effectOnPoint.x *= v / distanceSquared;
-            effectOnPoint.y *= v / distanceSquared;
-            effectOnPoint.z *= v / distanceSquared;
+            //effectOnPoint.scale(-1.0);
+            effectOnPoint.x *= vol / distanceSquared;
+            effectOnPoint.y *= vol / distanceSquared;
+            effectOnPoint.z *= vol / distanceSquared;
             sumOfField.plusEquals(effectOnPoint);
         }
         sumOfField.scale(chargeFactor);
