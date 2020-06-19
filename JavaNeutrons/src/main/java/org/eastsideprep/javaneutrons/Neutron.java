@@ -41,16 +41,16 @@ public class Neutron {
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy*2/Neutron.mass));
     }
 
-    public Vector3D elasticScatter(Element particle) {
+    public void processEvent(Event event) {
         //random other particle:
-        double particleSpeed = Util.random.nextGaussian() * Math.sqrt(Physics.boltzmann * Physics.roomTemp * 3 / particle.mass);
+        double particleSpeed = Util.random.nextGaussian() * Math.sqrt(Physics.boltzmann * Physics.roomTemp * 3 / event.element.mass);
         Vector3D particleVelocity = Physics.randomDir().scalarMultiply(particleSpeed);
 
         //establish center of mass
         //add velocity vectors / total mass 
         Vector3D velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
-                .add(particleVelocity.scalarMultiply(particle.mass)))
-                .scalarMultiply(1 / (Neutron.mass + particle.mass));
+                .add(particleVelocity.scalarMultiply(event.element.mass)))
+                .scalarMultiply(1 / (Neutron.mass + event.element.mass));
         
         //convert neutron and particle --> center of mass frame
         this.velocity = this.velocity.subtract(velocityCM);
@@ -61,8 +61,7 @@ public class Neutron {
         
         // update myself (energy and direction)
         this.setVelocity(this.velocity);
-        //return results
-        return this.velocity;
+        event.energyOut = this.energy;
     }
     
     public void evolve() {
@@ -85,7 +84,9 @@ public class Neutron {
         } while(event.code != Event.Code.Absorb);
     }
 
-    //replace parameters with 1 Neutron object??
+    
+
+      //replace parameters with 1 Neutron object??
     public void record(Event e) {
         history.add(e);
     }

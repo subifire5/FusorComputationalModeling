@@ -14,16 +14,23 @@ import org.apache.commons.math3.geometry.euclidean.threed.*;
 public class Event {
 
     public enum Code {
-        Entry, Exit, Scatter, Absorb
+        Entry, Exit, Scatter, Absorb, Gone
     };
 
     Code code; // what kind of interesting thing happened here
-    Neutron neutron;
-    Element element;
     Vector3D position;
+    Neutron neutron;
+
+    // additional info - presence depends on event
+    Element element;
     double energyOut;
     double t; // how far along was this on the vector we took to get here
+    Part part;
 
+    
+    
+    
+    
     public Event(double x, double y, double z, Event.Code c) {
         position = new Vector3D(x, y, z);
         this.code = c;
@@ -45,5 +52,11 @@ public class Event {
         this.code = c;
         this.t = t;
         this.element = e;
+    }
+    
+   public Event(Vector3D position, Part p) {
+        position = new Vector3D(position.getX(), position.getY(), position.getZ());
+        this.part = p;
+        this.code = Event.Code.Entry;
     }
 }

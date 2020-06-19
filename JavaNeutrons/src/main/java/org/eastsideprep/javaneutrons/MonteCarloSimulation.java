@@ -13,7 +13,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class MonteCarloSimulation {
     
-    MonteCarloSimulation(Fusor fusor, Vector3D origin, long n) {
+    MonteCarloSimulation(Assembly assembly, Vector3D origin, long count) {
         
     }
 

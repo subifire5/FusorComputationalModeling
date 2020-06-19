@@ -41,10 +41,10 @@ public class App extends Application {
 
             // create 100000 random values and put them in
             for (int i = 0; i < 100000; i++) {
-                spectrum.record(random.nextDouble() * 1E10);
+                spectrum.record(1, random.nextDouble() * 1E10);
             }
 
-            root.setCenter(spectrum.makeChart(true));
+            root.setCenter(spectrum.makeChart("Detector 1"));
         });
 
         Button bTest = new Button("3D test");

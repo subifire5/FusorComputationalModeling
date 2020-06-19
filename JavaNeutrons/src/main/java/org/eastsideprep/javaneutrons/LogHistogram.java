@@ -5,8 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -17,15 +15,15 @@ public class LogHistogram {
 
     int logMin;
     int logMax;
-    long[] bins;
+    double[] bins;
 
     public LogHistogram(int logMin, int logMax, int bins) {
         this.logMin = logMin;
         this.logMax = logMax;
-        this.bins = new long[bins];
+        this.bins = new double[bins];
     }
 
-    public void record(double energy) {
+    public void record(double value, double energy) {
         int bin;
 
         // take log in chosen base
@@ -41,34 +39,41 @@ public class LogHistogram {
 
         // cut off stuff that is too big
         if (bin >= this.bins.length) {
-            bin = this.bins.length-1;
+            bin = this.bins.length - 1;
         }
-        
+
         // increment the count
         if (bin < 0 || bin >= this.bins.length) {
             System.out.println("hah!");
         }
-        this.bins[bin]++;
+
+        synchronized (this) {
+            this.bins[bin] += value;
+        }
     }
 
-    public BarChart makeChart(boolean logCounts) {
+    public BarChart makeChart(String seriesName) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
         final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
         bc.setTitle("Energy spectrum");
         xAxis.setLabel("Energy (eV)");
-        yAxis.setLabel(logCounts?"ln(1+count)":"Count");
+        yAxis.setLabel("Count");
 
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
-        series.setName("Detector 1");
+        series.setName(seriesName);
 
         // put in all the data
-        for (int i = 0; i < this.bins.length; i++) {
-            long count = this.bins[i];
-            double value =  logCounts?(Math.log1p(this.bins[i])):this.bins[i];
-            System.out.println(""+count+" "+value);
-            data.add(new XYChart.Data(""+Math.pow(10, i + logMin),value));
+        double[] counts = new double[this.bins.length];
+        
+        synchronized (this) {
+            System.arraycopy(this.bins, 0, counts, 0, counts.length);
+        }
+        
+        for (int i = 0; i < counts.length; i++) {
+            //System.out.println(""+count+" "+value);
+            data.add(new XYChart.Data("" + Math.pow(10, i + logMin), counts[i]));
         }
 
         bc.getData().add(series);

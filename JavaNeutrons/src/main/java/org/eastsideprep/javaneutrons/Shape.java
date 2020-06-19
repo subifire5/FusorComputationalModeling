@@ -28,6 +28,7 @@ public class Shape extends MeshView {
     TriangleMesh mesh = null;
     float[] vertices = null;
     int[] faces = null;
+    Part part;
 
     // fresh
     Shape() {
@@ -51,7 +52,7 @@ public class Shape extends MeshView {
     // (they extend MeshView)
     Shape(MeshView mv) {
         Mesh m = mv.getMesh();
-        
+
         if (m instanceof TriangleMesh) {
             this.mesh = (TriangleMesh) m;
             super.setMesh(m);
@@ -91,9 +92,19 @@ public class Shape extends MeshView {
         for (Node n : g.getChildren()) {
             if (n instanceof MeshView) {
                 shapes.add(new Shape((MeshView) n));
-            } 
+            }
         }
         return shapes;
+    }
+
+    private void cacheVerticesAndFaces() {
+        if (vertices == null) {
+            vertices = mesh.getPoints().toArray(null);
+        }
+
+        if (faces == null) {
+            faces = mesh.getFaces().toArray(null);
+        }
     }
 
     //
@@ -106,13 +117,7 @@ public class Shape extends MeshView {
     double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut) {
         double tmin = 0;
 
-        if (vertices == null) {
-            vertices = mesh.getPoints().toArray(null);
-        }
-
-        if (faces == null) {
-            faces = mesh.getFaces().toArray(null);
-        }
+        cacheVerticesAndFaces();
 
         for (int i = 0; i < faces.length; i += 6) {
             Vector3D v0 = new Vector3D(vertices[faces[i]], vertices[faces[i] + 1], vertices[faces[i] + 2]);
@@ -202,4 +207,27 @@ public class Shape extends MeshView {
         return t; // this ray hits the triangle, return where on the ray
     }
 
+    
+    //
+    // getVolume
+    //
+    // calculates the volume of a mesh in O(N)
+    // todo: since the math is so simple, this could be done without creating objects
+    //
+    public double getVolume() {
+        double volume = 0;
+
+        cacheVerticesAndFaces();
+        
+        for (int i = 0; i < faces.length; i += 6) {
+            Vector3D v0 = new Vector3D(vertices[faces[i]], vertices[faces[i] + 1], vertices[faces[i] + 2]);
+            Vector3D v1 = new Vector3D(vertices[faces[i + 2]], vertices[faces[i + 2] + 1], vertices[faces[i + 2] + 2]);
+            Vector3D v2 = new Vector3D(vertices[faces[i + 4]], vertices[faces[i + 4] + 1], vertices[faces[i + 4] + 2]);
+
+            v0 = v0.crossProduct(v1);
+            volume += v0.dotProduct(v2);
+        }
+
+        return Math.abs(volume / 6.0);
+    }
 }

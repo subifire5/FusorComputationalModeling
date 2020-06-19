@@ -20,56 +20,78 @@ public class Part {
 
     public Part(String name, Shape s, Material m) {
         this.shape = s;
+        this.shape.part = this;
         this.material = m;
         namedParts.put(name, this);
     }
-    
+
     public static Part getByName(String name) {
         return namedParts.get(name);
     }
 
+    
+    //
+    // rayIntersect
+    //
+    // intersects a ray with all triangles of this parts, returns the t-param of the closest
+    // goingOut determines whether we are entering or leaving the part (true=test back faces)
+    //
     double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut) {
         return shape.rayIntersect(rayOrigin, rayDirection, goingOut);
     }
 
+    //
+    // evolveNeutronPathNoVacuum
+    // 
+    // follows the neutron around from entry to exit or absorption
+    // 
     Event evolveNeutronPath(Neutron n) {
         double t, t1, t2;
         Event event = null;
 
+        this.processEntryEnergy(n.energy);
+
         do {
-            t1 = rayIntersect(n.position, n.direction, true);
-            assert (t1 != 0); // we are inside a material, unless it is NegativeSpace there should be an exit point
+            double currentEnergy = n.energy;
+            t1 = this.rayIntersect(n.position, n.direction, true);
+            assert (t1 != 0); // we are inside a part, there should be an exit point
 
             // this next line will figure out where to scatter/absorb
-            event = material.nextPoint(n); // todo: this needs to return a POI with the element
+            event = material.nextPoint(n);
             t2 = event.t;
 
             if (t1 > t2) {
                 // scattering / absorption did really happen, process it
-                n.setPosition(event.position);
-                if (event.code == Event.Code.Scatter) {
-                    n.elasticScatter(event.element);
-                } else {
-                    // anything to do for absorption?
-                }
+                n.processEvent(event);
                 event.energyOut = n.energy;
                 t = t2;
             } else {
                 // process exit event
                 event = new Event(n.position.add(n.direction.scalarMultiply(t1)), Event.Code.Exit);
+                this.processExitEnergy(n.energy);
                 t = t1;
             }
             // call for Detector parts to record
-            processPathLength(t);
-            
+            this.processPathLength(t, currentEnergy);
+
             // also record event for the individual neutron
-             n.record(event);
+            n.record(event);
         } while (event.code != Event.Code.Exit && event.code != Event.Code.Absorb);
 
         return event;
     }
 
-    void processPathLength(double t) {
+  
+
+    void processPathLength(double length, double energy) {
+        // this is an empty method to be overridden by Detector class
+    }
+
+    void processEntryEnergy(double e) {
+        // this is an empty method to be overridden by Detector class
+    }
+
+    void processExitEnergy(double e) {
         // this is an empty method to be overridden by Detector class
     }
 }
