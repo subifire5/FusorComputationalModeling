@@ -24,6 +24,11 @@ public class Neutron {
     
     ArrayList<Event> history = new ArrayList<>();
     
+    Neutron(Vector3D position, Vector3D direction, double energy) {
+        setPosition(position);
+        setDirectionAndEnergy(direction, energy);
+    }
+    
     public void setPosition(Vector3D position) {
         this.position = position;
     }

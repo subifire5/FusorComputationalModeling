@@ -9,15 +9,17 @@ package org.eastsideprep.javaneutrons;
  *
  * @author gunnar
  */
-public class Element {
+public class Element extends Material {
 
-    String name;
     double mass; // g
     int atomicNumber;
     int neutrons;
 
     Element(String name, double mass, int atomicNumber, int neutrons) {
-        // todo fill this in
+        super(name);
+        this.mass = mass; 
+        this.atomicNumber = atomicNumber;
+        this.neutrons = neutrons;
     }
 
     public double getCrossSection(double energy) {

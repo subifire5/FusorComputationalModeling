@@ -11,14 +11,15 @@ import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.input.KeyEvent;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
  * @author gmein
  */
-public class Test3D {
+public class Test {
 
-    public static Group test() {
+    public static Group test1() {
         Cube cube = new Cube(200);
         cube.setRotationAxis(new Point3D(1, 1, 1));
         cube.setTranslateX(100);
@@ -66,6 +67,22 @@ public class Test3D {
         Group g = new Group(cube, cube2, cube3);
 
         return g;
+    }
+    
+    
+    public static MonteCarloSimulation simulationTest() {
+        Shape wallShape = new Cube(20);
+        wallShape.setTranslateX(10);
+        Part wall = new Part("Wall", wallShape, Unobtainium.getInstance());
+        
+        Shape detectorShape = new Cube(20);
+        detectorShape.setTranslateX(20);
+        Detector detector = new Detector("Detector 1", new Vector3D(20,0,0), 3);
+        
+        Assembly fusor = new Assembly("Fusor");
+        fusor.addAll(wall, detector);
+        
+        return new MonteCarloSimulation(fusor, Vector3D.ZERO);
     }
 
     static void processEvent(KeyEvent event, Camera camera) {

@@ -20,7 +20,9 @@ public class Part {
 
     public Part(String name, Shape s, Material m) {
         this.shape = s;
-        this.shape.part = this;
+        if (this.shape != null) {
+            this.shape.part = this;
+        }
         this.material = m;
         namedParts.put(name, this);
     }
@@ -29,7 +31,6 @@ public class Part {
         return namedParts.get(name);
     }
 
-    
     //
     // rayIntersect
     //
@@ -80,8 +81,6 @@ public class Part {
 
         return event;
     }
-
-  
 
     void processPathLength(double length, double energy) {
         // this is an empty method to be overridden by Detector class

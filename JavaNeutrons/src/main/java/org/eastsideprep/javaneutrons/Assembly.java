@@ -18,6 +18,8 @@ import static org.eastsideprep.javaneutrons.Shape.rayTriangleIntersect;
  */
 public class Assembly extends Group {
     // todo: acceleration structure
+    
+    ArrayList<Detector> detectors = new ArrayList<>();
 
     Assembly(String name) {
     }
@@ -67,9 +69,11 @@ public class Assembly extends Group {
 
         for (Node node : this.getChildren()) {
             if (node instanceof Shape) {
+                // link back to the Part that contains it
                 Part p = ((Shape) node).part;
                 // intersect with that part, false means "going in"
                 double t = p.rayIntersect(rayOrigin, rayDirection, false);
+                // t !=0 means we found a triangle
                 if (t != 0) {
                     if (tmin == 0 || t < tmin) {
                         tmin = t;
@@ -80,5 +84,18 @@ public class Assembly extends Group {
         }
 
         return (tmin == 0) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart);
+    }
+
+    public void add(Part part) {
+        this.getChildren().add(part.shape);
+        if (part instanceof Detector) {
+            this.detectors.add((Detector) part);
+        }
+    }
+
+    public void addAll(Part... parts) {
+        for (Part p : parts) {
+            this.getChildren().add(p.shape);
+        }
     }
 }

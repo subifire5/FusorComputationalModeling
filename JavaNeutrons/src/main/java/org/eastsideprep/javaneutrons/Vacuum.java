@@ -5,6 +5,12 @@
  */
 package org.eastsideprep.javaneutrons;
 
-public class Vacuum extends Material{
-    
+public class Vacuum extends Air {
+
+    Vacuum() {
+        // Vacuum is just air at really low pressure
+        // 1 micron = 0.0001 kPa
+        super("Vacuum", 1e-4);
+    }
+
 }

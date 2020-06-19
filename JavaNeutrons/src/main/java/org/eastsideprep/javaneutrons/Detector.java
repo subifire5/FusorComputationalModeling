@@ -9,13 +9,13 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Detector extends Part {
 
-    private LogHistogram entryEnergies;
-    private LogHistogram fluenceOverEnergy;
+    public LogHistogram entryEnergies;
+    public LogHistogram fluenceOverEnergy;
     private final double volume;
     private double currentEntryEnergy = 0;
     private double totalDepositedEnergy = 0;
     
-    public Detector(String name){
+    public Detector(String name) {
         super(name, null, null);
         this.volume = Double.MAX_VALUE;
         reset();
@@ -24,7 +24,11 @@ public class Detector extends Part {
     public Detector(String name, Vector3D location, float size) {
         // todo: make constructor that takes another Shape
         // todo: material (some simple one-element stuff?)
-        super(name, new Cube(size), null); // the null is the material
+        super(name, new Cube(size), Unobtainium.getInstance()); 
+        this.shape.setTranslateX(location.getX());
+        this.shape.setTranslateY(location.getY());
+        this.shape.setTranslateZ(location.getZ());
+        
         this.volume = this.shape.getVolume();
         reset();
     }

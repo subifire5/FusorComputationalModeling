@@ -15,12 +15,24 @@ package org.eastsideprep.javaneutrons;
 public class Air extends Material {
 
     static Air instance;
+    double pressure;
     // todo: nitrogen, oxygen, co2....
+    
+    // pressure is in kPa
+    Air(double pressure) {
+        super("Air");
+        this.pressure = pressure;
+    }
 
+    Air(String name, double pressure) {
+        super(name);
+        this.pressure = pressure;
+    }
+    
     // we only need one of these objects
     public static Air getInstance() {
         if (instance == null) {
-            Air.instance = new Air();
+            Air.instance = new Air(100);
         }
         return instance;
     }

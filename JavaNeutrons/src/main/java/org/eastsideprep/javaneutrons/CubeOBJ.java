@@ -11,6 +11,6 @@ import java.net.URISyntaxException;
 public class CubeOBJ extends Shape {
 
     CubeOBJ() throws URISyntaxException {
-        super(Test3D.class.getResource("/cube.obj"));
+        super(Test.class.getResource("/cube.obj"));
     }
 }
