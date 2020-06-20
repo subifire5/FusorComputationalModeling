@@ -17,13 +17,18 @@ public class Element extends Material {
 
     Element(String name, double mass, int atomicNumber, int neutrons) {
         super(name);
-        this.mass = mass; 
+        this.mass = mass;
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
         super.addComponent(this, 1.0);
     }
 
-    public double getCrossSection(double energy) {
+    public double getScatterCrossSection(double energy) {
+        // todo: this is Taras' job
+        return 0;
+    }
+
+    public double getAbsorptionCrossSection(double energy) {
         // todo: this is Taras' job
         return 0;
     }

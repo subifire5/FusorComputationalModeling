@@ -28,7 +28,11 @@ public class Test {
         // this cube-shaped wall is loaded from an obj file in resources
         // any obj files need to live their (folder src/main/resources in folder view)
         //
+        // this file is a cube of sidelength 100
         Shape wallShape = new Shape(Test.class.getResource("/cube.obj"));
+        // this obj file has the origin at a corner - need to translate to center
+        wallShape.getTransforms().add(new Translate(-50, -50, -50));
+        // and then move along the x-axis to where we want it
         wallShape.getTransforms().add(new Translate(100, 0, 0));
         wallShape.setColor("blue");
         wallShape.setDrawMode(DrawMode.LINE);
@@ -40,6 +44,7 @@ public class Test {
         //
         double s = 50;
         Shape wall2Shape = new Cuboid(500, 20, 500);
+        // move plate down
         wall2Shape.getTransforms().add(new Translate(0, 100, 0));
         wall2Shape.setColor("purple");
         wall2Shape.setDrawMode(DrawMode.LINE);
@@ -50,6 +55,7 @@ public class Test {
         // The detector is made from a stock - FXyz CuboidMesh
         //
         Shape detectorShape = new Shape(new CuboidMesh(s, s, s));
+        // move detector behind cube wall
         detectorShape.getTransforms().add(new Translate(200, 0, 0));
         detectorShape.setColor("green");
         detectorShape.setOpacity(0.5);

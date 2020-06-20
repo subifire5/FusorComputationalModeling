@@ -6,6 +6,7 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -14,14 +15,14 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  * @author gunnar
  */
 public class Material {
-    
+
     static HashMap<String, Material> materials = new HashMap<>();
 
     public class Component {
 
         Element e;
         double density; // atoms/(barn*cm)
-        
+
         Component(Element e, double density) {
             this.e = e;
             this.density = density;
@@ -30,16 +31,16 @@ public class Material {
 
     String name;
     ArrayList<Component> components;
-    
+
     public Material(String name) {
         materials.put(name, this);
         components = new ArrayList<>();
     }
-    
+
     public static Material getByName(String name) {
         return materials.get(name);
     }
-    
+
     public final void addComponent(Element element, double density) {
         components.add(new Component(element, density));
     }
@@ -48,33 +49,48 @@ public class Material {
     private double getSigma(double energy) {
         double sigma = 0;
         for (Component c : components) {
-            sigma += c.e.getCrossSection(energy) * c.density;
+            sigma += c.e.getScatterCrossSection(energy) * c.density;
+            sigma += c.e.getAbsorptionCrossSection(energy) * c.density;
         }
         return sigma;
     }
 
-    private  double randomPathLength(double energy) {
+    private double randomPathLength(double energy) {
         return -Math.log(Util.Math.random.nextDouble()) / getSigma(energy);
     }
-    
- 
+
     public Event nextPoint(Neutron n) {
-        double t = randomPathLength(n.energy);
+        double energy = n.energy;
+        double t = randomPathLength(energy);
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
-        // todo:
-        // make array of sigmas for this energy, for all elements in here
-        // make parallel array of cumulative sums
-        // include both absortion and scattering cross-sections
-        // make random number between 0 and sum of sigmas
-        // bsearch to find the corresponding index
-        // cop-out: use first element
-        Element e = components.get(0).e;
+
+        // make array of cumulative sums of sigmas
+        double[] sigmas = new double[2 * components.size()];
+        double sum = 0;
+        for (int i = 0; i < sigmas.length; i += 2) {
+            Component c = components.get(i);
+            sum += c.e.getScatterCrossSection(energy) * c.density;
+            sigmas[i] = sum;
+            sum += c.e.getAbsorptionCrossSection(energy) * c.density;
+            sigmas[i + 1] = sum;
+        }
+
+        // random draw from across the combined distribution
+        double rand = Util.Math.random.nextDouble() * sum;
+        //System.out.println("sum: "+sum+"draw: "+rand);
         
-        // todo: from bsearch index, also decide whether this was scatter or absorp
-        // cop-out: scatter:
-        Event.Code c = Event.Code.Scatter;
-        
-        return new Event(location, c, t, e);
+        // now find the component index
+        int slot = Arrays.binarySearch(sigmas, rand);
+        // if not found, will be negative slot -1
+        if (slot < 0) {
+            slot = -slot - 1;
+        }
+
+        // retrieve the corresponding element
+        Element e = components.get(slot/2).e;
+        Event.Code code = (slot%2 == 0)?Event.Code.Scatter:Event.Code.Absorb;
+
+        return new Event(location, code, t, e);
     }
 
 }

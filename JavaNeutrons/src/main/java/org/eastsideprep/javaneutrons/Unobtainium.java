@@ -19,10 +19,14 @@ public class Unobtainium extends Element {
     }
 
     @Override
-    public double getCrossSection(double energy) {
+    public double getScatterCrossSection(double energy) {
         return 0.01;
     }
 
+    @Override
+    public double getAbsorptionCrossSection(double energy) {
+        return 0.001;
+    }
     
         // we only need one of these objects
     public static Unobtainium getInstance() {

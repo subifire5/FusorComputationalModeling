@@ -216,8 +216,12 @@ public class Util {
                     case EmergencyExit:
                         color = "purple";
                         break;
+                    case Absorb:
+                        color = "lightblue";
+                        break;
                     default:
                         color = "black";
+                        
                 }
                 Util.Graphics.drawSphere(g, event.position, 2, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);

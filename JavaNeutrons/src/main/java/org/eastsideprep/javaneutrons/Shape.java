@@ -213,7 +213,6 @@ public class Shape extends MeshView {
     //
     // calculates the volume of a mesh in O(N)
     // todo: since the math is so simple, this could be done without creating objects
-    // todo: doesn't work. Why? Always produces 0.
     //
     public double getVolume() {
         double volume = 0;
