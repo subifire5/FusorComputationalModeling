@@ -20,6 +20,7 @@ public class Element extends Material {
         this.mass = mass; 
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
+        super.addComponent(this, 1.0);
     }
 
     public double getCrossSection(double energy) {

@@ -6,7 +6,6 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
-import java.util.Random;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
 /**
@@ -48,8 +47,9 @@ public class Neutron {
 
     public void processEvent(Event event) {
         //random other particle:
-        double particleSpeed = Util.random.nextGaussian() * Math.sqrt(Physics.boltzmann * Physics.roomTemp * 3 / event.element.mass);
-        Vector3D particleVelocity = Physics.randomDir().scalarMultiply(particleSpeed);
+        double particleSpeed = Util.Math.random.nextGaussian() * 
+                Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp * 3 / event.element.mass);
+        Vector3D particleVelocity = Util.Math.randomDir().scalarMultiply(particleSpeed);
 
         //establish center of mass
         //add velocity vectors / total mass 
@@ -60,7 +60,7 @@ public class Neutron {
         //convert neutron and particle --> center of mass frame
         this.velocity = this.velocity.subtract(velocityCM);
         //calculate elastic collision: entry speed = exit speed, random direction
-        this.velocity = Physics.randomDir().scalarMultiply(this.velocity.getNorm());
+        this.velocity = Util.Math.randomDir().scalarMultiply(this.velocity.getNorm());
         //convert back into lab frame
         this.velocity = this.velocity.add(velocityCM);
         
@@ -93,6 +93,7 @@ public class Neutron {
 
       //replace parameters with 1 Neutron object??
     public void record(Event e) {
+        System.out.println("Neutron"+this.hashCode()+" recording event "+e);
         history.add(e);
     }
 }

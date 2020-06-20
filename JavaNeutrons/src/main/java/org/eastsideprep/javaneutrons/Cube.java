@@ -6,8 +6,11 @@
 package org.eastsideprep.javaneutrons;
 
 public class Cube extends Shape {
+    
+    double s;
 
     Cube(float s) {
+        this.s = s;
         mesh.getPoints().addAll(
                 0, 0, s,
                 s, 0, s,
@@ -42,4 +45,9 @@ public class Cube extends Shape {
                 4, 0, 7, 0, 6, 0
         );
     }
+    
+//    @Override
+//    public double getVolume() {
+//        return s*s*s;
+//    }
 }

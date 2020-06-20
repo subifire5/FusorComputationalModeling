@@ -9,11 +9,17 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.shape.VertexFormat;
+import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.fxyz3d.importers.Importer3D;
 import org.fxyz3d.shapes.polygon.PolygonMesh;
@@ -26,7 +32,7 @@ import org.fxyz3d.shapes.polygon.PolygonMeshView;
 public class Shape extends MeshView {
 
     TriangleMesh mesh = null;
-    float[] vertices = null;
+    double[] vertices = null;
     int[] faces = null;
     Part part;
 
@@ -97,13 +103,49 @@ public class Shape extends MeshView {
         return shapes;
     }
 
+    private double[] getVertices() {
+        float[] floats = mesh.getPoints().toArray(null);
+        double[] v = new double[floats.length];
+        for (int i = 0; i < floats.length; i++) {
+            v[i] = floats[i];
+        }
+        return v;
+    }
+
+    private double[] getTransformedVertices() {
+        double[] v = getVertices();
+
+        // transform all vertices by all transforrms
+        double[] verticesTransformed = new double[v.length];
+        for (int i = 0; i < this.getTransforms().size(); i++) {
+            Transform t = this.getTransforms().get(i);
+            t.transform3DPoints(v, 0,
+                    verticesTransformed, 0,
+                    v.length / 3);
+            double[] temp = v;
+            v = verticesTransformed;
+            verticesTransformed = temp;
+        }
+        return v;
+    }
+
+    private int[] getFaces() {
+        return mesh.getFaces().toArray(null);
+    }
+
     private void cacheVerticesAndFaces() {
         if (vertices == null) {
-            vertices = mesh.getPoints().toArray(null);
+            System.out.println("Original vertices for " + this.part.name);
+            System.out.println(Arrays.toString(this.getVertices()));
+            vertices = getTransformedVertices();
+            System.out.println("Vertices for " + this.part.name);
+            System.out.println(Arrays.toString(vertices));
         }
 
         if (faces == null) {
-            faces = mesh.getFaces().toArray(null);
+            faces = getFaces();
+            System.out.println("Faces for " + this.part.name);
+            System.out.println(Arrays.toString(faces));
         }
     }
 
@@ -114,120 +156,88 @@ public class Shape extends MeshView {
     // returns t-parameter for the ray, or 0 if not intersecting
     // todo: acceleration structure like hierarchy of volumes
     //
-    double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut) {
-        double tmin = 0;
+    double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group simVis) {
+        double tmin = -1;
+        int x = 0;
+        int y = 1;
+        int z = 2;
+        int face = -1;
 
         cacheVerticesAndFaces();
+//        System.out.println("Checking part" + this.part.name);
+        int vis = this.mesh.getVertexFormat().getVertexIndexSize();
 
         for (int i = 0; i < faces.length; i += 6) {
-            Vector3D v0 = new Vector3D(vertices[faces[i]], vertices[faces[i] + 1], vertices[faces[i] + 2]);
-            Vector3D v1 = new Vector3D(vertices[faces[i + 2]], vertices[faces[i + 2] + 1], vertices[faces[i + 2] + 2]);
-            Vector3D v2 = new Vector3D(vertices[faces[i + 4]], vertices[faces[i + 4] + 1], vertices[faces[i + 4] + 2]);
+            Vector3D v0 = new Vector3D(vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z]);
+            Vector3D v1 = new Vector3D(vertices[3 * faces[i + vis] + x], vertices[3 * faces[i + vis] + y], vertices[3 * faces[i + vis] + z]);
+            Vector3D v2 = new Vector3D(vertices[3 * faces[i + 2 * vis] + x], vertices[3 * faces[i + 2 * vis] + y], vertices[3 * faces[i + 2 * vis] + z]);
+//            System.out.println("Checking");
+//            System.out.println("" + v0);
+//            System.out.println("" + v1);
+//            System.out.println("" + v2);
 
             // goingOut determines whether we test the counter-clockwise triangle (front face)
             // or clockwise triangle (back face). We assume that all faces of a shape face outward. 
-            double t = rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
-            if (t != 0) {
-                if (tmin != 0) {
-                    tmin = Math.min(tmin, t);
+            double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
+            if (t != -1) {
+//                System.out.println("found triangle " + v0);
+
+                if (tmin != -1) {
+                    if (t < tmin) {
+                        tmin = t;
+                        face = i;
+                    }
                 } else {
                     tmin = t;
+                    face = i;
                 }
             }
-        }
 
+        }
+        if (face != -1) {
+            Vector3D v0 = new Vector3D(vertices[3 * faces[face] + x], vertices[3 * faces[face] + y], vertices[3 * faces[face] + z]);
+            Vector3D v1 = new Vector3D(vertices[3 * faces[face + 2] + x], vertices[3 * faces[face + 2] + y], vertices[3 * faces[face + 2] + z]);
+            Vector3D v2 = new Vector3D(vertices[3 * faces[face + 4] + x], vertices[3 * faces[face + 4] + y], vertices[3 * faces[face + 4] + z]);
+
+            Util.Graphics.drawLine(simVis, v0, v1, Color.GREEN);
+            Util.Graphics.drawLine(simVis, v1, v2, Color.GREEN);
+            Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
+        }
         return tmin;
     }
 
-    //
-    // rayTriangleIntersect
-    //
-    // static helper function
-    // ported from: 
-    // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
-    //
-    public static double rayTriangleIntersect(
-            Vector3D rayOrigin, Vector3D rayDirection,
-            Vector3D v0, Vector3D v1, Vector3D v2) {
-        final double kEpsilon = 1E-8; // constant for "close enough to 0"
-
-        // compute plane's normal
-        Vector3D v0v1 = v1.subtract(v0);
-        Vector3D v0v2 = v2.subtract(v0);
-        // no need to normalize
-        Vector3D N = v0v1.crossProduct(v0v2); // N 
-        double area2 = N.getNorm();
-
-        // Step 1: finding P
-        // check if ray and plane are parallel ?
-        double NdotRayDirection = N.dotProduct(rayDirection);
-
-        // almost 0?
-        if (Math.abs(NdotRayDirection) < kEpsilon) {
-            return 0; // they are parallel so they don't intersect ! 
-        }
-
-        // compute d parameter using equation 2
-        double d = N.dotProduct(v0);
-
-        // compute t (equation 3)
-        double t = (N.dotProduct(rayOrigin) + d) / NdotRayDirection;
-        // check if the triangle is in behind the ray
-        if (t < 0) {
-            return 0; // the triangle is behind 
-        }
-        // compute the intersection point using equation 1
-        Vector3D P = rayOrigin.add(rayDirection.scalarMultiply(t));
-
-        // Step 2: inside-outside test
-        Vector3D C; // vector perpendicular to triangle's plane 
-
-        // edge 0
-        Vector3D edge0 = v1.subtract(v0);
-        Vector3D vp0 = P.subtract(v0);
-        C = edge0.crossProduct(vp0);
-        if (N.dotProduct(C) < 0) {
-            return 0; // P is on the right side 
-        }
-
-        // edge 1
-        Vector3D edge1 = v2.subtract(v1);
-        Vector3D vp1 = P.subtract(v1);
-        C = edge1.crossProduct(vp1);
-        if (N.dotProduct(C) < 0) {
-            return 0; // P is on the right side 
-        }
-        // edge 2
-        Vector3D edge2 = v0.subtract(v2);
-        Vector3D vp2 = P.subtract(v2);
-        C = edge2.crossProduct(vp2);
-        if (N.dotProduct(C) < 0) {
-            return 0; // P is on the right side; 
-        }
-        return t; // this ray hits the triangle, return where on the ray
-    }
-
-    
     //
     // getVolume
     //
     // calculates the volume of a mesh in O(N)
     // todo: since the math is so simple, this could be done without creating objects
+    // todo: doesn't work. Why? Always produces 0.
     //
     public double getVolume() {
         double volume = 0;
 
-        cacheVerticesAndFaces();
-        
+        double[] v = getVertices();
+        int[] faces = getFaces();
+
         for (int i = 0; i < faces.length; i += 6) {
-            Vector3D v0 = new Vector3D(vertices[faces[i]], vertices[faces[i] + 1], vertices[faces[i] + 2]);
-            Vector3D v1 = new Vector3D(vertices[faces[i + 2]], vertices[faces[i + 2] + 1], vertices[faces[i + 2] + 2]);
-            Vector3D v2 = new Vector3D(vertices[faces[i + 4]], vertices[faces[i + 4] + 1], vertices[faces[i + 4] + 2]);
+            Vector3D v0 = new Vector3D(v[3*faces[i]], v[3*faces[i] + 1], v[3*faces[i] + 2]);
+            Vector3D v1 = new Vector3D(v[3*faces[i + 2]], v[3*faces[i + 2] + 1], v[3*faces[i + 2] + 2]);
+            Vector3D v2 = new Vector3D(v[3*faces[i + 4]], v[3*faces[i + 4] + 1], v[3*faces[i + 4] + 2]);
 
             v0 = v0.crossProduct(v1);
             volume += v0.dotProduct(v2);
         }
 
         return Math.abs(volume / 6.0);
+    }
+
+    //
+    // setColor
+    //
+    public void setColor(String webColor) {
+        final PhongMaterial pm = new PhongMaterial();
+        pm.setSpecularColor(Color.web(webColor));
+        pm.setDiffuseColor(Color.web(webColor));
+        this.setMaterial(pm);
     }
 }

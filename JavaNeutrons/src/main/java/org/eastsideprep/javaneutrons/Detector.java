@@ -14,32 +14,31 @@ public class Detector extends Part {
     private final double volume;
     private double currentEntryEnergy = 0;
     private double totalDepositedEnergy = 0;
-    
+
     public Detector(String name) {
         super(name, null, null);
         this.volume = Double.MAX_VALUE;
         reset();
     }
 
-    public Detector(String name, Vector3D location, float size) {
-        // todo: make constructor that takes another Shape
+    public Detector(String name, Shape shape) {
         // todo: material (some simple one-element stuff?)
-        super(name, new Cube(size), Unobtainium.getInstance()); 
-        this.shape.setTranslateX(location.getX());
-        this.shape.setTranslateY(location.getY());
-        this.shape.setTranslateZ(location.getZ());
-        
+        super(name, shape, Unobtainium.getInstance());
+
         this.volume = this.shape.getVolume();
         reset();
     }
 
     @Override
     void processPathLength(double length, double energy) {
-        this.fluenceOverEnergy.record(length/volume, energy);
+        //System.out.println("Entry into detector path length log " + this.entryEnergies.hashCode());
+
+        this.fluenceOverEnergy.record(length / volume, energy);
     }
 
     @Override
     void processEntryEnergy(double e) {
+        //System.out.println("Entry into detector entry energy log " + this.entryEnergies.hashCode());
         this.entryEnergies.record(1, e);
         this.currentEntryEnergy = e;
     }
@@ -48,7 +47,7 @@ public class Detector extends Part {
     void processExitEnergy(double e) {
         this.totalDepositedEnergy += (e - this.currentEntryEnergy);
     }
-    
+
     public double getTotalDepositedEnergy() {
         return this.totalDepositedEnergy;
     }

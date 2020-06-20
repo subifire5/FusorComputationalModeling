@@ -6,6 +6,12 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
+import javafx.geometry.Point3D;
+import javafx.scene.Group;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.paint.Color;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -13,27 +19,132 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  * @author gunnar
  */
 public class MonteCarloSimulation {
+
+    static boolean parallel = false;
+
+    public interface ProgressLambda {
+
+        void reportProgress(double p);
+    }
+
     Assembly assembly;
     Vector3D origin;
-    
-    MonteCarloSimulation(Assembly assembly, Vector3D origin) {
+    long count;
+    long completed;
+    ProgressLambda pl;
+    Group visualizations;
+    Group simVis;
+
+    MonteCarloSimulation(Assembly assembly, Vector3D origin, Group visualizations, ProgressLambda pl) {
         this.assembly = assembly;
         this.origin = origin;
+        this.visualizations = visualizations;
+        this.pl = pl;
+        this.simVis = new Group();
+        this.visualizations.getChildren().add(simVis);
     }
-    
-    ArrayList<Neutron>  simulateNeutrons(long count) {
-        ArrayList<Neutron> neutrons = new ArrayList<>();
-        for (long i = 0; i<count; i++) {
-            neutrons.add(new Neutron(Vector3D.ZERO, Physics.randomDir(), 2.5e6));
+
+    void simulateNeutrons(long count) {
+        this.count = count;
+        this.completed = 0;
+        this.simVis.getChildren().clear();
+        pl.reportProgress(0);
+
+//        Vector3D v0 = new Vector3D(200, 100, 100);
+//        Vector3D v1 = new Vector3D(-100, 100, 100);
+//        Vector3D v2 = new Vector3D(-100, 100, -200);
+//        Util.Graphics.drawLine(simVis, v0, v1, Color.GREEN);
+//        Util.Graphics.drawLine(simVis, v1, v2, Color.GREEN);
+//        Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
+//
+//        double t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_J, v0, v1, v2);
+//        if (t != -1) {
+//            System.out.println("t="+t);
+//            Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_J.scalarMultiply(t)), 5, "blue");
+//        }
+//        t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_I.add(Vector3D.PLUS_J.scalarMultiply(0.5)), v0, v1, v2);
+//        Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_I.add(Vector3D.PLUS_J.scalarMultiply(0.5)).scalarMultiply(t)), 5, "yellow");
+//        
+//        t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_I.add(Vector3D.PLUS_K.scalarMultiply(-0.5)), v0, v1, v2);
+//        Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_I.add(Vector3D.PLUS_K.scalarMultiply(-0.5)).scalarMultiply(t)), 5, "red");
+//        for (int i = 0; i < 10; i++) {
+//            Event e = assembly.rayIntersect(this.origin,
+//                    Vector3D.PLUS_I.add(new Vector3D(0, Util.Math.random.nextDouble() * 2 - 1, Util.Math.random.nextDouble() * 2 - 1)),
+//                    simVis);
+//            System.out.println("Event: " + e);
+//            assembly.visualizeEvent(e, simVis);
+//        }
+//        return;
+
+        System.out.println("");
+        System.out.println("");
+        System.out.println("Running new MC simulation for "+count+" neutrons ...");        
+
+        // reset detectors
+        for (Detector d : assembly.detectors) {
+            d.reset();
         }
+        // and enviroment (will count escaped neutrons
+        Environment.getInstance().reset();
+
+        ArrayList<Neutron> neutrons = new ArrayList<>();
+        for (long i = 0; i < count; i++) {
+            Vector3D direction = Util.Math.randomDir();
+            if (Math.abs(direction.getNorm() - 1.0) > 1E-8) {
+                System.out.println("hah!");
+            }
+            Neutron n = new Neutron(this.origin, direction, 2.5e6);
+            neutrons.add(n);
+        }
+
+        Thread t = new Thread(() -> {
+            if (!MonteCarloSimulation.parallel) {
+                neutrons.stream().forEach(n -> simulateNeutron(n));
+            } else {
+                neutrons.parallelStream().forEach(n -> simulateNeutron(n));
+            }
+        });
         
-        neutrons.stream().forEach(n->simulateNeutron(n));
-        return neutrons;
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
     }
-    
+
     void simulateNeutron(Neutron n) {
-        // todo: include vacuum
-        this.assembly.evolveNeutronPathNoVacuum(n);
+        this.assembly.evolveNeutronPathNoVacuum(n, this.simVis);
+        long current;
+        synchronized (this) {
+            completed++;
+            current = completed;
+            if (current * 1000 / count % 10 == 0) {
+                pl.reportProgress((double) (current * 100 / count));
+            }
+        }
+    }
+
+    public BarChart makeChart(String seriesName) {
+        final CategoryAxis xAxis = new CategoryAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
+        bc.setTitle("Simulation results");
+        xAxis.setLabel("Energy (eV)");
+        yAxis.setLabel("Count");
+
+        // add data series for all detector
+        for (Detector d : this.assembly.detectors) {
+            System.out.println("data for " + d.name);
+            // put in all the data
+            System.out.println("retrieving entry energies");
+            bc.getData().add(d.entryEnergies.makeSeries("Detector entry counts"));
+            System.out.println("retrieving fluence");
+            bc.getData().add(d.fluenceOverEnergy.makeSeries("Detector fluence"));
+        }
+
+        // add data series for environment catchll
+        System.out.println("data for environment");
+        System.out.println("retrieving escape energies");
+        bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
+
+        return bc;
     }
 
 }

@@ -54,7 +54,7 @@ public class Material {
     }
 
     private  double randomPathLength(double energy) {
-        return -Math.log(Util.random.nextDouble()) / getSigma(energy);
+        return -Math.log(Util.Math.random.nextDouble()) / getSigma(energy);
     }
     
  
@@ -74,7 +74,7 @@ public class Material {
         // cop-out: scatter:
         Event.Code c = Event.Code.Scatter;
         
-        return new Event(location, c, t, n, e);
+        return new Event(location, c, t, e);
     }
 
 }

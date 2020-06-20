@@ -10,4 +10,7 @@ public class CubeFXyz extends Shape {
     CubeFXyz(double w, double h, double d) {
         super(new CuboidMesh(w,h,d));
     }
+    CubeFXyz(double s) {
+        super(new CuboidMesh(s,s,s));
+    }
 }

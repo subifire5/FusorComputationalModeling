@@ -6,6 +6,7 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.HashMap;
+import javafx.scene.Group;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -17,9 +18,11 @@ public class Part {
     static HashMap<String, Part> namedParts = new HashMap<>();
     Shape shape;
     Material material;
+    String name;
 
     public Part(String name, Shape s, Material m) {
         this.shape = s;
+        this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
         }
@@ -37,8 +40,14 @@ public class Part {
     // intersects a ray with all triangles of this parts, returns the t-param of the closest
     // goingOut determines whether we are entering or leaving the part (true=test back faces)
     //
-    double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut) {
-        return shape.rayIntersect(rayOrigin, rayDirection, goingOut);
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group g) {
+        double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, g);
+        // not found?
+        if (t == -1 ) {
+            return null;
+        }
+        // construct appropriate event
+        return new Event(rayOrigin.add(rayDirection.scalarMultiply(t)), goingOut?Event.Code.Exit:Event.Code.Entry, t);
     }
 
     //
@@ -46,37 +55,40 @@ public class Part {
     // 
     // follows the neutron around from entry to exit or absorption
     // 
-    Event evolveNeutronPath(Neutron n) {
+    Event evolveNeutronPath(Neutron n, Group visualizations) {
         double t, t1, t2;
-        Event event = null;
+        Event exitEvent;
+        Event interactionEvent;
+        Event event;
 
         this.processEntryEnergy(n.energy);
 
         do {
             double currentEnergy = n.energy;
-            t1 = this.rayIntersect(n.position, n.direction, true);
-            assert (t1 != 0); // we are inside a part, there should be an exit point
+            exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+            if (exitEvent == null) {
+                System.out.println("no way out of part!");
+                //throw new IllegalArgumentException();
+                exitEvent=new Event(n.position.add(n.direction.scalarMultiply(100)), Event.Code.EmergencyExit, 100);
+            }
 
             // this next line will figure out where to scatter/absorb
-            event = material.nextPoint(n);
-            t2 = event.t;
-
-            if (t1 > t2) {
+            interactionEvent = material.nextPoint(n);
+            if (exitEvent.t > interactionEvent.t) {
                 // scattering / absorption did really happen, process it
+                event = interactionEvent;
                 n.processEvent(event);
-                event.energyOut = n.energy;
-                t = t2;
             } else {
-                // process exit event
-                event = new Event(n.position.add(n.direction.scalarMultiply(t1)), Event.Code.Exit);
+                event = exitEvent;
+                n.setPosition(event.position);
                 this.processExitEnergy(n.energy);
-                t = t1;
             }
             // call for Detector parts to record
-            this.processPathLength(t, currentEnergy);
+            this.processPathLength(event.t, currentEnergy);
 
             // also record event for the individual neutron
             n.record(event);
+            Util.Graphics.visualizeEvent(event, visualizations);
         } while (event.code != Event.Code.Exit && event.code != Event.Code.Absorb);
 
         return event;

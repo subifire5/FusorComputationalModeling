@@ -9,16 +9,16 @@ package org.eastsideprep.javaneutrons;
  *
  * @author gunnar
  */
-public class Environment extends Detector {
+public class Environment {
 
-    public static final double limit = 10000; // cm
+    public static final double limit = 1000; // 1000cm = 10m
     private static Environment instance;
+    public LogHistogram counts = new LogHistogram(-10,10,50);
     
     public Environment() {
-        super("Environment");
     }
 
-    private static Environment getInstance() {
+    public static Environment getInstance() {
         if (Environment.instance == null) {
             Environment.instance = new Environment();
         }
@@ -26,6 +26,10 @@ public class Environment extends Detector {
     }
     
     public static void processEnergy(double e) {
-        Environment.getInstance().processEntryEnergy(e);
+        Environment.getInstance().counts.record(1, e);
+    }
+    
+    public void reset() {
+        counts = new LogHistogram(-10,10,50);
     }
 }

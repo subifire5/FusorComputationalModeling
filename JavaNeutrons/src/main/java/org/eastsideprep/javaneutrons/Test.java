@@ -8,9 +8,13 @@ package org.eastsideprep.javaneutrons;
 import java.net.URISyntaxException;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
-import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.Sphere;
+import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -19,6 +23,39 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class Test {
 
+    public static MonteCarloSimulation simulationTest(Group visualizations, Label progress) {
+        Shape wallShape = new CubeFXyz(100);
+        wallShape.getTransforms().add(new Translate(100,0,0));
+        wallShape.setColor("blue");
+        wallShape.setDrawMode(DrawMode.LINE);
+        wallShape.setOpacity(0.1);
+        Part wall = new Part("Wall", wallShape, Unobtainium.getInstance());
+        
+
+        Shape detectorShape = new CubeFXyz(50);
+        detectorShape.getTransforms().add(new Translate(200, 0, 0));
+        detectorShape.setColor("green");
+        detectorShape.setOpacity(0.5);
+        detectorShape.setDrawMode(DrawMode.LINE);
+        Detector detector = new Detector("Detector 1", detectorShape);
+
+        
+        Util.Graphics.drawSphere(visualizations, Vector3D.ZERO, 5, "red");
+        Util.Graphics.drawLine(visualizations, new Vector3D(-1000,0,0), new Vector3D(1000,0,0), Color.CYAN);
+        Util.Graphics.drawLine(visualizations, new Vector3D(0, -1000,0), new Vector3D(0,1000,0), Color.YELLOW);
+        Util.Graphics.drawLine(visualizations, new Vector3D(0,0,-1000), new Vector3D(0,0,1000), Color.RED);
+
+        Assembly fusor = new Assembly("Fusor");
+        fusor.addAll(wall, detector);
+        visualizations.getChildren().add(fusor);
+
+        return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations, 
+                (p) -> Platform.runLater(() -> progress.setText("Complete: " + ((int)p) + " %")));
+    }
+
+    //
+    // old stuff
+    //
     public static Group test1() {
         Cube cube = new Cube(200);
         cube.setRotationAxis(new Point3D(1, 1, 1));
@@ -31,8 +68,7 @@ public class Test {
         cube2.setTranslateY(100);
         cube2.setTranslateZ(100);
         cube2.setRotationAxis(new Point3D(-1, 1, 1));
-        
-        
+
         CubeOBJ cube3a = null;
         try {
             cube3a = new CubeOBJ();
@@ -44,7 +80,7 @@ public class Test {
         cube3.setTranslateY(100);
         cube3.setTranslateZ(100);
         cube3.setRotationAxis(new Point3D(-1, -1, 1));
- 
+
         // little thread to keep rotating the cube
         Thread t = new Thread(() -> {
             try {
@@ -68,51 +104,5 @@ public class Test {
 
         return g;
     }
-    
-    
-    public static MonteCarloSimulation simulationTest() {
-        Shape wallShape = new Cube(20);
-        wallShape.setTranslateX(10);
-        Part wall = new Part("Wall", wallShape, Unobtainium.getInstance());
-        
-        Shape detectorShape = new Cube(20);
-        detectorShape.setTranslateX(20);
-        Detector detector = new Detector("Detector 1", new Vector3D(20,0,0), 3);
-        
-        Assembly fusor = new Assembly("Fusor");
-        fusor.addAll(wall, detector);
-        
-        return new MonteCarloSimulation(fusor, Vector3D.ZERO);
-    }
 
-    static void processEvent(KeyEvent event, Camera camera) {
-        switch (event.getCode()) {
-
-            case PAGE_UP:
-                camera.translateZProperty().set(camera.getTranslateZ() + 10);
-                break;
-            case PAGE_DOWN:
-                camera.translateZProperty().set(camera.getTranslateZ() - 10);
-                break;
-
-            case UP:
-                camera.setRotationAxis(new Point3D(1, 0, 0));
-                camera.setRotate(camera.getRotate() - 1);
-                break;
-            case LEFT:
-                camera.setRotationAxis(new Point3D(0, 1, 0));
-                camera.setRotate(camera.getRotate() - 1);
-                break;
-            case DOWN:
-                camera.setRotationAxis(new Point3D(1, 0, 0));
-                camera.setRotate(camera.getRotate() + 1);
-                break;
-            case RIGHT:
-                camera.setRotationAxis(new Point3D(0, 1, 0));
-                camera.setRotate(camera.getRotate() + 1);
-                break;
-        }
-    }
-
-  
 }

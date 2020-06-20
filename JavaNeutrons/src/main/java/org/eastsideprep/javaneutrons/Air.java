@@ -16,12 +16,14 @@ public class Air extends Material {
 
     static Air instance;
     double pressure;
-    // todo: nitrogen, oxygen, co2....
     
     // pressure is in kPa
     Air(double pressure) {
         super("Air");
         this.pressure = pressure;
+        // todo: add real components of air under defined pressure here
+        // instead, we add unobtainium at a diminished density
+        this.addComponent(Unobtainium.getInstance(), 1e-10);
     }
 
     Air(String name, double pressure) {

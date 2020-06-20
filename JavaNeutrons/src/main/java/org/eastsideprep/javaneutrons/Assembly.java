@@ -6,11 +6,11 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.shape.Sphere;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import static org.eastsideprep.javaneutrons.Shape.rayTriangleIntersect;
 
 /**
  *
@@ -18,13 +18,13 @@ import static org.eastsideprep.javaneutrons.Shape.rayTriangleIntersect;
  */
 public class Assembly extends Group {
     // todo: acceleration structure
-    
+
     ArrayList<Detector> detectors = new ArrayList<>();
 
     Assembly(String name) {
     }
 
-    public Event evolveNeutronPathNoVacuum(Neutron n) {
+    public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations) {
         Air air = Air.getInstance();
         Event partEvent;
         Event interactionEvent;
@@ -33,7 +33,7 @@ public class Assembly extends Group {
 
         do {
             // find the closest part we intersect with
-            partEvent = this.rayIntersect(n.position, n.direction);
+            partEvent = this.rayIntersect(n.position, n.direction, visualizations);
             // find possible interactions along the way
             interactionEvent = air.nextPoint(n);
 
@@ -42,20 +42,27 @@ public class Assembly extends Group {
                 // scattering / absorption in air did really happen, process it
                 n.setPosition(interactionEvent.position);
                 n.processEvent(interactionEvent);
+                Util.Graphics.visualizeEvent(interactionEvent, visualizations);
                 event = interactionEvent;
             } else {
                 // no interaction, we will just enter a new part
+                Util.Graphics.visualizeEvent(partEvent, visualizations);
                 Part p = partEvent.part;
-                event = partEvent;
+                n.setPosition(partEvent.position);
+                System.out.println("Entering part " + p.name);
+                event = p.evolveNeutronPath(n, visualizations);
             }
             // if neutron goes far enough from the origin, call it gone
             if (n.position.getNorm() > Environment.limit) {
                 Environment.processEnergy(n.energy);
                 event.code = Event.Code.Gone;
             }
+            //visualizeEvent(event, visualizations);
         } while (event.code != Event.Code.Absorb && event.code != Event.Code.Gone);
         return event;
     }
+
+  
 
     //
     // rayIntersect
@@ -63,8 +70,8 @@ public class Assembly extends Group {
     // intersect with all parts in assembly, return event with 
     // part or null
     //
-    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection) {
-        double tmin = 0;
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, Group g) {
+        double tmin = -1;
         Part closestPart = null;
 
         for (Node node : this.getChildren()) {
@@ -72,22 +79,22 @@ public class Assembly extends Group {
                 // link back to the Part that contains it
                 Part p = ((Shape) node).part;
                 // intersect with that part, false means "going in"
-                double t = p.rayIntersect(rayOrigin, rayDirection, false);
-                // t !=0 means we found a triangle
-                if (t != 0) {
-                    if (tmin == 0 || t < tmin) {
-                        tmin = t;
+                Event entryEvent = p.rayIntersect(rayOrigin, rayDirection, false, g);
+                // event != null means we found a triangle
+                if (entryEvent != null) {
+                    if (tmin == -1 || entryEvent.t < tmin) {
+                        tmin = entryEvent.t;
                         closestPart = p;
                     }
                 }
             }
         }
 
-        return (tmin == 0) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart);
+        return (tmin == -1) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart, tmin);
     }
 
     public void add(Part part) {
-        this.getChildren().add(part.shape);
+        Platform.runLater(() -> this.getChildren().add(part.shape));
         if (part instanceof Detector) {
             this.detectors.add((Detector) part);
         }
@@ -95,7 +102,7 @@ public class Assembly extends Group {
 
     public void addAll(Part... parts) {
         for (Part p : parts) {
-            this.getChildren().add(p.shape);
+            this.add(p);
         }
     }
 }

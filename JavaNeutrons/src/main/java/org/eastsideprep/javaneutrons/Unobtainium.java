@@ -15,12 +15,12 @@ public class Unobtainium extends Element {
     
     Unobtainium() {
         // basically, hydrogen with really large, constant cross-section
-        super("Unobtainium", Physics.protonMass, 1, 0);
+        super("Unobtainium", Util.Physics.protonMass, 1, 0);
     }
 
     @Override
     public double getCrossSection(double energy) {
-        return 1;
+        return 0.01;
     }
 
     
