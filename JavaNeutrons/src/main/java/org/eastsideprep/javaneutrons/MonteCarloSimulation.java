@@ -6,6 +6,7 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -22,7 +23,7 @@ public class MonteCarloSimulation {
 
     public interface ProgressLambda {
 
-        void reportProgress(double p);
+        void reportProgress(int p);
     }
 
     Assembly assembly;
@@ -33,19 +34,22 @@ public class MonteCarloSimulation {
     Group visualizations;
     Group simVis;
 
-    MonteCarloSimulation(Assembly assembly, Vector3D origin, Group visualizations, ProgressLambda pl) {
+    MonteCarloSimulation(Assembly assembly, Vector3D origin) {
         this.assembly = assembly;
         this.origin = origin;
-        this.visualizations = visualizations;
-        this.pl = pl;
         this.simVis = new Group();
-        this.visualizations.getChildren().add(simVis);
+        this.count = count;
     }
 
-    void simulateNeutrons(long count) {
+    void simulateNeutrons(long count, Group visualizations, ProgressLambda pl) {
+        this.visualizations = visualizations;
+        this.visualizations.getChildren().remove(simVis);
+        this.visualizations.getChildren().add(simVis);
         this.count = count;
         this.completed = 0;
         this.simVis.getChildren().clear();
+        this.pl = pl;
+
         pl.reportProgress(0);
 
 //        Vector3D v0 = new Vector3D(200, 100, 100);
@@ -75,10 +79,9 @@ public class MonteCarloSimulation {
 //            System.out.println("Event: " + e);
 //            Util.Graphics.visualizeEvent(e, simVis);
 //        }
-
         System.out.println("");
         System.out.println("");
-        System.out.println("Running new MC simulation for "+count+" neutrons ...");        
+        System.out.println("Running new MC simulation for " + count + " neutrons ...");
 
         // reset detectors
         for (Detector d : assembly.detectors) {
@@ -104,7 +107,7 @@ public class MonteCarloSimulation {
                 neutrons.parallelStream().forEach(n -> simulateNeutron(n));
             }
         });
-        
+
         th.setPriority(Thread.MIN_PRIORITY);
         th.start();
     }
@@ -116,12 +119,14 @@ public class MonteCarloSimulation {
             completed++;
             current = completed;
             if (current * 1000 / count % 10 == 0) {
-                pl.reportProgress((double) (current * 100 / count));
+                Platform.runLater(() -> {
+                    this.pl.reportProgress((int) (current * 100 / count));
+                });
             }
         }
     }
 
-    public BarChart makeChart(String seriesName) {
+    public BarChart makeChart() {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
         final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
@@ -131,17 +136,17 @@ public class MonteCarloSimulation {
 
         // add data series for all detector
         for (Detector d : this.assembly.detectors) {
-            System.out.println("data for " + d.name);
+            //System.out.println("data for " + d.name);
             // put in all the data
-            System.out.println("retrieving entry energies");
+            //System.out.println("retrieving entry energies");
             bc.getData().add(d.entryEnergies.makeSeries("Detector entry counts"));
-            System.out.println("retrieving fluence");
-            bc.getData().add(d.fluenceOverEnergy.makeSeries("Detector fluence"));
+//            System.out.println("retrieving fluence");
+//            bc.getData().add(d.fluenceOverEnergy.makeSeries("Detector fluence"));
         }
 
         // add data series for environment catchll
-        System.out.println("data for environment");
-        System.out.println("retrieving escape energies");
+        //System.out.println("data for environment");
+        //System.out.println("retrieving escape energies");
         bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
 
         return bc;

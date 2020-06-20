@@ -6,15 +6,19 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.Random;
+import javafx.animation.ScaleTransition;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.effect.Glow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
+import javafx.util.Duration;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -218,6 +222,40 @@ public class Util {
                 Util.Graphics.drawSphere(g, event.position, 2, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }
+        }
+
+        public void displayEffect(Group g, Vector3D v, String color) {
+            int scale = 2;
+
+            Sphere s = new Sphere(scale / (double) 2);
+            s.setMaterial(new PhongMaterial(Color.web(color, 0.2)));
+            s.setDrawMode(DrawMode.FILL);
+            s.setTranslateX(v.getX());
+            s.setTranslateY(v.getY());
+            s.setTranslateZ(v.getZ());
+            s.setOpacity(0.2);
+
+            // make it glow
+            Glow glow = new Glow(1.0);
+            glow.setLevel(1.0);
+            s.setEffect(glow);
+
+            // make it shrink over 2 seconds
+            ScaleTransition t = new ScaleTransition(Duration.millis(500), s);
+            t.setFromX(1);
+            t.setFromY(1);
+            t.setFromZ(1);
+
+            t.setToX(0);
+            t.setToY(0);
+            t.setToZ(0);
+
+            // kill it when done
+            t.setOnFinished((e) -> g.getChildren().remove(s));
+
+            // add to scene and play
+            t.play();
+            Platform.runLater(() -> g.getChildren().add(s));
         }
 
     }

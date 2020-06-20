@@ -21,7 +21,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class Test {
 
-    public static MonteCarloSimulation simulationTest(Group visualizations, Label progress) {
+    public static MonteCarloSimulation simulationTest(Group visualizations) {
         Shape wallShape = new CubeFXyz(100);
         wallShape.getTransforms().add(new Translate(100,0,0));
         wallShape.setColor("blue");
@@ -53,8 +53,7 @@ public class Test {
         fusor.addAll(wall, wall2, detector);
         visualizations.getChildren().add(fusor);
 
-        return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations, 
-                (p) -> Platform.runLater(() -> progress.setText("Complete: " + ((int)p) + " %")));
+        return new MonteCarloSimulation(fusor, Vector3D.ZERO);
     }
 
     //
@@ -92,6 +91,7 @@ public class Test {
                     Thread.sleep(50);
                     // runLater() posts the argument lambda to the main event queue 
                     // really to run as soon as possible, but on the main thread.
+                    
                     Platform.runLater(() -> {
                         cube.setRotate(cube.getRotate() + 1);
                         cube2.setRotate(cube2.getRotate() + 1);

@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -21,68 +22,81 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     BorderPane root;
+    HBox view;
     static Random random = new Random();
 
     @Override
     public void start(Stage stage) {
         // random stuff first
         Util.Math.random.setSeed(1234);
-        
-        
+
         root = new BorderPane();
         Label progress = new Label(""); // need to hand this to Test()
 
         // prepare sim for later
         Group visualizations = new Group();
-        MonteCarloSimulation sim = Test.simulationTest(visualizations, progress);
+        MonteCarloSimulation sim = Test.simulationTest(visualizations);
 
-        //camera in subscene
-        SubScene sub = new SubScene(visualizations, 1500, 900);
-        Camera camera = new PerspectiveCamera();
-        camera.setRotationAxis(new Point3D(0, 1, 0));
-        camera.setRotate(-20);
-        camera.setRotationAxis(new Point3D(1, 0, 0));
-        camera.setRotate(-20);
-        camera.setTranslateX(-600);
-        camera.setTranslateY(-500);
-        sub.setCamera(camera);
-
+//        //camera in subscene
+//        SubScene sub = new SubScene(visualizations, 1500, 900);
+//        Camera camera = new PerspectiveCamera();
+//        camera.setRotationAxis(new Point3D(0, 1, 0));
+//        camera.setRotate(-20);
+//        camera.setRotationAxis(new Point3D(1, 0, 0));
+//        camera.setRotate(-20);
+//        camera.setTranslateX(-600);
+//        camera.setTranslateY(-500);
+//        sub.setCamera(camera);
         // control buttons and progress 
- 
         Button b = new Button("Start simulation");
         b.setOnAction((e) -> {
             //
             // here is where we run the actual simulation
-            // parameters are neutron count and callback for UI update (percent complete)
             //
-            sim.simulateNeutrons(100000);
+            b.setDisable(true);
+            sim.simulateNeutrons(10000, visualizations, (p) -> {
+                if (b.isDisabled()) {
+                    progress.setText("Complete: " + p + " %");
+                    if (p == 100) {
+                        b.setDisable(false);
+                    }
+                }
+            });
         });
         b.setPrefWidth(200);
 
         Button b2 = new Button("Show stats");
         b2.setOnAction((e) -> {
-            root.setCenter(sim.makeChart("Fluence"));
+            root.setCenter(sim.makeChart());
         });
         b2.setPrefWidth(200);
 
         Button bTest = new Button("Show assembly");
         bTest.setOnAction((e) -> {
-            root.setCenter(sub);
+            root.setCenter(view);
         });
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
         buttons.getChildren().addAll(b, b2, bTest, progress);
         root.setLeft(buttons);
-        
-        // initial view
-        root.setCenter(sub);
 
-        // scene and keyboard controls
+        // create camera control, set scene and stage
+        CameraControl mainScene = new CameraControl(1500, 900);
+        view = mainScene.outer;
+        mainScene.root.getChildren().add(visualizations);
+        root.setCenter(view);
         var scene = new Scene(root, 1700, 900);
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
-            processKeyEvent(e, camera);
-        });
+        //scene.setOnKeyPressed((ex) -> mainScene.controlCamera(ex));
+        scene.setOnKeyPressed((ex) -> mainScene.handleKeyPress(ex));
+        scene.setOnMouseDragged((ex) -> mainScene.handleDrag(ex));
+        scene.setOnMousePressed((ex) -> mainScene.handleClick(ex));
+        scene.setOnScroll((ex) -> mainScene.handleScroll(ex));
+
+//        // scene and keyboard controls (old)
+//        scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
+//            processKeyEvent(e, camera);
+//        });
         stage.setScene(scene);
         stage.show();
     }
