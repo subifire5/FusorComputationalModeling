@@ -48,37 +48,43 @@ public class App extends Application {
 //        camera.setTranslateY(-500);
 //        sub.setCamera(camera);
         // control buttons and progress 
-        Button b = new Button("Start simulation");
-        b.setOnAction((e) -> {
+        Button bRun = new Button("Start simulation");
+        bRun.setOnAction((e) -> {
             //
             // here is where we run the actual simulation
             //
-            b.setDisable(true);
+            bRun.setDisable(true);
             sim.simulateNeutrons(10000, visualizations, (p) -> {
-                if (b.isDisabled()) {
+                if (bRun.isDisabled()) {
                     progress.setText("Complete: " + p + " %");
                     if (p == 100) {
-                        b.setDisable(false);
+                        bRun.setDisable(false);
                     }
                 }
             });
         });
-        b.setPrefWidth(200);
+        bRun.setPrefWidth(200);
 
-        Button b2 = new Button("Show stats");
-        b2.setOnAction((e) -> {
+        Button bStats = new Button("Show stats");
+        bStats.setOnAction((e) -> {
             root.setCenter(sim.makeChart());
         });
-        b2.setPrefWidth(200);
+        bStats.setPrefWidth(200);
 
-        Button bTest = new Button("Show assembly");
-        bTest.setOnAction((e) -> {
+        Button bView = new Button("Show assembly");
+        bView.setOnAction((e) -> {
             root.setCenter(view);
+        });
+        bView.setPrefWidth(200);
+
+        Button bTest = new Button("Test visuals");
+        bTest.setOnAction((e) -> {
+            root.setCenter(Test.test1());
         });
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(b, b2, bTest, progress);
+        buttons.getChildren().addAll(bRun, bStats, bView, bTest, progress);
         root.setLeft(buttons);
 
         // create camera control, set scene and stage

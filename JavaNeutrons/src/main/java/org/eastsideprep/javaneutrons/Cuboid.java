@@ -5,21 +5,35 @@
  */
 package org.eastsideprep.javaneutrons;
 
-public class Cube extends Shape {
-    
-    double s;
+public class Cuboid extends Shape {
 
-    Cube(float s) {
-        this.s = s;
+    Cuboid() {
+
+    }
+
+    // create with side lengths
+    Cuboid(float dx, float dy, float dz) {
+        create(dx, dy, dz);
+    }
+
+    // can also make a cube
+    Cuboid(float s) {
+        create(s, s, s);
+    }
+
+    void create(float dx, float dy, float dz) {
+        dx /= 2;
+        dy /= 2;
+        dz /= 2;
         mesh.getPoints().addAll(
-                0, 0, s,
-                s, 0, s,
-                s, s, s,
-                0, s, s,
-                0, 0, 0,
-                s, 0, 0,
-                s, s, 0,
-                0, s, 0
+                -dx, -dy, dz,
+                dx, -dy, dz,
+                dx, dy, dz,
+                -dx, dy, dz,
+                -dx, -dy, -dz,
+                dx, -dy, -dz,
+                dx, dy, -dz,
+                -dx, dy, -dz
         );
 
         mesh.getTexCoords().addAll(0, 0);
@@ -45,4 +59,5 @@ public class Cube extends Shape {
                 4, 0, 7, 0, 6, 0
         );
     }
+
 }
