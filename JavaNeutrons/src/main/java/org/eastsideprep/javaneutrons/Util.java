@@ -215,8 +215,8 @@ public class Util {
                     default:
                         color = "black";
                 }
-                Util.Graphics.drawSphere(g, event.position, 5, color);
-                System.out.println("Visualizing "+event.code+" event at " + event.position);
+                Util.Graphics.drawSphere(g, event.position, 2, color);
+                //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }
         }
 

@@ -5,7 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.io.File;
 import java.net.URISyntaxException;
 
 public class CubeOBJ extends Shape {

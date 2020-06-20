@@ -11,9 +11,7 @@ import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -29,8 +27,14 @@ public class Test {
         wallShape.setColor("blue");
         wallShape.setDrawMode(DrawMode.LINE);
         wallShape.setOpacity(0.1);
-        Part wall = new Part("Wall", wallShape, Unobtainium.getInstance());
+        Part wall = new Part("Wall1", wallShape, Unobtainium.getInstance());
         
+        Shape wall2Shape = new CubeFXyz(400,20,400);
+        wall2Shape.getTransforms().add(new Translate(0,100,0));
+        wall2Shape.setColor("purple");
+        wall2Shape.setDrawMode(DrawMode.LINE);
+        wall2Shape.setOpacity(0.1);
+        Part wall2 = new Part("Wall2", wall2Shape, Unobtainium.getInstance());
 
         Shape detectorShape = new CubeFXyz(50);
         detectorShape.getTransforms().add(new Translate(200, 0, 0));
@@ -46,7 +50,7 @@ public class Test {
         Util.Graphics.drawLine(visualizations, new Vector3D(0,0,-1000), new Vector3D(0,0,1000), Color.RED);
 
         Assembly fusor = new Assembly("Fusor");
-        fusor.addAll(wall, detector);
+        fusor.addAll(wall, wall2, detector);
         visualizations.getChildren().add(fusor);
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations, 

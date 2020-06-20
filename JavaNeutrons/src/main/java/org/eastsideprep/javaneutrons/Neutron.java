@@ -14,7 +14,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.*;
  */
 public class Neutron {
     final static double mass = 1.008664; // atomic mass units amu
-    final static double startingEnergy = 2.45e6; //eV
+    final static double startingEnergyDD = 2.45e6; //eV
 
     double energy; // unit: eV
     Vector3D direction; // no units
@@ -28,18 +28,19 @@ public class Neutron {
         setDirectionAndEnergy(direction, energy);
     }
     
-    public void setPosition(Vector3D position) {
+    public final void setPosition(Vector3D position) {
         this.position = position;
     }
 
-    public void setVelocity(Vector3D velocity) {
+    public final void setVelocity(Vector3D velocity) {
         double speed = velocity.getNorm();
         direction = velocity.normalize();
-        // todo: relativistic?
+        
+        // should not have to do relativistic calculation since rest energy = 939MeV
         energy = speed * speed * Neutron.mass / 2;
     }
     
-    public void setDirectionAndEnergy(Vector3D direction, double energy) {
+    public final void setDirectionAndEnergy(Vector3D direction, double energy) {
         this.direction = direction.normalize();
         this.energy = energy;
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy*2/Neutron.mass));
@@ -69,31 +70,10 @@ public class Neutron {
         event.energyOut = this.energy;
     }
     
-    public void evolve() {
-        
-        Event event = null;
-        do {
-            if (event.code == Event.Code.Exit) {
-                // find next part to enter
-                // case 1: part inside vacuum
-                // -  fast-forward into that part
-                // case 2: vacuum chamber is next
-                //   case a: odd number of intersections with chamber
-                //   -- means we are in vacuum, fast-forward to chamber
-                //   case b: even number
-                //   -- means we are currently in air, process scattering 
-                //      through special AirSpace part 
-                // case 3: other part is next
-                //   -- we are in air, process through AirSpace
-            }
-        } while(event.code != Event.Code.Absorb);
-    }
-
-    
 
       //replace parameters with 1 Neutron object??
     public void record(Event e) {
-        System.out.println("Neutron"+this.hashCode()+" recording event "+e);
+        //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
         history.add(e);
     }
 }

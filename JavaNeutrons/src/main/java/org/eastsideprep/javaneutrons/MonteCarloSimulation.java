@@ -6,12 +6,10 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.paint.Color;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -95,7 +93,7 @@ public class MonteCarloSimulation {
             if (Math.abs(direction.getNorm() - 1.0) > 1E-8) {
                 System.out.println("hah!");
             }
-            Neutron n = new Neutron(this.origin, direction, 2.5e6);
+            Neutron n = new Neutron(this.origin, direction, Neutron.startingEnergyDD);
             neutrons.add(n);
         }
 

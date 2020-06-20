@@ -2,7 +2,6 @@ package org.eastsideprep.javaneutrons;
 
 import java.util.Random;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
@@ -56,7 +55,7 @@ public class App extends Application {
             // here is where we run the actual simulation
             // parameters are neutron count and callback for UI update (percent complete)
             //
-            sim.simulateNeutrons(1000);
+            sim.simulateNeutrons(100000);
         });
         b.setPrefWidth(200);
 

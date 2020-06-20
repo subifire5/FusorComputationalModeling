@@ -5,12 +5,10 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -18,12 +16,9 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.shape.VertexFormat;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.fxyz3d.importers.Importer3D;
-import org.fxyz3d.shapes.polygon.PolygonMesh;
-import org.fxyz3d.shapes.polygon.PolygonMeshView;
 
 /**
  *

@@ -5,8 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-
 public class Detector extends Part {
 
     public LogHistogram entryEnergies;

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.shape.Sphere;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -51,7 +50,7 @@ public class Assembly extends Group {
                 Util.Graphics.visualizeEvent(partEvent, visualizations);
                 Part p = partEvent.part;
                 n.setPosition(partEvent.position);
-                System.out.println("Entering part " + p.name);
+                //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations);
             }
             // if things happened far enough from the origin, call it gone

@@ -40,7 +40,7 @@ public class Material {
         return materials.get(name);
     }
     
-    public void addComponent(Element element, double density) {
+    public final void addComponent(Element element, double density) {
         components.add(new Component(element, density));
     }
 
