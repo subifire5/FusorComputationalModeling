@@ -162,6 +162,9 @@ public class Shape extends MeshView {
         int y = 1;
         int z = 2;
         int face = -1;
+        if (java.lang.Math.abs(rayDirection.getNorm() -1) > 1e-8) {
+            System.out.println("direction not normalized in rayIntersect");
+        }
 
         cacheVerticesAndFaces();
 //        System.out.println("Checking part" + this.part.name);
@@ -194,15 +197,19 @@ public class Shape extends MeshView {
             }
 
         }
-        if (face != -1) {
-            Vector3D v0 = new Vector3D(vertices[3 * faces[face] + x], vertices[3 * faces[face] + y], vertices[3 * faces[face] + z]);
-            Vector3D v1 = new Vector3D(vertices[3 * faces[face + 2] + x], vertices[3 * faces[face + 2] + y], vertices[3 * faces[face + 2] + z]);
-            Vector3D v2 = new Vector3D(vertices[3 * faces[face + 4] + x], vertices[3 * faces[face + 4] + y], vertices[3 * faces[face + 4] + z]);
-
-            Util.Graphics.drawLine(simVis, v0, v1, Color.GREEN);
-            Util.Graphics.drawLine(simVis, v1, v2, Color.GREEN);
-            Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
-        }
+//        if (face != -1) {
+//            Vector3D v0 = new Vector3D(vertices[3 * faces[face] + x], vertices[3 * faces[face] + y], vertices[3 * faces[face] + z]);
+//            Vector3D v1 = new Vector3D(vertices[3 * faces[face + 2] + x], vertices[3 * faces[face + 2] + y], vertices[3 * faces[face + 2] + z]);
+//            Vector3D v2 = new Vector3D(vertices[3 * faces[face + 4] + x], vertices[3 * faces[face + 4] + y], vertices[3 * faces[face + 4] + z]);
+//
+//            System.out.println("" + v0);
+//            System.out.println("" + v1);
+//            System.out.println("" + v2);
+//            Util.Graphics.drawLine(simVis, v0, v1, Color.GREEN);
+//            Util.Graphics.drawLine(simVis, v1, v2, Color.GREEN);
+//            Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
+//            Util.Graphics.drawSphere(simVis, Util.Math.rayPoint(rayOrigin, rayDirection, tmin), vis, "orange");
+//        }
         return tmin;
     }
 

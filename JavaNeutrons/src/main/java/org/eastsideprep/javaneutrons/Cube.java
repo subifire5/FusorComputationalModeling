@@ -45,9 +45,4 @@ public class Cube extends Shape {
                 4, 0, 7, 0, 6, 0
         );
     }
-    
-//    @Override
-//    public double getVolume() {
-//        return s*s*s;
-//    }
 }

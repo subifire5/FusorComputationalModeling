@@ -56,7 +56,7 @@ public class App extends Application {
             // here is where we run the actual simulation
             // parameters are neutron count and callback for UI update (percent complete)
             //
-            sim.simulateNeutrons(10);
+            sim.simulateNeutrons(1000);
         });
         b.setPrefWidth(200);
 

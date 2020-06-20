@@ -39,11 +39,13 @@ public class Assembly extends Group {
 
             // did we not find a part, or is it further than an air event?
             if (partEvent == null || partEvent.t > interactionEvent.t) {
-                // scattering / absorption in air did really happen, process it
-                n.setPosition(interactionEvent.position);
-                n.processEvent(interactionEvent);
-                Util.Graphics.visualizeEvent(interactionEvent, visualizations);
                 event = interactionEvent;
+                if (event.position.getNorm() <= Environment.limit) {
+                    // scattering / absorption in air did really happen, process it
+                    n.setPosition(event.position);
+                    n.processEvent(event);
+                    Util.Graphics.visualizeEvent(event, visualizations);
+                }
             } else {
                 // no interaction, we will just enter a new part
                 Util.Graphics.visualizeEvent(partEvent, visualizations);
@@ -52,17 +54,15 @@ public class Assembly extends Group {
                 System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations);
             }
-            // if neutron goes far enough from the origin, call it gone
-            if (n.position.getNorm() > Environment.limit) {
+            // if things happened far enough from the origin, call it gone
+            if (event.position.getNorm() > Environment.limit) {
                 Environment.processEnergy(n.energy);
-                event.code = Event.Code.Gone;
+                event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10);
             }
             //visualizeEvent(event, visualizations);
-        } while (event.code != Event.Code.Absorb && event.code != Event.Code.Gone);
+        } while (event.code != Event.Code.Absorb && event.code != Event.Code.Gone && event.code != Event.Code.EmergencyExit);
         return event;
     }
-
-  
 
     //
     // rayIntersect

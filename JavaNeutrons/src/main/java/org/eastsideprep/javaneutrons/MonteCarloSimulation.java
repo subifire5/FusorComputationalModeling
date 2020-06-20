@@ -20,7 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class MonteCarloSimulation {
 
-    static boolean parallel = false;
+    static boolean parallel = true;
 
     public interface ProgressLambda {
 
@@ -57,24 +57,26 @@ public class MonteCarloSimulation {
 //        Util.Graphics.drawLine(simVis, v1, v2, Color.GREEN);
 //        Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
 //
-//        double t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_J, v0, v1, v2);
+//        Vector3D start = new Vector3D(0,25,0);
+//        double t = Util.Math.rayTriangleIntersect(start, Vector3D.PLUS_J, v0, v1, v2);
 //        if (t != -1) {
 //            System.out.println("t="+t);
-//            Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_J.scalarMultiply(t)), 5, "blue");
+//            Util.Graphics.drawSphere(simVis, Util.Math.rayPoint(start, Vector3D.PLUS_J, t), 5, "blue");
 //        }
 //        t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_I.add(Vector3D.PLUS_J.scalarMultiply(0.5)), v0, v1, v2);
 //        Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_I.add(Vector3D.PLUS_J.scalarMultiply(0.5)).scalarMultiply(t)), 5, "yellow");
 //        
 //        t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_I.add(Vector3D.PLUS_K.scalarMultiply(-0.5)), v0, v1, v2);
 //        Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_I.add(Vector3D.PLUS_K.scalarMultiply(-0.5)).scalarMultiply(t)), 5, "red");
+//
+//
 //        for (int i = 0; i < 10; i++) {
-//            Event e = assembly.rayIntersect(this.origin,
+//            Event e = assembly.rayIntersect(new Vector3D(25,0,0),
 //                    Vector3D.PLUS_I.add(new Vector3D(0, Util.Math.random.nextDouble() * 2 - 1, Util.Math.random.nextDouble() * 2 - 1)),
 //                    simVis);
 //            System.out.println("Event: " + e);
-//            assembly.visualizeEvent(e, simVis);
+//            Util.Graphics.visualizeEvent(e, simVis);
 //        }
-//        return;
 
         System.out.println("");
         System.out.println("");
@@ -97,7 +99,7 @@ public class MonteCarloSimulation {
             neutrons.add(n);
         }
 
-        Thread t = new Thread(() -> {
+        Thread th = new Thread(() -> {
             if (!MonteCarloSimulation.parallel) {
                 neutrons.stream().forEach(n -> simulateNeutron(n));
             } else {
@@ -105,8 +107,8 @@ public class MonteCarloSimulation {
             }
         });
         
-        t.setPriority(Thread.MIN_PRIORITY);
-        t.start();
+        th.setPriority(Thread.MIN_PRIORITY);
+        th.start();
     }
 
     void simulateNeutron(Neutron n) {

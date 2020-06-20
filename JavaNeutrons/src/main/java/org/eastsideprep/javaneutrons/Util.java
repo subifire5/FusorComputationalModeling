@@ -66,7 +66,7 @@ public class Util {
             double d = N.dotProduct(v0);
 
             // compute t (equation 3)
-            double t = (N.dotProduct(rayOrigin) + d) / NdotRayDirection;
+            double t = (d - N.dotProduct(rayOrigin)) / NdotRayDirection;
             // check if the triangle is in behind the ray
             if (t < 0) {
                 return -1; // the triangle is behind 

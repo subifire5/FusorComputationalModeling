@@ -43,11 +43,11 @@ public class Part {
     Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group g) {
         double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, g);
         // not found?
-        if (t == -1 ) {
+        if (t == -1) {
             return null;
         }
         // construct appropriate event
-        return new Event(rayOrigin.add(rayDirection.scalarMultiply(t)), goingOut?Event.Code.Exit:Event.Code.Entry, t);
+        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), goingOut ? Event.Code.Exit : Event.Code.Entry, t);
     }
 
     //
@@ -56,7 +56,7 @@ public class Part {
     // follows the neutron around from entry to exit or absorption
     // 
     Event evolveNeutronPath(Neutron n, Group visualizations) {
-        double t, t1, t2;
+        double t;
         Event exitEvent;
         Event interactionEvent;
         Event event;
@@ -69,7 +69,10 @@ public class Part {
             if (exitEvent == null) {
                 System.out.println("no way out of part!");
                 //throw new IllegalArgumentException();
-                exitEvent=new Event(n.position.add(n.direction.scalarMultiply(100)), Event.Code.EmergencyExit, 100);
+                exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10);
+                n.record(exitEvent);
+                Util.Graphics.visualizeEvent(exitEvent, visualizations);
+                return exitEvent;
             }
 
             // this next line will figure out where to scatter/absorb
