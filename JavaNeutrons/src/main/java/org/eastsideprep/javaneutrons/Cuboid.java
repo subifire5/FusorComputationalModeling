@@ -7,10 +7,6 @@ package org.eastsideprep.javaneutrons;
 
 public class Cuboid extends Shape {
 
-    Cuboid() {
-
-    }
-
     // create with side lengths
     Cuboid(float dx, float dy, float dz) {
         create(dx, dy, dz);
@@ -21,11 +17,18 @@ public class Cuboid extends Shape {
         create(s, s, s);
     }
 
-    void create(float dx, float dy, float dz) {
+    // to learn more about triangle meshes, 
+    // go to https://docs.oracle.com/javase/8/javafx/api/javafx/scene/shape/TriangleMesh.html
+    // we only use vertices and faces here,
+    // no normals or texcoords
+    private void create(float dx, float dy, float dz) {
         dx /= 2;
         dy /= 2;
         dz /= 2;
         mesh.getPoints().addAll(
+                // these are all the points in our mesh
+                // one row per point
+                // the faces array points to them
                 -dx, -dy, dz,
                 dx, -dy, dz,
                 dx, dy, dz,
@@ -36,9 +39,14 @@ public class Cuboid extends Shape {
                 -dx, dy, -dz
         );
 
+        // we don't use this, but we have to have one at least
         mesh.getTexCoords().addAll(0, 0);
 
         mesh.getFaces().addAll(
+                // these are interleaved with texCoords (all 0)
+                // face index 1, tex coord index 1, face index 2, tex coord index 2 etc.
+                // one row = one face (triangle)
+                // all index numbers are indexing the vertices array (index * 3)
                 // top
                 0, 0, 1, 0, 2, 0,
                 0, 0, 2, 0, 3, 0,
