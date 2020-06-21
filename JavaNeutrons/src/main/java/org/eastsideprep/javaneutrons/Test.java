@@ -5,11 +5,15 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.shape.DrawMode;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
@@ -17,9 +21,11 @@ import org.eastsideprep.javaneutrons.assemblies.Detector;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Util;
+import org.eastsideprep.javaneutrons.materials.HumanBodyMaterial;
 import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.materials.Steel;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
+import org.eastsideprep.javaneutrons.materials.Water;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.Shape;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
@@ -167,10 +173,25 @@ public class Test {
 
         Util.Graphics.drawCoordSystem(visualizations);
 
+        //
+        // body
+        //
+        Shape bodyShape = new Shape(Test.class.getResource("/body.obj"));
+        bodyShape.getTransforms().add(new Translate(0, 0, -200));
+        bodyShape.getTransforms().add(new Rotate(90, new Point3D(1,0,0)));
+        bodyShape.getTransforms().add(new Rotate(90, new Point3D(0,0,1)));
+        bodyShape.getTransforms().add(new Scale(100, 100, 100));
+        bodyShape.setColor("red");
+        bodyShape.setOpacity(0.5);
+        bodyShape.setDrawMode(DrawMode.LINE);
+        System.out.println("Body volume in cm^3: " + bodyShape.getVolume());
+        Detector body = new Detector("Human", bodyShape, HumanBodyMaterial.getInstance());
+
         Assembly fusor = new Assembly("Fusor");
         fusor.addAll(igloo);
-        fusor.addAll(detector);
+        fusor.addAll(detector, body);
         visualizations.getChildren().add(fusor);
+        visualizations.getChildren().add(bodyShape);
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO);
     }
@@ -197,6 +218,16 @@ public class Test {
         cube3.setTranslateZ(100);
         cube3.setRotationAxis(new Point3D(-1, -1, 1));
 
+        Shape body = new Shape(Test.class.getResource("/body.obj"));
+        body.setScaleX(100);
+        body.setScaleY(100);
+        body.setScaleZ(100);
+
+        body.setTranslateX(200);
+        body.setTranslateY(200);
+        body.setTranslateZ(200);
+        body.setRotationAxis(new Point3D(-1, -1, -1));
+        System.out.println("Volume:" + body.getVolume());
         // little thread to keep rotating the cube
         Thread t = new Thread(() -> {
             try {
@@ -209,6 +240,7 @@ public class Test {
                         cube.setRotate(cube.getRotate() + 1);
                         cube2.setRotate(cube2.getRotate() + 1);
                         cube3.setRotate(cube3.getRotate() + 1);
+                        body.setRotate(cube3.getRotate() + 1);
                     });
                 }
             } catch (InterruptedException ex) {
@@ -217,7 +249,7 @@ public class Test {
         t.start();
 
         //Creating a Group object  
-        Group g = new Group(cube, cube2, cube3);
+        Group g = new Group(cube, cube2, cube3, body);
 
         return g;
     }

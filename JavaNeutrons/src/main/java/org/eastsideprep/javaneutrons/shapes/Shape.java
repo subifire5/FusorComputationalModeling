@@ -114,7 +114,7 @@ public class Shape extends MeshView {
 
         // transform all vertices by all transforrms
         double[] verticesTransformed = new double[v.length];
-        for (int i = 0; i < this.getTransforms().size(); i++) {
+        for (int i = this.getTransforms().size()-1; i >= 0; i--) {
             Transform t = this.getTransforms().get(i);
             t.transform3DPoints(v, 0,
                     verticesTransformed, 0,

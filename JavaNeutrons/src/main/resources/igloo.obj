@@ -2,8 +2,6 @@
 # Exported from SketchUp, (c) 2000-2012 Trimble Navigation Limited
 # File units = centimeters
 
-mtllib test.mtl
-
 g Mesh1 Model
 
 usemtl FrontColor
