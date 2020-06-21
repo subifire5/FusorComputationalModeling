@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javafx.scene.Group;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.DrawMode;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
@@ -19,7 +21,7 @@ import org.eastsideprep.javaneutrons.shapes.Shape;
  *
  * @author gunnar
  */
-public class Part {
+public class Part  {
 
     static HashMap<String, Part> namedParts = new HashMap<>();
     Shape shape;
@@ -40,10 +42,16 @@ public class Part {
         return namedParts.get(name);
     }
 
-    public static ArrayList<Part> NewPartsFromShapeList(List<Shape> shapes, Material material) {
+    public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
         ArrayList<Part> parts = new ArrayList<>();
+        int i = 0;
         for (Shape s : shapes) {
-            parts.add(new Part(null, s, material));
+            Part p = new Part(name+"."+i, s, material);
+            p.shape.setDrawMode(DrawMode.LINE);
+            p.shape.setOpacity(0.5);
+            p.shape.setColor("blue");
+            parts.add(p);
+            i++;
         }
         return parts;
     }
@@ -68,8 +76,9 @@ public class Part {
     // evolveNeutronPathNoVacuum
     // 
     // follows the neutron around from entry to exit or absorption
+    // outermost will be ignored, this is not an assembly
     // 
-    Event evolveNeutronPath(Neutron n, Group visualizations) {
+    Event evolveNeutronPath(Neutron n, Group visualizations, boolean outermost) {
         double t;
         Event exitEvent;
         Event interactionEvent;

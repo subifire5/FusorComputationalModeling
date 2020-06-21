@@ -5,31 +5,66 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
-import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Environment;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.Air;
+import org.eastsideprep.javaneutrons.shapes.AssemblyGroup;
 import org.eastsideprep.javaneutrons.shapes.Shape;
 
 /**
  *
  * @author gunnar
  */
-public class Assembly extends Group {
+public class Assembly extends Part {
     // todo: acceleration structure
 
+    private AssemblyGroup g;
     public ArrayList<Detector> detectors = new ArrayList<>();
 
     public Assembly(String name) {
+        super(name, null, null);
+        this.g = new AssemblyGroup(this);
     }
 
-    public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations) {
+    // use this constructor to construct an assembly from an OBJ file
+    public Assembly(String name, URL url, Object material) {
+        super(name, null, null);
+
+        Material m = null;
+        if (material instanceof Class) {
+            try {
+                Method method = ((Class) material).getMethod("getInstance");
+                material = method.invoke(material);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            }
+        }
+        this.g = new AssemblyGroup(this);
+
+        ArrayList<Shape> shapes = Shape.loadOBJ(url);
+        this.addAll(Part.NewPartsFromShapeList(name, shapes, (Material) material));
+    }
+
+    public Group getGroup() {
+        return g;
+    }
+
+    @Override
+    public Event evolveNeutronPath(Neutron n, Group visualizations, boolean outermost) {
+        return this.evolveNeutronPathNoVacuum(n, visualizations, outermost);
+    }
+
+    public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations, boolean outermost) {
         Air air = Air.getInstance();
         Event partEvent;
         Event interactionEvent;
@@ -38,7 +73,12 @@ public class Assembly extends Group {
 
         do {
             // find the closest part we intersect with
-            partEvent = this.rayIntersect(n.position, n.direction, visualizations);
+            partEvent = this.rayIntersect(n.position, n.direction, false, visualizations);
+            if (partEvent == null && !outermost) {
+                // we found nothing and we are not in the outermost assembly,
+                // return to the containing assembly
+                return new Event(n.position, Event.Code.Exit);
+            }
             // find possible interactions along the way
             interactionEvent = air.nextPoint(n);
 
@@ -58,7 +98,7 @@ public class Assembly extends Group {
                 n.setPosition(partEvent.position);
                 n.record(partEvent);
                 //System.out.println("Entering part " + p.name);
-                event = p.evolveNeutronPath(n, visualizations);
+                event = p.evolveNeutronPath(n, visualizations, false);
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {
@@ -75,17 +115,25 @@ public class Assembly extends Group {
     //
     // intersect with all parts in assembly, return event with 
     // part or null
+    // we need to ignore "going out" here, as we are not inside a simplepart
     //
-    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, Group g) {
+    @Override
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group vis) {
         double tmin = -1;
         Part closestPart = null;
+        Part p = null;
 
-        for (Node node : this.getChildren()) {
+        for (Node node : this.g.getChildren()) {
             if (node instanceof Shape) {
                 // link back to the Part that contains it
-                Part p = ((Shape) node).part;
+                p = ((Shape) node).part;
+            } else if (node instanceof AssemblyGroup) {
+                // link back to the Assembly that contains it
+                p = ((AssemblyGroup) node).assembly;
+            }
+            if (p != null) {
                 // intersect with that part, false means "going in"
-                Event entryEvent = p.rayIntersect(rayOrigin, rayDirection, false, g);
+                Event entryEvent = p.rayIntersect(rayOrigin, rayDirection, false, vis);
                 // event != null means we found a triangle
                 if (entryEvent != null) {
                     if (tmin == -1 || entryEvent.t < tmin) {
@@ -100,10 +148,18 @@ public class Assembly extends Group {
     }
 
     public void add(Part part) {
-        Platform.runLater(() -> this.getChildren().add(part.shape));
+        if (part instanceof Assembly) {
+            Assembly a = (Assembly) part;
+            g.getChildren().add(a.getGroup());
+        } else {
+            g.getChildren().add(part.shape);
+        }
         if (part instanceof Detector) {
             this.detectors.add((Detector) part);
         }
+//        if (part.shape != null) {
+//            System.out.println("Added part " + part.name + ", extent: " + part.shape.getExtent());
+//        } 
     }
 
     public void addAll(Part... parts) {
@@ -116,5 +172,9 @@ public class Assembly extends Group {
         for (Part p : parts) {
             this.add(p);
         }
+    }
+
+    public ObservableList<Transform> getTransforms() {
+        return g.getTransforms();
     }
 }

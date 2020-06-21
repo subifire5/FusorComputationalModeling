@@ -12,6 +12,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -36,18 +37,21 @@ public class Shape extends MeshView {
     public Shape() {
         this.mesh = new TriangleMesh();
         super.setMesh(mesh);
+        setVisuals("gray");
     }
 
     // clone
     public Shape(Shape shape) {
         super(shape.mesh);
         this.mesh = shape.mesh;
+        setVisuals("yellow");
     }
 
     // from existing triangle mesh
     public Shape(TriangleMesh mesh) {
         super(mesh);
         this.mesh = mesh;
+        setVisuals("purple");
     }
 
     // use this constructor to construct a shape from an FXyz object 
@@ -61,8 +65,11 @@ public class Shape extends MeshView {
         } else {
             throw new IllegalArgumentException("Constructing Shape from invalid kind of mesh: " + m);
         }
+
+        setVisuals("purple");
     }
 
+ 
     // use this constructor to construct a shape from an OBJ file
     // will use only the first mesh in the group
     public Shape(URL url) {
@@ -72,8 +79,22 @@ public class Shape extends MeshView {
         }
         this.mesh = (TriangleMesh) shapes.get(0).getMesh();
         super.setMesh(this.mesh);
+        setVisuals("green");
     }
 
+    
+    //
+    // setVisuals
+    // default vis attributes for shapes
+    //
+    
+       private void setVisuals(String color) {
+        this.setColor(color);
+        this.setOpacity(0.5);
+        this.setDrawMode(DrawMode.LINE);
+    }
+
+    
     //
     // loadOBJ
     //
@@ -93,7 +114,7 @@ public class Shape extends MeshView {
         // add all triangle meshes to the list
         for (Node n : g.getChildren()) {
             if (n instanceof MeshView) {
-                System.out.println("Adding shape");
+                //System.out.println("Adding shape");
                 shapes.add(new Shape((MeshView) n));
             }
         }
@@ -114,7 +135,7 @@ public class Shape extends MeshView {
 
         // transform all vertices by all transforrms
         double[] verticesTransformed = new double[v.length];
-        for (int i = this.getTransforms().size()-1; i >= 0; i--) {
+        for (int i = this.getTransforms().size() - 1; i >= 0; i--) {
             Transform t = this.getTransforms().get(i);
             t.transform3DPoints(v, 0,
                     verticesTransformed, 0,
@@ -219,10 +240,11 @@ public class Shape extends MeshView {
     // todo: since the math is so simple, this could be done without creating objects
     //
     public double getVolume() {
-        double volume = 0;
 
-        double[] v = getVertices();
-        int[] faces = getFaces();
+        double volume = 0;
+        cacheVerticesAndFaces();
+
+        double[] v = vertices;
 
         for (int i = 0; i < faces.length; i += 6) {
             Vector3D v0 = new Vector3D(v[3 * faces[i]], v[3 * faces[i] + 1], v[3 * faces[i] + 2]);
@@ -234,6 +256,33 @@ public class Shape extends MeshView {
         }
 
         return Math.abs(volume / 6.0);
+    }
+
+    //
+    // getExtent
+    //
+    // calculates the max bondaries of a mesh in O(N)
+    //
+    public Vector3D getExtent() {
+        cacheVerticesAndFaces();
+
+        double xmin = Double.POSITIVE_INFINITY;
+        double xmax = Double.NEGATIVE_INFINITY;
+        double ymin = Double.POSITIVE_INFINITY;
+        double ymax = Double.NEGATIVE_INFINITY;
+        double zmin = Double.POSITIVE_INFINITY;
+        double zmax = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < vertices.length; i += 3) {
+            xmin = Math.min(vertices[i], xmin);
+            xmax = Math.max(vertices[i], xmax);
+            ymin = Math.min(vertices[i + 1], ymin);
+            ymax = Math.max(vertices[i + 1], ymax);
+            zmin = Math.min(vertices[i + 2], zmin);
+            zmax = Math.max(vertices[i + 2], zmax);
+        }
+
+        return new Vector3D(xmax - xmin, ymax - ymin, zmax - zmin);
     }
 
     //

@@ -114,7 +114,7 @@ public class MonteCarloSimulation {
     }
 
     public void simulateNeutron(Neutron n) {
-        this.assembly.evolveNeutronPathNoVacuum(n, this.simVis);
+        this.assembly.evolveNeutronPath(n, this.simVis, true);
         long current;
         synchronized (this) {
             completed++;

@@ -5,8 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
@@ -25,7 +23,6 @@ import org.eastsideprep.javaneutrons.materials.HumanBodyMaterial;
 import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.materials.Steel;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
-import org.eastsideprep.javaneutrons.materials.Water;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.Shape;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
@@ -80,7 +77,7 @@ public class Test {
 
         Assembly fusor = new Assembly("Fusor");
         fusor.addAll(wall, wall2, detector);
-        visualizations.getChildren().add(fusor);
+        visualizations.getChildren().add(fusor.getGroup());
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO);
     }
@@ -133,7 +130,7 @@ public class Test {
 
         Assembly fusor = new Assembly("Fusor");
         fusor.addAll(wall1, wall2, detector);
-        visualizations.getChildren().add(fusor);
+        visualizations.getChildren().add(fusor.getGroup());
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO);
     }
@@ -150,14 +147,7 @@ public class Test {
         //
         // igloo
         //
-        ArrayList<Shape> iglooShapes = Shape.loadOBJ(Test.class.getResource("/igloo.obj"));
-        for (Shape s : iglooShapes) {
-            s.setColor("gray");
-            s.setDrawMode(DrawMode.LINE);
-            s.setOpacity(0.5);
-
-        }
-        ArrayList<Part> igloo = Part.NewPartsFromShapeList(iglooShapes, Paraffin.getInstance());
+        Assembly igloo = new Assembly("igloo", Test.class.getResource("/igloo.obj"), Paraffin.getInstance());
 
         //
         // The detector is made from a stock - FXyz CuboidMesh
@@ -166,32 +156,27 @@ public class Test {
         Shape detectorShape = new Shape(new CuboidMesh(s, 3 * s, 5 * s));
         // move detector behind cube wall
         detectorShape.getTransforms().add(new Translate(200, 0, 0));
-        detectorShape.setColor("green");
-        detectorShape.setOpacity(0.5);
-        detectorShape.setDrawMode(DrawMode.LINE);
         Detector detector = new Detector("Detector 1", detectorShape, Vacuum.getInstance());
-
-        Util.Graphics.drawCoordSystem(visualizations);
 
         //
         // body
         //
         Shape bodyShape = new Shape(Test.class.getResource("/body.obj"));
         bodyShape.getTransforms().add(new Translate(0, 0, -200));
-        bodyShape.getTransforms().add(new Rotate(90, new Point3D(1,0,0)));
-        bodyShape.getTransforms().add(new Rotate(90, new Point3D(0,0,1)));
-        bodyShape.getTransforms().add(new Scale(100, 100, 100));
-        bodyShape.setColor("red");
-        bodyShape.setOpacity(0.5);
-        bodyShape.setDrawMode(DrawMode.LINE);
-        System.out.println("Body volume in cm^3: " + bodyShape.getVolume());
-        Detector body = new Detector("Human", bodyShape, HumanBodyMaterial.getInstance());
+        bodyShape.getTransforms().add(new Rotate(90, new Point3D(1, 0, 0)));
+        bodyShape.getTransforms().add(new Rotate(90, new Point3D(0, 0, 1)));
+        bodyShape.getTransforms().add(new Scale(73, 73, 73));
+        //System.out.println("Body volume in cm^3: " + bodyShape.getVolume());
+        Detector body = new Detector("Body", bodyShape, HumanBodyMaterial.getInstance());
 
+        
+        // assemble the Fusor out of the other stuff
         Assembly fusor = new Assembly("Fusor");
-        fusor.addAll(igloo);
-        fusor.addAll(detector, body);
-        visualizations.getChildren().add(fusor);
-        visualizations.getChildren().add(bodyShape);
+        fusor.addAll(igloo, detector, body);
+        
+        // ubt it all into the visual scene
+        Util.Graphics.drawCoordSystem(visualizations);
+        visualizations.getChildren().add(fusor.getGroup());
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO);
     }
