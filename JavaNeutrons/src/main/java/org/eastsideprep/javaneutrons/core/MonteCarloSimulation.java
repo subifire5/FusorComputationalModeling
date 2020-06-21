@@ -11,9 +11,10 @@ import javafx.scene.Group;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ValueAxis;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
-import org.eastsideprep.javaneutrons.assemblies.Detector;
+import org.eastsideprep.javaneutrons.assemblies.Part;
 
 /**
  *
@@ -85,10 +86,9 @@ public class MonteCarloSimulation {
         System.out.println("Running new MC simulation for " + count + " neutrons ...");
 
         // reset detectors
-        for (Detector d : assembly.detectors) {
-            d.reset();
-        }
-        // and enviroment (will count escaped neutrons
+        assembly.resetDetectors();
+
+        // and enviroment (will count escaped neutrons)
         Environment.getInstance().reset();
 
         ArrayList<Neutron> neutrons = new ArrayList<>();
@@ -127,29 +127,37 @@ public class MonteCarloSimulation {
         }
     }
 
-    public BarChart makeChart() {
+    public BarChart makeChart(String detector, String series) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
         final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
-        bc.setTitle("Simulation results");
         xAxis.setLabel("Energy (eV)");
-        yAxis.setLabel("Count");
+        
+        if (detector != null) {
+            Part p = Part.getByName(detector);
+            if (p == null) {
+                return null;
+            }
+            bc.setTitle("Part \"" + p.name + "\", total deposited energy: "
+                    + p.getTotalDepositedEnergy() * 1e-4 + " J");
 
-        // add data series for all detector
-        for (Detector d : this.assembly.detectors) {
-            //System.out.println("data for " + d.name);
-            // put in all the data
-            //System.out.println("retrieving entry energies");
-            bc.getData().add(d.entryEnergies.makeSeries("Detector entry counts"));
-//            System.out.println("retrieving fluence");
-//            bc.getData().add(d.fluenceOverEnergy.makeSeries("Detector fluence"));
+            switch (series) {
+                case "EntryCounts":
+                    yAxis.setLabel("Count");
+                    bc.getData().add(p.entryOverEnergy.makeSeries("Entry counts"));
+                    break;
+                case "Fluence":
+                    yAxis.setLabel("Fluence");
+                    bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence"));
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            bc.setTitle("Environment");
+            yAxis.setLabel("Count");
+            bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
         }
-
-        // add data series for environment catchll
-        //System.out.println("data for environment");
-        //System.out.println("retrieving escape energies");
-        bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
-
         return bc;
     }
 

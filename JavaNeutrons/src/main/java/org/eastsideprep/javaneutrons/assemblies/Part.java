@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javafx.scene.Group;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.DrawMode;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.shapes.Shape;
@@ -21,32 +21,54 @@ import org.eastsideprep.javaneutrons.shapes.Shape;
  *
  * @author gunnar
  */
-public class Part  {
+public class Part {
 
     static HashMap<String, Part> namedParts = new HashMap<>();
     Shape shape;
     Material material;
-    String name;
+    public String name;
 
-    public Part(String name, Shape s, Material m) {
+    // universal detector functionality
+    public LogHistogram entryOverEnergy;
+    public LogHistogram fluenceOverEnergy;
+    private double volume = 0;
+    private double currentEntryEnergy = 0;
+    private double totalDepositedEnergy = 0;
+
+    public Part(String name, Shape s, Object material) {
         this.shape = s;
         this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
             namedParts.put(name, this);
         }
-        this.material = m;
+        this.material = Material.getRealMaterial(material);
+        if (this.shape != null) {
+            this.volume = this.shape.getVolume();
+        }
+        resetDetector();
     }
 
     public static Part getByName(String name) {
         return namedParts.get(name);
     }
 
+    public void resetDetectors() {
+        resetDetector();
+    }
+
+    public final void resetDetector() {
+        this.currentEntryEnergy = 0;
+        this.totalDepositedEnergy = 0;
+        this.entryOverEnergy = new LogHistogram(-5, 10, 45);
+        this.fluenceOverEnergy = new LogHistogram(-5, 10, 45);
+    }
+
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
         ArrayList<Part> parts = new ArrayList<>();
         int i = 0;
         for (Shape s : shapes) {
-            Part p = new Part(name+"."+i, s, material);
+            Part p = new Part(name + "." + i, s, material);
             p.shape.setDrawMode(DrawMode.LINE);
             p.shape.setOpacity(0.5);
             p.shape.setColor("blue");
@@ -139,15 +161,31 @@ public class Part  {
         return event;
     }
 
+    //
+    // detector functionality
+    //
     void processPathLength(double length, double energy) {
-        // this is an empty method to be overridden by Detector class
+        if (name.equals("Body")) {
+            System.out.println("Entry into detector path length log " + this.fluenceOverEnergy.hashCode());
+        }
+        this.fluenceOverEnergy.record(length / volume, energy/Util.Physics.eV);
     }
 
     void processEntryEnergy(double e) {
-        // this is an empty method to be overridden by Detector class
+        if (name.equals("Body")) {
+            System.out.println("Entry into detector entry energy log " + this.entryOverEnergy.hashCode());
+            this.entryOverEnergy.record(1, e/Util.Physics.eV);
+            this.currentEntryEnergy = e;
+        }
     }
 
-    void processExitEnergy(double e) {
-        // this is an empty method to be overridden by Detector class
+    void processExitEnergy(double e
+    ) {
+        this.totalDepositedEnergy += (e - this.currentEntryEnergy);
     }
+
+    public double getTotalDepositedEnergy() {
+        return this.totalDepositedEnergy;
+    }
+
 }

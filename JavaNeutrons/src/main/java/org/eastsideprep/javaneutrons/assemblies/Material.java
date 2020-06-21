@@ -5,6 +5,8 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -125,6 +127,18 @@ public class Material {
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
 
         return new Event(location, code, t, e);
+    }
+
+    public static Material getRealMaterial(Object material) {
+        if (material instanceof Class) {
+            try {
+                Method method = ((Class) material).getMethod("getInstance");
+                material = method.invoke(material);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            }
+        }
+        return (Material) material;
+
     }
 
 }

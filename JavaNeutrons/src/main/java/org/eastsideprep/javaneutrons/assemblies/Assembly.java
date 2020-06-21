@@ -30,7 +30,6 @@ public class Assembly extends Part {
     // todo: acceleration structure
 
     private AssemblyGroup g;
-    public ArrayList<Detector> detectors = new ArrayList<>();
 
     public Assembly(String name) {
         super(name, null, null);
@@ -41,14 +40,8 @@ public class Assembly extends Part {
     public Assembly(String name, URL url, Object material) {
         super(name, null, null);
 
-        Material m = null;
-        if (material instanceof Class) {
-            try {
-                Method method = ((Class) material).getMethod("getInstance");
-                material = method.invoke(material);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            }
-        }
+        material = Material.getRealMaterial(material);
+
         this.g = new AssemblyGroup(this);
 
         ArrayList<Shape> shapes = Shape.loadOBJ(url);
@@ -57,6 +50,17 @@ public class Assembly extends Part {
 
     public Group getGroup() {
         return g;
+    }
+
+    @Override
+    public void resetDetectors() {
+        for (Node n : g.getChildren()) {
+            if (n instanceof AssemblyGroup) {
+                ((AssemblyGroup) n).assembly.resetDetectors();
+            } else if (n instanceof Shape) {
+                ((Shape) n).part.resetDetectors();
+            }
+        }
     }
 
     @Override
@@ -153,9 +157,6 @@ public class Assembly extends Part {
             g.getChildren().add(a.getGroup());
         } else {
             g.getChildren().add(part.shape);
-        }
-        if (part instanceof Detector) {
-            this.detectors.add((Detector) part);
         }
 //        if (part.shape != null) {
 //            System.out.println("Added part " + part.name + ", extent: " + part.shape.getExtent());

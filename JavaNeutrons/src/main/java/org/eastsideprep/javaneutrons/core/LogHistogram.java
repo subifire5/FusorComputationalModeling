@@ -5,7 +5,6 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
-import java.util.Arrays;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
@@ -18,7 +17,8 @@ public class LogHistogram {
     public LogHistogram(int logMin, int logMax, int bins) {
         this.logMin = logMin;
         this.logMax = logMax;
-        this.bins = new double[logMax - logMin + 1];
+        this.bins = new double[bins];
+        //this.bins = new double[logMax - logMin + 1];
     }
 
     public void record(double value, double energy) {
@@ -52,6 +52,7 @@ public class LogHistogram {
     }
 
     public XYChart.Series makeSeries(String seriesName) {
+        //System.out.println("Retrieving series "+seriesName+":");
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
         series.setName(seriesName);
@@ -65,10 +66,14 @@ public class LogHistogram {
         
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
 
-        for (int i = logMin; i < logMax; i++) {
-            String tick = "" + Math.round(Math.pow(10, i));
-            data.add(new XYChart.Data(tick, counts[i - logMin]));
-            //System.out.println(""+this.hashCode() + tick +":"+ counts[i - logMin] + " ");
+        for (int i = 0; i < bins.length; i++) {
+            double energy = Math.pow(10,logMin+i/((double)bins.length)*(logMax-logMin));
+            String tick = "" + energy;
+            if (tick.length() > 10){
+               // do something clever here
+            }
+            data.add(new XYChart.Data(tick, counts[i]));
+            //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }
 
         return series;

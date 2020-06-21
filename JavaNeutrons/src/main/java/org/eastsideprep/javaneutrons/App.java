@@ -5,9 +5,7 @@ import javafx.application.Application;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -43,7 +41,7 @@ public class App extends Application {
         // control buttons and progress 
         TextField tf = new TextField("200");
         tf.setPrefWidth(200);
-        
+
         Button bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
             //
@@ -58,14 +56,27 @@ public class App extends Application {
                     }
                 }
             });
+            root.setCenter(view);
         });
         bRun.setPrefWidth(200);
 
-        Button bStats = new Button("Show stats");
+        Button bStats = new Button("Show entry counts");
         bStats.setOnAction((e) -> {
-            root.setCenter(sim.makeChart());
+            root.setCenter(sim.makeChart("Body", "EntryCounts"));
         });
         bStats.setPrefWidth(200);
+
+        Button bStatsFluence = new Button("Show fluence");
+        bStatsFluence.setOnAction((e) -> {
+            root.setCenter(sim.makeChart("Body", "Fluence"));
+        });
+        bStatsFluence.setPrefWidth(200);
+
+        Button bStatsEnv = new Button("Show escapes");
+        bStatsEnv.setOnAction((e) -> {
+            root.setCenter(sim.makeChart(null, null));
+        });
+        bStatsEnv.setPrefWidth(200);
 
         Button bView = new Button("Show assembly");
         bView.setOnAction((e) -> {
@@ -80,7 +91,7 @@ public class App extends Application {
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(tf, bRun, bStats, bView, bTest, progress);
+        buttons.getChildren().addAll(tf, bRun, bStats, bStatsFluence, bStatsEnv, bView, bTest, progress);
         root.setLeft(buttons);
 
         // create camera control, set scene and stage
