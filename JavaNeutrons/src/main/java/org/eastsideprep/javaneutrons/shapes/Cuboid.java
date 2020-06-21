@@ -3,17 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.shapes;
 
 public class Cuboid extends Shape {
 
     // create with side lengths
-    Cuboid(float dx, float dy, float dz) {
+    public Cuboid(float dx, float dy, float dz) {
         create(dx, dy, dz);
     }
 
     // can also make a cube
-    Cuboid(float s) {
+    public Cuboid(float s) {
         create(s, s, s);
     }
 

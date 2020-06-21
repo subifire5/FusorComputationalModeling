@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
@@ -18,10 +18,10 @@ public class Neutron {
     final public static double startingEnergyDD = 3.925333e-13 * 1e4; //SI for cm
     // factor 1e4 is from using cm, not m here - 100^2
 
-    double energy; // unit: SI for cm
-    Vector3D direction; // no units
-    Vector3D position; // unit: (cm,cm,cm)
-    Vector3D velocity; // kept in parallel with energy and direction, see set() methods
+    public double energy; // unit: SI for cm
+    public Vector3D direction; // no units
+    public Vector3D position; // unit: (cm,cm,cm)
+    public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
 
     ArrayList<Event> history = new ArrayList<>();
 

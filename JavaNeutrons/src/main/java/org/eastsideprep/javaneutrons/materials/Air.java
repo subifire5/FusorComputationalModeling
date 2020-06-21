@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.Material;
+import org.eastsideprep.javaneutrons.assemblies.Material;
 
 /**
  *
@@ -16,30 +16,33 @@ import org.eastsideprep.javaneutrons.Material;
 // of an Assembly
 public class Air extends Material {
 
-    static Air instance;
-    double pressure;
-    
+    private static Air instance;
+    private double pressure;
+
     // pressure is in kPa
     Air(double pressure) {
         super("Air");
-        this.pressure = pressure;
-        // todo: add real components of air
-        // instead, we add co2 
-        
-        double massDensitySTP = 1.960;
-        
-        this.addComponent(Carbon.getInstance(), 1);
-        this.addComponent(Oxygen.getInstance(), 2);
-        this.calculateAtomicDensities(massDensitySTP*pressure/100);
+        construct(pressure);
     }
 
     Air(String name, double pressure) {
         super(name);
-        this.pressure = pressure;
+        construct(pressure);
     }
-    
+
+    private void construct(double pressure) {
+        this.pressure = pressure;
+
+        double massDensitySTP = 1.960;
+
+        this.addComponent(Nitrogen.getInstance(), 78.08);
+        this.addComponent(Oxygen.getInstance(), 20.09);
+
+        this.calculateAtomicDensities(massDensitySTP * pressure / 100);
+    }
+
     // we only need one of these objects
-    public static Air getInstance() {
+    public static synchronized Air getInstance() {
         if (instance == null) {
             Air.instance = new Air(100);
         }

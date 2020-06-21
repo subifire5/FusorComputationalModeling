@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.core;
 
 import java.util.Random;
 import javafx.animation.ScaleTransition;
@@ -13,7 +13,6 @@ import javafx.scene.Group;
 import javafx.scene.effect.Glow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
@@ -30,7 +29,7 @@ public class Util {
 
     static public class Math {
 
-        static Random random = new Random();
+        public static Random random = new Random();
 
         public static Vector3D randomDir() {
             double phi = Util.Math.random.nextDouble() * 2 * java.lang.Math.PI;
@@ -181,10 +180,10 @@ public class Util {
             Platform.runLater(() -> g.getChildren().add(s));
         }
 
-        public static void drawLine(Group g, Vector3D p1, Vector3D p2, Color c) {
+        public static void drawLine(Group g, Vector3D p1, Vector3D p2, double size, Color c) {
             Vector3D v = p2.subtract(p1);
 
-            Cylinder line = new Cylinder(1, v.getNorm(), 4);
+            Cylinder line = new Cylinder(size, v.getNorm(), 4);
             PhongMaterial pm = new PhongMaterial(c);
             line.setMaterial(pm);
 
@@ -207,37 +206,38 @@ public class Util {
         public static void visualizeEvent(Event event, Vector3D direction, Group g) {
             if (event.code != Event.Code.Gone) {
                 String color;
-                double size = 1;
+                float size = 0.5f;
 
                 switch (event.code) {
                     case Entry:
                         color = "green";
-                        size = 1.5;
+                        size *= 2;
                         break;
                     case Exit:
                         color = "red";
-                        size = 1.5;
+                        size *=2;
                         break;
                     case Scatter:
                         color = "gold";
                         break;
                     case EmergencyExit:
                         color = "purple";
-                        size = 2;
+                        size *=5;
                         break;
                     case Capture:
                         color = "lightblue";
+                        size *=3;
                         break;
                     default:
                         color = "black";
-
+                        break;
                 }
                 Vector3D position = event.position;
                 if (direction != null) {
                     double jitter = 0.1;
                     position = position.add(direction.scalarMultiply(-jitter));
                 }
-                Util.Graphics.drawSphere(g, position, 1, color);
+                Util.Graphics.drawSphere(g, position, size, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }
         }
@@ -283,6 +283,14 @@ public class Util {
             // add to scene and play
             t.play();
             Platform.runLater(() -> g.getChildren().add(s));
+        }
+
+        public static void drawCoordSystem(Group g) {
+            Util.Graphics.drawSphere(g, Vector3D.ZERO, 1, "red");
+            Util.Graphics.drawLine(g, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.5, Color.CYAN);
+            Util.Graphics.drawLine(g, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.5, Color.YELLOW);
+            Util.Graphics.drawLine(g, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.5, Color.RED);
+
         }
 
     }

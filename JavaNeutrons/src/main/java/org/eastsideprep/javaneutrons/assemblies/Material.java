@@ -3,12 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.assemblies;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Util;
+import org.eastsideprep.javaneutrons.materials.Vacuum;
 
 /**
  *
@@ -22,9 +26,9 @@ public class Material {
 
         Element e;
         double density; // atoms/(barn*cm)
-        int proportion;
+        double proportion;
 
-        Component(Element e, int proportion) {
+        Component(Element e, double proportion) {
             this.e = e;
             this.density = 0;
             this.proportion = proportion;
@@ -44,8 +48,8 @@ public class Material {
         return materials.get(name);
     }
 
-    public final void addComponent(Element element, int numAtoms) {
-        components.add(new Component(element, numAtoms));
+    public final void addComponent(Element element, double proportion) {
+        components.add(new Component(element, proportion));
     }
 
     public final void calculateAtomicDensities(double densityMass) {
@@ -68,11 +72,11 @@ public class Material {
         // if there is n units per volume, 
         // then are are n*proportion units of the component
         for (Component c : components) {
-            c.density = n*c.proportion;
+            c.density = n * c.proportion;
         }
-        System.out.println("Macroscopic cross-section for "+
-                (this instanceof Element?"(element) ":"")+
-                this.name+": "+getSigma(1*Util.Physics.eV));
+        System.out.println("Macroscopic cross-section for "
+                + (this instanceof Element ? "(element) " : "")
+                + this.name + ": " + getSigma(1 * Util.Physics.eV));
     }
 
     // compute macroscopic cross-section
@@ -98,7 +102,7 @@ public class Material {
         double[] sigmas = new double[2 * components.size()];
         double sum = 0;
         for (int i = 0; i < sigmas.length; i += 2) {
-            Component c = components.get(i/2);
+            Component c = components.get(i / 2);
             sum += c.e.getScatterCrossSection(energy) * c.density;
             sigmas[i] = sum;
             sum += c.e.getCaptureCrossSection(energy) * c.density;

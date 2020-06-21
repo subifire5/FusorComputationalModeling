@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.core;
 
 import org.apache.commons.math3.geometry.euclidean.threed.*;
+import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.assemblies.Part;
 
 /**
  *
@@ -17,15 +19,15 @@ public class Event {
         Entry, Exit, Scatter, Capture, Gone, EmergencyDirectionChange, EmergencyExit
     };
 
-    Code code; // what kind of interesting thing happened here
-    Vector3D position;
-    Neutron neutron;
+    public Code code; // what kind of interesting thing happened here
+    public Vector3D position;
+    public Neutron neutron;
 
     // additional info - presence depends on event
-    Element element;
-    double energyOut;
-    double t; // how far along was this on the vector we took to get here
-    Part part;
+    public Element element;
+    public double energyOut;
+    public double t; // how far along was this on the vector we took to get here
+    public Part part;
 
     public Event(double x, double y, double z, Event.Code c) {
         this.position = new Vector3D(x, y, z);

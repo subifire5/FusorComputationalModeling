@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.Material;
+import org.eastsideprep.javaneutrons.assemblies.Material;
 
 //
 // Paraffin
@@ -18,7 +18,7 @@ import org.eastsideprep.javaneutrons.Material;
 public class Paraffin extends Material {
 
     static Paraffin instance;
-    
+
     Paraffin() {
         super("Paraffin");
         this.addComponent(Carbon.getInstance(), 31);
@@ -29,9 +29,9 @@ public class Paraffin extends Material {
     Paraffin(String name) {
         super(name);
     }
-    
+
     // we only need one of these objects
-    public static Paraffin getInstance() {
+    public static synchronized Paraffin getInstance() {
         if (instance == null) {
             Paraffin.instance = new Paraffin();
         }

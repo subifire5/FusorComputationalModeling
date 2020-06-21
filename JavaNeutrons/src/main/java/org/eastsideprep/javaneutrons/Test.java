@@ -5,16 +5,23 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.assemblies.Assembly;
+import org.eastsideprep.javaneutrons.assemblies.Detector;
+import org.eastsideprep.javaneutrons.assemblies.Part;
+import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.materials.Steel;
-import org.eastsideprep.javaneutrons.materials.Unobtainium;
+import org.eastsideprep.javaneutrons.materials.Vacuum;
+import org.eastsideprep.javaneutrons.shapes.Cuboid;
+import org.eastsideprep.javaneutrons.shapes.Shape;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
 /**
@@ -63,13 +70,106 @@ public class Test {
         detectorShape.setDrawMode(DrawMode.LINE);
         Detector detector = new Detector("Detector 1", detectorShape, Steel.getInstance());
 
-        Util.Graphics.drawSphere(visualizations, Vector3D.ZERO, 5, "red");
-        Util.Graphics.drawLine(visualizations, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), Color.CYAN);
-        Util.Graphics.drawLine(visualizations, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), Color.YELLOW);
-        Util.Graphics.drawLine(visualizations, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), Color.RED);
+        Util.Graphics.drawCoordSystem(visualizations);
 
         Assembly fusor = new Assembly("Fusor");
         fusor.addAll(wall, wall2, detector);
+        visualizations.getChildren().add(fusor);
+
+        return new MonteCarloSimulation(fusor, Vector3D.ZERO);
+    }
+
+    public static MonteCarloSimulation simulationTest2(Group visualizations) {
+        //
+        // Wall1
+        // this cube-shaped wall is loaded from an obj file in resources
+        // any obj files need to live their (folder src/main/resources in folder view)
+        //
+
+        double gap = 3; // in cm
+        double offset = 2 * gap; // in cm
+
+        //
+        // the upper plate is a Cuboid from a hand-written mesh
+        //
+        Shape wall1Shape = new Cuboid(100, 20, 100);
+        // move plate up
+        wall1Shape.getTransforms().add(new Translate(100, -10 - offset - gap, 0));
+        wall1Shape.setColor("purple");
+        wall1Shape.setDrawMode(DrawMode.LINE);
+        wall1Shape.setOpacity(0.1);
+        Part wall1 = new Part("Wall2", wall1Shape, Paraffin.getInstance());
+
+        //
+        // the lower plate is a Cuboid from a hand-written mesh
+        //
+        Shape wall2Shape = new Cuboid(100, 20, 100);
+        // move plate down
+        wall2Shape.getTransforms().add(new Translate(100, 10 - offset, 0));
+        wall2Shape.setColor("purple");
+        wall2Shape.setDrawMode(DrawMode.LINE);
+        wall2Shape.setOpacity(0.1);
+        Part wall2 = new Part("Wall2", wall2Shape, Paraffin.getInstance());
+
+        //
+        // The detector is made from a stock - FXyz CuboidMesh
+        //
+        double s = 20;
+        Shape detectorShape = new Shape(new CuboidMesh(s, 3 * s, 5 * s));
+        // move detector behind cube wall
+        detectorShape.getTransforms().add(new Translate(200, 0, 0));
+        detectorShape.setColor("green");
+        detectorShape.setOpacity(0.5);
+        detectorShape.setDrawMode(DrawMode.LINE);
+        Detector detector = new Detector("Detector 1", detectorShape, Steel.getInstance());
+
+        Util.Graphics.drawCoordSystem(visualizations);
+
+        Assembly fusor = new Assembly("Fusor");
+        fusor.addAll(wall1, wall2, detector);
+        visualizations.getChildren().add(fusor);
+
+        return new MonteCarloSimulation(fusor, Vector3D.ZERO);
+    }
+
+    public static MonteCarloSimulation simulationTest3(Group visualizations) {
+        //
+        // Wall1
+        // this cube-shaped wall is loaded from an obj file in resources
+        // any obj files need to live their (folder src/main/resources in folder view)
+        //
+
+        double gap = 3; // in cm
+        double offset = 2 * gap; // in cm
+        //
+        // igloo
+        //
+        ArrayList<Shape> iglooShapes = Shape.loadOBJ(Test.class.getResource("/igloo.obj"));
+        for (Shape s : iglooShapes) {
+            s.setColor("gray");
+            s.setDrawMode(DrawMode.LINE);
+            s.setOpacity(0.5);
+
+        }
+        ArrayList<Part> igloo = Part.NewPartsFromShapeList(iglooShapes, Paraffin.getInstance());
+
+        //
+        // The detector is made from a stock - FXyz CuboidMesh
+        //
+        double s = 20;
+        Shape detectorShape = new Shape(new CuboidMesh(s, 3 * s, 5 * s));
+        // move detector behind cube wall
+        detectorShape.getTransforms().add(new Translate(200, 0, 0));
+        detectorShape.setColor("green");
+        detectorShape.setOpacity(0.5);
+        detectorShape.setDrawMode(DrawMode.LINE);
+        Detector detector = new Detector("Detector 1", detectorShape, Vacuum.getInstance());
+
+        Util.Graphics.drawCoordSystem(visualizations);
+
+        Assembly fusor = new Assembly("Fusor");
+        fusor.addAll(igloo);
+        fusor.addAll(detector);
         visualizations.getChildren().add(fusor);
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO);
@@ -85,7 +185,7 @@ public class Test {
         cube.setTranslateY(100);
         cube.setTranslateZ(100);
 
-        CubeFXyz cube2 = new CubeFXyz(100, 100, 100);
+        Shape cube2 = new Shape(new CuboidMesh(100, 100, 100));
         cube2.setTranslateX(100);
         cube2.setTranslateY(100);
         cube2.setTranslateZ(100);

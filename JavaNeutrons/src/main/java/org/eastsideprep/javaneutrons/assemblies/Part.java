@@ -3,11 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.assemblies;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javafx.scene.Group;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Util;
+import org.eastsideprep.javaneutrons.shapes.Shape;
 
 /**
  *
@@ -25,13 +31,21 @@ public class Part {
         this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
+            namedParts.put(name, this);
         }
         this.material = m;
-        namedParts.put(name, this);
     }
 
     public static Part getByName(String name) {
         return namedParts.get(name);
+    }
+
+    public static ArrayList<Part> NewPartsFromShapeList(List<Shape> shapes, Material material) {
+        ArrayList<Part> parts = new ArrayList<>();
+        for (Shape s : shapes) {
+            parts.add(new Part(null, s, material));
+        }
+        return parts;
     }
 
     //
@@ -61,7 +75,7 @@ public class Part {
         Event interactionEvent;
         Event event;
         double epsilon = 1e-7; // 1 nm (in cm) 
-        
+
         // entry into part - tally, advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
         n.setPosition(Util.Math.rayPoint(n.position, n.direction, epsilon));
@@ -70,17 +84,17 @@ public class Part {
 
         do {
             double currentEnergy = n.energy;
-            
+
 //            // kind of awful, retry loop to get out of part
 //            int i = 10;
 //            do {
-                exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+            exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
 //                n.randomizeDirection();
 //                n.record (new Event(n.position, Event.Code.EmergencyDirectionChange));
 //                i--;
 //            } while (exitEvent == null && i > 0);
 //            // might not succeed
-            
+
             if (exitEvent == null) {
                 System.out.println("");
                 System.out.println("--no way out of part, emergency exit, dumping events" + this.name);

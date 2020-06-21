@@ -5,8 +5,8 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.Element;
-import org.eastsideprep.javaneutrons.Util;
+import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
@@ -41,7 +41,7 @@ public class Iron extends Element {
     }
 
     // we only need one of these objects
-    public static Iron getInstance() {
+    public static synchronized Iron getInstance() {
         if (instance == null) {
             Iron.instance = new Iron();
         }

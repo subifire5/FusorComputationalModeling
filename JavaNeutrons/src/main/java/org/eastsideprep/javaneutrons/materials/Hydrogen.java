@@ -5,8 +5,8 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.Element;
-import org.eastsideprep.javaneutrons.Util;
+import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.core.Util;
 
 //
 // Molecular hydrogen in molecular form
@@ -40,7 +40,7 @@ public class Hydrogen extends Element {
     }
     
         // we only need one of these objects
-    public static Hydrogen getInstance() {
+    public static synchronized Hydrogen getInstance() {
         if (instance == null) {
             Hydrogen.instance = new Hydrogen();
         }

@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.Material;
+import org.eastsideprep.javaneutrons.assemblies.Material;
 
 //
 // Steel
@@ -14,7 +14,7 @@ import org.eastsideprep.javaneutrons.Material;
 public class Steel extends Material {
 
     static Steel instance;
-    
+
     Steel() {
         super("Steel");
         this.addComponent(Carbon.getInstance(), 214);
@@ -25,9 +25,9 @@ public class Steel extends Material {
     Steel(String name) {
         super(name);
     }
-    
+
     // we only need one of these objects
-    public static Steel getInstance() {
+    public static synchronized Steel getInstance() {
         if (instance == null) {
             Steel.instance = new Steel();
         }

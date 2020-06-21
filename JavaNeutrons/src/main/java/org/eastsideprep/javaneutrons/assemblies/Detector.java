@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.assemblies;
 
+import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
+import org.eastsideprep.javaneutrons.shapes.Shape;
 
 public class Detector extends Part {
 

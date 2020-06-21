@@ -3,7 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.assemblies;
+
+import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
@@ -11,7 +14,7 @@ package org.eastsideprep.javaneutrons;
  */
 public class Element extends Material {
 
-    double mass; // g
+    public double mass; // g
     int atomicNumber;
     int neutrons;
 

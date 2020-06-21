@@ -5,8 +5,8 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.Element;
-import org.eastsideprep.javaneutrons.Util;
+import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
@@ -23,7 +23,7 @@ public class Oxygen extends Element {
     @Override
     public double getScatterCrossSection(double energy) {
         // todo: get real table data
-        if (energy > 10*Util.Physics.eV) {
+        if (energy > 10 * Util.Physics.eV) {
             return 2e-24;
         } else {
             return 5e-24;
@@ -33,15 +33,15 @@ public class Oxygen extends Element {
     @Override
     public double getCaptureCrossSection(double energy) {
         // todo: get real table data
-        if (energy > 10*Util.Physics.eV){
-            return 0.00001*1e-24;
-        } else{
-            return 0.002*1e-24;
+        if (energy > 10 * Util.Physics.eV) {
+            return 0.00001 * 1e-24;
+        } else {
+            return 0.002 * 1e-24;
         }
     }
 
     // we only need one of these objects
-    public static Oxygen getInstance() {
+    public static synchronized Oxygen getInstance() {
         if (instance == null) {
             Oxygen.instance = new Oxygen();
         }

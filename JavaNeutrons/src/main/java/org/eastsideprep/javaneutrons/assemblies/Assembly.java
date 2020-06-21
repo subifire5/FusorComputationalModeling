@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.assemblies;
 
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.core.Environment;
+import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.Air;
+import org.eastsideprep.javaneutrons.shapes.Shape;
 
 /**
  *
@@ -19,9 +24,9 @@ import org.eastsideprep.javaneutrons.materials.Air;
 public class Assembly extends Group {
     // todo: acceleration structure
 
-    ArrayList<Detector> detectors = new ArrayList<>();
+    public ArrayList<Detector> detectors = new ArrayList<>();
 
-    Assembly(String name) {
+    public Assembly(String name) {
     }
 
     public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations) {
@@ -102,6 +107,12 @@ public class Assembly extends Group {
     }
 
     public void addAll(Part... parts) {
+        for (Part p : parts) {
+            this.add(p);
+        }
+    }
+
+    public void addAll(ArrayList<Part> parts) {
         for (Part p : parts) {
             this.add(p);
         }

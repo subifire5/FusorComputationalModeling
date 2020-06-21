@@ -11,29 +11,30 @@ import org.eastsideprep.javaneutrons.assemblies.Element;
  *
  * @author gunnar
  */
-public class Unobtainium extends Element {
+public class Nitrogen extends Element {
 
-    private static Unobtainium instance;
-    
-    Unobtainium() {
-        // basically, hydrogen with really large, constant cross-section
-        super("Unobtainium", 1, 0);
+    private static Nitrogen instance;
+
+    Nitrogen() {
+        super("14-Nitrogen", 7, 7);
     }
 
     @Override
     public double getScatterCrossSection(double energy) {
-        return 10;
+        // todo: get real table data
+        return 11.53e-24;
     }
 
     @Override
     public double getCaptureCrossSection(double energy) {
-        return 5;
+        // todo: get real table data
+        return 1.91 * 1e-24;
     }
-    
-        // we only need one of these objects
-    public static synchronized Unobtainium getInstance() {
+
+    // we only need one of these objects
+    public static synchronized Nitrogen getInstance() {
         if (instance == null) {
-            Unobtainium.instance = new Unobtainium();
+            Nitrogen.instance = new Nitrogen();
         }
         return instance;
     }

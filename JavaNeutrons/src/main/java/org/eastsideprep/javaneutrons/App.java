@@ -16,6 +16,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  * JavaFX App
@@ -36,10 +38,10 @@ public class App extends Application {
 
         // prepare sim for later
         Group visualizations = new Group();
-        MonteCarloSimulation sim = Test.simulationTest(visualizations);
+        MonteCarloSimulation sim = Test.simulationTest3(visualizations);
 
         // control buttons and progress 
-        TextField tf = new TextField("10000");
+        TextField tf = new TextField("200");
         tf.setPrefWidth(200);
         
         Button bRun = new Button("Start simulation");

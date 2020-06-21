@@ -37,17 +37,17 @@ public class CameraControl {
     private double xRot;
     private double yRot;
     private double zTrans;
-    public  HBox outer;
+    public HBox outer;
 
     public CameraControl(int widthPX, int heightPX) {
         // initial camera values
         this.xRot = -20;
         this.yRot = -10;
-        this.zTrans = -1000;
+        this.zTrans = -800;
         this.pxX = widthPX;
         this.pxY = heightPX;
-        this.focusX = 0.0;
-        this.focusY = -80.0;
+        this.focusX = 100;
+        this.focusY = 0.0;
 
         this.root = new Group();
 
@@ -63,12 +63,7 @@ public class CameraControl {
 
         // Create and position camera
         camera = new PerspectiveCamera(true);
-        camera.getTransforms().setAll(
-                new Translate(focusX, 0, focusY),
-                new Rotate(yRot, Rotate.Y_AXIS),
-                new Rotate(xRot, Rotate.X_AXIS),
-                new Translate(0, 0, zTrans)
-        );
+        updateCamera();
         camera.setNearClip(0.1);
         camera.setFarClip(2000);
 
@@ -89,6 +84,8 @@ public class CameraControl {
         outer.setAlignment(Pos.TOP_LEFT);
         root.setAutoSizeChildren(true);
 
+        updateCamera();
+
     }
 
     double cameraDistance = 450;
@@ -103,9 +100,9 @@ public class CameraControl {
     double mouseDeltaX;
     double mouseDeltaY;
 
-    public void updateCamera() {
+    private void updateCamera() {
         camera.getTransforms().setAll(
-                new Translate(focusX, 0, focusY),
+                new Translate(focusX, focusY, 0),
                 new Rotate(yRot, Rotate.Y_AXIS),
                 new Rotate(xRot, Rotate.X_AXIS),
                 new Translate(0, 0, zTrans)
@@ -117,9 +114,9 @@ public class CameraControl {
             case ESCAPE:
                 this.xRot = -20;
                 this.yRot = -10;
-                this.zTrans = -530;
-                this.focusX = 0.0;
-                this.focusY = -80.0;
+                this.zTrans = -800;
+                this.focusX = 100;
+                this.focusY = 0.0;
                 break;
             case PLUS:
             case EQUALS:
@@ -133,16 +130,24 @@ public class CameraControl {
                 }
                 break;
             case RIGHT:
-                yRot -= 5;
+                focusX += 5;
                 break;
             case LEFT:
-                yRot += 5;
+                focusX -= 5;
                 break;
             case DOWN:
-                xRot += 2;
+                if (e.isShiftDown()) {
+                    zTrans -= 5;
+                } else {
+                    focusY += 5;
+                }
                 break;
             case UP:
-                xRot -= 2;
+                if (e.isShiftDown()) {
+                    zTrans += 5;
+                } else {
+                    focusY -= 5;
+                }
                 break;
 
             case PAGE_UP:
@@ -203,7 +208,7 @@ public class CameraControl {
         updateCamera();
     }
 
-    public void focus(MouseEvent e) {
+    private void focus(MouseEvent e) {
         if (e.getClickCount() > 1) {
             PickResult res = e.getPickResult();
             if (res.getIntersectedNode() instanceof Shape3D) {
@@ -222,5 +227,4 @@ public class CameraControl {
         //e.consume();
     }
 
-   
 }

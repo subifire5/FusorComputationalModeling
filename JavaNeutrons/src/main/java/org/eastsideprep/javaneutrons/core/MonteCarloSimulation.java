@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
 import javafx.application.Platform;
@@ -12,6 +12,8 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.assemblies.Assembly;
+import org.eastsideprep.javaneutrons.assemblies.Detector;
 
 /**
  *
@@ -34,14 +36,13 @@ public class MonteCarloSimulation {
     Group visualizations;
     Group simVis;
 
-    MonteCarloSimulation(Assembly assembly, Vector3D origin) {
+    public MonteCarloSimulation(Assembly assembly, Vector3D origin) {
         this.assembly = assembly;
         this.origin = origin;
         this.simVis = new Group();
-        this.count = count;
     }
 
-    void simulateNeutrons(long count, Group visualizations, ProgressLambda pl) {
+    public void simulateNeutrons(long count, Group visualizations, ProgressLambda pl) {
         this.visualizations = visualizations;
         this.visualizations.getChildren().remove(simVis);
         this.visualizations.getChildren().add(simVis);
@@ -112,7 +113,7 @@ public class MonteCarloSimulation {
         th.start();
     }
 
-    void simulateNeutron(Neutron n) {
+    public void simulateNeutron(Neutron n) {
         this.assembly.evolveNeutronPathNoVacuum(n, this.simVis);
         long current;
         synchronized (this) {
