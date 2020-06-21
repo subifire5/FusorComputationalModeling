@@ -24,6 +24,7 @@ import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.materials.Steel;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
+import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.shapes.Shape;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
@@ -147,7 +148,7 @@ public class Test {
         //
         // igloo
         //
-        Assembly igloo = new Assembly("igloo", Test.class.getResource("/igloo.obj"), Paraffin.getInstance());
+        Assembly igloo = new Assembly("igloo", Test.class.getResource("/igloo.obj"), Paraffin.class);
 
         //
         // The detector is made from a stock - FXyz CuboidMesh
@@ -161,12 +162,8 @@ public class Test {
         //
         // body
         //
-        Shape bodyShape = new Shape(Test.class.getResource("/body.obj"));
+        Shape bodyShape = new HumanBody();
         bodyShape.getTransforms().add(new Translate(0, 0, -200));
-        bodyShape.getTransforms().add(new Rotate(90, new Point3D(1, 0, 0)));
-        bodyShape.getTransforms().add(new Rotate(90, new Point3D(0, 0, 1)));
-        bodyShape.getTransforms().add(new Scale(73, 73, 73));
-        //System.out.println("Body volume in cm^3: " + bodyShape.getVolume());
         Detector body = new Detector("Body", bodyShape, HumanBodyMaterial.getInstance());
 
         
