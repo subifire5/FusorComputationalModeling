@@ -5,15 +5,16 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.net.URISyntaxException;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
-import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.materials.Paraffin;
+import org.eastsideprep.javaneutrons.materials.Steel;
+import org.eastsideprep.javaneutrons.materials.Unobtainium;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
 /**
@@ -37,7 +38,7 @@ public class Test {
         wallShape.setColor("blue");
         wallShape.setDrawMode(DrawMode.LINE);
         wallShape.setOpacity(0.1);
-        Part wall = new Part("Wall1", wallShape, Unobtainium.getInstance());
+        Part wall = new Part("Wall1", wallShape, Paraffin.getInstance());
 
         //
         // the lower plate is a Cuboid from a hand-written mesh
@@ -49,7 +50,7 @@ public class Test {
         wall2Shape.setColor("purple");
         wall2Shape.setDrawMode(DrawMode.LINE);
         wall2Shape.setOpacity(0.1);
-        Part wall2 = new Part("Wall2", wall2Shape, Unobtainium.getInstance());
+        Part wall2 = new Part("Wall2", wall2Shape, Paraffin.getInstance());
 
         //
         // The detector is made from a stock - FXyz CuboidMesh
@@ -60,7 +61,7 @@ public class Test {
         detectorShape.setColor("green");
         detectorShape.setOpacity(0.5);
         detectorShape.setDrawMode(DrawMode.LINE);
-        Detector detector = new Detector("Detector 1", detectorShape);
+        Detector detector = new Detector("Detector 1", detectorShape, Steel.getInstance());
 
         Util.Graphics.drawSphere(visualizations, Vector3D.ZERO, 5, "red");
         Util.Graphics.drawLine(visualizations, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), Color.CYAN);

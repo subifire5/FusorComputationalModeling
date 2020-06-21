@@ -15,12 +15,17 @@ public class Element extends Material {
     int atomicNumber;
     int neutrons;
 
-    Element(String name, double mass, int atomicNumber, int neutrons) {
+    public Element(String name, int atomicNumber, int neutrons) {
         super(name);
-        this.mass = mass;
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
-        super.addComponent(this, 1.0);
+        this.mass = this.atomicNumber*Util.Physics.protonMass + 
+                this.neutrons*Neutron.mass;
+        super.addComponent(this, 1);
+        // todo: what is an appropriate density for elements as materials?
+        // mostly, this value will not be used as a component material
+        // will have proportions of this element, and it own density
+        super.calculateAtomicDensities(1);
     }
 
     public double getScatterCrossSection(double energy) {
@@ -28,7 +33,7 @@ public class Element extends Material {
         return 0;
     }
 
-    public double getAbsorptionCrossSection(double energy) {
+    public double getCaptureCrossSection(double energy) {
         // todo: this is Taras' job
         return 0;
     }

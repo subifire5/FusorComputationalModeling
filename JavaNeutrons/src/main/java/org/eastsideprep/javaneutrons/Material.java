@@ -22,10 +22,12 @@ public class Material {
 
         Element e;
         double density; // atoms/(barn*cm)
+        int proportion;
 
-        Component(Element e, double density) {
+        Component(Element e, int proportion) {
             this.e = e;
-            this.density = density;
+            this.density = 0;
+            this.proportion = proportion;
         }
     }
 
@@ -35,14 +37,42 @@ public class Material {
     public Material(String name) {
         materials.put(name, this);
         components = new ArrayList<>();
+        this.name = name;
     }
 
     public static Material getByName(String name) {
         return materials.get(name);
     }
 
-    public final void addComponent(Element element, double density) {
-        components.add(new Component(element, density));
+    public final void addComponent(Element element, int numAtoms) {
+        components.add(new Component(element, numAtoms));
+    }
+
+    public final void calculateAtomicDensities(double densityMass) {
+        // input is mass per cubic meter! not centimeter!
+        // see volume below
+        //
+        // first, how much mass in one of these units 
+        // (proportion units are arbitrary)
+        double massMolecule = 0;
+        double sumProps = 0;
+        for (Component c : components) {
+            massMolecule += c.e.mass * c.proportion;
+            sumProps += c.proportion;
+        }
+
+        // how many of these make up a cubic centimeter?
+        double volume = 1e-6; // 1 cubic centimeter in m
+        double n = densityMass * volume / massMolecule;
+
+        // if there is n units per volume, 
+        // then are are n*proportion units of the component
+        for (Component c : components) {
+            c.density = n*c.proportion;
+        }
+        System.out.println("Macroscopic cross-section for "+
+                (this instanceof Element?"(element) ":"")+
+                this.name+": "+getSigma(1*Util.Physics.eV));
     }
 
     // compute macroscopic cross-section
@@ -50,7 +80,7 @@ public class Material {
         double sigma = 0;
         for (Component c : components) {
             sigma += c.e.getScatterCrossSection(energy) * c.density;
-            sigma += c.e.getAbsorptionCrossSection(energy) * c.density;
+            sigma += c.e.getCaptureCrossSection(energy) * c.density;
         }
         return sigma;
     }
@@ -68,17 +98,17 @@ public class Material {
         double[] sigmas = new double[2 * components.size()];
         double sum = 0;
         for (int i = 0; i < sigmas.length; i += 2) {
-            Component c = components.get(i);
+            Component c = components.get(i/2);
             sum += c.e.getScatterCrossSection(energy) * c.density;
             sigmas[i] = sum;
-            sum += c.e.getAbsorptionCrossSection(energy) * c.density;
+            sum += c.e.getCaptureCrossSection(energy) * c.density;
             sigmas[i + 1] = sum;
         }
 
         // random draw from across the combined distribution
         double rand = Util.Math.random.nextDouble() * sum;
         //System.out.println("sum: "+sum+"draw: "+rand);
-        
+
         // now find the component index
         int slot = Arrays.binarySearch(sigmas, rand);
         // if not found, will be negative slot -1
@@ -87,8 +117,8 @@ public class Material {
         }
 
         // retrieve the corresponding element
-        Element e = components.get(slot/2).e;
-        Event.Code code = (slot%2 == 0)?Event.Code.Scatter:Event.Code.Absorb;
+        Element e = components.get(slot / 2).e;
+        Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
 
         return new Event(location, code, t, e);
     }

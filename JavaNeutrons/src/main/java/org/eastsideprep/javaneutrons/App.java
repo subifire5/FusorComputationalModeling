@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -37,24 +38,17 @@ public class App extends Application {
         Group visualizations = new Group();
         MonteCarloSimulation sim = Test.simulationTest(visualizations);
 
-//        //camera in subscene
-//        SubScene sub = new SubScene(visualizations, 1500, 900);
-//        Camera camera = new PerspectiveCamera();
-//        camera.setRotationAxis(new Point3D(0, 1, 0));
-//        camera.setRotate(-20);
-//        camera.setRotationAxis(new Point3D(1, 0, 0));
-//        camera.setRotate(-20);
-//        camera.setTranslateX(-600);
-//        camera.setTranslateY(-500);
-//        sub.setCamera(camera);
         // control buttons and progress 
+        TextField tf = new TextField("10000");
+        tf.setPrefWidth(200);
+        
         Button bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
             //
             // here is where we run the actual simulation
             //
             bRun.setDisable(true);
-            sim.simulateNeutrons(10000, visualizations, (p) -> {
+            sim.simulateNeutrons(Integer.parseInt(tf.getText()), visualizations, (p) -> {
                 if (bRun.isDisabled()) {
                     progress.setText("Complete: " + p + " %");
                     if (p == 100) {
@@ -84,7 +78,7 @@ public class App extends Application {
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(bRun, bStats, bView, bTest, progress);
+        buttons.getChildren().addAll(tf, bRun, bStats, bView, bTest, progress);
         root.setLeft(buttons);
 
         // create camera control, set scene and stage

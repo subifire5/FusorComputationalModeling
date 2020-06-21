@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.materials;
+
+import org.eastsideprep.javaneutrons.Material;
 
 /**
  *
@@ -21,9 +23,12 @@ public class Air extends Material {
     Air(double pressure) {
         super("Air");
         this.pressure = pressure;
-        // todo: add real components of air under defined pressure here
-        // instead, we add unobtainium at a diminished density
-        this.addComponent(Unobtainium.getInstance(), 1e-10);
+        // todo: add real components of air
+        // instead, we add co2 
+        // todo: do something with pressure here
+        this.addComponent(Carbon.getInstance(), 1);
+        this.addComponent(Oxygen.getInstance(), 2);
+        this.calculateAtomicDensities(1.960);
     }
 
     Air(String name, double pressure) {

@@ -92,7 +92,7 @@ public class Part {
             // also record event for the individual neutron
             n.record(event);
             Util.Graphics.visualizeEvent(event, visualizations);
-        } while (event.code != Event.Code.Exit && event.code != Event.Code.Absorb);
+        } while (event.code != Event.Code.Exit && event.code != Event.Code.Capture);
 
         return event;
     }

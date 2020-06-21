@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.materials;
+
+import org.eastsideprep.javaneutrons.Element;
 
 /**
  *
@@ -15,17 +17,17 @@ public class Unobtainium extends Element {
     
     Unobtainium() {
         // basically, hydrogen with really large, constant cross-section
-        super("Unobtainium", Util.Physics.protonMass, 1, 0);
+        super("Unobtainium", 1, 0);
     }
 
     @Override
     public double getScatterCrossSection(double energy) {
-        return 0.01;
+        return 10;
     }
 
     @Override
-    public double getAbsorptionCrossSection(double energy) {
-        return 0.001;
+    public double getCaptureCrossSection(double energy) {
+        return 5;
     }
     
         // we only need one of these objects

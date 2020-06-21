@@ -5,6 +5,8 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import org.eastsideprep.javaneutrons.materials.Vacuum;
+
 public class Detector extends Part {
 
     public LogHistogram entryEnergies;
@@ -20,13 +22,17 @@ public class Detector extends Part {
     }
 
     public Detector(String name, Shape shape) {
-        // todo: material (some simple one-element stuff?)
-        super(name, shape, Unobtainium.getInstance());
-
+        super(name, shape, Vacuum.getInstance());
         this.volume = this.shape.getVolume();
         reset();
     }
 
+    public Detector(String name, Shape shape, Material material) {
+        super(name, shape, material);
+        this.volume = this.shape.getVolume();
+        reset();
+    }
+    
     @Override
     void processPathLength(double length, double energy) {
         //System.out.println("Entry into detector path length log " + this.entryEnergies.hashCode());
@@ -50,7 +56,7 @@ public class Detector extends Part {
         return this.totalDepositedEnergy;
     }
 
-    public void reset() {
+    final public void reset() {
         this.currentEntryEnergy = 0;
         this.totalDepositedEnergy = 0;
         this.entryEnergies = new LogHistogram(-5, 10, 50);

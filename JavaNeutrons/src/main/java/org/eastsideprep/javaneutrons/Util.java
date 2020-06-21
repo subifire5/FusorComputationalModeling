@@ -13,6 +13,7 @@ import javafx.scene.Group;
 import javafx.scene.effect.Glow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
@@ -118,7 +119,7 @@ public class Util {
         public static double rayTriangleIntersectNew(
                 Vector3D rayOrigin, Vector3D rayDirection,
                 Vector3D v0, Vector3D v1, Vector3D v2) {
-            final double kEpsilon = 1E-8; // constant for "close enough to 0"
+            final double kEpsilon = 1E-12; // constant for "close enough to 0"
             double a, f, u, v;
 
             Vector3D edge1 = v1.subtract(v0);
@@ -157,9 +158,12 @@ public class Util {
 
     static public class Physics {
 
-        final static double boltzmann = 8.61733333353e-5; //eV/K
-        final static double roomTemp = 293.0; //K
-        final static double protonMass = 1.007276; // amu
+        //final public static double boltzmann = 8.61733333353e-5; //eV/K
+        final public static double boltzmann = 1.38064852e-23; // SI with cm
+        final public static double roomTemp = 293.0; // K
+        final public static double protonMass = 1.67262192369e-27; // SI
+        final public static double eV = 1.60218e-19*1e4; // 1 eV in SI with cm
+        // factor 1e4 is from using cm, not m here - 100^2
     }
 
     static public class Graphics {
@@ -216,14 +220,14 @@ public class Util {
                     case EmergencyExit:
                         color = "purple";
                         break;
-                    case Absorb:
+                    case Capture:
                         color = "lightblue";
                         break;
                     default:
                         color = "black";
                         
                 }
-                Util.Graphics.drawSphere(g, event.position, 2, color);
+                Util.Graphics.drawSphere(g, event.position, 1, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }
         }

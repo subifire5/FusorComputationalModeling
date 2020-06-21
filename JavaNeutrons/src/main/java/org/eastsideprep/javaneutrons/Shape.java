@@ -129,18 +129,20 @@ public class Shape extends MeshView {
     }
 
     private void cacheVerticesAndFaces() {
-        if (vertices == null) {
-            System.out.println("Original vertices for " + this.part.name);
-            System.out.println(Arrays.toString(this.getVertices()));
-            vertices = getTransformedVertices();
-            System.out.println("Vertices for " + this.part.name);
-            System.out.println(Arrays.toString(vertices));
-        }
+        synchronized (this) {
+            if (vertices == null) {
+                //System.out.println("Original vertices for " + this.part.name);
+                //System.out.println(Arrays.toString(this.getVertices()));
+                vertices = getTransformedVertices();
+                //System.out.println("Vertices for " + this.part.name);
+                //System.out.println(Arrays.toString(vertices));
+            }
 
-        if (faces == null) {
-            faces = getFaces();
-            System.out.println("Faces for " + this.part.name);
-            System.out.println(Arrays.toString(faces));
+            if (faces == null) {
+                faces = getFaces();
+                //System.out.println("Faces for " + this.part.name);
+                //System.out.println(Arrays.toString(faces));
+            }
         }
     }
 
@@ -157,7 +159,7 @@ public class Shape extends MeshView {
         int y = 1;
         int z = 2;
         int face = -1;
-        if (java.lang.Math.abs(rayDirection.getNorm() -1) > 1e-8) {
+        if (java.lang.Math.abs(rayDirection.getNorm() - 1) > 1e-8) {
             System.out.println("direction not normalized in rayIntersect");
         }
 
@@ -221,9 +223,9 @@ public class Shape extends MeshView {
         int[] faces = getFaces();
 
         for (int i = 0; i < faces.length; i += 6) {
-            Vector3D v0 = new Vector3D(v[3*faces[i]], v[3*faces[i] + 1], v[3*faces[i] + 2]);
-            Vector3D v1 = new Vector3D(v[3*faces[i + 2]], v[3*faces[i + 2] + 1], v[3*faces[i + 2] + 2]);
-            Vector3D v2 = new Vector3D(v[3*faces[i + 4]], v[3*faces[i + 4] + 1], v[3*faces[i + 4] + 2]);
+            Vector3D v0 = new Vector3D(v[3 * faces[i]], v[3 * faces[i] + 1], v[3 * faces[i] + 2]);
+            Vector3D v1 = new Vector3D(v[3 * faces[i + 2]], v[3 * faces[i + 2] + 1], v[3 * faces[i + 2] + 2]);
+            Vector3D v2 = new Vector3D(v[3 * faces[i + 4]], v[3 * faces[i + 4] + 1], v[3 * faces[i + 4] + 2]);
 
             v0 = v0.crossProduct(v1);
             volume += v0.dotProduct(v2);

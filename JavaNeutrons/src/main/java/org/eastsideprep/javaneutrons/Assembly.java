@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.materials.Air;
 
 /**
  *
@@ -59,7 +60,7 @@ public class Assembly extends Group {
                 event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10);
             }
             //visualizeEvent(event, visualizations);
-        } while (event.code != Event.Code.Absorb && event.code != Event.Code.Gone && event.code != Event.Code.EmergencyExit);
+        } while (event.code != Event.Code.Capture && event.code != Event.Code.Gone && event.code != Event.Code.EmergencyExit);
         return event;
     }
 
