@@ -48,6 +48,10 @@ public class Neutron {
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
     }
 
+   public final void randomizeDirection() {
+        this.direction = Util.Math.randomDir();
+        this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
+    }
     public void processEvent(Event event) {
         //random other particle:
         double particleSpeed = Util.Math.random.nextGaussian()
@@ -76,5 +80,11 @@ public class Neutron {
     public void record(Event e) {
         //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
         history.add(e);
+    }
+
+    public void dumpEvents() {
+        synchronized (Event.class) {
+            history.stream().forEach(event -> System.out.println(event));
+        }
     }
 }

@@ -93,10 +93,10 @@ public class App extends Application {
         scene.setOnMousePressed((ex) -> mainScene.handleClick(ex));
         scene.setOnScroll((ex) -> mainScene.handleScroll(ex));
 
-//        // scene and keyboard controls (old)
-//        scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
-//            processKeyEvent(e, camera);
-//        });
+        // scene and keyboard controls (old)
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
+            mainScene.handleKeyPress(e);
+        });
         stage.setScene(scene);
         stage.show();
     }

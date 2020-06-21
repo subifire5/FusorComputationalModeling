@@ -162,7 +162,7 @@ public class Util {
         final public static double boltzmann = 1.38064852e-23; // SI with cm
         final public static double roomTemp = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
-        final public static double eV = 1.60218e-19*1e4; // 1 eV in SI with cm
+        final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
         // factor 1e4 is from using cm, not m here - 100^2
     }
 
@@ -204,32 +204,51 @@ public class Util {
         //
         // will make a small golden sphere at the event point
         //
-        public static void visualizeEvent(Event event, Group g) {
+        public static void visualizeEvent(Event event, Vector3D direction, Group g) {
             if (event.code != Event.Code.Gone) {
                 String color;
+                double size = 1;
+
                 switch (event.code) {
                     case Entry:
                         color = "green";
+                        size = 1.5;
                         break;
                     case Exit:
                         color = "red";
+                        size = 1.5;
                         break;
                     case Scatter:
                         color = "gold";
                         break;
                     case EmergencyExit:
                         color = "purple";
+                        size = 2;
                         break;
                     case Capture:
                         color = "lightblue";
                         break;
                     default:
                         color = "black";
-                        
+
                 }
-                Util.Graphics.drawSphere(g, event.position, 1, color);
+                Vector3D position = event.position;
+                if (direction != null) {
+                    double jitter = 0.1;
+                    position = position.add(direction.scalarMultiply(-jitter));
+                }
+                Util.Graphics.drawSphere(g, position, 1, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }
+        }
+
+        //
+        // visualizeEvent
+        //
+        // same but without offset direction
+        //
+        public static void visualizeEvent(Event event, Group g) {
+            visualizeEvent(event, null, g);
         }
 
         public void displayEffect(Group g, Vector3D v, String color) {

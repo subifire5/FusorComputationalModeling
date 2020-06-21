@@ -25,10 +25,12 @@ public class Air extends Material {
         this.pressure = pressure;
         // todo: add real components of air
         // instead, we add co2 
-        // todo: do something with pressure here
+        
+        double massDensitySTP = 1.960;
+        
         this.addComponent(Carbon.getInstance(), 1);
         this.addComponent(Oxygen.getInstance(), 2);
-        this.calculateAtomicDensities(1.960);
+        this.calculateAtomicDensities(massDensitySTP*pressure/100);
     }
 
     Air(String name, double pressure) {

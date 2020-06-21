@@ -60,18 +60,36 @@ public class Part {
         Event exitEvent;
         Event interactionEvent;
         Event event;
+        double epsilon = 1e-7; // 1 nm (in cm) 
+        
+        // entry into part - tally, advance neutron ever so slightly
+        // so that when something else happens, we will be firmly inside
+        n.setPosition(Util.Math.rayPoint(n.position, n.direction, epsilon));
 
         this.processEntryEnergy(n.energy);
 
         do {
             double currentEnergy = n.energy;
-            exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+            
+//            // kind of awful, retry loop to get out of part
+//            int i = 10;
+//            do {
+                exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+//                n.randomizeDirection();
+//                n.record (new Event(n.position, Event.Code.EmergencyDirectionChange));
+//                i--;
+//            } while (exitEvent == null && i > 0);
+//            // might not succeed
+            
             if (exitEvent == null) {
-                System.out.println("no way out of part!");
+                System.out.println("");
+                System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
                 //throw new IllegalArgumentException();
                 exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10);
                 n.record(exitEvent);
-                Util.Graphics.visualizeEvent(exitEvent, visualizations);
+                n.dumpEvents();
+                Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
+                System.out.println("--end dump");
                 return exitEvent;
             }
 
@@ -80,10 +98,12 @@ public class Part {
             if (exitEvent.t > interactionEvent.t) {
                 // scattering / absorption did really happen, process it
                 event = interactionEvent;
+                Util.Graphics.visualizeEvent(event, visualizations);
                 n.processEvent(event);
             } else {
                 event = exitEvent;
                 n.setPosition(event.position);
+                Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
             }
             // call for Detector parts to record
@@ -91,7 +111,6 @@ public class Part {
 
             // also record event for the individual neutron
             n.record(event);
-            Util.Graphics.visualizeEvent(event, visualizations);
         } while (event.code != Event.Code.Exit && event.code != Event.Code.Capture);
 
         return event;

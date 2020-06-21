@@ -48,9 +48,10 @@ public class Assembly extends Group {
                 }
             } else {
                 // no interaction, we will just enter a new part
-                Util.Graphics.visualizeEvent(partEvent, visualizations);
+                Util.Graphics.visualizeEvent(partEvent, n.direction, visualizations);
                 Part p = partEvent.part;
                 n.setPosition(partEvent.position);
+                n.record(partEvent);
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations);
             }

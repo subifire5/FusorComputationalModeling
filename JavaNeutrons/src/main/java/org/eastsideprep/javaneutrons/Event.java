@@ -14,7 +14,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.*;
 public class Event {
 
     public enum Code {
-        Entry, Exit, Scatter, Capture, Gone, EmergencyExit
+        Entry, Exit, Scatter, Capture, Gone, EmergencyDirectionChange, EmergencyExit
     };
 
     Code code; // what kind of interesting thing happened here
