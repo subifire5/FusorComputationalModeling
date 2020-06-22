@@ -31,6 +31,11 @@ public class Nitrogen extends Element {
         return 1.91 * 1e-24;
     }
 
+    @Override
+    public double getTotalCrossSection(double energy) {
+        return this.getCaptureCrossSection(energy) + this.getScatterCrossSection(energy);
+    }
+
     // we only need one of these objects
     public static synchronized Nitrogen getInstance() {
         if (instance == null) {

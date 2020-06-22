@@ -23,7 +23,7 @@ public class Iron extends Element {
     @Override
     public double getScatterCrossSection(double energy) {
         // todo: get real table data
-        if (energy > 10*Util.Physics.eV) {
+        if (energy > 10 * Util.Physics.eV) {
             return 20e-24;
         } else {
             return 0.003e-24;
@@ -33,11 +33,16 @@ public class Iron extends Element {
     @Override
     public double getCaptureCrossSection(double energy) {
         // todo: get real table data
-        if (energy > 10*Util.Physics.eV){
-            return 2*1e-24;
-        } else{
-            return 10*1e-24;
+        if (energy > 10 * Util.Physics.eV) {
+            return 2 * 1e-24;
+        } else {
+            return 10 * 1e-24;
         }
+    }
+
+    @Override
+    public double getTotalCrossSection(double energy) {
+        return this.getCaptureCrossSection(energy) + this.getScatterCrossSection(energy);
     }
 
     // we only need one of these objects

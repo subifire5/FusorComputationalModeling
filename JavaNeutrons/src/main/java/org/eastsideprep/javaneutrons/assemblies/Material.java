@@ -14,7 +14,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.materials.Vacuum;
 
 /**
  *
@@ -76,17 +75,16 @@ public class Material {
         for (Component c : components) {
             c.density = n * c.proportion;
         }
-        System.out.println("Macroscopic cross-section for "
-                + (this instanceof Element ? "(element) " : "")
-                + this.name + ": " + getSigma(1 * Util.Physics.eV));
+//        System.out.println("Macroscopic cross-section for "
+//                + (this instanceof Element ? "(element) " : "")
+//                + this.name + " at 1 eV: " + getSigma(1 * Util.Physics.eV));
     }
 
     // compute macroscopic cross-section
-    private double getSigma(double energy) {
+    public double getSigma(double energy) {
         double sigma = 0;
         for (Component c : components) {
-            sigma += c.e.getScatterCrossSection(energy) * c.density;
-            sigma += c.e.getCaptureCrossSection(energy) * c.density;
+            sigma += c.e.getTotalCrossSection(energy) * c.density;
         }
         return sigma;
     }
@@ -132,13 +130,16 @@ public class Material {
     public static Material getRealMaterial(Object material) {
         if (material instanceof Class) {
             try {
-                Method method = ((Class) material).getMethod("getInstance");
-                material = method.invoke(material);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                Method method = ((Class) material).getDeclaredMethod("getInstance");
+                method.setAccessible(true);
+                material = method.invoke(null, new Object[]{});
+            } catch (IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException x) {
+                x.printStackTrace();
             }
-        }
-        return (Material) material;
 
+        }
+
+        return (Material) material;
     }
 
 }

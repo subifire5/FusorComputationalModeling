@@ -24,8 +24,8 @@ import org.eastsideprep.javaneutrons.shapes.Shape;
 public class Part {
 
     static HashMap<String, Part> namedParts = new HashMap<>();
-    Shape shape;
-    Material material;
+    public Shape shape;
+    public Material material;
     public String name;
 
     // universal detector functionality
@@ -42,7 +42,9 @@ public class Part {
             this.shape.part = this;
             namedParts.put(name, this);
         }
-        this.material = Material.getRealMaterial(material);
+        if (material != null) {
+            this.material = Material.getRealMaterial(material);
+        }
         if (this.shape != null) {
             this.volume = this.shape.getVolume();
         }

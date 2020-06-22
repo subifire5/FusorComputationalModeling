@@ -5,8 +5,6 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import javafx.collections.ObservableList;
@@ -38,7 +36,7 @@ public class Assembly extends Part {
 
     // use this constructor to construct an assembly from an OBJ file
     public Assembly(String name, URL url, Object material) {
-        super(name, null, null);
+        super(name, null, material);
 
         material = Material.getRealMaterial(material);
 

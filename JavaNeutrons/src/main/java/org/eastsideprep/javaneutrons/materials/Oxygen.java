@@ -40,6 +40,11 @@ public class Oxygen extends Element {
         }
     }
 
+    @Override
+    public double getTotalCrossSection(double energy) {
+        return this.getCaptureCrossSection(energy) + this.getScatterCrossSection(energy);
+    }
+
     // we only need one of these objects
     public static synchronized Oxygen getInstance() {
         if (instance == null) {

@@ -14,6 +14,6 @@ import org.eastsideprep.javaneutrons.Test;
 public class HumanBody extends Shape {
 
     public HumanBody() {
-        super(HumanBody.class.getResource("/body.obj"));
+        super(HumanBody.class.getResource("/meshes/body.obj"));
     }
 }

@@ -47,8 +47,8 @@ public class Test {
         //
         // igloo
         //
-        Assembly igloo = new Assembly("igloo", Test.class.getResource("/igloo.obj"), Paraffin.class);
-
+        Assembly igloo = new Assembly("igloo", Test.class.getResource("/meshes/igloo.obj"), Paraffin.class);
+        System.out.println("Macroscopic total cross-section for paraffin: "+Paraffin.getInstance().getSigma(1*Util.Physics.eV));
         //
         // The detector is made from a stock - FXyz CuboidMesh
         //
@@ -93,13 +93,13 @@ public class Test {
         cube2.setTranslateZ(100);
         cube2.setRotationAxis(new Point3D(-1, 1, 1));
 
-        Shape cube3 = new Shape(Test.class.getResource("/cube.obj"));
+        Shape cube3 = new Shape(Test.class.getResource("/meshescube.obj"));
         cube3.setTranslateX(100);
         cube3.setTranslateY(100);
         cube3.setTranslateZ(100);
         cube3.setRotationAxis(new Point3D(-1, -1, 1));
 
-        Shape body = new Shape(Test.class.getResource("/body.obj"));
+        Shape body = new Shape(Test.class.getResource("/meshes/body.obj"));
         body.setScaleX(100);
         body.setScaleY(100);
         body.setScaleZ(100);
@@ -133,17 +133,5 @@ public class Test {
         Group g = new Group(cube, cube2, cube3, body);
 
         return g;
-    }
-
-    
-    void Taras() {
-                Element e = Hydrogen.getInstance();
-        try {
-            e.fillEntries("125.csv");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println(e.getArea(100));
-        System.out.println(e.getArea(0.00002));
     }
 }

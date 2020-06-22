@@ -5,13 +5,10 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Scanner;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 
@@ -25,8 +22,6 @@ public class Element extends Material {
 
         double energy;
         double area;
-        
-  
 
         private Entry(double energy, double area) {
             this.energy = energy;
@@ -37,14 +32,15 @@ public class Element extends Material {
     public double mass; // g
     int atomicNumber;
     int neutrons;
-    private ArrayList<Entry> entries;
+    private ArrayList<Entry> elasticEntries;
+    private ArrayList<Entry> totalEntries;
 
     public Element(String name, int atomicNumber, int neutrons) {
         super(name);
+        //System.out.println("in element constructor");
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
-        this.entries = new ArrayList<Entry>();
-        
+
         this.mass = this.atomicNumber * Util.Physics.protonMass
                 + this.neutrons * Neutron.mass;
         super.addComponent(this, 1);
@@ -55,64 +51,62 @@ public class Element extends Material {
     }
 
     public double getScatterCrossSection(double energy) {
-        // todo: this is Taras' job
-        return 0;
+        return getArea(elasticEntries, energy);
     }
 
     public double getCaptureCrossSection(double energy) {
-        // todo: this is Taras' job
-        return 0;
+        return getArea(totalEntries, energy) - getArea(elasticEntries, energy);
+    }
+
+    public double getTotalCrossSection(double energy) {
+        return getArea(totalEntries, energy);
+    }
+
+    protected final void readDataFiles(String name) {
+        this.elasticEntries = fillEntries(name, "elastic");
+        this.totalEntries = fillEntries(name, "total");
     }
 
     //
-    // Taras' work:
+    // kind is "elastic" or "total"
     //
-    public void fillEntries(String fileName) throws FileNotFoundException, IOException {
-        BufferedReader br = new BufferedReader(new FileReader(new File(fileName)));
+    private ArrayList<Entry> fillEntries(String fileName, String kind) {
 
-        this.entries = new ArrayList<Entry>(); //reset
-        String line = br.readLine();
-        while (line != null) {
+        // read xyz.csv from resources/data
+        InputStream is = Element.class.getResourceAsStream("/data/" + kind + "/" + fileName + ".csv");
+        Scanner sc = new Scanner(is);
+
+        ArrayList<Entry> newEntries = new ArrayList<>(); //reset
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine();
             String[] split = line.split(",");
             double energy = Double.parseDouble(split[0]);
             double area = Double.parseDouble(split[1]);
-            entries.add(new Entry(energy, area));
-            line = br.readLine();
+            newEntries.add(new Entry(energy, area));
         }
-        Collections.sort(entries, (a, b) -> {
-            double diff = a.energy - b.energy;
-            if (diff > 0) {
-                return 1;
-            }
-            if (diff < 0) {
-                return -1;
-            }
-            return 0;
+        Collections.sort(newEntries, (a, b) -> {
+            return (int) Math.signum(a.energy - b.energy);
         });
+
+        return newEntries;
     }
 
-    public double getArea(double energy) {
-        int index = Collections.binarySearch(entries, new Entry(energy, 0), (a, b) -> {
-            double diff = a.energy - b.energy;
-            if (diff > 0) {
-                return 1;
-            }
-            if (diff < 0) {
-                return -1;
-            }
-            return 0;
-        });
+    private double getArea(ArrayList<Entry> data, double energy) {
+        // table data is in eV
+        energy /= Util.Physics.eV;
+        System.out.println("Energy: "+energy);
+        int index = Collections.binarySearch(data, new Entry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
         if (index >= 0) {
-            return entries.get(index).area;
+            return data.get(index).area;
         }
         //else, linear interpolate between two nearest points
         index = -index - 1;
-        if (index == 0 || index >= entries.size()) {
+        if (index == 0 || index >= data.size()) {
             System.out.println("Not enough data to linear interpolate");
             return -1;
         }
-        Entry e1 = entries.get(index - 1); //the one with just lower energy
-        Entry e2 = entries.get(index);   //the one with just higher energy
+        Entry e1 = data.get(index - 1); //the one with just lower energy
+        Entry e2 = data.get(index);   //the one with just higher energy
         double area = e1.area + (((energy - e1.energy) / (e2.energy - e1.energy)) * (e2.area - e1.area)); //linear interpolation function
         return area;
     }
