@@ -72,6 +72,7 @@ public class LogHistogram {
             if (tick.length() > 10){
                // do something clever here
             }
+            tick = String.format("%6.2e", energy);
             data.add(new XYChart.Data(tick, counts[i]));
             //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }
