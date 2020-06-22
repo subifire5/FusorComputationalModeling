@@ -151,7 +151,7 @@ public class MonteCarloSimulation {
                     bc.getData().add(p.entryOverEnergy.makeSeries("Entry counts"));
                     break;
                 case "Fluence":
-                    yAxis.setLabel("Fluence");
+                    yAxis.setLabel("Fluence (cm^-2)");
                     bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence"));
                     break;
                 default:

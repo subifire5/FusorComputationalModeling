@@ -39,6 +39,13 @@ public class Util {
         }
 
         //
+        // similar
+        //
+        public static Vector3D randomGaussianComponentVector(double sd) {
+            return new Vector3D(random.nextGaussian() * sd, random.nextGaussian() * sd, random.nextGaussian() * sd);
+        }
+
+        //
         // rayTriangleIntersect
         //
         // static helper function
@@ -216,18 +223,18 @@ public class Util {
                         break;
                     case Exit:
                         color = "red";
-                        size *=2;
+                        size *= 2;
                         break;
                     case Scatter:
                         color = "gold";
                         break;
                     case EmergencyExit:
                         color = "purple";
-                        size *=5;
+                        size *= 5;
                         break;
                     case Capture:
                         color = "lightblue";
-                        size *=3;
+                        size *= 3;
                         break;
                     default:
                         color = "black";

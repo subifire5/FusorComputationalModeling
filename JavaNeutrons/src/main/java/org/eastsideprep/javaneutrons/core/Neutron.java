@@ -48,15 +48,19 @@ public class Neutron {
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
     }
 
-   public final void randomizeDirection() {
+    public final void randomizeDirection() {
         this.direction = Util.Math.randomDir();
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
     }
+
     public void processEvent(Event event) {
-        //random other particle:
-        double particleSpeed = Util.Math.random.nextGaussian()
-                * Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp * 3 / event.element.mass);
-        Vector3D particleVelocity = Util.Math.randomDir().scalarMultiply(particleSpeed);
+        // other particle, velocity following Maxwell-Boltzmann speed distribution
+        double particleSpeedSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp * 3 / event.element.mass);
+        Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedSD);
+
+//        double particleSpeed = particleVelocity.getNorm();
+//        double particleEnergy = event.element.mass * particleSpeed * particleSpeed / 2;
+//        System.out.println("Particle energy: " + String.format("%6.3e", particleEnergy / Util.Physics.eV));
 
         //establish center of mass
         //add velocity vectors / total mass 
