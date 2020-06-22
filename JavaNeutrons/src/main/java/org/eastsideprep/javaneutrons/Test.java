@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.io.IOException;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -12,10 +13,12 @@ import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
+import org.eastsideprep.javaneutrons.assemblies.Element;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.HumanBodyMaterial;
+import org.eastsideprep.javaneutrons.materials.Hydrogen;
 import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.materials.Steel;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
@@ -132,4 +135,15 @@ public class Test {
         return g;
     }
 
+    
+    void Taras() {
+                Element e = Hydrogen.getInstance();
+        try {
+            e.fillEntries("125.csv");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println(e.getArea(100));
+        System.out.println(e.getArea(0.00002));
+    }
 }
