@@ -17,32 +17,8 @@ public class Carbon extends Element {
     private static Carbon instance;
 
     Carbon() {
-        super("12-Carbon", 6, 6);
-    }
-
-    @Override
-    public double getScatterCrossSection(double energy) {
-        // todo: get real table data
-        if (energy > 10 * Util.Physics.eV) {
-            return 2e-24;
-        } else {
-            return 5e-24;
-        }
-    }
-
-    @Override
-    public double getCaptureCrossSection(double energy) {
-        // todo: get real table data
-        if (energy > 10 * Util.Physics.eV) {
-            return 0.00001 * 1e-24;
-        } else {
-            return 0.002 * 1e-24;
-        }
-    }
-    
-    @Override
-    public double getTotalCrossSection(double energy) {
-        return this.getCaptureCrossSection(energy) + this.getScatterCrossSection(energy);
+        super("Carbon", 6, 6);
+        readDataFiles("600"); // not sure why we don't have a 625
     }
 
 

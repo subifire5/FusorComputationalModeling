@@ -30,8 +30,8 @@ public class Element extends Material {
     }
 
     public double mass; // g
-    int atomicNumber;
-    int neutrons;
+    protected int atomicNumber;
+    protected int neutrons;
     private ArrayList<Entry> elasticEntries;
     private ArrayList<Entry> totalEntries;
 
@@ -48,6 +48,10 @@ public class Element extends Material {
         // mostly, this value will not be used as a component material
         // will have proportions of this element, and it own density
         super.calculateAtomicDensities(1);
+        //
+        // read appropriate ENDF-derived data file
+        // for the lightest stable isotope of the element
+        readDataFiles("" + (atomicNumber) + "25");
     }
 
     public double getScatterCrossSection(double energy) {
@@ -74,6 +78,10 @@ public class Element extends Material {
 
         // read xyz.csv from resources/data
         InputStream is = Element.class.getResourceAsStream("/data/" + kind + "/" + fileName + ".csv");
+        if (is == null) {
+            System.out.println("Data file " + fileName + " (" + kind + ") not found for element "+this.name);
+            return null;
+        }
         Scanner sc = new Scanner(is);
 
         ArrayList<Entry> newEntries = new ArrayList<>(); //reset
@@ -102,8 +110,11 @@ public class Element extends Material {
         //else, linear interpolate between two nearest points
         index = -index - 1;
         if (index == 0 || index >= data.size()) {
-            System.out.println("Not enough data to linear interpolate");
-            return -1;
+            // todo: Our neutrons should not get this cold,
+            // but if they do, deal with it properly
+            // for now, just return the smallest cross-section
+            //System.out.println("Not enough data to linear interpolate");
+            return data.get(0).area;
         }
         Entry e1 = data.get(index - 1); //the one with just lower energy
         Entry e2 = data.get(index);   //the one with just higher energy

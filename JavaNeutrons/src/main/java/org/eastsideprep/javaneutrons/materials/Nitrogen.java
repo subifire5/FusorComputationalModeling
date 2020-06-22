@@ -16,24 +16,7 @@ public class Nitrogen extends Element {
     private static Nitrogen instance;
 
     Nitrogen() {
-        super("14-Nitrogen", 7, 7);
-    }
-
-    @Override
-    public double getScatterCrossSection(double energy) {
-        // todo: get real table data
-        return 11.53e-24;
-    }
-
-    @Override
-    public double getCaptureCrossSection(double energy) {
-        // todo: get real table data
-        return 1.91 * 1e-24;
-    }
-
-    @Override
-    public double getTotalCrossSection(double energy) {
-        return this.getCaptureCrossSection(energy) + this.getScatterCrossSection(energy);
+        super("Nitrogen", 7, 7);
     }
 
     // we only need one of these objects

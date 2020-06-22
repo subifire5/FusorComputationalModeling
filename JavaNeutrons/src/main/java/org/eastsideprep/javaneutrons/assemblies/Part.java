@@ -62,8 +62,8 @@ public class Part {
     public final void resetDetector() {
         this.currentEntryEnergy = 0;
         this.totalDepositedEnergy = 0;
-        this.entryOverEnergy = new LogHistogram(-5, 10, 45);
-        this.fluenceOverEnergy = new LogHistogram(-5, 10, 45);
+        this.entryOverEnergy = new LogHistogram();
+        this.fluenceOverEnergy = new LogHistogram();
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {

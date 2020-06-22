@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
+import java.text.DecimalFormat;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
@@ -18,6 +19,13 @@ public class LogHistogram {
         this.logMin = logMin;
         this.logMax = logMax;
         this.bins = new double[bins];
+        //this.bins = new double[logMax - logMin + 1];
+    }
+
+    public LogHistogram() {
+        this.logMin = -1;
+        this.logMax = 7;
+        this.bins = new double[56];
         //this.bins = new double[logMax - logMin + 1];
     }
 
@@ -63,16 +71,12 @@ public class LogHistogram {
         synchronized (this) {
             System.arraycopy(this.bins, 0, counts, 0, counts.length);
         }
-        
-        //System.out.println(""+this.hashCode()+Arrays.toString(bins));
 
+        //System.out.println(""+this.hashCode()+Arrays.toString(bins));
         for (int i = 0; i < bins.length; i++) {
-            double energy = Math.pow(10,logMin+i/((double)bins.length)*(logMax-logMin));
-            String tick = "" + energy;
-            if (tick.length() > 10){
-               // do something clever here
-            }
-            tick = String.format("%6.2e", energy);
+            double energy = Math.pow(10, logMin + i / ((double) bins.length) * (logMax - logMin));
+            DecimalFormat f = new DecimalFormat("0.##E0");
+            String tick = f.format(energy);
             data.add(new XYChart.Data(tick, counts[i]));
             //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }

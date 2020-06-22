@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -139,8 +140,10 @@ public class MonteCarloSimulation {
             if (p == null) {
                 return null;
             }
+            DecimalFormat f = new DecimalFormat("0.###E0");
+            String e = f.format(p.getTotalDepositedEnergy() * 1e-4 ); 
             bc.setTitle("Part \"" + p.name + "\", total deposited energy: "
-                    + p.getTotalDepositedEnergy() * 1e-4 + " J");
+                    + e + " J");
 
             switch (series) {
                 case "EntryCounts":
