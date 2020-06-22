@@ -3,15 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons;
+package org.eastsideprep.javaneutrons.shapes;
 
-import java.util.ArrayList;
+import org.eastsideprep.javaneutrons.Test;
 
 /**
  *
  * @author gunnar
  */
+public class HumanBody extends Shape {
 
-public class Log {
-    ArrayList<Event> events;
+    public HumanBody() {
+        super(HumanBody.class.getResource("/body.obj"));
+    }
 }
