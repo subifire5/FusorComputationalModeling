@@ -165,18 +165,18 @@ public class Part {
     // detector functionality
     //
     void processPathLength(double length, double energy) {
-        if (name.equals("Body")) {
-            System.out.println("Entry into detector path length log " + this.fluenceOverEnergy.hashCode());
-        }
-        this.fluenceOverEnergy.record(length / volume, energy/Util.Physics.eV);
+//        if (name.equals("Body")) {
+//            System.out.println("Entry into detector path length log " + this.fluenceOverEnergy.hashCode());
+//        }
+        this.fluenceOverEnergy.record(length / volume, energy / Util.Physics.eV);
     }
 
     void processEntryEnergy(double e) {
-        if (name.equals("Body")) {
-            System.out.println("Entry into detector entry energy log " + this.entryOverEnergy.hashCode());
-            this.entryOverEnergy.record(1, e/Util.Physics.eV);
-            this.currentEntryEnergy = e;
-        }
+//        if (name.equals("Body")) {
+//            //System.out.println("Entry into detector entry energy log " + this.entryOverEnergy.hashCode());
+//        }
+        this.entryOverEnergy.record(1, e / Util.Physics.eV);
+        this.currentEntryEnergy = e;
     }
 
     void processExitEnergy(double e

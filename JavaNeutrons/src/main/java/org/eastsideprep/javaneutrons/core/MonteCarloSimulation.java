@@ -102,6 +102,7 @@ public class MonteCarloSimulation {
         }
 
         Thread th = new Thread(() -> {
+            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
             if (!MonteCarloSimulation.parallel) {
                 neutrons.stream().forEach(n -> simulateNeutron(n));
             } else {
@@ -132,7 +133,7 @@ public class MonteCarloSimulation {
         final NumberAxis yAxis = new NumberAxis();
         final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
         xAxis.setLabel("Energy (eV)");
-        
+
         if (detector != null) {
             Part p = Part.getByName(detector);
             if (p == null) {

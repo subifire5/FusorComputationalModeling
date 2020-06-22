@@ -30,6 +30,7 @@ public class App extends Application {
     public void start(Stage stage) {
         // random stuff first
         Util.Math.random.setSeed(1234);
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
         root = new BorderPane();
         Label progress = new Label(""); // need to hand this to Test()
