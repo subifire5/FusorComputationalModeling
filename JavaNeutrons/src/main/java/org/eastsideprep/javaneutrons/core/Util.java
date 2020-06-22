@@ -162,6 +162,7 @@ public class Util {
         final public static double roomTemp = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
+        final public static double barn = 1e-24; // 1 barn in SI cm
         // factor 1e4 is from using cm, not m here - 100^2
     }
 

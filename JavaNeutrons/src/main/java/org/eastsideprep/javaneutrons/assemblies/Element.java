@@ -92,9 +92,9 @@ public class Element extends Material {
     }
 
     private double getArea(ArrayList<Entry> data, double energy) {
-        // table data is in eV
+        // table data is in eV, convert to SI (cm)
         energy /= Util.Physics.eV;
-        System.out.println("Energy: "+energy);
+        //System.out.println("Energy: "+energy+" eV");
         int index = Collections.binarySearch(data, new Entry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
         if (index >= 0) {
             return data.get(index).area;
@@ -108,6 +108,8 @@ public class Element extends Material {
         Entry e1 = data.get(index - 1); //the one with just lower energy
         Entry e2 = data.get(index);   //the one with just higher energy
         double area = e1.area + (((energy - e1.energy) / (e2.energy - e1.energy)) * (e2.area - e1.area)); //linear interpolation function
-        return area;
+
+        // convert back into SI (cm) and return
+        return area * Util.Physics.barn;
     }
 }
