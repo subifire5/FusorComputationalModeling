@@ -17,6 +17,7 @@ import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.Air;
+import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.eastsideprep.javaneutrons.shapes.AssemblyGroup;
 import org.eastsideprep.javaneutrons.shapes.Shape;
 
@@ -67,11 +68,15 @@ public class Assembly extends Part {
     }
 
     public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations, boolean outermost) {
-        Air air = Air.getInstance();
         Event partEvent;
         Event interactionEvent;
         Event event;
         double t;
+        
+        // we start in vacuum
+        Material medium = Vacuum.getInstance();
+        // but we will mostly travel in air
+        Air air = Air.getInstance();
 
         do {
             // find the closest part we intersect with
@@ -82,7 +87,7 @@ public class Assembly extends Part {
                 return new Event(n.position, Event.Code.Exit);
             }
             // find possible interactions along the way
-            interactionEvent = air.nextPoint(n);
+            interactionEvent = medium.nextPoint(n);
 
             // did we not find a part, or is it further than an air event?
             if (partEvent == null || partEvent.t > interactionEvent.t) {
@@ -101,11 +106,13 @@ public class Assembly extends Part {
                 n.record(partEvent);
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
+                // coming out, we might be in a new material
+                medium = event.exitMaterial != null?event.exitMaterial:air;
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {
                 Environment.processEnergy(n.energy);
-                event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10);
+                event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10, 0);
             }
             //visualizeEvent(event, visualizations);
         } while (event.code != Event.Code.Capture && event.code != Event.Code.Gone && event.code != Event.Code.EmergencyExit);
@@ -175,5 +182,27 @@ public class Assembly extends Part {
 
     public ObservableList<Transform> getTransforms() {
         return g.getTransforms();
+    }
+    
+    //
+    // vacuum face detection
+    //
+    
+    
+    //
+    boolean containsMaterialAt(Material material, Vector3D location, Group g){
+        
+        // send out a random ray from location
+        Vector3D direction = Util.Math.randomDir();
+        Event e = this.rayIntersect(location, direction, false, g);
+        if (e == null) {
+            return false;
+        }
+        
+        Part p = e.part;
+        Shape s = p.shape;
+        
+        s.markSurfaceInContactWith(location, direction, material, g);
+        return true;
     }
 }

@@ -87,13 +87,14 @@ public class Part {
     // goingOut determines whether we are entering or leaving the part (true=test back faces)
     //
     Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group g) {
-        double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, g);
+        int[]face = new int[1];
+        double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, face, g);
         // not found?
         if (t == -1) {
             return null;
         }
         // construct appropriate event
-        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), goingOut ? Event.Code.Exit : Event.Code.Entry, t);
+        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), goingOut ? Event.Code.Exit : Event.Code.Entry, t, face[0]);
     }
 
     //
@@ -118,21 +119,13 @@ public class Part {
         do {
             double currentEnergy = n.energy;
 
-//            // kind of awful, retry loop to get out of part
-//            int i = 10;
-//            do {
             exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
-//                n.randomizeDirection();
-//                n.record (new Event(n.position, Event.Code.EmergencyDirectionChange));
-//                i--;
-//            } while (exitEvent == null && i > 0);
-//            // might not succeed
 
             if (exitEvent == null) {
                 System.out.println("");
                 System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
                 //throw new IllegalArgumentException();
-                exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10);
+                exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 n.record(exitEvent);
                 n.dumpEvents();
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
@@ -152,6 +145,7 @@ public class Part {
                 n.setPosition(event.position);
                 Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
+                event.exitMaterial = this.shape.containedMaterial;
             }
             // call for Detector parts to record
             this.processPathLength(event.t, currentEnergy);

@@ -8,6 +8,8 @@ package org.eastsideprep.javaneutrons.shapes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -18,6 +20,7 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.assemblies.Material;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.fxyz3d.importers.Importer3D;
@@ -32,6 +35,7 @@ public class Shape extends MeshView {
     double[] vertices = null;
     int[] faces = null;
     public Part part;
+    public Material containedMaterial;
 
     // fresh
     public Shape() {
@@ -69,7 +73,6 @@ public class Shape extends MeshView {
         setVisuals("purple");
     }
 
- 
     // use this constructor to construct a shape from an OBJ file
     // will use only the first mesh in the group
     public Shape(URL url) {
@@ -82,19 +85,16 @@ public class Shape extends MeshView {
         setVisuals("green");
     }
 
-    
     //
     // setVisuals
     // default vis attributes for shapes
     //
-    
-       private void setVisuals(String color) {
+    private void setVisuals(String color) {
         this.setColor(color);
         this.setOpacity(0.5);
         this.setDrawMode(DrawMode.LINE);
     }
 
-    
     //
     // loadOBJ
     //
@@ -176,7 +176,7 @@ public class Shape extends MeshView {
     // returns t-parameter for the ray, or 0 if not intersecting
     // todo: acceleration structure like hierarchy of volumes
     //
-    public double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group simVis) {
+    public double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, int[] faceIndex, Group simVis) {
         double tmin = -1;
         int x = 0;
         int y = 1;
@@ -230,6 +230,12 @@ public class Shape extends MeshView {
 //            Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
 //            Util.Graphics.drawSphere(simVis, Util.Math.rayPoint(rayOrigin, rayDirection, tmin), vis, "orange");
 //        }
+
+        // report back the face index if asked for
+        if (faceIndex != null) {
+            faceIndex[0] = face;
+        }
+
         return tmin;
     }
 
@@ -293,5 +299,49 @@ public class Shape extends MeshView {
         pm.setSpecularColor(Color.web(webColor));
         pm.setDiffuseColor(Color.web(webColor));
         this.setMaterial(pm);
+    }
+
+    // 
+    // for containing things other than air
+    //
+    public void markSurfaceInContactWith(Vector3D origin, Vector3D direction, Material material, Group g) {
+        // find the triangle face
+        int[] face = new int[1];
+        this.rayIntersect(origin, direction, false, face, g);
+
+        // set up a queue of triangles that share the points of this one
+        LinkedList<Integer> facesQueue = new LinkedList<>();
+        
+        // and a set of processed faces so we don't visit one twice
+        HashSet<Integer> facesProcessed = new HashSet<>();
+        
+        // let's get started
+        facesQueue.add(face[0]);
+        facesProcessed.add(face[0]);
+        
+        while(!facesQueue.isEmpty()) {
+            // get a face to process
+            int nextFace = facesQueue.removeFirst();
+            
+            // mark it as "special"
+            faces[nextFace+1] = 1; // regularly 0
+            
+            // queue all faces that share points with this one
+            addFacesForPoint(faces[nextFace], facesQueue, facesProcessed);
+            addFacesForPoint(faces[nextFace+2], facesQueue, facesProcessed);
+            addFacesForPoint(faces[nextFace+4], facesQueue, facesProcessed);
+        }
+
+        this.containedMaterial = material;
+    }
+
+    private void addFacesForPoint(int pointIndex, LinkedList<Integer> facesQueue, HashSet<Integer> facesProcessed) {
+        for (int i = 0; i < faces.length; i += 6) {
+            if (faces[i] == pointIndex || faces[i + 2] == pointIndex || faces[i + 4] == pointIndex) {
+                if (!facesProcessed.contains(i)) {
+                    facesQueue.add(i);
+                }
+            }
+        }
     }
 }
