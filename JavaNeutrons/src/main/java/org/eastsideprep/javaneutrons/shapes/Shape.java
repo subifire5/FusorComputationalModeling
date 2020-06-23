@@ -239,6 +239,13 @@ public class Shape extends MeshView {
         return tmin;
     }
 
+    public Material getContactMaterial(int faceIndex) {
+        if (faces[faceIndex+1] == 0) {
+            return null;
+        }
+        return this.containedMaterial;
+    }
+
     //
     // getVolume
     //
@@ -311,26 +318,25 @@ public class Shape extends MeshView {
 
         // set up a queue of triangles that share the points of this one
         LinkedList<Integer> facesQueue = new LinkedList<>();
-        
+
         // and a set of processed faces so we don't visit one twice
         HashSet<Integer> facesAdded = new HashSet<>();
-        
+
         // let's get started
         facesQueue.add(face[0]);
         facesAdded.add(0);
-              
-        while(!facesQueue.isEmpty()) {
+
+        while (!facesQueue.isEmpty()) {
             // get a face to process
             int nextFace = facesQueue.removeFirst();
-            
-            
+
             // mark it as "special"
-            faces[nextFace+1] = 1; // regularly 0
-            
+            faces[nextFace + 1] = 1; // regularly 0
+
             // queue all faces that share points with this one
             addFacesForPoint(faces[nextFace], facesQueue, facesAdded);
-            addFacesForPoint(faces[nextFace+2], facesQueue, facesAdded);
-            addFacesForPoint(faces[nextFace+4], facesQueue, facesAdded);
+            addFacesForPoint(faces[nextFace + 2], facesQueue, facesAdded);
+            addFacesForPoint(faces[nextFace + 4], facesQueue, facesAdded);
         }
 
         this.containedMaterial = material;

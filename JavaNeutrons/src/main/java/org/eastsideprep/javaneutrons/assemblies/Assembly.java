@@ -108,6 +108,7 @@ public class Assembly extends Part {
                 event = p.evolveNeutronPath(n, visualizations, false);
                 // coming out, we might be in a new material
                 medium = event.exitMaterial != null?event.exitMaterial:air;
+                //System.out.println("Exit to material: "+medium.name);
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {

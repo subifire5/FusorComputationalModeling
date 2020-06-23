@@ -29,7 +29,7 @@ public class Element {
             this.area = area;
         }
     }
-    
+
     private static HashMap<String, Element> elements = new HashMap<>();
 
     public String name;
@@ -43,11 +43,11 @@ public class Element {
     public Element(String name, int atomicNumber, int neutrons) {
         this(name, atomicNumber, neutrons, atomicNumber * Util.Physics.protonMass + neutrons * Neutron.mass);
     }
-    
+
     // use this when you know the mass in kg
     public Element(String name, int atomicNumber, int neutrons, double mass) {
         Element.elements.put(name, this);
-        
+
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
 
@@ -56,10 +56,9 @@ public class Element {
 
         // read appropriate ENDF-derived data file
         // for the lightest stable isotope of the element
-        readDataFiles("" + (atomicNumber) + "25");
+        readDataFiles(atomicNumber);
     }
-    
-    
+
     public static Element getByName(String name) {
         return Element.elements.get(name);
     }
@@ -76,9 +75,21 @@ public class Element {
         return getArea(totalEntries, energy);
     }
 
-    protected final void readDataFiles(String name) {
+    protected final void readDataFiles(int atomicNumber) {
+        String name = Integer.toString(atomicNumber) + "25";
         this.elasticEntries = fillEntries(name, "elastic");
         this.totalEntries = fillEntries(name, "total");
+
+        // no xx25? try xx00 instad
+        if (this.elasticEntries == null) {
+            name = Integer.toString(atomicNumber) + "00";
+            this.elasticEntries = fillEntries(name, "elastic");
+            this.totalEntries = fillEntries(name, "total");
+              if (this.elasticEntries == null) {
+                  System.out.println("No data files found for element "+this.name+" (atomic number "+atomicNumber+")");
+              }
+      
+        }
     }
 
     //
@@ -89,7 +100,7 @@ public class Element {
         // read xyz.csv from resources/data
         InputStream is = Element.class.getResourceAsStream("/data/" + kind + "/" + fileName + ".csv");
         if (is == null) {
-            System.out.println("Data file " + fileName + " (" + kind + ") not found for element "+this.name);
+            //System.out.println("Data file " + fileName + " (" + kind + ") not found for element "+this.name);
             return null;
         }
         Scanner sc = new Scanner(is);

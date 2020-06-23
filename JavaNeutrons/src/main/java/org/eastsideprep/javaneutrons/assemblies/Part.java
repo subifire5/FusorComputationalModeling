@@ -98,7 +98,10 @@ public class Part {
             return null;
         }
         // construct appropriate event
-        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), goingOut ? Event.Code.Exit : Event.Code.Entry, t, face[0]);
+        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), 
+                goingOut ? Event.Code.Exit : Event.Code.Entry, 
+                t, 
+                face[0]);
     }
 
     //
@@ -138,9 +141,6 @@ public class Part {
             }
 
             // this next line will figure out where to scatter/absorb
-            if (material == null) {
-                System.out.println("");
-            }
             interactionEvent = material.nextPoint(n);
             if (exitEvent.t > interactionEvent.t) {
                 // scattering / absorption did really happen, process it
@@ -152,7 +152,7 @@ public class Part {
                 n.setPosition(event.position);
                 Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
-                event.exitMaterial = this.shape.containedMaterial;
+                event.exitMaterial = this.shape.getContactMaterial(event.face);
             }
             // call for Detector parts to record
             this.processPathLength(event.t, currentEnergy);
