@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.shape.DrawMode;
+import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
@@ -62,7 +63,9 @@ public class Test {
         // body
         //
         Shape bodyShape = new HumanBody();
-        bodyShape.getTransforms().add(new Translate(0, 0, -200));
+        bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
+        bodyShape.getTransforms().add(0,new Translate(0, 0, -200));
+
         Part body = new Part("Body", bodyShape, HumanBodyMaterial.class);
 
         

@@ -8,6 +8,7 @@ package org.eastsideprep.javaneutrons.assemblies;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Scanner;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
@@ -16,7 +17,7 @@ import org.eastsideprep.javaneutrons.core.Util;
  *
  * @author gunnar
  */
-public class Element extends Material {
+public class Element {
 
     private class Entry {
 
@@ -28,7 +29,10 @@ public class Element extends Material {
             this.area = area;
         }
     }
+    
+    private static HashMap<String, Element> elements = new HashMap<>();
 
+    public String name;
     public double mass; // g
     protected int atomicNumber;
     protected int neutrons;
@@ -36,22 +40,22 @@ public class Element extends Material {
     private ArrayList<Entry> totalEntries;
 
     public Element(String name, int atomicNumber, int neutrons) {
-        super(name);
-        //System.out.println("in element constructor");
+        Element.elements.put(name, this);
+        
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
 
+        // todo: how wrong is this, quantum-wise?
         this.mass = this.atomicNumber * Util.Physics.protonMass
                 + this.neutrons * Neutron.mass;
-        super.addComponent(this, 1);
-        // todo: what is an appropriate density for elements as materials?
-        // mostly, this value will not be used as a component material
-        // will have proportions of this element, and it own density
-        super.calculateAtomicDensities(1);
-        //
+
         // read appropriate ENDF-derived data file
         // for the lightest stable isotope of the element
         readDataFiles("" + (atomicNumber) + "25");
+    }
+    
+    public static Element getByName(String name) {
+        return Element.elements.get(name);
     }
 
     public double getScatterCrossSection(double energy) {

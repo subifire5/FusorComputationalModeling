@@ -14,30 +14,33 @@ import org.eastsideprep.javaneutrons.assemblies.Material;
 //
 // air is the material for NegativeSpace - everything around the parts 
 // of an Assembly
-public class Air extends Material {
+public class Air extends Gas {
 
     private static Air instance;
     private double pressure;
 
     // pressure is in kPa
     Air(double pressure) {
-        super("Air");
+        super("Air", pressure);
         construct(pressure);
     }
 
+    // use this for air at different pressure
     Air(String name, double pressure) {
-        super(name);
+        super(name, pressure);
         construct(pressure);
     }
 
     private void construct(double pressure) {
         this.pressure = pressure;
 
-        double massDensitySTP = 1.960;
+        // Google answer "density of air"
+        double massDensitySTP = 1.225;
 
         this.addComponent(Nitrogen.getInstance(), 78.08);
         this.addComponent(Oxygen.getInstance(), 20.09);
 
+        // that's 100 Pa for STP
         this.calculateAtomicDensities(massDensitySTP * pressure / 100);
     }
 
