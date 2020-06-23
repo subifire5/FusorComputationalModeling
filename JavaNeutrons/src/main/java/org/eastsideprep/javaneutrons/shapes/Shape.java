@@ -313,33 +313,35 @@ public class Shape extends MeshView {
         LinkedList<Integer> facesQueue = new LinkedList<>();
         
         // and a set of processed faces so we don't visit one twice
-        HashSet<Integer> facesProcessed = new HashSet<>();
+        HashSet<Integer> facesAdded = new HashSet<>();
         
         // let's get started
         facesQueue.add(face[0]);
-        facesProcessed.add(face[0]);
-        
+        facesAdded.add(0);
+              
         while(!facesQueue.isEmpty()) {
             // get a face to process
             int nextFace = facesQueue.removeFirst();
+            
             
             // mark it as "special"
             faces[nextFace+1] = 1; // regularly 0
             
             // queue all faces that share points with this one
-            addFacesForPoint(faces[nextFace], facesQueue, facesProcessed);
-            addFacesForPoint(faces[nextFace+2], facesQueue, facesProcessed);
-            addFacesForPoint(faces[nextFace+4], facesQueue, facesProcessed);
+            addFacesForPoint(faces[nextFace], facesQueue, facesAdded);
+            addFacesForPoint(faces[nextFace+2], facesQueue, facesAdded);
+            addFacesForPoint(faces[nextFace+4], facesQueue, facesAdded);
         }
 
         this.containedMaterial = material;
     }
 
-    private void addFacesForPoint(int pointIndex, LinkedList<Integer> facesQueue, HashSet<Integer> facesProcessed) {
+    private void addFacesForPoint(int pointIndex, LinkedList<Integer> facesQueue, HashSet<Integer> facesAdded) {
         for (int i = 0; i < faces.length; i += 6) {
             if (faces[i] == pointIndex || faces[i + 2] == pointIndex || faces[i + 4] == pointIndex) {
-                if (!facesProcessed.contains(i)) {
+                if (!facesAdded.contains(i)) {
                     facesQueue.add(i);
+                    facesAdded.add(i);
                 }
             }
         }

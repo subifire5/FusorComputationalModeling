@@ -190,7 +190,11 @@ public class Assembly extends Part {
     
     
     //
-    boolean containsMaterialAt(Material material, Vector3D location, Group g){
+    // makring parts containing vacuum
+    //
+    public boolean containsMaterialAt(Object material, Vector3D location, Group g){
+        // convert whatever we got here
+        material = Material.getRealMaterial(material);
         
         // send out a random ray from location
         Vector3D direction = Util.Math.randomDir();
@@ -202,7 +206,7 @@ public class Assembly extends Part {
         Part p = e.part;
         Shape s = p.shape;
         
-        s.markSurfaceInContactWith(location, direction, material, g);
+        s.markSurfaceInContactWith(location, direction, (Material) material, g);
         return true;
     }
 }

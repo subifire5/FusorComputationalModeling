@@ -48,8 +48,8 @@ public class Test {
         //
         // igloo
         //
-        Assembly igloo = new Assembly("igloo", Test.class.getResource("/meshes/igloo.obj"), Paraffin.class);
-        System.out.println("Macroscopic total cross-section for paraffin: "+Paraffin.getInstance().getSigma(1*Util.Physics.eV));
+        Assembly igloo = new Assembly("igloo", Test.class.getResource("/meshes/igloo.obj"), "Paraffin");
+        //System.out.println("Macroscopic total cross-section for paraffin: "+Paraffin.getInstance().getSigma(1*Util.Physics.eV));
         //
         // The detector is made from a stock - FXyz CuboidMesh
         //
@@ -57,7 +57,7 @@ public class Test {
         Shape detectorShape = new Shape(new CuboidMesh(s, 3 * s, 5 * s));
         // move detector behind cube wall
         detectorShape.getTransforms().add(new Translate(200, 0, 0));
-        Part detector = new Part("Detector 1", detectorShape, Vacuum.class);
+        Part detector = new Part("Detector 1", detectorShape, "Vacuum");
 
         //
         // body
@@ -65,13 +65,17 @@ public class Test {
         Shape bodyShape = new HumanBody();
         //bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
         bodyShape.getTransforms().add(0,new Translate(0, 0, -200));
-
-        Part body = new Part("Body", bodyShape, HumanBodyMaterial.class);
-
+        Part body = new Part("Body", bodyShape, "HumanBodyMaterial");
+        
+        
+        // vac chamber
+        Part vacChamber = new Part("Vacuum chamber", new Shape(Test.class.getResource("/meshes/vac_chamber.obj")), "Steel");
+        
         
         // assemble the Fusor out of the other stuff
         Assembly fusor = new Assembly("Fusor");
-        fusor.addAll(igloo, detector, body);
+        fusor.addAll(igloo, detector, body, vacChamber);
+        fusor.containsMaterialAt("Vacuum", Vector3D.ZERO, visualizations);
         
         // ubt it all into the visual scene
         Util.Graphics.drawCoordSystem(visualizations);

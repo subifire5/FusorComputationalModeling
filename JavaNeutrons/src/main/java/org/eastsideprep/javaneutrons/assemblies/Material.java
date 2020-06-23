@@ -14,7 +14,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.materials.Vacuum;
 
 /**
  *
@@ -114,10 +113,6 @@ public class Material {
         double rand = Util.Math.random.nextDouble() * sum;
         //System.out.println("sum: "+sum+"draw: "+rand);
 
-        if (this == Vacuum.getInstance()) {
-            System.out.println("");
-        }
-        
         // now find the component index
         int slot = Arrays.binarySearch(sigmas, rand);
         // if not found, will be negative slot -1
@@ -125,7 +120,6 @@ public class Material {
             slot = -slot - 1;
         }
 
-     
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
 
@@ -133,6 +127,24 @@ public class Material {
     }
 
     public static Material getRealMaterial(Object material) {
+
+        // try named material instance
+        if (material instanceof String) {
+            String name = (String) material;
+            material = Material.getByName(name);
+            if (material!= null) {
+                return (Material) material;
+            }
+
+            // if not named, try the class
+            try {
+                material = Class.forName("org.eastsideprep.javaneutrons.materials." + name);
+            } catch (ClassNotFoundException ex) {
+            }
+            // now we have a class and can resolve in the next step
+        }
+
+        // if it was a class, call the "getInstance" method
         if (material instanceof Class) {
             try {
                 Method method = ((Class) material).getDeclaredMethod("getInstance");
@@ -141,7 +153,11 @@ public class Material {
             } catch (IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException x) {
                 x.printStackTrace();
             }
+        }
 
+        // if it is a part, extract the material
+        if (material instanceof Part) {
+            material = ((Part) material).material;
         }
 
         return (Material) material;

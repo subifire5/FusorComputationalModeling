@@ -43,7 +43,11 @@ public class Part {
             namedParts.put(name, this);
         }
         if (material != null) {
+            String mName = material.toString();
             this.material = Material.getRealMaterial(material);
+            if (this.material == null) {
+                throw new IllegalArgumentException("invalid material for part: "+mName);
+            }
         }
         if (this.shape != null) {
             this.volume = this.shape.getVolume();
@@ -134,6 +138,9 @@ public class Part {
             }
 
             // this next line will figure out where to scatter/absorb
+            if (material == null) {
+                System.out.println("");
+            }
             interactionEvent = material.nextPoint(n);
             if (exitEvent.t > interactionEvent.t) {
                 // scattering / absorption did really happen, process it
