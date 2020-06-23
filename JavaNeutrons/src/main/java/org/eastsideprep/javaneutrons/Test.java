@@ -42,7 +42,7 @@ public class Test {
         // this cube-shaped wall is loaded from an obj file in resources
         // any obj files need to live their (folder src/main/resources in folder view)
         //
-
+        
         double gap = 3; // in cm
         double offset = 2 * gap; // in cm
         //
@@ -63,7 +63,7 @@ public class Test {
         // body
         //
         Shape bodyShape = new HumanBody();
-        bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
+        //bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
         bodyShape.getTransforms().add(0,new Translate(0, 0, -200));
 
         Part body = new Part("Body", bodyShape, HumanBodyMaterial.class);
