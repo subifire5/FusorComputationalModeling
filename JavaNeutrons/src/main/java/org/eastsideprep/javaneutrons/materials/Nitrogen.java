@@ -16,7 +16,7 @@ public class Nitrogen extends Element {
     private static Nitrogen instance;
 
     Nitrogen() {
-        super("Nitrogen", 7, 7);
+        super("Nitrogen", 7, 7, 2.3258671e-26);
     }
 
     // we only need one of these objects

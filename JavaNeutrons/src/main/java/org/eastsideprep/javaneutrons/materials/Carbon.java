@@ -17,7 +17,7 @@ public class Carbon extends Element {
     private static Carbon instance;
 
     Carbon() {
-        super("Carbon", 6, 6);
+        super("Carbon", 6, 6, 1.9944235e-26);
         readDataFiles("600"); // not sure why we don't have a 625
     }
 

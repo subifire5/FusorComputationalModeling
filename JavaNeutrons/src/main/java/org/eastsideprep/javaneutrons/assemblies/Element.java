@@ -39,20 +39,26 @@ public class Element {
     private ArrayList<Entry> elasticEntries;
     private ArrayList<Entry> totalEntries;
 
+    // for when you are too lazy to look up the correct mass
     public Element(String name, int atomicNumber, int neutrons) {
+        this(name, atomicNumber, neutrons, atomicNumber * Util.Physics.protonMass + neutrons * Neutron.mass);
+    }
+    
+    // use this when you know the mass in kg
+    public Element(String name, int atomicNumber, int neutrons, double mass) {
         Element.elements.put(name, this);
         
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
 
         // todo: how wrong is this, quantum-wise?
-        this.mass = this.atomicNumber * Util.Physics.protonMass
-                + this.neutrons * Neutron.mass;
+        this.mass = mass;
 
         // read appropriate ENDF-derived data file
         // for the lightest stable isotope of the element
         readDataFiles("" + (atomicNumber) + "25");
     }
+    
     
     public static Element getByName(String name) {
         return Element.elements.get(name);

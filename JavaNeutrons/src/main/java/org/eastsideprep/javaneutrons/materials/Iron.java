@@ -17,7 +17,7 @@ public class Iron extends Element {
     private static Iron instance;
 
     Iron() {
-        super("Iron", 26, 30);
+        super("Iron", 26, 30, 9.2732796e-26);
     }
 
     // we only need one of these objects

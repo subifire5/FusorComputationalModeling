@@ -17,7 +17,7 @@ public class Oxygen extends Element {
     private static Oxygen instance;
 
     Oxygen() {
-        super("Oxygen", 8, 8);
+        super("Oxygen", 8, 8, 2.6566962e-26);
     }
 
     // we only need one of these objects

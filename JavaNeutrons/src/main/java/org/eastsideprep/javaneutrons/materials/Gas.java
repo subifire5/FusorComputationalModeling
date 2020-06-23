@@ -17,8 +17,7 @@ import org.eastsideprep.javaneutrons.assemblies.Material;
 // of an Assembly
 public abstract class Gas extends Material {
 
-    private static Gas instance;
-    private double pressure;
+    protected double pressure;
 
     // pressure is in kPa
 

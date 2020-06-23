@@ -14,6 +14,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
+import org.eastsideprep.javaneutrons.materials.Vacuum;
 
 /**
  *
@@ -113,6 +114,10 @@ public class Material {
         double rand = Util.Math.random.nextDouble() * sum;
         //System.out.println("sum: "+sum+"draw: "+rand);
 
+        if (this == Vacuum.getInstance()) {
+            System.out.println("");
+        }
+        
         // now find the component index
         int slot = Arrays.binarySearch(sigmas, rand);
         // if not found, will be negative slot -1
@@ -120,7 +125,7 @@ public class Material {
             slot = -slot - 1;
         }
 
-        // retrieve the corresponding element
+     
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
 
