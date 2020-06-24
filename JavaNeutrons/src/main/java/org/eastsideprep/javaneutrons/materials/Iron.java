@@ -17,27 +17,7 @@ public class Iron extends Element {
     private static Iron instance;
 
     Iron() {
-        super("56-Iron", 26, 30);
-    }
-
-    @Override
-    public double getScatterCrossSection(double energy) {
-        // todo: get real table data
-        if (energy > 10*Util.Physics.eV) {
-            return 20e-24;
-        } else {
-            return 0.003e-24;
-        }
-    }
-
-    @Override
-    public double getCaptureCrossSection(double energy) {
-        // todo: get real table data
-        if (energy > 10*Util.Physics.eV){
-            return 2*1e-24;
-        } else{
-            return 10*1e-24;
-        }
+        super("Iron", 26, 30, 9.2732796e-26);
     }
 
     // we only need one of these objects

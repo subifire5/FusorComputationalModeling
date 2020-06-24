@@ -17,27 +17,7 @@ public class Oxygen extends Element {
     private static Oxygen instance;
 
     Oxygen() {
-        super("16-Oxygen", 8, 8);
-    }
-
-    @Override
-    public double getScatterCrossSection(double energy) {
-        // todo: get real table data
-        if (energy > 10 * Util.Physics.eV) {
-            return 2e-24;
-        } else {
-            return 5e-24;
-        }
-    }
-
-    @Override
-    public double getCaptureCrossSection(double energy) {
-        // todo: get real table data
-        if (energy > 10 * Util.Physics.eV) {
-            return 0.00001 * 1e-24;
-        } else {
-            return 0.002 * 1e-24;
-        }
+        super("Oxygen", 8, 8, 2.6566962e-26);
     }
 
     // we only need one of these objects

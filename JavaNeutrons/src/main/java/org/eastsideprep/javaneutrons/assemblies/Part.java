@@ -8,11 +8,13 @@ package org.eastsideprep.javaneutrons.assemblies;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import javafx.scene.Group;
-import javafx.scene.paint.Color;
+import java.util.concurrent.LinkedTransferQueue;
+import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
+import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.shapes.Shape;
@@ -21,32 +23,72 @@ import org.eastsideprep.javaneutrons.shapes.Shape;
  *
  * @author gunnar
  */
-public class Part  {
+public class Part {
 
-    static HashMap<String, Part> namedParts = new HashMap<>();
-    Shape shape;
-    Material material;
-    String name;
+    public static HashMap<String, Part> namedParts = new HashMap<>();
+    public Shape shape;
+    public Material material;
+    public String name;
 
-    public Part(String name, Shape s, Material m) {
+    // universal detector functionality
+    public LogEnergyEVHistogram entriesOverEnergy;
+    public LogEnergyEVHistogram fluenceOverEnergy;
+    public LogEnergyEVHistogram scattersOverEnergyBefore;
+    public LogEnergyEVHistogram capturesOverEnergyBefore;
+    public LogEnergyEVHistogram scattersOverEnergyAfter;
+    public LogEnergyEVHistogram capturesOverEnergyAfter;
+    private double volume = 0;
+    private double currentEntryEnergy = 0;
+    private double totalDepositedEnergy = 0;
+    private double totalFluence = 0;
+    private int totalEvents = 0;
+
+    public Part(String name, Shape s, Object material) {
         this.shape = s;
         this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
             namedParts.put(name, this);
         }
-        this.material = m;
+        if (material != null) {
+            String mName = material.toString();
+            this.material = Material.getRealMaterial(material);
+            if (this.material == null) {
+                throw new IllegalArgumentException("invalid material for part: " + mName);
+            }
+        }
+        if (this.shape != null) {
+            this.volume = this.shape.getVolume();
+        }
+        resetDetector();
     }
 
     public static Part getByName(String name) {
         return namedParts.get(name);
     }
 
+    public void resetDetectors() {
+        resetDetector();
+    }
+
+    public final void resetDetector() {
+        this.currentEntryEnergy = 0;
+        this.totalDepositedEnergy = 0;
+        this.totalFluence = 0;
+        this.totalEvents = 0;
+        this.entriesOverEnergy = new LogEnergyEVHistogram();
+        this.fluenceOverEnergy = new LogEnergyEVHistogram();
+        this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
+        this.capturesOverEnergyBefore = new LogEnergyEVHistogram();
+        this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
+        this.capturesOverEnergyAfter = new LogEnergyEVHistogram();
+    }
+
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
         ArrayList<Part> parts = new ArrayList<>();
         int i = 0;
         for (Shape s : shapes) {
-            Part p = new Part(name+"."+i, s, material);
+            Part p = new Part(name + "." + i, s, material);
             p.shape.setDrawMode(DrawMode.LINE);
             p.shape.setOpacity(0.5);
             p.shape.setColor("blue");
@@ -62,14 +104,18 @@ public class Part  {
     // intersects a ray with all triangles of this parts, returns the t-param of the closest
     // goingOut determines whether we are entering or leaving the part (true=test back faces)
     //
-    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group g) {
-        double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, g);
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue<Node> g) {
+        int[] face = new int[1];
+        double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, face, g);
         // not found?
         if (t == -1) {
             return null;
         }
         // construct appropriate event
-        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), goingOut ? Event.Code.Exit : Event.Code.Entry, t);
+        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t),
+                goingOut ? Event.Code.Exit : Event.Code.Entry,
+                t,
+                face[0]);
     }
 
     //
@@ -78,7 +124,7 @@ public class Part  {
     // follows the neutron around from entry to exit or absorption
     // outermost will be ignored, this is not an assembly
     // 
-    Event evolveNeutronPath(Neutron n, Group visualizations, boolean outermost) {
+    Event evolveNeutronPath(Neutron n, LinkedTransferQueue<Node> visualizations, boolean outermost) {
         double t;
         Event exitEvent;
         Event interactionEvent;
@@ -94,21 +140,13 @@ public class Part  {
         do {
             double currentEnergy = n.energy;
 
-//            // kind of awful, retry loop to get out of part
-//            int i = 10;
-//            do {
             exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
-//                n.randomizeDirection();
-//                n.record (new Event(n.position, Event.Code.EmergencyDirectionChange));
-//                i--;
-//            } while (exitEvent == null && i > 0);
-//            // might not succeed
 
             if (exitEvent == null) {
                 System.out.println("");
                 System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
                 //throw new IllegalArgumentException();
-                exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10);
+                exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 n.record(exitEvent);
                 n.dumpEvents();
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
@@ -122,12 +160,24 @@ public class Part  {
                 // scattering / absorption did really happen, process it
                 event = interactionEvent;
                 Util.Graphics.visualizeEvent(event, visualizations);
+                if (event.code == Event.Code.Scatter) {
+                    this.scattersOverEnergyBefore.record(1, n.energy);
+                } else if (event.code == Event.Code.Capture) {
+                    this.capturesOverEnergyBefore.record(1, n.energy);
+                }
                 n.processEvent(event);
+                this.totalEvents++;
+                if (event.code == Event.Code.Scatter) {
+                    this.scattersOverEnergyAfter.record(1, n.energy);
+                } else if (event.code == Event.Code.Scatter) {
+                    this.capturesOverEnergyAfter.record(1, n.energy);
+                }
             } else {
                 event = exitEvent;
                 n.setPosition(event.position);
                 Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
+                event.exitMaterial = this.shape.getContactMaterial(event.face);
             }
             // call for Detector parts to record
             this.processPathLength(event.t, currentEnergy);
@@ -139,15 +189,39 @@ public class Part  {
         return event;
     }
 
+    //
+    // detector functionality
+    //
     void processPathLength(double length, double energy) {
-        // this is an empty method to be overridden by Detector class
+//        if (name.equals("Body")) {
+//            System.out.println("Entry into detector path length log " + this.fluenceOverEnergy.hashCode());
+//        }
+        this.fluenceOverEnergy.record(length / volume, energy);
+        this.totalFluence += length / volume;
     }
 
     void processEntryEnergy(double e) {
-        // this is an empty method to be overridden by Detector class
+//        if (name.equals("Body")) {
+//            //System.out.println("Entry into detector entry energy log " + this.entryOverEnergy.hashCode());
+//        }
+        this.entriesOverEnergy.record(1, e);
+        this.currentEntryEnergy = e;
     }
 
-    void processExitEnergy(double e) {
-        // this is an empty method to be overridden by Detector class
+    void processExitEnergy(double e
+    ) {
+        this.totalDepositedEnergy += (e - this.currentEntryEnergy);
+    }
+
+    public double getTotalDepositedEnergy() {
+        return this.totalDepositedEnergy;
+    }
+
+    public double getTotalFluence() {
+        return this.totalFluence;
+    }
+
+    public int getTotalEvents() {
+        return this.totalEvents;
     }
 }

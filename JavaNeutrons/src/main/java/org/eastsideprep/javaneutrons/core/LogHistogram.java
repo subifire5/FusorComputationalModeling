@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
-import java.util.Arrays;
+import java.text.DecimalFormat;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
@@ -18,22 +18,30 @@ public class LogHistogram {
     public LogHistogram(int logMin, int logMax, int bins) {
         this.logMin = logMin;
         this.logMax = logMax;
-        this.bins = new double[logMax - logMin + 1];
+        this.bins = new double[bins];
+        //this.bins = new double[logMax - logMin + 1];
     }
 
-    public void record(double value, double energy) {
+    public LogHistogram() {
+        this.logMin = -6;
+        this.logMax = 7;
+        this.bins = new double[(logMax-logMin)*5];
+        //this.bins = new double[logMax - logMin + 1];
+    }
+
+    public void record(double value, double x) {
         int bin;
 
         // take log in chosen base
-        double logEnergy = Math.log10(energy) - logMin;
+        double logX = Math.log10(x) - logMin;
 
         // cut of stuff that is too small
-        if (logEnergy < 0) {
-            logEnergy = 0;
+        if (logX < 0) {
+            logX = 0;
         }
 
         // find bin
-        bin = (int) Math.round(logEnergy / (logMax - logMin) * this.bins.length);
+        bin = (int) Math.round(logX / (logMax - logMin) * this.bins.length);
 
         // cut off stuff that is too big
         if (bin >= this.bins.length) {
@@ -45,13 +53,14 @@ public class LogHistogram {
             System.out.println("hah!");
         }
 
-        //System.out.println(""+this.hashCode()+": recording "+energy+":"+value);
+        //System.out.println(""+this.hashCode()+": recording "+x+":"+value);
         synchronized (this) {
             this.bins[bin] += value;
         }
     }
 
     public XYChart.Series makeSeries(String seriesName) {
+        //System.out.println("Retrieving series "+seriesName+":");
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
         series.setName(seriesName);
@@ -62,13 +71,14 @@ public class LogHistogram {
         synchronized (this) {
             System.arraycopy(this.bins, 0, counts, 0, counts.length);
         }
-        
-        //System.out.println(""+this.hashCode()+Arrays.toString(bins));
 
-        for (int i = logMin; i < logMax; i++) {
-            String tick = "" + Math.round(Math.pow(10, i));
-            data.add(new XYChart.Data(tick, counts[i - logMin]));
-            //System.out.println(""+this.hashCode() + tick +":"+ counts[i - logMin] + " ");
+        //System.out.println(""+this.hashCode()+Arrays.toString(bins));
+        for (int i = 0; i < bins.length; i++) {
+            double x = Math.pow(10, logMin + i / ((double) bins.length) * (logMax - logMin));
+            DecimalFormat f = new DecimalFormat("0.##E0");
+            String tick = f.format(x);
+            data.add(new XYChart.Data(tick, counts[i]));
+            //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }
 
         return series;

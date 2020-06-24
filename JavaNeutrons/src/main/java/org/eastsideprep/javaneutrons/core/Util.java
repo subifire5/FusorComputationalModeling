@@ -6,20 +6,26 @@
 package org.eastsideprep.javaneutrons.core;
 
 import java.util.Random;
+import java.util.concurrent.LinkedTransferQueue;
 import javafx.animation.ScaleTransition;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.effect.Glow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.Mesh;
+import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.util.Duration;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.fxyz3d.shapes.primitives.PyramidMesh;
 
 /**
  *
@@ -39,72 +45,10 @@ public class Util {
         }
 
         //
-        // rayTriangleIntersect
+        // similar
         //
-        // static helper function
-        // ported from: 
-        // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
-        //
-        public static double rayTriangleIntersect(
-                Vector3D rayOrigin, Vector3D rayDirection,
-                Vector3D v0, Vector3D v1, Vector3D v2) {
-            final double kEpsilon = 1E-8; // constant for "close enough to 0"
-
-            // compute plane's normal
-            Vector3D v0v1 = v1.subtract(v0);
-            Vector3D v0v2 = v2.subtract(v0);
-            // no need to normalize
-            Vector3D N = v0v1.crossProduct(v0v2); // N 
-            double area2 = N.getNorm();
-
-            // Step 1: finding P
-            // check if ray and plane are parallel ?
-            double NdotRayDirection = N.dotProduct(rayDirection);
-
-            // almost 0?
-            if (NdotRayDirection > -kEpsilon) {
-                return -1; // wrong direction or parallel 
-            }
-
-            // compute d parameter using equation 2
-            double d = N.dotProduct(v0);
-
-            // compute t (equation 3)
-            double t = (d - N.dotProduct(rayOrigin)) / NdotRayDirection;
-            // check if the triangle is in behind the ray
-            if (t < 0) {
-                return -1; // the triangle is behind 
-            }
-            // compute the intersection point using equation 1
-            Vector3D P = rayOrigin.add(rayDirection.scalarMultiply(t));
-
-            // Step 2: inside-outside test
-            Vector3D C; // vector perpendicular to triangle's plane 
-
-            // edge 0
-            Vector3D edge0 = v1.subtract(v0);
-            Vector3D vp0 = P.subtract(v0);
-            C = edge0.crossProduct(vp0);
-            if (N.dotProduct(C) < 0) {
-                return -1; // P is on the right side 
-            }
-
-            // edge 1
-            Vector3D edge1 = v2.subtract(v1);
-            Vector3D vp1 = P.subtract(v1);
-            C = edge1.crossProduct(vp1);
-            if (N.dotProduct(C) < 0) {
-                return -1; // P is on the right side 
-            }
-            // edge 2
-            Vector3D edge2 = v0.subtract(v2);
-            Vector3D vp2 = P.subtract(v2);
-            C = edge2.crossProduct(vp2);
-            if (N.dotProduct(C) < 0) {
-                return -1; // P is on the right side; 
-            }
-
-            return t; // this ray hits the triangle, return where on the ray
+        public static Vector3D randomGaussianComponentVector(double sd) {
+            return new Vector3D(random.nextGaussian() * sd, random.nextGaussian() * sd, random.nextGaussian() * sd);
         }
 
         //
@@ -113,35 +57,64 @@ public class Util {
         // static helper function
         // adapted from: 
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm#Java_Implementation
-        // todo: Is not sensitive to one-sided rectangles
         //
-        public static double rayTriangleIntersectNew(
-                Vector3D rayOrigin, Vector3D rayDirection,
-                Vector3D v0, Vector3D v1, Vector3D v2) {
+        public static double rayTriangleIntersect(
+                double ox, double oy, double oz,
+                double dx, double dy, double dz,
+                double v0x, double v0y, double v0z,
+                double v1x, double v1y, double v1z,
+                double v2x, double v2y, double v2z) {
             final double kEpsilon = 1E-12; // constant for "close enough to 0"
             double a, f, u, v;
 
-            Vector3D edge1 = v1.subtract(v0);
-            Vector3D edge2 = v2.subtract(v0);
-            Vector3D h = rayDirection.crossProduct(edge2);
-            a = edge1.dotProduct(h);
+            double edge1x = v1x - v0x;
+            double edge1y = v1y - v0y;
+            double edge1z = v1z - v0z;
+
+            double edge2x = v2x - v0x;
+            double edge2y = v2y - v0y;
+            double edge2z = v2z - v0z;
+
+            double hx = dy * edge2z - dz * edge2y;
+            double hy = dz * edge2x - dx * edge2z;
+            double hz = dx * edge2y - dy * edge2x;
+
+            a = edge1x * hx + edge1y * hy + edge1z * hz;
+
             if (a > -kEpsilon && a < kEpsilon) {
                 return -1;    // This ray is parallel to this triangle.
             }
 
+            double nx = edge1y * edge2z - edge1z * edge2y;
+            double ny = edge1z * edge2x - edge1x * edge2z;
+            double nz = edge1x * edge2y - edge1y * edge2x;
+
+            double nDotDir = nx * dx + ny * dy + nz * dz;
+            if (nDotDir > -kEpsilon) {
+                return -1; // wrong direction or parallel 
+            }
+
             f = 1.0 / a;
-            Vector3D s = rayOrigin.subtract(v0);
-            u = f * (s.dotProduct(h));
+            double sx = ox - v0x;
+            double sy = oy - v0y;
+            double sz = oz - v0z;
+
+            u = f * (sx * hx + sy * hy + sz * hz);
             if (u < 0.0 || u > 1.0) {
                 return -1;
             }
-            Vector3D q = s.crossProduct(edge1);
-            v = f * rayDirection.dotProduct(q);
+
+            double qx = sy * edge1z - sz * edge1y;
+            double qy = sz * edge1x - sx * edge1z;
+            double qz = sx * edge1y - sy * edge1x;
+
+            v = f * (dx * qx + dy * qy + dz * qz);
             if (v < 0.0 || u + v > 1.0) {
                 return -1;
             }
+
             // At this stage we can compute t to find out where the intersection point is on the line.
-            double t = f * edge2.dotProduct(q);
+            double t = f * (edge2x * qx + edge2y * qy + edge2z * qz);
             if (t > kEpsilon) {
                 return t;
             } else {
@@ -162,12 +135,13 @@ public class Util {
         final public static double roomTemp = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
+        final public static double barn = 1e-24; // 1 barn in SI cm
         // factor 1e4 is from using cm, not m here - 100^2
     }
 
     static public class Graphics {
 
-        public static void drawSphere(Group g, Vector3D position, float radius, String webColor) {
+        public static void drawSphere(LinkedTransferQueue<Node> g, Vector3D position, float radius, String webColor) {
             Sphere s = new Sphere(radius);
             s.setTranslateX(position.getX());
             s.setTranslateY(position.getY());
@@ -177,10 +151,25 @@ public class Util {
             pm.setDiffuseColor(Color.web(webColor));
             s.setMaterial(pm);
 
-            Platform.runLater(() -> g.getChildren().add(s));
+            g.add(s);
         }
 
-        public static void drawLine(Group g, Vector3D p1, Vector3D p2, double size, Color c) {
+    
+
+        public static void drawCube(LinkedTransferQueue<Node> g, Vector3D position, float side, String webColor) {
+            Box s = new Box(side, side, side);
+            s.setTranslateX(position.getX());
+            s.setTranslateY(position.getY());
+            s.setTranslateZ(position.getZ());
+            final PhongMaterial pm = new PhongMaterial();
+            pm.setSpecularColor(Color.web(webColor));
+            pm.setDiffuseColor(Color.web(webColor));
+            s.setMaterial(pm);
+
+            g.add(s);
+        }
+
+        public static void drawLine(LinkedTransferQueue<Node> g, Vector3D p1, Vector3D p2, double size, Color c) {
             Vector3D v = p2.subtract(p1);
 
             Cylinder line = new Cylinder(size, v.getNorm(), 4);
@@ -195,7 +184,7 @@ public class Util {
             line.getTransforms().add(new Rotate(180 - phi, new Point3D(0, 0, 1)));
             line.getTransforms().add(new Rotate(theta - 90, new Point3D(1, 0, 0)));
 
-            Platform.runLater(() -> g.getChildren().add(line));
+            g.add(line);
         }
 
         //
@@ -203,10 +192,10 @@ public class Util {
         //
         // will make a small golden sphere at the event point
         //
-        public static void visualizeEvent(Event event, Vector3D direction, Group g) {
+        public static void visualizeEvent(Event event, Vector3D direction, LinkedTransferQueue<Node> g) {
             if (event.code != Event.Code.Gone) {
                 String color;
-                float size = 0.5f;
+                float size = 0.2f;
 
                 switch (event.code) {
                     case Entry:
@@ -215,18 +204,18 @@ public class Util {
                         break;
                     case Exit:
                         color = "red";
-                        size *=2;
+                        size *= 2;
                         break;
                     case Scatter:
                         color = "gold";
                         break;
                     case EmergencyExit:
                         color = "purple";
-                        size *=5;
+                        size *= 5;
                         break;
                     case Capture:
                         color = "lightblue";
-                        size *=3;
+                        size *= 3;
                         break;
                     default:
                         color = "black";
@@ -237,6 +226,7 @@ public class Util {
                     double jitter = 0.1;
                     position = position.add(direction.scalarMultiply(-jitter));
                 }
+
                 Util.Graphics.drawSphere(g, position, size, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }
@@ -247,50 +237,17 @@ public class Util {
         //
         // same but without offset direction
         //
-        public static void visualizeEvent(Event event, Group g) {
+        public static void visualizeEvent(Event event, LinkedTransferQueue<Node> g) {
             visualizeEvent(event, null, g);
         }
 
-        public void displayEffect(Group g, Vector3D v, String color) {
-            int scale = 2;
-
-            Sphere s = new Sphere(scale / (double) 2);
-            s.setMaterial(new PhongMaterial(Color.web(color, 0.2)));
-            s.setDrawMode(DrawMode.FILL);
-            s.setTranslateX(v.getX());
-            s.setTranslateY(v.getY());
-            s.setTranslateZ(v.getZ());
-            s.setOpacity(0.2);
-
-            // make it glow
-            Glow glow = new Glow(1.0);
-            glow.setLevel(1.0);
-            s.setEffect(glow);
-
-            // make it shrink over 2 seconds
-            ScaleTransition t = new ScaleTransition(Duration.millis(500), s);
-            t.setFromX(1);
-            t.setFromY(1);
-            t.setFromZ(1);
-
-            t.setToX(0);
-            t.setToY(0);
-            t.setToZ(0);
-
-            // kill it when done
-            t.setOnFinished((e) -> g.getChildren().remove(s));
-
-            // add to scene and play
-            t.play();
-            Platform.runLater(() -> g.getChildren().add(s));
-        }
-
         public static void drawCoordSystem(Group g) {
-            Util.Graphics.drawSphere(g, Vector3D.ZERO, 1, "red");
-            Util.Graphics.drawLine(g, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.5, Color.CYAN);
-            Util.Graphics.drawLine(g, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.5, Color.YELLOW);
-            Util.Graphics.drawLine(g, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.5, Color.RED);
-
+            LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
+            Util.Graphics.drawSphere(q, Vector3D.ZERO, 1, "red");
+            Util.Graphics.drawLine(q, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.1, Color.CYAN);
+            Util.Graphics.drawLine(q, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.1, Color.YELLOW);
+            Util.Graphics.drawLine(q, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.1, Color.RED);
+            q.drainTo(g.getChildren());
         }
 
     }

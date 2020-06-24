@@ -5,6 +5,14 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
+import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Scanner;
+import javafx.collections.ObservableList;
+import javafx.scene.chart.XYChart;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 
@@ -12,32 +20,149 @@ import org.eastsideprep.javaneutrons.core.Util;
  *
  * @author gunnar
  */
-public class Element extends Material {
+public class Element {
 
+    private class Entry {
+
+        double energy;
+        double area;
+
+        private Entry(double energy, double area) {
+            this.energy = energy;
+            this.area = area;
+        }
+    }
+
+    public static HashMap<String, Element> elements = new HashMap<>();
+
+    public String name;
     public double mass; // g
-    int atomicNumber;
-    int neutrons;
+    protected int atomicNumber;
+    protected int neutrons;
+    private ArrayList<Entry> elasticEntries;
+    private ArrayList<Entry> totalEntries;
 
+    // for when you are too lazy to look up the correct mass
     public Element(String name, int atomicNumber, int neutrons) {
-        super(name);
+        this(name, atomicNumber, neutrons, atomicNumber * Util.Physics.protonMass + neutrons * Neutron.mass);
+    }
+
+    // use this when you know the mass in kg
+    public Element(String name, int atomicNumber, int neutrons, double mass) {
+        Element.elements.put(name, this);
+
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
-        this.mass = this.atomicNumber*Util.Physics.protonMass + 
-                this.neutrons*Neutron.mass;
-        super.addComponent(this, 1);
-        // todo: what is an appropriate density for elements as materials?
-        // mostly, this value will not be used as a component material
-        // will have proportions of this element, and it own density
-        super.calculateAtomicDensities(1);
+
+        // todo: how wrong is this, quantum-wise?
+        this.mass = mass;
+
+        // read appropriate ENDF-derived data file
+        // for the lightest stable isotope of the element
+        readDataFiles(atomicNumber);
+    }
+
+    public static Element getByName(String name) {
+        return Element.elements.get(name);
     }
 
     public double getScatterCrossSection(double energy) {
-        // todo: this is Taras' job
-        return 0;
+        return getArea(elasticEntries, energy);
     }
 
     public double getCaptureCrossSection(double energy) {
-        // todo: this is Taras' job
-        return 0;
+        return getArea(totalEntries, energy) - getArea(elasticEntries, energy);
+    }
+
+    public double getTotalCrossSection(double energy) {
+        return getArea(totalEntries, energy);
+    }
+
+    protected final void readDataFiles(int atomicNumber) {
+        String name = Integer.toString(atomicNumber) + "25";
+        this.elasticEntries = fillEntries(name, "elastic");
+        this.totalEntries = fillEntries(name, "total");
+
+        // no xx25? try xx00 instad
+        if (this.elasticEntries == null) {
+            name = Integer.toString(atomicNumber) + "00";
+            this.elasticEntries = fillEntries(name, "elastic");
+            this.totalEntries = fillEntries(name, "total");
+            if (this.elasticEntries == null) {
+                System.out.println("No data files found for element " + this.name + " (atomic number " + atomicNumber + ")");
+            }
+
+        }
+    }
+
+    //
+    // kind is "elastic" or "total"
+    //
+    private ArrayList<Entry> fillEntries(String fileName, String kind) {
+
+        // read xyz.csv from resources/data
+        InputStream is = Element.class.getResourceAsStream("/data/" + kind + "/" + fileName + ".csv");
+        if (is == null) {
+            //System.out.println("Data file " + fileName + " (" + kind + ") not found for element "+this.name);
+            return null;
+        }
+        Scanner sc = new Scanner(is);
+
+        ArrayList<Entry> newEntries = new ArrayList<>(); //reset
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine();
+            String[] split = line.split(",");
+            double energy = Double.parseDouble(split[0]);
+            double area = Double.parseDouble(split[1]);
+            newEntries.add(new Entry(energy, area));
+        }
+        Collections.sort(newEntries, (a, b) -> {
+            return (int) Math.signum(a.energy - b.energy);
+        });
+
+        return newEntries;
+    }
+
+    private double getArea(ArrayList<Entry> data, double energy) {
+        // table data is in eV, convert to SI (cm)
+        energy /= Util.Physics.eV;
+        //System.out.println("Energy: "+energy+" eV");
+        int index = Collections.binarySearch(data, new Entry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
+        if (index >= 0) {
+            return data.get(index).area * Util.Physics.barn;
+        }
+        //else, linear interpolate between two nearest points
+        index = -index - 1;
+        if (index == 0 || index >= data.size()) {
+            // todo: Our neutrons should not get this cold,
+            // but if they do, deal with it properly
+            // for now, just return the smallest cross-section
+            //System.out.println("Not enough data to linear interpolate");
+            return data.get(0).area * Util.Physics.barn;
+        }
+        Entry e1 = data.get(index - 1); //the one with just lower energy
+        Entry e2 = data.get(index);   //the one with just higher energy
+        double area = e1.area + (((energy - e1.energy) / (e2.energy - e1.energy)) * (e2.area - e1.area)); //linear interpolation function
+
+        // convert back into SI (cm) and return
+        return area * Util.Physics.barn;
+    }
+
+    public XYChart.Series makeCSSeries(String seriesName) {
+        XYChart.Series series = new XYChart.Series();
+        ObservableList data = series.getData();
+        series.setName(seriesName);
+        boolean scatter = seriesName.equals("Scatter");
+
+        for (double energy = 1e-3; energy < 1e7; energy *= 1.1) {
+            DecimalFormat f = new DecimalFormat("0.##E0");
+            String tick = f.format(energy);
+
+            data.add(new XYChart.Data(tick, scatter
+                    ? getScatterCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
+                    : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn));
+        }
+
+        return series;
     }
 }

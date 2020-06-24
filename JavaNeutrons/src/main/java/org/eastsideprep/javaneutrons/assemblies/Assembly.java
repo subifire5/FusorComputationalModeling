@@ -5,10 +5,9 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedTransferQueue;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -19,6 +18,7 @@ import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.Air;
+import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.eastsideprep.javaneutrons.shapes.AssemblyGroup;
 import org.eastsideprep.javaneutrons.shapes.Shape;
 
@@ -30,7 +30,6 @@ public class Assembly extends Part {
     // todo: acceleration structure
 
     private AssemblyGroup g;
-    public ArrayList<Detector> detectors = new ArrayList<>();
 
     public Assembly(String name) {
         super(name, null, null);
@@ -39,16 +38,10 @@ public class Assembly extends Part {
 
     // use this constructor to construct an assembly from an OBJ file
     public Assembly(String name, URL url, Object material) {
-        super(name, null, null);
+        super(name, null, material);
 
-        Material m = null;
-        if (material instanceof Class) {
-            try {
-                Method method = ((Class) material).getMethod("getInstance");
-                material = method.invoke(material);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            }
-        }
+        material = Material.getRealMaterial(material);
+
         this.g = new AssemblyGroup(this);
 
         ArrayList<Shape> shapes = Shape.loadOBJ(url);
@@ -60,16 +53,31 @@ public class Assembly extends Part {
     }
 
     @Override
-    public Event evolveNeutronPath(Neutron n, Group visualizations, boolean outermost) {
+    public void resetDetectors() {
+        for (Node n : g.getChildren()) {
+            if (n instanceof AssemblyGroup) {
+                ((AssemblyGroup) n).assembly.resetDetectors();
+            } else if (n instanceof Shape) {
+                ((Shape) n).part.resetDetectors();
+            }
+        }
+    }
+
+    @Override
+    public Event evolveNeutronPath(Neutron n, LinkedTransferQueue visualizations, boolean outermost) {
         return this.evolveNeutronPathNoVacuum(n, visualizations, outermost);
     }
 
-    public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations, boolean outermost) {
-        Air air = Air.getInstance();
+    public Event evolveNeutronPathNoVacuum(Neutron n, LinkedTransferQueue visualizations, boolean outermost) {
         Event partEvent;
         Event interactionEvent;
         Event event;
         double t;
+        
+        // we start in vacuum
+        Material medium = Vacuum.getInstance();
+        // but we will mostly travel in air
+        Air air = Air.getInstance();
 
         do {
             // find the closest part we intersect with
@@ -80,7 +88,7 @@ public class Assembly extends Part {
                 return new Event(n.position, Event.Code.Exit);
             }
             // find possible interactions along the way
-            interactionEvent = air.nextPoint(n);
+            interactionEvent = medium.nextPoint(n);
 
             // did we not find a part, or is it further than an air event?
             if (partEvent == null || partEvent.t > interactionEvent.t) {
@@ -99,11 +107,14 @@ public class Assembly extends Part {
                 n.record(partEvent);
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
+                // coming out, we might be in a new material
+                medium = event.exitMaterial != null?event.exitMaterial:air;
+                //System.out.println("Exit to material: "+medium.name);
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {
                 Environment.processEnergy(n.energy);
-                event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10);
+                event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10, 0);
             }
             //visualizeEvent(event, visualizations);
         } while (event.code != Event.Code.Capture && event.code != Event.Code.Gone && event.code != Event.Code.EmergencyExit);
@@ -118,7 +129,7 @@ public class Assembly extends Part {
     // we need to ignore "going out" here, as we are not inside a simplepart
     //
     @Override
-    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group vis) {
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue vis) {
         double tmin = -1;
         Part closestPart = null;
         Part p = null;
@@ -154,9 +165,6 @@ public class Assembly extends Part {
         } else {
             g.getChildren().add(part.shape);
         }
-        if (part instanceof Detector) {
-            this.detectors.add((Detector) part);
-        }
 //        if (part.shape != null) {
 //            System.out.println("Added part " + part.name + ", extent: " + part.shape.getExtent());
 //        } 
@@ -176,5 +184,31 @@ public class Assembly extends Part {
 
     public ObservableList<Transform> getTransforms() {
         return g.getTransforms();
+    }
+    
+    //
+    // vacuum face detection
+    //
+    
+    
+    //
+    // marking parts containing vacuum
+    //
+    public boolean containsMaterialAt(Object material, Vector3D location){
+        // convert whatever we got here
+        material = Material.getRealMaterial(material);
+        
+        // send out a random ray from location
+        Vector3D direction = Util.Math.randomDir();
+        Event e = this.rayIntersect(location, direction, false, null);
+        if (e == null) {
+            return false;
+        }
+        
+        Part p = e.part;
+        Shape s = p.shape;
+        
+        s.markSurfaceInContactWith(location, direction, (Material) material, null);
+        return true;
     }
 }

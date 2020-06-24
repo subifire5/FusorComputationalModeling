@@ -1,13 +1,12 @@
 package org.eastsideprep.javaneutrons;
 
-import java.util.Random;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -16,6 +15,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Util;
 
@@ -26,69 +26,91 @@ public class App extends Application {
 
     BorderPane root;
     HBox view;
-    static Random random = new Random();
+    MonteCarloSimulation sim;
+    Group viewGroup;
+    Group stats;
+
+    Button bRun;
+    Button bRunSV;
+    Button bRunET;
+
+    Label progress;
 
     @Override
     public void start(Stage stage) {
         // random stuff first
         Util.Math.random.setSeed(1234);
 
-        root = new BorderPane();
-        Label progress = new Label(""); // need to hand this to Test()
+        this.root = new BorderPane();
+        this.stats = new Group();
+        this.progress = new Label(""); // need to hand this to Test()
+
+        // create camera control
+        CameraControl mainScene = new CameraControl(1500, 900);
 
         // prepare sim for later
-        Group visualizations = new Group();
-        MonteCarloSimulation sim = Test.simulationTest3(visualizations);
+        this.viewGroup = new Group();
+        this.sim = Test.simulationTest(viewGroup);
 
         // control buttons and progress 
         TextField tf = new TextField("200");
         tf.setPrefWidth(200);
-        
-        Button bRun = new Button("Start simulation");
+
+        bRun = new Button("Start simulation - GM");
+        bRunSV = new Button("Start simulation - SV");
+        bRunET = new Button("Start simulation - ET");
+
         bRun.setOnAction((e) -> {
-            //
-            // here is where we run the actual simulation
-            //
-            bRun.setDisable(true);
-            sim.simulateNeutrons(Integer.parseInt(tf.getText()), visualizations, (p) -> {
-                if (bRun.isDisabled()) {
-                    progress.setText("Complete: " + p + " %");
-                    if (p == 100) {
-                        bRun.setDisable(false);
-                    }
-                }
-            });
+            sim = Test.simulationTest(viewGroup);
+            this.runSim(Long.parseLong(tf.getText()));
         });
         bRun.setPrefWidth(200);
 
+        bRunSV.setOnAction((e) -> {
+            sim = TestSV.simulationTest(viewGroup);
+            this.runSim(Long.parseLong(tf.getText()));
+        });
+        bRunSV.setPrefWidth(200);
+
+        bRunET.setOnAction((e) -> {
+            sim = TestET.simulationTest(viewGroup);
+            this.runSim(Long.parseLong(tf.getText()));
+        });
+        bRunET.setPrefWidth(200);
+
         Button bStats = new Button("Show stats");
         bStats.setOnAction((e) -> {
-            root.setCenter(sim.makeChart());
+            Group stats = new StatsDisplay(sim, root);
+            this.stats.getChildren().clear();
+            this.stats.getChildren().add(stats);
+            progress.setText("");
         });
         bStats.setPrefWidth(200);
 
         Button bView = new Button("Show assembly");
         bView.setOnAction((e) -> {
             root.setCenter(view);
+            this.stats.getChildren().clear();
+
         });
         bView.setPrefWidth(200);
 
         Button bTest = new Button("Test visuals");
         bTest.setOnAction((e) -> {
-            root.setCenter(Test.test1());
+            root.setCenter(Test.testVisuals());
         });
         bTest.setPrefWidth(200);
 
+//     
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(tf, bRun, bStats, bView, bTest, progress);
+        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bView, bTest, progress, stats);
         root.setLeft(buttons);
 
-        // create camera control, set scene and stage
-        CameraControl mainScene = new CameraControl(1500, 900);
+        // set scene and stage
         view = mainScene.outer;
-        mainScene.root.getChildren().add(visualizations);
+        mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
-        var scene = new Scene(root, 1700, 900);
+        var scene = new Scene(root, 1700, 900, true);
         //scene.setOnKeyPressed((ex) -> mainScene.controlCamera(ex));
         scene.setOnKeyPressed((ex) -> mainScene.handleKeyPress(ex));
         scene.setOnMouseDragged((ex) -> mainScene.handleDrag(ex));
@@ -101,6 +123,47 @@ public class App extends Application {
         });
         stage.setScene(scene);
         stage.show();
+
+    }
+
+    public void runSim(long count) {
+        if (this.sim == null) {
+            return;
+        }
+
+        //
+        // here is where we run the actual simulation
+        //
+        bRun.setDisable(true);
+        bRunSV.setDisable(true);
+        bRunET.setDisable(true);
+        progress.setText("Complete: 0 %");
+
+        root.setCenter(view);
+        this.stats.getChildren().clear();
+
+        Group p = new Group();
+
+        final Timeline tl = new Timeline();
+        tl.getKeyFrames().add(new KeyFrame(Duration.seconds(0.1),
+                (e) -> {
+                    long completed;
+                    completed = sim.update();
+                    progress.setText("Complete: " + Math.round(100 * completed / count) + " %");
+                    if (completed == count) {
+                        tl.stop();
+                        bRun.setDisable(false);
+                        bRunET.setDisable(false);
+                        bRunSV.setDisable(false);
+                        progress.setText("Complete: 100 %");
+
+                    }
+                }));
+        tl.setCycleCount(Timeline.INDEFINITE);
+        tl.play();
+
+        sim.simulateNeutrons(count);
+        root.setCenter(view);
     }
 
     public static void main(String[] args) {

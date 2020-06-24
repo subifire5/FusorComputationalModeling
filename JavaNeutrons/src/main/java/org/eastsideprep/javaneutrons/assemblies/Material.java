@@ -5,14 +5,19 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import javafx.collections.ObservableList;
+import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.materials.Vacuum;
 
 /**
  *
@@ -20,7 +25,7 @@ import org.eastsideprep.javaneutrons.materials.Vacuum;
  */
 public class Material {
 
-    static HashMap<String, Material> materials = new HashMap<>();
+    public static HashMap<String, Material> materials = new HashMap<>();
 
     public class Component {
 
@@ -35,8 +40,9 @@ public class Material {
         }
     }
 
-    String name;
+    public String name;
     ArrayList<Component> components;
+    public LogHistogram lengths = new LogHistogram(-5,5,70);
 
     public Material(String name) {
         materials.put(name, this);
@@ -74,23 +80,24 @@ public class Material {
         for (Component c : components) {
             c.density = n * c.proportion;
         }
-        System.out.println("Macroscopic cross-section for "
-                + (this instanceof Element ? "(element) " : "")
-                + this.name + ": " + getSigma(1 * Util.Physics.eV));
+//        System.out.println("Macroscopic cross-section for "
+//                + (this instanceof Element ? "(element) " : "")
+//                + this.name + " at 1 eV: " + getSigma(1 * Util.Physics.eV));
     }
 
     // compute macroscopic cross-section
-    private double getSigma(double energy) {
+    public double getSigma(double energy) {
         double sigma = 0;
         for (Component c : components) {
-            sigma += c.e.getScatterCrossSection(energy) * c.density;
-            sigma += c.e.getCaptureCrossSection(energy) * c.density;
+            sigma += c.e.getTotalCrossSection(energy) * c.density;
         }
         return sigma;
     }
 
     private double randomPathLength(double energy) {
-        return -Math.log(Util.Math.random.nextDouble()) / getSigma(energy);
+        double length = -Math.log(Util.Math.random.nextDouble()) / getSigma(energy);
+        lengths.record(1, length);
+        return length;
     }
 
     public Event nextPoint(Neutron n) {
@@ -120,11 +127,62 @@ public class Material {
             slot = -slot - 1;
         }
 
-        // retrieve the corresponding element
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
 
         return new Event(location, code, t, e);
+    }
+
+    public static Material getRealMaterial(Object material) {
+
+        // try named material instance
+        if (material instanceof String) {
+            String name = (String) material;
+            material = Material.getByName(name);
+            if (material != null) {
+                return (Material) material;
+            }
+
+            // if not named, try the class
+            try {
+                material = Class.forName("org.eastsideprep.javaneutrons.materials." + name);
+            } catch (ClassNotFoundException ex) {
+            }
+            // now we have a class and can resolve in the next step
+        }
+
+        // if it was a class, call the "getInstance" method
+        if (material instanceof Class) {
+            try {
+                Method method = ((Class) material).getDeclaredMethod("getInstance");
+                method.setAccessible(true);
+                material = method.invoke(null, new Object[]{});
+            } catch (IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException x) {
+                x.printStackTrace();
+            }
+        }
+
+        // if it is a part, extract the material
+        if (material instanceof Part) {
+            material = ((Part) material).material;
+        }
+
+        return (Material) material;
+    }
+
+    public XYChart.Series makeSigmaSeries(String seriesName) {
+        XYChart.Series series = new XYChart.Series();
+        ObservableList data = series.getData();
+        series.setName(seriesName);
+
+        for (double energy = 1e-3; energy < 1e7; energy *= 1.1) {
+            DecimalFormat f = new DecimalFormat("0.##E0");
+            String tick = f.format(energy);
+
+            data.add(new XYChart.Data(tick, getSigma(energy * Util.Physics.eV)));
+        }
+
+        return series;
     }
 
 }

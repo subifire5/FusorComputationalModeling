@@ -13,9 +13,10 @@ public class Environment {
 
     public static final double limit = 1000; // 1000cm = 10m
     private static Environment instance;
-    public LogHistogram counts = new LogHistogram(-10,10,50);
+    public LogEnergyEVHistogram counts;
     
     public Environment() {
+        reset();
     }
 
     public static Environment getInstance() {
@@ -30,6 +31,6 @@ public class Environment {
     }
     
     public void reset() {
-        counts = new LogHistogram(-10,10,50);
+        counts = new LogEnergyEVHistogram();
     }
 }

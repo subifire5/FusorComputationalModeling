@@ -7,6 +7,7 @@ package org.eastsideprep.javaneutrons.core;
 
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.assemblies.Material;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 
 /**
@@ -28,6 +29,8 @@ public class Event {
     public double energyOut;
     public double t; // how far along was this on the vector we took to get here
     public Part part;
+    public int face;
+    public Material exitMaterial;
 
     public Event(double x, double y, double z, Event.Code c) {
         this.position = new Vector3D(x, y, z);
@@ -45,10 +48,11 @@ public class Event {
         this.code = c;
     }
 
-    public Event(Vector3D position, Event.Code c, double t) {
+    public Event(Vector3D position, Event.Code c, double t, int face) {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.code = c;
         this.t = t;
+        this.face = face;
     }
 
     public Event(Vector3D position, Event.Code c, double t, Element e) {

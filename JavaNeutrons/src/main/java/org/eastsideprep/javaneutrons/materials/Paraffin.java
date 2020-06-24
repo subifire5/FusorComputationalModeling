@@ -17,12 +17,14 @@ import org.eastsideprep.javaneutrons.assemblies.Material;
 //
 public class Paraffin extends Material {
 
-    static Paraffin instance;
+    private static Paraffin instance;
 
     Paraffin() {
         super("Paraffin");
         this.addComponent(Carbon.getInstance(), 31);
+        //System.out.println("before adding h");
         this.addComponent(Hydrogen.getInstance(), 64);
+        //System.out.println("before adding h");
         this.calculateAtomicDensities(781);
     }
 
@@ -32,10 +34,13 @@ public class Paraffin extends Material {
 
     // we only need one of these objects
     public static synchronized Paraffin getInstance() {
+        try {
         if (instance == null) {
             Paraffin.instance = new Paraffin();
         }
+        } catch (Exception e) {
+            System.out.println("in paraffin "+e);
+        }
         return instance;
     }
-
 }
