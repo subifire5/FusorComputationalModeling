@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Group;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 
@@ -14,7 +15,7 @@ import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
  */
 public class TestET {
 
-    public static MonteCarloSimulation simulationTest(Group visualizations) {
+    public static MonteCarloSimulation simulationTest(LinkedTransferQueue visualizations) {
         //
         return null;
     }

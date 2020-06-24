@@ -55,6 +55,11 @@ public class Neutron {
 
     public void processEvent(Event event) {
         // other particle, velocity following Maxwell-Boltzmann speed distribution
+        // derived through: <Ex> = 0.5*kB*T (x component takes a third of the kinetic energy)
+        // => 0.5*m*<vx^2> = 0.5*kB*T
+        // with <vx^2> = var(vx)
+        // => m*sd(vx) = kB*T
+        // => sd(vx) = sd(vy) = sd(vz) = kB*T/m
         double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / event.element.mass);
         Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
 

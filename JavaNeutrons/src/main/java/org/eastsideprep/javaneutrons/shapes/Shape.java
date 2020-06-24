@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -176,7 +177,7 @@ public class Shape extends MeshView {
     // returns t-parameter for the ray, or 0 if not intersecting
     // todo: acceleration structure like hierarchy of volumes
     //
-    public double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, int[] faceIndex, Group simVis) {
+    public double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, int[] faceIndex, LinkedTransferQueue simVis) {
         double tmin = -1;
         int x = 0;
         int y = 1;
@@ -191,9 +192,9 @@ public class Shape extends MeshView {
         int vis = this.mesh.getVertexFormat().getVertexIndexSize();
 
         for (int i = 0; i < faces.length; i += 6) {
-            Vector3D v0 = new Vector3D(vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z]);
-            Vector3D v1 = new Vector3D(vertices[3 * faces[i + vis] + x], vertices[3 * faces[i + vis] + y], vertices[3 * faces[i + vis] + z]);
-            Vector3D v2 = new Vector3D(vertices[3 * faces[i + 2 * vis] + x], vertices[3 * faces[i + 2 * vis] + y], vertices[3 * faces[i + 2 * vis] + z]);
+//            Vector3D v0 = new Vector3D(vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z]);
+//            Vector3D v1 = new Vector3D(vertices[3 * faces[i + vis] + x], vertices[3 * faces[i + vis] + y], vertices[3 * faces[i + vis] + z]);
+//            Vector3D v2 = new Vector3D(vertices[3 * faces[i + 2 * vis] + x], vertices[3 * faces[i + 2 * vis] + y], vertices[3 * faces[i + 2 * vis] + z]);
 //            System.out.println("Checking");
 //            System.out.println("" + v0);
 //            System.out.println("" + v1);
@@ -201,7 +202,23 @@ public class Shape extends MeshView {
 
             // goingOut determines whether we test the counter-clockwise triangle (front face)
             // or clockwise triangle (back face). We assume that all faces of a shape face outward. 
-            double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
+//            Vector3D v0 = new Vector3D(vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z]);
+//            Vector3D v1 = new Vector3D(vertices[3 * faces[i + vis] + x], vertices[3 * faces[i + vis] + y], vertices[3 * faces[i + vis] + z]);
+//            Vector3D v2 = new Vector3D(vertices[3 * faces[i + 2 * vis] + x], vertices[3 * faces[i + 2 * vis] + y], vertices[3 * faces[i + 2 * vis] + z]);
+//            System.out.println(v0);
+//            System.out.println(v1);
+//            System.out.println(v2);
+//           double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
+   
+           double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection,
+                    vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z],
+                    goingOut ? vertices[3 * faces[i + 2 * vis] + x] : vertices[3 * faces[i + vis] + x],
+                    goingOut ? vertices[3 * faces[i + 2 * vis] + y] : vertices[3 * faces[i + vis] + y],
+                    goingOut ? vertices[3 * faces[i + 2 * vis] + z] : vertices[3 * faces[i + vis] + z],
+                    goingOut ? vertices[3 * faces[i + vis] + x] : vertices[3 * faces[i + 2 * vis] + x],
+                    goingOut ? vertices[3 * faces[i + vis] + y] : vertices[3 * faces[i + 2 * vis] + y],
+                    goingOut ? vertices[3 * faces[i + vis] + z] : vertices[3 * faces[i + 2 * vis] + z]
+            );
             if (t != -1) {
 //                System.out.println("found triangle " + v0);
 
@@ -240,7 +257,7 @@ public class Shape extends MeshView {
     }
 
     public Material getContactMaterial(int faceIndex) {
-        if (faces[faceIndex+1] == 0) {
+        if (faces[faceIndex + 1] == 0) {
             return null;
         }
         return this.containedMaterial;
@@ -311,7 +328,7 @@ public class Shape extends MeshView {
     // 
     // for containing things other than air
     //
-    public void markSurfaceInContactWith(Vector3D origin, Vector3D direction, Material material, Group g) {
+    public void markSurfaceInContactWith(Vector3D origin, Vector3D direction, Material material, LinkedTransferQueue g) {
         // find the triangle face
         int[] face = new int[1];
         this.rayIntersect(origin, direction, false, face, g);

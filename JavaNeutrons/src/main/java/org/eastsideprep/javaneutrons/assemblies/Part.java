@@ -8,7 +8,8 @@ package org.eastsideprep.javaneutrons.assemblies;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import javafx.scene.Group;
+import java.util.concurrent.LinkedTransferQueue;
+import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
@@ -90,7 +91,7 @@ public class Part {
     // intersects a ray with all triangles of this parts, returns the t-param of the closest
     // goingOut determines whether we are entering or leaving the part (true=test back faces)
     //
-    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group g) {
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue<Node> g) {
         int[]face = new int[1];
         double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, face, g);
         // not found?
@@ -110,7 +111,7 @@ public class Part {
     // follows the neutron around from entry to exit or absorption
     // outermost will be ignored, this is not an assembly
     // 
-    Event evolveNeutronPath(Neutron n, Group visualizations, boolean outermost) {
+    Event evolveNeutronPath(Neutron n, LinkedTransferQueue<Node> visualizations, boolean outermost) {
         double t;
         Event exitEvent;
         Event interactionEvent;

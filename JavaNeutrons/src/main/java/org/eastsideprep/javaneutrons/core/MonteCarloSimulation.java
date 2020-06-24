@@ -7,12 +7,13 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import javafx.application.Platform;
-import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ValueAxis;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
 import org.eastsideprep.javaneutrons.assemblies.Part;
@@ -32,28 +33,20 @@ public class MonteCarloSimulation {
 
     Assembly assembly;
     Vector3D origin;
-    long count;
-    long completed;
+    public long count;
+    public AtomicLong completed;
     ProgressLambda pl;
-    Group visualizations;
-    Group simVis;
+    LinkedTransferQueue visualizations;
 
-    public MonteCarloSimulation(Assembly assembly, Vector3D origin) {
+    public MonteCarloSimulation(Assembly assembly, Vector3D origin, LinkedTransferQueue<Node> visualizations) {
         this.assembly = assembly;
         this.origin = origin;
-        this.simVis = new Group();
+        this.visualizations = visualizations;
+        this.completed = new AtomicLong(0);
     }
 
-    public void simulateNeutrons(long count, Group visualizations, ProgressLambda pl) {
-        this.visualizations = visualizations;
-        this.visualizations.getChildren().remove(simVis);
-        this.visualizations.getChildren().add(simVis);
+    public void simulateNeutrons(long count) {
         this.count = count;
-        this.completed = 0;
-        this.simVis.getChildren().clear();
-        this.pl = pl;
-
-        pl.reportProgress(0);
 
 //        Vector3D v0 = new Vector3D(200, 100, 100);
 //        Vector3D v1 = new Vector3D(-100, 100, 100);
@@ -116,17 +109,8 @@ public class MonteCarloSimulation {
     }
 
     public void simulateNeutron(Neutron n) {
-        this.assembly.evolveNeutronPath(n, this.simVis, true);
-        long current;
-        synchronized (this) {
-            completed++;
-            current = completed;
-            if (current * 1000 / count % 10 == 0) {
-                Platform.runLater(() -> {
-                    this.pl.reportProgress((int) (current * 100 / count));
-                });
-            }
-        }
+        this.assembly.evolveNeutronPath(n, this.visualizations, true);
+        completed.incrementAndGet();
     }
 
     public BarChart makeChart(String detector, String series) {
@@ -141,7 +125,7 @@ public class MonteCarloSimulation {
                 return null;
             }
             DecimalFormat f = new DecimalFormat("0.###E0");
-            String e = f.format(p.getTotalDepositedEnergy() * 1e-4 ); 
+            String e = f.format(p.getTotalDepositedEnergy() * 1e-4);
             bc.setTitle("Part \"" + p.name + "\", total deposited energy: "
                     + e + " J");
 

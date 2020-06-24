@@ -7,6 +7,7 @@ package org.eastsideprep.javaneutrons.assemblies;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedTransferQueue;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -63,11 +64,11 @@ public class Assembly extends Part {
     }
 
     @Override
-    public Event evolveNeutronPath(Neutron n, Group visualizations, boolean outermost) {
+    public Event evolveNeutronPath(Neutron n, LinkedTransferQueue visualizations, boolean outermost) {
         return this.evolveNeutronPathNoVacuum(n, visualizations, outermost);
     }
 
-    public Event evolveNeutronPathNoVacuum(Neutron n, Group visualizations, boolean outermost) {
+    public Event evolveNeutronPathNoVacuum(Neutron n, LinkedTransferQueue visualizations, boolean outermost) {
         Event partEvent;
         Event interactionEvent;
         Event event;
@@ -128,7 +129,7 @@ public class Assembly extends Part {
     // we need to ignore "going out" here, as we are not inside a simplepart
     //
     @Override
-    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, Group vis) {
+    Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue vis) {
         double tmin = -1;
         Part closestPart = null;
         Part p = null;
@@ -191,9 +192,9 @@ public class Assembly extends Part {
     
     
     //
-    // makring parts containing vacuum
+    // marking parts containing vacuum
     //
-    public boolean containsMaterialAt(Object material, Vector3D location, Group g){
+    public boolean containsMaterialAt(Object material, Vector3D location, LinkedTransferQueue g){
         // convert whatever we got here
         material = Material.getRealMaterial(material);
         
