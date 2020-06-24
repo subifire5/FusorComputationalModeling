@@ -5,11 +5,9 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.util.concurrent.LinkedTransferQueue;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
@@ -29,7 +27,7 @@ public class Test {
 
    
 
-    public static MonteCarloSimulation simulationTest(LinkedTransferQueue<Node> visualizations) {
+    public static MonteCarloSimulation simulationTest(Group visualizations) {
         //
         // Wall1
         // this cube-shaped wall is loaded from an obj file in resources
@@ -68,13 +66,10 @@ public class Test {
         // assemble the Fusor out of the other stuff
         Assembly fusor = new Assembly("Fusor");
         fusor.addAll(igloo, detector, body, vacChamber);
-        fusor.containsMaterialAt("Vacuum", Vector3D.ZERO, visualizations);
+        fusor.containsMaterialAt("Vacuum", Vector3D.ZERO);
         
-        // ubt it all into the visual scene
+        // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
-        visualizations.add(fusor.getGroup());
-        
-        
 
         return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations);
     }

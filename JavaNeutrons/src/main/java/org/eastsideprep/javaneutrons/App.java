@@ -1,15 +1,11 @@
 package org.eastsideprep.javaneutrons;
 
-import java.util.Random;
-import java.util.concurrent.LinkedTransferQueue;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -31,8 +27,7 @@ public class App extends Application {
     BorderPane root;
     HBox view;
     MonteCarloSimulation sim;
-    Group visGroup;
-    LinkedTransferQueue<Node> visQueue;
+    Group viewGroup;
 
     Button bRun;
     Button bRunSV;
@@ -45,14 +40,17 @@ public class App extends Application {
         // random stuff first
         Util.Math.random.setSeed(1234);
 
-        root = new BorderPane();
-        progress = new Label(""); // need to hand this to Test()
+        
+        
+        this.root = new BorderPane();
+        this.progress = new Label(""); // need to hand this to Test()
 
+         // create camera control
+        CameraControl mainScene = new CameraControl(1500, 900);
+        
         // prepare sim for later
-        visQueue = new LinkedTransferQueue<>();
-        visGroup = new Group();
-        sim = Test.simulationTest(visQueue);
-        visQueue.drainTo(visGroup.getChildren());
+        this.viewGroup = new Group();
+        this.sim = Test.simulationTest(viewGroup);
 
         // control buttons and progress 
         TextField tf = new TextField("200");
@@ -63,19 +61,19 @@ public class App extends Application {
         bRunET = new Button("Start simulation - ET");
 
         bRun.setOnAction((e) -> {
-            sim = Test.simulationTest(visQueue);
+            sim = Test.simulationTest(viewGroup);
             this.runSim(Long.parseLong(tf.getText()));
         });
         bRun.setPrefWidth(200);
 
         bRunSV.setOnAction((e) -> {
-            sim = TestSV.simulationTest(visQueue);
+            sim = TestSV.simulationTest(viewGroup);
             this.runSim(Long.parseLong(tf.getText()));
         });
         bRunSV.setPrefWidth(200);
 
         bRunET.setOnAction((e) -> {
-            sim = TestET.simulationTest(visQueue);
+            sim = TestET.simulationTest(viewGroup);
             this.runSim(Long.parseLong(tf.getText()));
         });
         bRunET.setPrefWidth(200);
@@ -114,10 +112,9 @@ public class App extends Application {
         buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bStatsFluence, bStatsEnv, bView, bTest, progress);
         root.setLeft(buttons);
 
-        // create camera control, set scene and stage
-        CameraControl mainScene = new CameraControl(1500, 900);
+        // set scene and stage
         view = mainScene.outer;
-        mainScene.root.getChildren().add(visGroup);
+        mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
         var scene = new Scene(root, 1700, 900);
         //scene.setOnKeyPressed((ex) -> mainScene.controlCamera(ex));
@@ -125,7 +122,7 @@ public class App extends Application {
         scene.setOnMouseDragged((ex) -> mainScene.handleDrag(ex));
         scene.setOnMousePressed((ex) -> mainScene.handleClick(ex));
         scene.setOnScroll((ex) -> mainScene.handleScroll(ex));
-
+        
         // scene and keyboard controls (old)
         scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
             mainScene.handleKeyPress(e);
@@ -136,7 +133,6 @@ public class App extends Application {
     }
 
     public void runSim(long count) {
-        visGroup.getChildren().clear();
         if (this.sim == null) {
             return;
         }
@@ -153,9 +149,10 @@ public class App extends Application {
         final Timeline tl = new Timeline();
         tl.getKeyFrames().add(new KeyFrame(Duration.seconds(0.1),
                 (e) -> {
-                    progress.setText("Complete: " + Math.round(100 * sim.completed.get() / count) + " %");
-                    visQueue.drainTo(visGroup.getChildren());
-                    if (sim.completed.get() == count) {
+                    long completed;
+                    completed = sim.update();
+                    progress.setText("Complete: " + Math.round(100 * completed / count) + " %");
+                    if (completed == count) {
                         tl.stop();
                         bRun.setDisable(false);
                         bRunET.setDisable(false);
@@ -167,8 +164,6 @@ public class App extends Application {
         tl.play();
 
         sim.simulateNeutrons(count);
-        visQueue.drainTo(visGroup.getChildren());
-
         root.setCenter(view);
     }
 

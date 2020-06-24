@@ -222,11 +222,13 @@ public class Util {
             visualizeEvent(event, null, g);
         }
 
-        public static void drawCoordSystem(LinkedTransferQueue<Node> g) {
-            Util.Graphics.drawSphere(g, Vector3D.ZERO, 1, "red");
-            Util.Graphics.drawLine(g, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.1, Color.CYAN);
-            Util.Graphics.drawLine(g, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.1, Color.YELLOW);
-            Util.Graphics.drawLine(g, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.1, Color.RED);
+        public static void drawCoordSystem(Group g) {
+            LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
+            Util.Graphics.drawSphere(q, Vector3D.ZERO, 1, "red");
+            Util.Graphics.drawLine(q, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.1, Color.CYAN);
+            Util.Graphics.drawLine(q, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.1, Color.YELLOW);
+            Util.Graphics.drawLine(q, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.1, Color.RED);
+            q.drainTo(g.getChildren());
         }
 
     }

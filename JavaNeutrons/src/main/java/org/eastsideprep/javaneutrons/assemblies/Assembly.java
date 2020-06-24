@@ -194,13 +194,13 @@ public class Assembly extends Part {
     //
     // marking parts containing vacuum
     //
-    public boolean containsMaterialAt(Object material, Vector3D location, LinkedTransferQueue g){
+    public boolean containsMaterialAt(Object material, Vector3D location){
         // convert whatever we got here
         material = Material.getRealMaterial(material);
         
         // send out a random ray from location
         Vector3D direction = Util.Math.randomDir();
-        Event e = this.rayIntersect(location, direction, false, g);
+        Event e = this.rayIntersect(location, direction, false, null);
         if (e == null) {
             return false;
         }
@@ -208,7 +208,7 @@ public class Assembly extends Part {
         Part p = e.part;
         Shape s = p.shape;
         
-        s.markSurfaceInContactWith(location, direction, (Material) material, g);
+        s.markSurfaceInContactWith(location, direction, (Material) material, null);
         return true;
     }
 }

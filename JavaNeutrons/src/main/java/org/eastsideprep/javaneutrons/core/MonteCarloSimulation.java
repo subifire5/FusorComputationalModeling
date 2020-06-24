@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import javafx.application.Platform;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -31,18 +32,37 @@ public class MonteCarloSimulation {
         void reportProgress(int p);
     }
 
-    Assembly assembly;
-    Vector3D origin;
-    public long count;
-    public AtomicLong completed;
-    ProgressLambda pl;
-    LinkedTransferQueue visualizations;
+    private Assembly assembly;
+    private Vector3D origin;
+    private long count;
+    private AtomicLong completed;
+    private LinkedTransferQueue visualizations;
+    private Group viewGroup;
+    private Group dynamicGroup;
 
-    public MonteCarloSimulation(Assembly assembly, Vector3D origin, LinkedTransferQueue<Node> visualizations) {
+    public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
         this.assembly = assembly;
         this.origin = origin;
-        this.visualizations = visualizations;
+        this.visualizations = new LinkedTransferQueue<Node>();
         this.completed = new AtomicLong(0);
+        this.viewGroup = g;
+        this.dynamicGroup = new Group();
+        this.viewGroup.getChildren().clear();
+        this.viewGroup.getChildren().add(this.assembly.getGroup());
+        this.viewGroup.getChildren().add(dynamicGroup);
+    }
+
+    // this will be called from UI thread
+    public long update() {
+        viewGroup.getChildren().remove(this.dynamicGroup);
+        this.visualizations.drainTo(this.dynamicGroup.getChildren());
+        viewGroup.getChildren().add(this.dynamicGroup);
+        return completed.get();
+    }
+    
+    public void clearVisuals(){
+        this.viewGroup.getChildren().remove(this.dynamicGroup);
+        this.viewGroup.getChildren().remove(this.assembly);
     }
 
     public void simulateNeutrons(long count) {
@@ -78,6 +98,11 @@ public class MonteCarloSimulation {
         System.out.println("");
         System.out.println("");
         System.out.println("Running new MC simulation for " + count + " neutrons ...");
+
+        // clear out the old simulation
+        this.viewGroup.getChildren().remove(this.dynamicGroup);
+        this.dynamicGroup.getChildren().clear();
+        this.viewGroup.getChildren().add(this.dynamicGroup);
 
         // reset detectors
         assembly.resetDetectors();
