@@ -15,13 +15,17 @@ import javafx.scene.Node;
 import javafx.scene.effect.Glow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.Mesh;
+import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.util.Duration;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.fxyz3d.shapes.primitives.PyramidMesh;
 
 /**
  *
@@ -47,7 +51,6 @@ public class Util {
             return new Vector3D(random.nextGaussian() * sd, random.nextGaussian() * sd, random.nextGaussian() * sd);
         }
 
- 
         //
         // rayTriangleIntersectNew
         //
@@ -151,6 +154,21 @@ public class Util {
             g.add(s);
         }
 
+    
+
+        public static void drawCube(LinkedTransferQueue<Node> g, Vector3D position, float side, String webColor) {
+            Box s = new Box(side, side, side);
+            s.setTranslateX(position.getX());
+            s.setTranslateY(position.getY());
+            s.setTranslateZ(position.getZ());
+            final PhongMaterial pm = new PhongMaterial();
+            pm.setSpecularColor(Color.web(webColor));
+            pm.setDiffuseColor(Color.web(webColor));
+            s.setMaterial(pm);
+
+            g.add(s);
+        }
+
         public static void drawLine(LinkedTransferQueue<Node> g, Vector3D p1, Vector3D p2, double size, Color c) {
             Vector3D v = p2.subtract(p1);
 
@@ -208,6 +226,7 @@ public class Util {
                     double jitter = 0.1;
                     position = position.add(direction.scalarMultiply(-jitter));
                 }
+
                 Util.Graphics.drawSphere(g, position, size, color);
                 //System.out.println("Visualizing "+event.code+" event at " + event.position);
             }

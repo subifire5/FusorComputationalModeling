@@ -30,7 +30,7 @@ public class Element {
         }
     }
 
-    private static HashMap<String, Element> elements = new HashMap<>();
+    public  static HashMap<String, Element> elements = new HashMap<>();
 
     public String name;
     public double mass; // g

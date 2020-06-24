@@ -155,7 +155,7 @@ public class MonteCarloSimulation {
                     + e + " J");
 
             switch (series) {
-                case "EntryCounts":
+                case "Entry counts":
                     yAxis.setLabel("Count");
                     bc.getData().add(p.entryOverEnergy.makeSeries("Entry counts"));
                     break;
@@ -164,7 +164,7 @@ public class MonteCarloSimulation {
                     bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence"));
                     break;
                 default:
-                    break;
+                    return null;
             }
         } else {
             bc.setTitle("Environment");

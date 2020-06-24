@@ -28,6 +28,7 @@ public class App extends Application {
     HBox view;
     MonteCarloSimulation sim;
     Group viewGroup;
+    Group stats;
 
     Button bRun;
     Button bRunSV;
@@ -40,14 +41,13 @@ public class App extends Application {
         // random stuff first
         Util.Math.random.setSeed(1234);
 
-        
-        
         this.root = new BorderPane();
+        this.stats = new Group();
         this.progress = new Label(""); // need to hand this to Test()
 
-         // create camera control
+        // create camera control
         CameraControl mainScene = new CameraControl(1500, 900);
-        
+
         // prepare sim for later
         this.viewGroup = new Group();
         this.sim = Test.simulationTest(viewGroup);
@@ -78,23 +78,14 @@ public class App extends Application {
         });
         bRunET.setPrefWidth(200);
 
-        Button bStats = new Button("Show entry counts");
+        Button bStats = new Button("Show stats");
         bStats.setOnAction((e) -> {
-            root.setCenter(sim.makeChart("Body", "EntryCounts"));
+            Group stats = new StatsDisplay(sim, root);
+            this.stats.getChildren().clear();
+            this.stats.getChildren().add(stats);
+            progress.setText("");
         });
         bStats.setPrefWidth(200);
-
-        Button bStatsFluence = new Button("Show fluence");
-        bStatsFluence.setOnAction((e) -> {
-            root.setCenter(sim.makeChart("Body", "Fluence"));
-        });
-        bStatsFluence.setPrefWidth(200);
-
-        Button bStatsEnv = new Button("Show escapes");
-        bStatsEnv.setOnAction((e) -> {
-            root.setCenter(sim.makeChart(null, null));
-        });
-        bStatsEnv.setPrefWidth(200);
 
         Button bView = new Button("Show assembly");
         bView.setOnAction((e) -> {
@@ -108,21 +99,22 @@ public class App extends Application {
         });
         bTest.setPrefWidth(200);
 
+//     
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bStatsFluence, bStatsEnv, bView, bTest, progress);
+        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bView, bTest, progress, stats);
         root.setLeft(buttons);
 
         // set scene and stage
         view = mainScene.outer;
         mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
-        var scene = new Scene(root, 1700, 900);
+        var scene = new Scene(root, 1700, 900, true);
         //scene.setOnKeyPressed((ex) -> mainScene.controlCamera(ex));
         scene.setOnKeyPressed((ex) -> mainScene.handleKeyPress(ex));
         scene.setOnMouseDragged((ex) -> mainScene.handleDrag(ex));
         scene.setOnMousePressed((ex) -> mainScene.handleClick(ex));
         scene.setOnScroll((ex) -> mainScene.handleScroll(ex));
-        
+
         // scene and keyboard controls (old)
         scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
             mainScene.handleKeyPress(e);
@@ -144,6 +136,10 @@ public class App extends Application {
         bRunSV.setDisable(true);
         bRunET.setDisable(true);
         progress.setText("Complete: 0 %");
+
+        root.setCenter(view);
+        this.stats.getChildren().clear();
+
         Group p = new Group();
 
         final Timeline tl = new Timeline();
@@ -158,6 +154,7 @@ public class App extends Application {
                         bRunET.setDisable(false);
                         bRunSV.setDisable(false);
                         progress.setText("Complete: 100 %");
+
                     }
                 }));
         tl.setCycleCount(Timeline.INDEFINITE);

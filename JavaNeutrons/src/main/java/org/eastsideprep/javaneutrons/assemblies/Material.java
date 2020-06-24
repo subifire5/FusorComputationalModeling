@@ -21,7 +21,7 @@ import org.eastsideprep.javaneutrons.core.Util;
  */
 public class Material {
 
-    static HashMap<String, Material> materials = new HashMap<>();
+    public static HashMap<String, Material> materials = new HashMap<>();
 
     public class Component {
 

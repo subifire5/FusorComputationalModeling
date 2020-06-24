@@ -24,7 +24,7 @@ import org.eastsideprep.javaneutrons.shapes.Shape;
  */
 public class Part {
 
-    static HashMap<String, Part> namedParts = new HashMap<>();
+    public static HashMap<String, Part> namedParts = new HashMap<>();
     public Shape shape;
     public Material material;
     public String name;
