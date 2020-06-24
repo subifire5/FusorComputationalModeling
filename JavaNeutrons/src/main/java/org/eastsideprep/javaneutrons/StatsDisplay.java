@@ -6,7 +6,10 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -84,16 +87,22 @@ public class StatsDisplay extends Group {
     }
 
     private void populateComboBoxWithElements() {
-        populateComboBox(Element.elements.keySet());
+        ArrayList<Element> elements = new ArrayList<>(Element.elements.values());
+        elements.sort((a,b)->(a.atomicNumber - b.atomicNumber));
+        List<String> s = elements.stream().map(e->e.name).collect(Collectors.toList());
+        populateComboBox(s);
     }
 
-    private void populateComboBox(Set<String> s) {
+    private void populateComboBox(Collection<String> s) {
         this.object.getItems().clear();
-        ArrayList<String> items = new ArrayList<>(s);
-        items.sort(null);
-        this.object.getItems().addAll(items);
-        this.object.setValue(items.get(0));
-        this.object.valueProperty().addListener((ov,t,t1)->setChart());
+        if (!(s instanceof ArrayList)) {
+            ArrayList<String> items = new ArrayList<>(s);
+            items.sort(null);
+            s = items;
+        }
+        this.object.getItems().addAll(s);
+        this.object.setValue(this.object.getItems().get(0));
+        this.object.valueProperty().addListener((ov, t, t1) -> setChart());
     }
 
     void setComboBox() {
@@ -141,8 +150,8 @@ public class StatsDisplay extends Group {
         }
         setChart();
     }
-    
-  void setChart() {
+
+    void setChart() {
         Toggle t = tg.getSelectedToggle();
         if (t != null) {
             switch ((String) t.getUserData()) {

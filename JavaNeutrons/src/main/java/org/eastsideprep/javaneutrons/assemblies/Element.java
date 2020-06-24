@@ -37,7 +37,7 @@ public class Element {
 
     public String name;
     public double mass; // g
-    protected int atomicNumber;
+    public int atomicNumber;
     protected int neutrons;
     private ArrayList<Entry> elasticEntries;
     private ArrayList<Entry> totalEntries;
@@ -53,13 +53,16 @@ public class Element {
 
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
-
-        // todo: how wrong is this, quantum-wise?
+        this.name = name;
         this.mass = mass;
 
         // read appropriate ENDF-derived data file
         // for the lightest stable isotope of the element
         readDataFiles(atomicNumber);
+    }
+    
+    public String getName() {
+        return this.name;
     }
 
     public static Element getByName(String name) {
@@ -79,15 +82,15 @@ public class Element {
     }
 
     protected final void readDataFiles(int atomicNumber) {
-        String name = Integer.toString(atomicNumber) + "25";
-        this.elasticEntries = fillEntries(name, "elastic");
-        this.totalEntries = fillEntries(name, "total");
+        String filename = Integer.toString(atomicNumber) + "25";
+        this.elasticEntries = fillEntries(filename, "elastic");
+        this.totalEntries = fillEntries(filename, "total");
 
         // no xx25? try xx00 instad
         if (this.elasticEntries == null) {
-            name = Integer.toString(atomicNumber) + "00";
-            this.elasticEntries = fillEntries(name, "elastic");
-            this.totalEntries = fillEntries(name, "total");
+            filename = Integer.toString(atomicNumber) + "00";
+            this.elasticEntries = fillEntries(filename, "elastic");
+            this.totalEntries = fillEntries(filename, "total");
             if (this.elasticEntries == null) {
                 System.out.println("No data files found for element " + this.name + " (atomic number " + atomicNumber + ")");
             }
