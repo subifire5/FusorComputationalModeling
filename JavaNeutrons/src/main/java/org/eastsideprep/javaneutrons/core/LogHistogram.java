@@ -29,19 +29,19 @@ public class LogHistogram {
         //this.bins = new double[logMax - logMin + 1];
     }
 
-    public void record(double value, double energy) {
+    public void record(double value, double x) {
         int bin;
 
         // take log in chosen base
-        double logEnergy = Math.log10(energy) - logMin;
+        double logX = Math.log10(x) - logMin;
 
         // cut of stuff that is too small
-        if (logEnergy < 0) {
-            logEnergy = 0;
+        if (logX < 0) {
+            logX = 0;
         }
 
         // find bin
-        bin = (int) Math.round(logEnergy / (logMax - logMin) * this.bins.length);
+        bin = (int) Math.round(logX / (logMax - logMin) * this.bins.length);
 
         // cut off stuff that is too big
         if (bin >= this.bins.length) {
@@ -53,7 +53,7 @@ public class LogHistogram {
             System.out.println("hah!");
         }
 
-        //System.out.println(""+this.hashCode()+": recording "+energy+":"+value);
+        //System.out.println(""+this.hashCode()+": recording "+x+":"+value);
         synchronized (this) {
             this.bins[bin] += value;
         }
@@ -74,9 +74,9 @@ public class LogHistogram {
 
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
         for (int i = 0; i < bins.length; i++) {
-            double energy = Math.pow(10, logMin + i / ((double) bins.length) * (logMax - logMin));
+            double x = Math.pow(10, logMin + i / ((double) bins.length) * (logMax - logMin));
             DecimalFormat f = new DecimalFormat("0.##E0");
-            String tick = f.format(energy);
+            String tick = f.format(x);
             data.add(new XYChart.Data(tick, counts[i]));
             //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }

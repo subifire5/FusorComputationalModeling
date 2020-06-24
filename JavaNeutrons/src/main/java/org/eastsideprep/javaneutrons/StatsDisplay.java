@@ -55,7 +55,6 @@ public class StatsDisplay extends Group {
         RadioButton rb2 = new RadioButton("Fluence");
         RadioButton rb3 = new RadioButton("Entry counts");
         RadioButton rb4 = new RadioButton("Event counts");
-        rb4.setDisable(true);
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");

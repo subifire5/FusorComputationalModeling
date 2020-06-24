@@ -13,6 +13,7 @@ import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
 import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
@@ -30,11 +31,17 @@ public class Part {
     public String name;
 
     // universal detector functionality
-    public LogHistogram entryOverEnergy;
-    public LogHistogram fluenceOverEnergy;
+    public LogEnergyEVHistogram entriesOverEnergy;
+    public LogEnergyEVHistogram fluenceOverEnergy;
+    public LogEnergyEVHistogram scattersOverEnergyBefore;
+    public LogEnergyEVHistogram capturesOverEnergyBefore;
+    public LogEnergyEVHistogram scattersOverEnergyAfter;
+    public LogEnergyEVHistogram capturesOverEnergyAfter;
     private double volume = 0;
     private double currentEntryEnergy = 0;
     private double totalDepositedEnergy = 0;
+    private double totalFluence = 0;
+    private int totalEvents = 0;
 
     public Part(String name, Shape s, Object material) {
         this.shape = s;
@@ -47,7 +54,7 @@ public class Part {
             String mName = material.toString();
             this.material = Material.getRealMaterial(material);
             if (this.material == null) {
-                throw new IllegalArgumentException("invalid material for part: "+mName);
+                throw new IllegalArgumentException("invalid material for part: " + mName);
             }
         }
         if (this.shape != null) {
@@ -67,8 +74,14 @@ public class Part {
     public final void resetDetector() {
         this.currentEntryEnergy = 0;
         this.totalDepositedEnergy = 0;
-        this.entryOverEnergy = new LogHistogram();
-        this.fluenceOverEnergy = new LogHistogram();
+        this.totalFluence = 0;
+        this.totalEvents = 0;
+        this.entriesOverEnergy = new LogEnergyEVHistogram();
+        this.fluenceOverEnergy = new LogEnergyEVHistogram();
+        this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
+        this.capturesOverEnergyBefore = new LogEnergyEVHistogram();
+        this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
+        this.capturesOverEnergyAfter = new LogEnergyEVHistogram();
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
@@ -92,16 +105,16 @@ public class Part {
     // goingOut determines whether we are entering or leaving the part (true=test back faces)
     //
     Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue<Node> g) {
-        int[]face = new int[1];
+        int[] face = new int[1];
         double t = shape.rayIntersect(rayOrigin, rayDirection, goingOut, face, g);
         // not found?
         if (t == -1) {
             return null;
         }
         // construct appropriate event
-        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t), 
-                goingOut ? Event.Code.Exit : Event.Code.Entry, 
-                t, 
+        return new Event(Util.Math.rayPoint(rayOrigin, rayDirection, t),
+                goingOut ? Event.Code.Exit : Event.Code.Entry,
+                t,
                 face[0]);
     }
 
@@ -147,7 +160,18 @@ public class Part {
                 // scattering / absorption did really happen, process it
                 event = interactionEvent;
                 Util.Graphics.visualizeEvent(event, visualizations);
+                if (event.code == Event.Code.Scatter) {
+                    this.scattersOverEnergyBefore.record(1, n.energy);
+                } else if (event.code == Event.Code.Capture) {
+                    this.capturesOverEnergyBefore.record(1, n.energy);
+                }
                 n.processEvent(event);
+                this.totalEvents++;
+                if (event.code == Event.Code.Scatter) {
+                    this.scattersOverEnergyAfter.record(1, n.energy);
+                } else if (event.code == Event.Code.Scatter) {
+                    this.capturesOverEnergyAfter.record(1, n.energy);
+                }
             } else {
                 event = exitEvent;
                 n.setPosition(event.position);
@@ -172,14 +196,15 @@ public class Part {
 //        if (name.equals("Body")) {
 //            System.out.println("Entry into detector path length log " + this.fluenceOverEnergy.hashCode());
 //        }
-        this.fluenceOverEnergy.record(length / volume, energy / Util.Physics.eV);
+        this.fluenceOverEnergy.record(length / volume, energy);
+        this.totalFluence += length / volume;
     }
 
     void processEntryEnergy(double e) {
 //        if (name.equals("Body")) {
 //            //System.out.println("Entry into detector entry energy log " + this.entryOverEnergy.hashCode());
 //        }
-        this.entryOverEnergy.record(1, e / Util.Physics.eV);
+        this.entriesOverEnergy.record(1, e);
         this.currentEntryEnergy = e;
     }
 
@@ -192,4 +217,11 @@ public class Part {
         return this.totalDepositedEnergy;
     }
 
+    public double getTotalFluence() {
+        return this.totalFluence;
+    }
+
+    public int getTotalEvents() {
+        return this.totalEvents;
+    }
 }

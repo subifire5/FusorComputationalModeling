@@ -163,18 +163,33 @@ public class MonteCarloSimulation {
                     bc.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
-                    bc.getData().add(p.entryOverEnergy.makeSeries("Entry counts"));
+                    bc.getData().add(p.entriesOverEnergy.makeSeries("Entry counts"));
                     break;
+                    
                 case "Fluence":
                     bc = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     f = new DecimalFormat("0.###E0");
-                    e = f.format(p.getTotalDepositedEnergy() * 1e-4);
-                    bc.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
+                    e = f.format(p.getTotalFluence());
+                    bc.setTitle("Part \"" + p.name + "\", total fluence: " + e + " cm^-2");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Fluence (cm^-2)");
                     bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence"));
                     break;
+                    
+                case "Event counts":
+                    bc = new BarChart<>(xAxis, yAxis);
+                    p = Part.getByName(detector);
+                    bc.setTitle("Part \"" + p.name + "\", total events: " + p.getTotalEvents());
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Count");
+                    bc.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)"));
+                    bc.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)"));
+                    bc.getData().add(p.capturesOverEnergyBefore.makeSeries("Capture (before)"));
+                    bc.getData().add(p.capturesOverEnergyAfter.makeSeries("Capture (after)"));
+                    break;
+                    
+                    
 
                 case "Path lengths":
                     bc = new BarChart<>(xAxis, yAxis);
@@ -201,7 +216,7 @@ public class MonteCarloSimulation {
                     lc.setTitle("Macroscopic cross-sections for material " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Sigma (cm^-1)");
-                    lc.getData().add(m.makeSigmaSeries("Sigmas"));
+                    lc.getData().add(m.makeSigmaSeries("Sigma ("+detector+")"));
                     return lc;
 
                 default:
