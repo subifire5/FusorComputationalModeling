@@ -36,7 +36,7 @@ public class Test {
 
    
 
-    public static MonteCarloSimulation simulationTest3(Group visualizations) {
+    public static MonteCarloSimulation simulationTest(Group visualizations) {
         //
         // Wall1
         // this cube-shaped wall is loaded from an obj file in resources
@@ -87,7 +87,7 @@ public class Test {
     //
     // old stuff - Sydney, this is mostly for visual testing. Return a group you can add in main.
     //
-    public static Group test1() {
+    public static Group testVisuals() {
         Cuboid cube = new Cuboid(200);
         cube.setRotationAxis(new Point3D(1, 1, 1));
         cube.setTranslateX(100);

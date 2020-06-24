@@ -25,6 +25,7 @@ public class App extends Application {
     BorderPane root;
     HBox view;
     static Random random = new Random();
+    static MonteCarloSimulation sim;
 
     @Override
     public void start(Stage stage) {
@@ -37,29 +38,91 @@ public class App extends Application {
 
         // prepare sim for later
         Group visualizations = new Group();
-        MonteCarloSimulation sim = Test.simulationTest3(visualizations);
+        sim = Test.simulationTest(visualizations);
 
         // control buttons and progress 
         TextField tf = new TextField("200");
         tf.setPrefWidth(200);
 
-        Button bRun = new Button("Start simulation");
+        Button bRun = new Button("Start simulation - GM");
+        Button bRunSV = new Button("Start simulation - SV");
+        Button bRunET = new Button("Start simulation - ET");
+
         bRun.setOnAction((e) -> {
+            visualizations.getChildren().clear();
+            sim = Test.simulationTest(visualizations);
+
             //
             // here is where we run the actual simulation
             //
             bRun.setDisable(true);
+            bRunSV.setDisable(true);
+            bRunET.setDisable(true);
             sim.simulateNeutrons(Integer.parseInt(tf.getText()), visualizations, (p) -> {
                 if (bRun.isDisabled()) {
                     progress.setText("Complete: " + p + " %");
                     if (p == 100) {
                         bRun.setDisable(false);
+                        bRunET.setDisable(false);
+                        bRunSV.setDisable(false);
                     }
                 }
             });
             root.setCenter(view);
         });
         bRun.setPrefWidth(200);
+
+        bRunSV.setOnAction((e) -> {
+            visualizations.getChildren().clear();
+            sim = TestSV.simulationTest(visualizations);
+
+            //
+            // here is where we run the actual simulation
+            //
+            if (sim != null) {
+                bRun.setDisable(true);
+                bRunSV.setDisable(true);
+                bRunET.setDisable(true);
+                sim.simulateNeutrons(Integer.parseInt(tf.getText()), visualizations, (p) -> {
+                    if (bRun.isDisabled()) {
+                        progress.setText("Complete: " + p + " %");
+                        if (p == 100) {
+                            bRun.setDisable(false);
+                            bRunET.setDisable(false);
+                            bRunSV.setDisable(false);
+                        }
+                    }
+                });
+            }
+            root.setCenter(view);
+        });
+        bRunSV.setPrefWidth(200);
+
+        bRunET.setOnAction((e) -> {
+            visualizations.getChildren().clear();
+            sim = TestET.simulationTest(visualizations);
+
+            //
+            // here is where we run the actual simulation
+            //
+            if (sim != null) {
+                bRun.setDisable(true);
+                bRunSV.setDisable(true);
+                bRunET.setDisable(true);
+                sim.simulateNeutrons(Integer.parseInt(tf.getText()), visualizations, (p) -> {
+                    if (bRun.isDisabled()) {
+                        progress.setText("Complete: " + p + " %");
+                        if (p == 100) {
+                            bRun.setDisable(false);
+                            bRunET.setDisable(false);
+                            bRunSV.setDisable(false);
+                        }
+                    }
+                });
+            }
+            root.setCenter(view);
+        });
+        bRunET.setPrefWidth(200);
 
         Button bStats = new Button("Show entry counts");
         bStats.setOnAction((e) -> {
@@ -87,12 +150,12 @@ public class App extends Application {
 
         Button bTest = new Button("Test visuals");
         bTest.setOnAction((e) -> {
-            root.setCenter(Test.test1());
+            root.setCenter(Test.testVisuals());
         });
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(tf, bRun, bStats, bStatsFluence, bStatsEnv, bView, bTest, progress);
+        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bStatsFluence, bStatsEnv, bView, bTest, progress);
         root.setLeft(buttons);
 
         // create camera control, set scene and stage
@@ -113,7 +176,6 @@ public class App extends Application {
         });
         stage.setScene(scene);
         stage.show();
-        
 
     }
 
