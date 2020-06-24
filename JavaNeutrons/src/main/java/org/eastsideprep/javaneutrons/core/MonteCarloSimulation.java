@@ -14,9 +14,13 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.Chart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
+import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.assemblies.Material;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 
 /**
@@ -59,8 +63,8 @@ public class MonteCarloSimulation {
         viewGroup.getChildren().add(this.dynamicGroup);
         return completed.get();
     }
-    
-    public void clearVisuals(){
+
+    public void clearVisuals() {
         this.viewGroup.getChildren().remove(this.dynamicGroup);
         this.viewGroup.getChildren().remove(this.assembly);
     }
@@ -138,36 +142,75 @@ public class MonteCarloSimulation {
         completed.incrementAndGet();
     }
 
-    public BarChart makeChart(String detector, String series) {
+    public Chart makeChart(String detector, String series) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
-        final BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
-        xAxis.setLabel("Energy (eV)");
+        BarChart<String, Number> bc;
+        LineChart<String, Number> lc;
+        Part p;
+        Material m;
+        DecimalFormat f;
+        String e;
 
         if (detector != null) {
-            Part p = Part.getByName(detector);
-            if (p == null) {
-                return null;
-            }
-            DecimalFormat f = new DecimalFormat("0.###E0");
-            String e = f.format(p.getTotalDepositedEnergy() * 1e-4);
-            bc.setTitle("Part \"" + p.name + "\", total deposited energy: "
-                    + e + " J");
 
             switch (series) {
                 case "Entry counts":
+                    bc = new BarChart<>(xAxis, yAxis);
+                    p = Part.getByName(detector);
+                    f = new DecimalFormat("0.###E0");
+                    e = f.format(p.getTotalDepositedEnergy() * 1e-4);
+                    bc.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
+                    xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
                     bc.getData().add(p.entryOverEnergy.makeSeries("Entry counts"));
                     break;
                 case "Fluence":
+                    bc = new BarChart<>(xAxis, yAxis);
+                    p = Part.getByName(detector);
+                    f = new DecimalFormat("0.###E0");
+                    e = f.format(p.getTotalDepositedEnergy() * 1e-4);
+                    bc.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
+                    xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Fluence (cm^-2)");
                     bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence"));
                     break;
+
+                case "Path lengths":
+                    bc = new BarChart<>(xAxis, yAxis);
+                    m = Material.getByName(detector);
+                    bc.setTitle("Material \"" + m.name);
+                    xAxis.setLabel("Length (cm)");
+                    yAxis.setLabel("Count");
+                    bc.getData().add(m.lengths.makeSeries("Length"));
+                    break;
+
+                case "Cross-sections":
+                    lc = new LineChart<>(xAxis, yAxis);
+                    Element element = Element.getByName(detector);
+                    lc.setTitle("Cross-sections for element " + detector);
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Cross-section (barn)");
+                    lc.getData().add(element.makeCSSeries("Scatter"));
+                    lc.getData().add(element.makeCSSeries("Capture"));
+                    return lc;
+
+                case "Sigmas":
+                    lc = new LineChart<>(xAxis, yAxis);
+                    m = Material.getByName(detector);
+                    lc.setTitle("Macroscopic cross-sections for material " + detector);
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Sigma (cm^-1)");
+                    lc.getData().add(m.makeSigmaSeries("Sigmas"));
+                    return lc;
+
                 default:
                     return null;
             }
         } else {
+            bc = new BarChart<>(xAxis, yAxis);
             bc.setTitle("Environment");
+            xAxis.setLabel("Energy (eV)");
             yAxis.setLabel("Count");
             bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
         }

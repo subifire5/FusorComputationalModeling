@@ -90,6 +90,8 @@ public class App extends Application {
         Button bView = new Button("Show assembly");
         bView.setOnAction((e) -> {
             root.setCenter(view);
+            this.stats.getChildren().clear();
+
         });
         bView.setPrefWidth(200);
 

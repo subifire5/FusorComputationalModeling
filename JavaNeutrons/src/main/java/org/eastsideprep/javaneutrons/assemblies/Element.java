@@ -6,10 +6,13 @@
 package org.eastsideprep.javaneutrons.assemblies;
 
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
+import javafx.collections.ObservableList;
+import javafx.scene.chart.XYChart;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 
@@ -30,7 +33,7 @@ public class Element {
         }
     }
 
-    public  static HashMap<String, Element> elements = new HashMap<>();
+    public static HashMap<String, Element> elements = new HashMap<>();
 
     public String name;
     public double mass; // g
@@ -85,10 +88,10 @@ public class Element {
             name = Integer.toString(atomicNumber) + "00";
             this.elasticEntries = fillEntries(name, "elastic");
             this.totalEntries = fillEntries(name, "total");
-              if (this.elasticEntries == null) {
-                  System.out.println("No data files found for element "+this.name+" (atomic number "+atomicNumber+")");
-              }
-      
+            if (this.elasticEntries == null) {
+                System.out.println("No data files found for element " + this.name + " (atomic number " + atomicNumber + ")");
+            }
+
         }
     }
 
@@ -126,7 +129,7 @@ public class Element {
         //System.out.println("Energy: "+energy+" eV");
         int index = Collections.binarySearch(data, new Entry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
         if (index >= 0) {
-            return data.get(index).area;
+            return data.get(index).area * Util.Physics.barn;
         }
         //else, linear interpolate between two nearest points
         index = -index - 1;
@@ -135,7 +138,7 @@ public class Element {
             // but if they do, deal with it properly
             // for now, just return the smallest cross-section
             //System.out.println("Not enough data to linear interpolate");
-            return data.get(0).area;
+            return data.get(0).area * Util.Physics.barn;
         }
         Entry e1 = data.get(index - 1); //the one with just lower energy
         Entry e2 = data.get(index);   //the one with just higher energy
@@ -143,5 +146,23 @@ public class Element {
 
         // convert back into SI (cm) and return
         return area * Util.Physics.barn;
+    }
+
+    public XYChart.Series makeCSSeries(String seriesName) {
+        XYChart.Series series = new XYChart.Series();
+        ObservableList data = series.getData();
+        series.setName(seriesName);
+        boolean scatter = seriesName.equals("Scatter");
+
+        for (double energy = 1e-3; energy < 1e7; energy *= 1.1) {
+            DecimalFormat f = new DecimalFormat("0.##E0");
+            String tick = f.format(energy);
+
+            data.add(new XYChart.Data(tick, scatter
+                    ? getScatterCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
+                    : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn));
+        }
+
+        return series;
     }
 }
