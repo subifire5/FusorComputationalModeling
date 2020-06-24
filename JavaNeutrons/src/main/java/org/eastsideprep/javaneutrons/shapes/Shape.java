@@ -186,6 +186,15 @@ public class Shape extends MeshView {
         if (java.lang.Math.abs(rayDirection.getNorm() - 1) > 1e-8) {
             System.out.println("direction not normalized in rayIntersect");
         }
+        
+        double ox = rayOrigin.getX();
+        double oy = rayOrigin.getY();
+        double oz = rayOrigin.getZ();
+        
+        double dx = rayDirection.getX();
+        double dy = rayDirection.getY();
+        double dz = rayDirection.getZ();
+        
 
         cacheVerticesAndFaces();
 //        System.out.println("Checking part" + this.part.name);
@@ -210,7 +219,7 @@ public class Shape extends MeshView {
 //            System.out.println(v2);
 //           double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
    
-           double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection,
+           double t = Util.Math.rayTriangleIntersect(ox, oy, oz, dx, dy, dz, 
                     vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z],
                     goingOut ? vertices[3 * faces[i + 2 * vis] + x] : vertices[3 * faces[i + vis] + x],
                     goingOut ? vertices[3 * faces[i + 2 * vis] + y] : vertices[3 * faces[i + vis] + y],

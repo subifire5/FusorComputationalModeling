@@ -200,46 +200,41 @@ public class Util {
         }
 
         public static double rayTriangleIntersect(
-                Vector3D orig, Vector3D dir,
+                double ox, double oy, double oz,
+                double dx, double dy, double dz,
                 double v0x, double v0y, double v0z,
                 double v1x, double v1y, double v1z,
                 double v2x, double v2y, double v2z) {
             //System.out.println("");
 
             //rayTriangleIntersectNew(orig, dir, v0x, v0y, v0z, v1x, v1y, v1z, v2x, v2y, v2z);
-
             final double kEpsilon = 1E-12; // constant for "close enough to 0"
             double a, f, u, v;
 
 //            Vector3D v0 = new Vector3D(v0x, v0y, v0z);
 //            Vector3D v1 = new Vector3D(v1x, v1y, v1z);
 //            Vector3D v2 = new Vector3D(v2x, v2y, v2z);
-
             double edge1x = v1x - v0x;
             double edge1y = v1y - v0y;
             double edge1z = v1z - v0z;
 
             //Vector3D edge1 = v1.subtract(v0);
             //System.out.println("Edge1" + edge1);
-
             double edge2x = v2x - v0x;
             double edge2y = v2y - v0y;
             double edge2z = v2z - v0z;
 
             //Vector3D edge2 = v2.subtract(v0);
             //System.out.println("Edge2" + edge2);
-
-            double hx = dir.getY() * edge2z - dir.getZ() * edge2y;
-            double hy = dir.getZ() * edge2x - dir.getX() * edge2z;
-            double hz = dir.getX() * edge2y - dir.getY() * edge2x;
+            double hx = dy * edge2z - dz * edge2y;
+            double hy = dz * edge2x - dx * edge2z;
+            double hz = dx * edge2y - dy * edge2x;
 
             //Vector3D h = dir.crossProduct(edge2);
             //System.out.println("h" + h);
-
             a = edge1x * hx + edge1y * hy + edge1z * hz;
 
             //a = edge1.dotProduct(h);
-
             if (a > -kEpsilon && a < kEpsilon) {
                 return -1;    // This ray is parallel to this triangle.
             }
@@ -251,12 +246,9 @@ public class Util {
 
             //Vector3D n = edge1.crossProduct(edge2);
             //System.out.println("n" + n);
-
-            double nDotDir = nx * dir.getX()
-                    + ny * dir.getY() + nz * dir.getZ();
+            double nDotDir = nx * dx + ny * dy + nz * dz;
 
             //nDotDir = n.dotProduct(dir);
-
             // addition: need to check her whether the ray is goin in the wrong direction
             if (nDotDir > -kEpsilon) {
                 return -1; // wrong direction or parallel 
@@ -265,9 +257,9 @@ public class Util {
             f = 1.0 / a;
             //System.out.println("f " + f);
 
-            double sx = orig.getX() - v0x;
-            double sy = orig.getY() - v0y;
-            double sz = orig.getZ() - v0z;
+            double sx = ox - v0x;
+            double sy = oy - v0y;
+            double sz = oz - v0z;
 
             //Vector3D s = orig.subtract(v0);
             //System.out.println("s" + s);
@@ -275,7 +267,6 @@ public class Util {
 
             //u = f * s.dotProduct(h);
             //System.out.println("u " + u);
-
             if (u < 0.0 || u > 1.0) {
                 return -1;
             }
@@ -286,7 +277,7 @@ public class Util {
             //Vector3D q = s.crossProduct(edge1);
             //System.out.println("q" + q);
 
-            v = f * (dir.getX() * qx + dir.getY() * qy + dir.getZ() * qz);
+            v = f * (dx * qx + dy * qy + dz * qz);
             //v = f * dir.dotProduct(q);
             //System.out.println("v " + v);
 
