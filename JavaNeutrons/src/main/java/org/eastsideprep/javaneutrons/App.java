@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Point3D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -14,6 +15,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
@@ -110,13 +112,21 @@ public class App extends Application {
         view = mainScene.outer;
         mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
-        var scene = new Scene(root, 1700, 900, true);
+
+        Scene scene;
+        Rectangle2D screenBounds = Screen.getPrimary().getBounds();
+        if (screenBounds.getWidth() > 3000) {
+            scene = new Scene(root, 1900, 1000, true);
+        } else {
+            scene = new Scene(root, 1000, 500, true);
+            System.out.println("Screen size: HD");
+        }
         //scene.setOnKeyPressed((ex) -> mainScene.controlCamera(ex));
         scene.setOnKeyPressed((ex) -> mainScene.handleKeyPress(ex));
         scene.setOnMouseDragged((ex) -> mainScene.handleDrag(ex));
         scene.setOnMousePressed((ex) -> mainScene.handleClick(ex));
         scene.setOnScroll((ex) -> mainScene.handleScroll(ex));
-
+        
         // scene and keyboard controls (old)
         scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
             mainScene.handleKeyPress(e);

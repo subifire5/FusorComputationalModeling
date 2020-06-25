@@ -33,9 +33,8 @@ public class Part {
     public LogEnergyEVHistogram entriesOverEnergy;
     public LogEnergyEVHistogram fluenceOverEnergy;
     public LogEnergyEVHistogram scattersOverEnergyBefore;
-    public LogEnergyEVHistogram capturesOverEnergyBefore;
     public LogEnergyEVHistogram scattersOverEnergyAfter;
-    public LogEnergyEVHistogram capturesOverEnergyAfter;
+    public LogEnergyEVHistogram capturesOverEnergy;
     private double volume = 0;
     private double currentEntryEnergy = 0;
     private double totalDepositedEnergy = 0;
@@ -78,9 +77,8 @@ public class Part {
         this.entriesOverEnergy = new LogEnergyEVHistogram();
         this.fluenceOverEnergy = new LogEnergyEVHistogram();
         this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
-        this.capturesOverEnergyBefore = new LogEnergyEVHistogram();
+        this.capturesOverEnergy = new LogEnergyEVHistogram();
         this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
-        this.capturesOverEnergyAfter = new LogEnergyEVHistogram();
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
@@ -159,18 +157,7 @@ public class Part {
                 // scattering / absorption did really happen, process it
                 event = interactionEvent;
                 Util.Graphics.visualizeEvent(event, visualizations);
-                if (event.code == Event.Code.Scatter) {
-                    this.scattersOverEnergyBefore.record(1, n.energy);
-                } else if (event.code == Event.Code.Capture) {
-                    this.capturesOverEnergyBefore.record(1, n.energy);
-                }
-                n.processEvent(event);
-                this.totalEvents++;
-                if (event.code == Event.Code.Scatter) {
-                    this.scattersOverEnergyAfter.record(1, n.energy);
-                } else if (event.code == Event.Code.Scatter) {
-                    this.capturesOverEnergyAfter.record(1, n.energy);
-                }
+                this.processEvent(event);
             } else {
                 event = exitEvent;
                 n.setPosition(event.position);
@@ -191,7 +178,7 @@ public class Part {
     //
     // detector functionality
     //
-    void processPathLength(double length, double energy) {
+    synchronized void processPathLength(double length, double energy) {
 //        if (name.equals("Body")) {
 //            System.out.println("Entry into detector path length log " + this.fluenceOverEnergy.hashCode());
 //        }
@@ -199,16 +186,37 @@ public class Part {
         this.totalFluence += length / volume;
     }
 
-    void processEntryEnergy(double e) {
+    synchronized void processEntryEnergy(double e) {
 //        if (name.equals("Body")) {
 //            //System.out.println("Entry into detector entry energy log " + this.entryOverEnergy.hashCode());
 //        }
         this.entriesOverEnergy.record(1, e);
         this.currentEntryEnergy = e;
     }
+    
+      public void processEvent(Event event) {
+        // record stats for part
+        if (event.code == Event.Code.Scatter) {
+            this.scattersOverEnergyBefore.record(1, event.neutron.energy);
+        } else {
+            this.capturesOverEnergy.record(1, event.neutron.energy);
 
-    void processExitEnergy(double e
-    ) {
+        }
+
+        // let the neutron do its thing
+        event.neutron.processEvent(event);
+
+        // record more stats for part
+        synchronized(this) {
+            this.totalEvents++;
+        }
+        if (event.code == Event.Code.Scatter) {
+            this.scattersOverEnergyAfter.record(1, event.neutron.energy);
+        }
+    }
+
+    synchronized void processExitEnergy(double e) {
+
         this.totalDepositedEnergy += (e - this.currentEntryEnergy);
     }
 

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.text.DecimalFormat;
@@ -151,7 +146,6 @@ public class MonteCarloSimulation {
         String e;
 
         if (detector != null) {
-
             switch (series) {
                 case "Entry counts":
                     bc = new BarChart<>(xAxis, yAxis);
@@ -184,8 +178,7 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Count");
                         bc.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)"));
                         bc.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)"));
-                        bc.getData().add(p.capturesOverEnergyBefore.makeSeries("Capture (before)"));
-                        bc.getData().add(p.capturesOverEnergyAfter.makeSeries("Capture (after)"));
+                        bc.getData().add(p.capturesOverEnergy.makeSeries("Capture"));
                     } else {
                         m = Material.getByName(detector.substring(detector.indexOf(' ')+1));
                         bc.setTitle("Interstitial material \"" + m.name + "\", total events: " + m.totalEvents);
@@ -193,16 +186,15 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Count");
                         bc.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)"));
                         bc.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)"));
-                        bc.getData().add(m.capturesOverEnergyBefore.makeSeries("Capture (before)"));
-                        bc.getData().add(m.capturesOverEnergyAfter.makeSeries("Capture (after)"));
-
+                        bc.getData().add(m.capturesOverEnergy.makeSeries("Capture"));
                     }
                     break;
 
                 case "Path lengths":
                     bc = new BarChart<>(xAxis, yAxis);
                     m = Material.getByName(detector);
-                    bc.setTitle("Material \"" + m.name);
+                    bc.setTitle("Material \"" + m.name+"\"\nMean free path: "+
+                            (Math.round(100*m.totalFreePath/m.pathCount)/100.0)+" cm (count: "+m.pathCount+")");
                     xAxis.setLabel("Length (cm)");
                     yAxis.setLabel("Count");
                     bc.getData().add(m.lengths.makeSeries("Length"));
@@ -231,8 +223,10 @@ public class MonteCarloSimulation {
                     return null;
             }
         } else {
+            // Enviroment chart
             bc = new BarChart<>(xAxis, yAxis);
-            bc.setTitle("Environment");
+            bc.setTitle("Environment: P(escape)="+
+                    (Math.round(100*Environment.getEscapeProbability())/100.0));
             xAxis.setLabel("Energy (eV)");
             yAxis.setLabel("Count");
             bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));

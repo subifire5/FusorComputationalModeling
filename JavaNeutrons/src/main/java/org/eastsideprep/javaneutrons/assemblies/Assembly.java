@@ -94,20 +94,9 @@ public class Assembly extends Part {
             if (partEvent == null || partEvent.t > interactionEvent.t) {
                 event = interactionEvent;
                 if (event.position.getNorm() <= Environment.limit) {
-                    // scattering / absorption in air did really happen, process it
+                    // scattering / absorption in medium did really happen, process it
                     n.setPosition(event.position);
-                    if (event.code == Event.Code.Scatter) {
-                        medium.scattersOverEnergyBefore.record(1, n.energy);
-                    } else if (event.code == Event.Code.Capture) {
-                        medium.capturesOverEnergyBefore.record(1, n.energy);
-                    }
-                    n.processEvent(event);
-                    medium.totalEvents++;
-                    if (event.code == Event.Code.Scatter) {
-                        medium.scattersOverEnergyAfter.record(1, n.energy);
-                    } else if (event.code == Event.Code.Scatter) {
-                        medium.capturesOverEnergyAfter.record(1, n.energy);
-                    }
+                    medium.processEvent(event);
                     Util.Graphics.visualizeEvent(event, visualizations);
                 }
             } else {
@@ -124,7 +113,7 @@ public class Assembly extends Part {
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {
-                Environment.processEnergy(n.energy);
+                Environment.recordEscape(n.energy);
                 event = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.Gone, 10, 0);
             }
             //visualizeEvent(event, visualizations);

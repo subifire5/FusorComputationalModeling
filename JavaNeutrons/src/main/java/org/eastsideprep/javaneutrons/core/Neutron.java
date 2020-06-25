@@ -54,35 +54,39 @@ public class Neutron {
     }
 
     public void processEvent(Event event) {
-        // other particle, velocity following Maxwell-Boltzmann speed distribution
-        // derived through: <Ex> = 0.5*kB*T (x component takes a third of the kinetic energy)
-        // => 0.5*m*<vx^2> = 0.5*kB*T
-        // with <vx^2> = var(vx)
-        // => m*sd(vx) = kB*T
-        // => sd(vx) = sd(vy) = sd(vz) = kB*T/m
-        double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / event.element.mass);
-        Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+        if (event.code == Event.Code.Scatter) {
+            // other particle, velocity following Maxwell-Boltzmann speed distribution
+            // derived through: <Ex> = 0.5*kB*T (x component takes a third of the kinetic energy)
+            // => 0.5*m*<vx^2> = 0.5*kB*T
+            // with <vx^2> = var(vx)
+            // => m*sd(vx) = kB*T
+            // => sd(vx) = sd(vy) = sd(vz) = kB*T/m
+            double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / event.element.mass);
+            Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
 
 //        double particleSpeed = particleVelocity.getNorm();
 //        double particleEnergy = event.element.mass * particleSpeed * particleSpeed / 2;
 //        System.out.println("Particle energy: " + String.format("%6.3e", particleEnergy / Util.Physics.eV));
+            //establish center of mass
+            //add velocity vectors / total mass 
+            Vector3D velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
+                    .add(particleVelocity.scalarMultiply(event.element.mass)))
+                    .scalarMultiply(1 / (Neutron.mass + event.element.mass));
 
-        //establish center of mass
-        //add velocity vectors / total mass 
-        Vector3D velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
-                .add(particleVelocity.scalarMultiply(event.element.mass)))
-                .scalarMultiply(1 / (Neutron.mass + event.element.mass));
+            //convert neutron and particle --> center of mass frame
+            this.velocity = this.velocity.subtract(velocityCM);
+            //calculate elastic collision: entry speed = exit speed, random direction
+            this.velocity = Util.Math.randomDir().scalarMultiply(this.velocity.getNorm());
+            //convert back into lab frame
+            this.velocity = this.velocity.add(velocityCM);
 
-        //convert neutron and particle --> center of mass frame
-        this.velocity = this.velocity.subtract(velocityCM);
-        //calculate elastic collision: entry speed = exit speed, random direction
-        this.velocity = Util.Math.randomDir().scalarMultiply(this.velocity.getNorm());
-        //convert back into lab frame
-        this.velocity = this.velocity.add(velocityCM);
-
-        // update myself (energy and direction)
-        this.setVelocity(this.velocity);
-        event.energyOut = this.energy;
+            // update myself (energy and direction)
+            this.setVelocity(this.velocity);
+            event.energyOut = this.energy;
+        } else {
+            // capture
+            Environment.recordCapture();
+        }
     }
 
     //replace parameters with 1 Neutron object??

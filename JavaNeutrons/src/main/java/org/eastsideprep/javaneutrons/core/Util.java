@@ -207,7 +207,8 @@ public class Util {
                         size *= 2;
                         break;
                     case Scatter:
-                        color = "gold";
+                        color = "yellow";
+                        size *=3;
                         break;
                     case EmergencyExit:
                         color = "purple";

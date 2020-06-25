@@ -45,10 +45,11 @@ public class Material {
     ArrayList<Component> components;
     public LogHistogram lengths;
     public LogEnergyEVHistogram scattersOverEnergyBefore;
-    public LogEnergyEVHistogram capturesOverEnergyBefore;
     public LogEnergyEVHistogram scattersOverEnergyAfter;
-    public LogEnergyEVHistogram capturesOverEnergyAfter;
+    public LogEnergyEVHistogram capturesOverEnergy;
     public double totalEvents;
+    public double totalFreePath;
+    public long pathCount;
 
     public Material(String name) {
         materials.put(name, this);
@@ -95,10 +96,12 @@ public class Material {
     public final void resetDetector() {
         this.totalEvents = 0;
         this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
-        this.capturesOverEnergyBefore = new LogEnergyEVHistogram();
         this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
-        this.capturesOverEnergyAfter = new LogEnergyEVHistogram();
+        this.capturesOverEnergy = new LogEnergyEVHistogram();
         this.lengths = new LogHistogram(-5, 5, 70);
+        this.totalEvents = 0;
+        this.totalFreePath = 0;
+        this.pathCount = 0;
     }
 
     // compute macroscopic cross-section
@@ -112,7 +115,11 @@ public class Material {
 
     private double randomPathLength(double energy) {
         double length = -Math.log(Util.Math.random.nextDouble()) / getSigma(energy);
-        lengths.record(1, length);
+        this.lengths.record(1, length);
+        synchronized (this) {
+            this.totalFreePath += length;
+            this.pathCount++;
+        }
         return length;
     }
 
@@ -146,7 +153,7 @@ public class Material {
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
 
-        return new Event(location, code, t, e);
+        return new Event(location, code, t, e, n);
     }
 
     public static Material getRealMaterial(Object material) {
@@ -184,6 +191,26 @@ public class Material {
         }
 
         return (Material) material;
+    }
+
+    public void processEvent(Event event) {
+        // record stats for material
+        if (event.code == Event.Code.Scatter) {
+            this.scattersOverEnergyBefore.record(1, event.neutron.energy);
+        } else {
+            this.capturesOverEnergy.record(1, event.neutron.energy);
+        }
+
+        // let the neutron do its thing
+        event.neutron.processEvent(event);
+
+        // record more stats for material
+        synchronized (this) {
+            this.totalEvents++;
+        }
+        if (event.code == Event.Code.Scatter) {
+            this.scattersOverEnergyAfter.record(1, event.neutron.energy);
+        }
     }
 
     public XYChart.Series makeSigmaSeries(String seriesName) {
