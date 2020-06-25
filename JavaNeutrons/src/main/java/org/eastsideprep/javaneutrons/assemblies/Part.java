@@ -14,7 +14,6 @@ import javafx.scene.shape.DrawMode;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
-import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.shapes.Shape;

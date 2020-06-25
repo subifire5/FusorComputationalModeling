@@ -73,7 +73,7 @@ public class Assembly extends Part {
         Event interactionEvent;
         Event event;
         double t;
-        
+
         // we start in vacuum
         Material medium = Vacuum.getInstance();
         // but we will mostly travel in air
@@ -96,7 +96,18 @@ public class Assembly extends Part {
                 if (event.position.getNorm() <= Environment.limit) {
                     // scattering / absorption in air did really happen, process it
                     n.setPosition(event.position);
+                    if (event.code == Event.Code.Scatter) {
+                        medium.scattersOverEnergyBefore.record(1, n.energy);
+                    } else if (event.code == Event.Code.Capture) {
+                        medium.capturesOverEnergyBefore.record(1, n.energy);
+                    }
                     n.processEvent(event);
+                    medium.totalEvents++;
+                    if (event.code == Event.Code.Scatter) {
+                        medium.scattersOverEnergyAfter.record(1, n.energy);
+                    } else if (event.code == Event.Code.Scatter) {
+                        medium.capturesOverEnergyAfter.record(1, n.energy);
+                    }
                     Util.Graphics.visualizeEvent(event, visualizations);
                 }
             } else {
@@ -108,7 +119,7 @@ public class Assembly extends Part {
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
                 // coming out, we might be in a new material
-                medium = event.exitMaterial != null?event.exitMaterial:air;
+                medium = event.exitMaterial != null ? event.exitMaterial : air;
                 //System.out.println("Exit to material: "+medium.name);
             }
             // if things happened far enough from the origin, call it gone
@@ -185,29 +196,27 @@ public class Assembly extends Part {
     public ObservableList<Transform> getTransforms() {
         return g.getTransforms();
     }
-    
+
     //
     // vacuum face detection
     //
-    
-    
     //
     // marking parts containing vacuum
     //
-    public boolean containsMaterialAt(Object material, Vector3D location){
+    public boolean containsMaterialAt(Object material, Vector3D location) {
         // convert whatever we got here
         material = Material.getRealMaterial(material);
-        
+
         // send out a random ray from location
         Vector3D direction = Util.Math.randomDir();
         Event e = this.rayIntersect(location, direction, false, null);
         if (e == null) {
             return false;
         }
-        
+
         Part p = e.part;
         Shape s = p.shape;
-        
+
         s.markSurfaceInContactWith(location, direction, (Material) material, null);
         return true;
     }

@@ -79,22 +79,32 @@ public class StatsDisplay extends Group {
     }
 
     private void populateComboBoxWithParts() {
+        this.object.getItems().clear();
         populateComboBox(Part.namedParts.keySet());
     }
 
     private void populateComboBoxWithMaterials() {
+        this.object.getItems().clear();
         populateComboBox(Material.materials.keySet());
     }
 
     private void populateComboBoxWithElements() {
+        this.object.getItems().clear();
         ArrayList<Element> elements = new ArrayList<>(Element.elements.values());
-        elements.sort((a,b)->(a.atomicNumber - b.atomicNumber));
-        List<String> s = elements.stream().map(e->e.name).collect(Collectors.toList());
+        elements.sort((a, b) -> (a.atomicNumber - b.atomicNumber));
+        List<String> s = elements.stream().map(e -> e.name).collect(Collectors.toList());
         populateComboBox(s);
     }
 
-    private void populateComboBox(Collection<String> s) {
+    private void populateComboBoxWithPartsAndMaterials() {
         this.object.getItems().clear();
+        populateComboBoxWithParts();
+        ArrayList<String> ms = new ArrayList<>(Material.materials.keySet());
+        List<String> as = ms.stream().map(s -> "Interstitial "+s).collect(Collectors.toList());
+        populateComboBox(as);
+    }
+
+    private void populateComboBox(Collection<String> s) {
         if (!(s instanceof ArrayList)) {
             ArrayList<String> items = new ArrayList<>(s);
             items.sort(null);
@@ -124,7 +134,7 @@ public class StatsDisplay extends Group {
                     break;
 
                 case "Event counts":
-                    this.populateComboBoxWithParts();
+                    this.populateComboBoxWithPartsAndMaterials();
                     this.object.setVisible(true);
                     break;
 
