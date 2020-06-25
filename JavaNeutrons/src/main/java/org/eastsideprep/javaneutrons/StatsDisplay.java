@@ -6,7 +6,10 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -76,24 +79,40 @@ public class StatsDisplay extends Group {
     }
 
     private void populateComboBoxWithParts() {
+        this.object.getItems().clear();
         populateComboBox(Part.namedParts.keySet());
     }
 
     private void populateComboBoxWithMaterials() {
+        this.object.getItems().clear();
         populateComboBox(Material.materials.keySet());
     }
 
     private void populateComboBoxWithElements() {
-        populateComboBox(Element.elements.keySet());
+        this.object.getItems().clear();
+        ArrayList<Element> elements = new ArrayList<>(Element.elements.values());
+        elements.sort((a, b) -> (a.atomicNumber - b.atomicNumber));
+        List<String> s = elements.stream().map(e -> e.name).collect(Collectors.toList());
+        populateComboBox(s);
     }
 
-    private void populateComboBox(Set<String> s) {
+    private void populateComboBoxWithPartsAndMaterials() {
         this.object.getItems().clear();
-        ArrayList<String> items = new ArrayList<>(s);
-        items.sort(null);
-        this.object.getItems().addAll(items);
-        this.object.setValue(items.get(0));
-        this.object.valueProperty().addListener((ov,t,t1)->setChart());
+        populateComboBoxWithParts();
+        ArrayList<String> ms = new ArrayList<>(Material.materials.keySet());
+        List<String> as = ms.stream().map(s -> "Interstitial "+s).collect(Collectors.toList());
+        populateComboBox(as);
+    }
+
+    private void populateComboBox(Collection<String> s) {
+        if (!(s instanceof ArrayList)) {
+            ArrayList<String> items = new ArrayList<>(s);
+            items.sort(null);
+            s = items;
+        }
+        this.object.getItems().addAll(s);
+        this.object.setValue(this.object.getItems().get(0));
+        this.object.valueProperty().addListener((ov, t, t1) -> setChart());
     }
 
     void setComboBox() {
@@ -115,7 +134,7 @@ public class StatsDisplay extends Group {
                     break;
 
                 case "Event counts":
-                    this.populateComboBoxWithParts();
+                    this.populateComboBoxWithPartsAndMaterials();
                     this.object.setVisible(true);
                     break;
 
@@ -141,8 +160,8 @@ public class StatsDisplay extends Group {
         }
         setChart();
     }
-    
-  void setChart() {
+
+    void setChart() {
         Toggle t = tg.getSelectedToggle();
         if (t != null) {
             switch ((String) t.getUserData()) {

@@ -90,7 +90,7 @@ public class Test {
         cube2.setTranslateZ(100);
         cube2.setRotationAxis(new Point3D(-1, 1, 1));
 
-        Shape cube3 = new Shape(Test.class.getResource("/meshescube.obj"));
+        Shape cube3 = new Shape(Test.class.getResource("/meshes/cube.obj"));
         cube3.setTranslateX(100);
         cube3.setTranslateY(100);
         cube3.setTranslateZ(100);

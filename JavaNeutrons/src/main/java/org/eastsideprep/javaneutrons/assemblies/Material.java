@@ -15,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
 import org.eastsideprep.javaneutrons.core.LogHistogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
@@ -42,12 +43,18 @@ public class Material {
 
     public String name;
     ArrayList<Component> components;
-    public LogHistogram lengths = new LogHistogram(-5,5,70);
+    public LogHistogram lengths;
+    public LogEnergyEVHistogram scattersOverEnergyBefore;
+    public LogEnergyEVHistogram capturesOverEnergyBefore;
+    public LogEnergyEVHistogram scattersOverEnergyAfter;
+    public LogEnergyEVHistogram capturesOverEnergyAfter;
+    public double totalEvents;
 
     public Material(String name) {
         materials.put(name, this);
         components = new ArrayList<>();
         this.name = name;
+        resetDetector();
     }
 
     public static Material getByName(String name) {
@@ -83,6 +90,15 @@ public class Material {
 //        System.out.println("Macroscopic cross-section for "
 //                + (this instanceof Element ? "(element) " : "")
 //                + this.name + " at 1 eV: " + getSigma(1 * Util.Physics.eV));
+    }
+
+    public final void resetDetector() {
+        this.totalEvents = 0;
+        this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
+        this.capturesOverEnergyBefore = new LogEnergyEVHistogram();
+        this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
+        this.capturesOverEnergyAfter = new LogEnergyEVHistogram();
+        this.lengths = new LogHistogram(-5, 5, 70);
     }
 
     // compute macroscopic cross-section
