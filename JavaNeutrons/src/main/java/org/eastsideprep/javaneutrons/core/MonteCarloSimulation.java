@@ -67,7 +67,7 @@ public class MonteCarloSimulation {
 
     public void clearVisuals() {
         this.viewGroup.getChildren().remove(this.dynamicGroup);
-        this.viewGroup.getChildren().remove(this.assembly);
+        this.viewGroup.getChildren().remove(this.assembly.getGroup());
     }
 
     public void simulateNeutrons(long count) {
@@ -118,9 +118,6 @@ public class MonteCarloSimulation {
         ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            if (Math.abs(direction.getNorm() - 1.0) > 1E-8) {
-                System.out.println("hah!");
-            }
             Neutron n = new Neutron(this.origin, direction, Neutron.startingEnergyDD);
             neutrons.add(n);
         }
