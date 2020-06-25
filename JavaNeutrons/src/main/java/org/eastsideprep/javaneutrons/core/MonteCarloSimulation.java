@@ -9,7 +9,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
-import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
@@ -36,13 +35,12 @@ public class MonteCarloSimulation {
         void reportProgress(int p);
     }
 
-    private Assembly assembly;
-    private Vector3D origin;
-    private long count;
-    private AtomicLong completed;
-    private LinkedTransferQueue visualizations;
-    private Group viewGroup;
-    private Group dynamicGroup;
+    private final Assembly assembly;
+    private final Vector3D origin;
+    private final AtomicLong completed;
+    private final LinkedTransferQueue visualizations;
+    private final Group viewGroup;
+    private final Group dynamicGroup;
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
         this.assembly = assembly;
@@ -66,12 +64,10 @@ public class MonteCarloSimulation {
 
     public void clearVisuals() {
         this.viewGroup.getChildren().remove(this.dynamicGroup);
-        this.viewGroup.getChildren().remove(this.assembly);
+        this.viewGroup.getChildren().remove(this.assembly.getGroup());
     }
 
     public void simulateNeutrons(long count) {
-        this.count = count;
-
 //        Vector3D v0 = new Vector3D(200, 100, 100);
 //        Vector3D v1 = new Vector3D(-100, 100, 100);
 //        Vector3D v2 = new Vector3D(-100, 100, -200);
@@ -117,9 +113,6 @@ public class MonteCarloSimulation {
         ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            if (Math.abs(direction.getNorm() - 1.0) > 1E-8) {
-                System.out.println("hah!");
-            }
             Neutron n = new Neutron(this.origin, direction, Neutron.startingEnergyDD);
             neutrons.add(n);
         }
