@@ -219,7 +219,7 @@ public class Shape extends MeshView {
             for (int j = 0; j < 3; j++) {
                 face[i][j] = Float.valueOf(numbers[j]) * factor;
             }
-            System.out.println("Point " + Arrays.toString(face[i]));
+            //System.out.println("Point " + Arrays.toString(face[i]));
         }
 
         if (!sc.hasNextLine() || !sc.nextLine().trim().equals("endloop")) {
@@ -319,12 +319,12 @@ public class Shape extends MeshView {
                         // if not found, insert
                         vertex = vertexMap.size();
                         vertexMap.put(v, vertex);
-                        System.out.println("point added  " + Arrays.toString(v.coords) + ", hash " + v.hashCode() + " " + vertexMap.containsKey(v));
+                        //System.out.println("point added  " + Arrays.toString(v.coords) + ", hash " + v.hashCode() + " " + vertexMap.containsKey(v));
                     }
                     faceData[2 * k] = vertex;
                 }
                 facesList.add(faceData);
-                System.out.println("");
+                //System.out.println("");
 
                 face = nextFacet(sc, factor);
             }
@@ -338,18 +338,18 @@ public class Shape extends MeshView {
             // need to convert vertices 
             float[] vertices = new float[vertexMap.size() * 3];
             for (Entry<Vertex, Integer> e : vertexMap.entrySet()) {
-                System.out.println("" + e.getValue() + ": " + Arrays.toString(e.getKey().coords));
+                //System.out.println("" + e.getValue() + ": " + Arrays.toString(e.getKey().coords));
                 System.arraycopy(e.getKey().coords, 0, vertices, e.getValue() * 3, 3);
             }
             // add converted vertices to mesh
             s.mesh.getPoints().addAll(vertices);
             for (int i = 0; i < vertices.length; i++) {
-                System.out.print(vertices[i] + " ");
-                if ((i + 1) % 3 == 0) {
-                    System.out.println("");
-                }
+                //System.out.print(vertices[i] + " ");
+                //if ((i + 1) % 3 == 0) {
+                //    System.out.println("");
+                //}
             }
-            System.out.println("");
+            //System.out.println("");
 
             // set dummy texcoords
             s.mesh.getTexCoords().addAll(0, 0);
@@ -362,10 +362,10 @@ public class Shape extends MeshView {
             // add faces to mesh
             s.mesh.getFaces().addAll(faces);
             for (int i = 0; i < faces.length; i++) {
-                System.out.print(faces[i] + " ");
-                if ((i + 1) % 6 == 0) {
-                    System.out.println("");
-                }
+                //System.out.print(faces[i] + " ");
+                //if ((i + 1) % 6 == 0) {
+                //    System.out.println("");
+                //}
             }
 
             s.setName(object);
