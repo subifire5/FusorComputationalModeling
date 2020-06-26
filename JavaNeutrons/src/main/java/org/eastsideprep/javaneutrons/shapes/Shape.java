@@ -90,7 +90,7 @@ public class Shape extends MeshView {
         ArrayList<Shape> shapes;
 
         if (url.toString().toLowerCase().endsWith("obj")) {
-            shapes = loadSTL(url, unit);
+            shapes = loadOBJ(url, unit);
         } else if (url.toString().toLowerCase().endsWith("stl")) {
             shapes = loadSTL(url, unit);
         } else {

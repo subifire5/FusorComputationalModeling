@@ -47,7 +47,7 @@ public class Assembly extends Part {
         ArrayList<Shape> shapes;
 
         if (url.toString().toLowerCase().endsWith("obj")) {
-            shapes = Shape.loadSTL(url, unit);
+            shapes = Shape.loadOBJ(url, unit);
         } else if (url.toString().toLowerCase().endsWith("stl")) {
             shapes = Shape.loadSTL(url, unit);
         } else {

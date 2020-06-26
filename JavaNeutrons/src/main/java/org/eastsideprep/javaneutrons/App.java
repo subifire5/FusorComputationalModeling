@@ -96,7 +96,8 @@ public class App extends Application {
 
         Button bTest = new Button("Test visuals");
         bTest.setOnAction((e) -> {
-            root.setCenter(Test.testVisuals());
+            viewGroup.getChildren().clear();
+            viewGroup.getChildren().add(Test.testVisuals());
         });
         bTest.setPrefWidth(200);
 
