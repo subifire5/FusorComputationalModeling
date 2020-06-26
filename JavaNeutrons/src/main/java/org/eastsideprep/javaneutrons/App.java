@@ -93,16 +93,16 @@ public class App extends Application {
 
         });
         bView.setPrefWidth(200);
-//
-//        Button bTest = new Button("Test visuals");
-//        bTest.setOnAction((e) -> {
-//            root.setCenter(Test.testVisuals());
-//        });
-//        bTest.setPrefWidth(200);
 
-//     
+        Button bTest = new Button("Test visuals");
+        bTest.setOnAction((e) -> {
+            root.setCenter(Test.testVisuals());
+        });
+        bTest.setPrefWidth(200);
+
+
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bView, /*bTest,*/ progress, stats);
+        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bView, bTest, progress, stats);
         root.setLeft(buttons);
 
         // set scene and stage

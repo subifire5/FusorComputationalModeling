@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -85,13 +86,13 @@ public class Shape extends MeshView {
 
     // use this constructor to construct a shape from an OBJ/STL file
     // will use only the first mesh in the group
-    public Shape(URL url) {
+    public Shape(URL url, String unit) {
         ArrayList<Shape> shapes;
 
         if (url.toString().toLowerCase().endsWith("obj")) {
-            shapes = loadSTL(url);
+            shapes = loadSTL(url, unit);
         } else if (url.toString().toLowerCase().endsWith("stl")) {
-            shapes = loadSTL(url);
+            shapes = loadSTL(url, unit);
         } else {
             throw new IllegalArgumentException("Shape contructor: Not OBJ/STL file: " + url);
         }
@@ -104,10 +105,16 @@ public class Shape extends MeshView {
         setVisuals("green");
     }
 
+    // use this constructor to construct a shape from an OBJ/STL file
+    // will use only the first mesh in the group
+    public Shape(URL url) {
+        this(url, "cm");
+    }
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     //
     // setVisuals
     // default vis attributes for shapes
@@ -123,8 +130,9 @@ public class Shape extends MeshView {
     //
     // static helper, can be used to load multi-shape OBJ files
     //
-    public static ArrayList<Shape> loadOBJ(URL url) {
+    public static ArrayList<Shape> loadOBJ(URL url, String unit) {
         ArrayList<Shape> shapes = new ArrayList<>();
+        float factor = factorFromUnit(unit);
 
         Group g = null;
         try {
@@ -138,6 +146,16 @@ public class Shape extends MeshView {
         for (Node n : g.getChildren()) {
             if (n instanceof MeshView) {
                 //System.out.println("Adding shape");
+                MeshView mv = (MeshView) n;
+                TriangleMesh m = (TriangleMesh) mv.getMesh();
+                if (factor != 1.0f) {
+                    float[] data = m.getPoints().toArray(null);
+                    for (int i = 0; i < data.length; i++) {
+                        data[i] *= factor;
+                    }
+                    m.getPoints().clear();
+                    m.getPoints().addAll(data);
+                }
                 shapes.add(new Shape((MeshView) n));
             }
         }
@@ -156,7 +174,7 @@ public class Shape extends MeshView {
         return sc;
     }
 
-    public static String nextObject(Scanner sc) {
+    private static String nextObject(Scanner sc) {
         if (!sc.hasNextLine()) {
             return null;
         }
@@ -167,9 +185,23 @@ public class Shape extends MeshView {
         return object.substring(6);
     }
 
-    public static float[][] nextFacet(Scanner sc) {
-        if (!sc.hasNextLine() || !sc.nextLine().trim().startsWith("facet")) {
+    private static float[][] nextFacet(Scanner sc, float factor) {
+        String line;
+        String[] numbers;
+
+        if (!sc.hasNextLine()) {
             return null;
+        }
+        line = sc.nextLine().trim();
+        if (!line.startsWith("facet normal")) {
+            return null;
+        }
+
+        float[] n = new float[3];
+        line = line.substring(12).trim();
+        numbers = line.split(" ");
+        for (int j = 0; j < 3; j++) {
+            n[j] = Float.valueOf(numbers[j]);
         }
 
         if (!sc.hasNextLine() || !sc.nextLine().trim().equals("outer loop")) {
@@ -178,15 +210,16 @@ public class Shape extends MeshView {
 
         float[][] face = new float[3][3];
         for (int i = 0; i < 3; i++) {
-            String line = sc.nextLine();
+            line = sc.nextLine();
             if (!line.trim().startsWith("vertex")) {
                 return null;
             }
             line = line.trim().substring(7);
-            String[] numbers = line.split(" ");
+            numbers = line.split(" ");
             for (int j = 0; j < 3; j++) {
-                face[i][j] = Float.valueOf(numbers[j]);
+                face[i][j] = Float.valueOf(numbers[j]) * factor;
             }
+            System.out.println("Point " + Arrays.toString(face[i]));
         }
 
         if (!sc.hasNextLine() || !sc.nextLine().trim().equals("endloop")) {
@@ -197,56 +230,129 @@ public class Shape extends MeshView {
             return null;
         }
 
+//        // check order against normal vector
+//        Vector3D v0 = new Vector3D(face[0][0], face[0][1], face[0][2]);
+//        Vector3D v1 = new Vector3D(face[1][0], face[1][1], face[1][2]);
+//        Vector3D v2 = new Vector3D(face[2][0], face[2][1], face[2][2]);
+//        Vector3D edge1 = v1.subtract(v0);
+//        Vector3D edge2 = v2.subtract(v0);
+//        Vector3D n1 = new Vector3D(n[0], n[1], n[2]);
+//        Vector3D n2 = edge1.crossProduct(edge2);
+//        if (n1.dotProduct(n2) < 0) {
+//            System.out.println("hah!");
+//        }
         return face;
     }
 
-    public static ArrayList<Shape> loadSTL(URL url) {
+    private static class Vertex {
+
+        float[] coords;
+
+        Vertex(float[] coords) {
+            this.coords = new float[3];
+            System.arraycopy(coords, 0, this.coords, 0, 3);
+        }
+
+        @Override
+        public boolean equals(Object b) {
+            if (b == null) {
+                return false;
+            }
+            if (!(b instanceof Vertex)) {
+                return false;
+            }
+            Vertex v = (Vertex) b;
+            return (this.coords[0] == v.coords[0] && this.coords[1] == v.coords[1] && this.coords[2] == v.coords[2]);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(this.coords);
+        }
+    }
+
+    private static float factorFromUnit(String unit) {
+        float factor = 1.0f;
+        switch (unit) {
+            case "cm":
+                break;
+            case "mm":
+                factor = 0.1f;
+                break;
+            case "m":
+                factor = 100f;
+                break;
+            default:
+                break;
+        }
+        return factor;
+    }
+
+    public static ArrayList<Shape> loadSTL(URL url, String unit) {
 
         Scanner sc = openSTL(url);
         if (sc == null) {
             return null;
         }
 
+        float factor = factorFromUnit(unit);
+
         ArrayList<Shape> result = new ArrayList<>();
 
         String object = nextObject(sc);
         while (object != null) {
-            TriangleMesh m = new TriangleMesh();
-            HashMap<Object, Integer> vertexMap = new HashMap<>();
+            HashMap<Vertex, Integer> vertexMap = new HashMap<>();
             ArrayList<int[]> facesList = new ArrayList<>();
 
             // read all face data
-            float[][] face = nextFacet(sc);
+            float[][] face = nextFacet(sc, factor);
             while (face != null) {
+
                 int[] faceData = new int[6];
                 // for each vertex in the current face
                 for (int k = 0; k < 3; k++) { // 3 points in a triangle
                     // convert it to float
                     // try to find it
-                    int vertex = vertexMap.getOrDefault(face[k], -1);
+                    Vertex v = new Vertex(face[k]);
+                    int vertex = vertexMap.getOrDefault(v, -1);
                     if (vertex == -1) {
                         // if not found, insert
                         vertex = vertexMap.size();
-                        vertexMap.put(face[k], vertex);
+                        vertexMap.put(v, vertex);
+                        System.out.println("point added  " + Arrays.toString(v.coords) + ", hash " + v.hashCode() + " " + vertexMap.containsKey(v));
                     }
                     faceData[2 * k] = vertex;
-                    facesList.add(faceData);
                 }
-                face = nextFacet(sc);
+                facesList.add(faceData);
+                System.out.println("");
+
+                face = nextFacet(sc, factor);
             }
+
+            // prepare shape
+            Shape s = new Shape();
+
             // prepare mesh
-            m.setVertexFormat(VertexFormat.POINT_TEXCOORD);
+            s.mesh.setVertexFormat(VertexFormat.POINT_TEXCOORD);
 
             // need to convert vertices 
             float[] vertices = new float[vertexMap.size() * 3];
-            for (Entry<Object, Integer> e : vertexMap.entrySet()) {
-                System.arraycopy(((float[]) e.getKey()), 0, vertices, e.getValue(), 3);
+            for (Entry<Vertex, Integer> e : vertexMap.entrySet()) {
+                System.out.println("" + e.getValue() + ": " + Arrays.toString(e.getKey().coords));
+                System.arraycopy(e.getKey().coords, 0, vertices, e.getValue() * 3, 3);
             }
-            // ad converted vertices to mesh
-            m.getPoints().addAll(vertices);
+            // add converted vertices to mesh
+            s.mesh.getPoints().addAll(vertices);
+            for (int i = 0; i < vertices.length; i++) {
+                System.out.print(vertices[i] + " ");
+                if ((i + 1) % 3 == 0) {
+                    System.out.println("");
+                }
+            }
+            System.out.println("");
 
             // set dummy texcoords
-            m.getTexCoords().addAll(0, 0);
+            s.mesh.getTexCoords().addAll(0, 0);
 
             // convert faces to flat array
             int[] faces = new int[facesList.size() * 6];
@@ -254,9 +360,14 @@ public class Shape extends MeshView {
                 System.arraycopy(facesList.get(j), 0, faces, j * 6, 6);
             }
             // add faces to mesh
-            m.getFaces().addAll(faces);
+            s.mesh.getFaces().addAll(faces);
+            for (int i = 0; i < faces.length; i++) {
+                System.out.print(faces[i] + " ");
+                if ((i + 1) % 6 == 0) {
+                    System.out.println("");
+                }
+            }
 
-            Shape s = new Shape(m);
             s.setName(object);
             result.add(s);
 

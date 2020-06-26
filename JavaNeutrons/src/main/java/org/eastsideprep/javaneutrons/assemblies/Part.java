@@ -128,7 +128,7 @@ public class Part {
         Event event;
         double epsilon = 1e-7; // 1 nm (in cm) 
 
-        // entry into part - tally, advance neutron ever so slightly
+        // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
         n.setPosition(Util.Math.rayPoint(n.position, n.direction, epsilon));
 

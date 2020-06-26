@@ -37,7 +37,7 @@ public class Assembly extends Part {
     }
 
     // use this constructor to construct an assembly from an OBJ file
-    public Assembly(String name, URL url, Object material) {
+    public Assembly(String name, URL url, Object material, String unit) {
         super(name, null, material);
 
         material = Material.getRealMaterial(material);
@@ -47,15 +47,19 @@ public class Assembly extends Part {
         ArrayList<Shape> shapes;
 
         if (url.toString().toLowerCase().endsWith("obj")) {
-            shapes = Shape.loadSTL(url);
+            shapes = Shape.loadSTL(url, unit);
         } else if (url.toString().toLowerCase().endsWith("stl")) {
-            shapes = Shape.loadSTL(url);
+            shapes = Shape.loadSTL(url, unit);
         } else {
             throw new IllegalArgumentException("Assembly contructor: Not OBJ/STL file: " + url);
         }
         this.addAll(Part.NewPartsFromShapeList(name, shapes, (Material) material));
     }
 
+   // use this constructor to construct an assembly from an OBJ file
+    public Assembly(String name, URL url, Object material) {
+       this(name, url, material, "cm");
+    }
     public Group getGroup() {
         return g;
     }

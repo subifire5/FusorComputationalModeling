@@ -28,9 +28,10 @@ public class Test {
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
 
-        ArrayList<Shape> stl = Shape.loadSTL(Test.class.getResource("/meshes/vac_chamber.stl"));
+        ArrayList<Shape> stl = Shape.loadSTL(Test.class.getResource("/meshes/cube.stl"), "mm");
         Shape vac = stl.get(0);
         vac.setColor("red");
+        Part p = new Part("test", vac, "Paraffin");
         
         // paraffin wall
         Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
@@ -51,13 +52,11 @@ public class Test {
     
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall, detector1, detector2);
+        whitmer.addAll(wall, detector1, detector2, p);
 
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
         
-        visualizations.getChildren().add(stl.get(0));
-
         return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
     }
 
