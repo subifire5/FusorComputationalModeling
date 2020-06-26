@@ -5,11 +5,17 @@
  */
 package org.eastsideprep.javaneutrons.shapes;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -19,12 +25,14 @@ import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.shape.VertexFormat;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Material;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.fxyz3d.importers.Importer3D;
+//import org.j3d.loaders.stl.STLFileReader;
 
 /**
  *
@@ -37,6 +45,7 @@ public class Shape extends MeshView {
     int[] faces = null;
     public Part part;
     public Material containedMaterial;
+    public String name;
 
     // fresh
     public Shape() {
@@ -74,18 +83,31 @@ public class Shape extends MeshView {
         setVisuals("purple");
     }
 
-    // use this constructor to construct a shape from an OBJ file
+    // use this constructor to construct a shape from an OBJ/STL file
     // will use only the first mesh in the group
     public Shape(URL url) {
-        ArrayList<Shape> shapes = loadOBJ(url);
+        ArrayList<Shape> shapes;
+
+        if (url.toString().toLowerCase().endsWith("obj")) {
+            shapes = loadSTL(url);
+        } else if (url.toString().toLowerCase().endsWith("stl")) {
+            shapes = loadSTL(url);
+        } else {
+            throw new IllegalArgumentException("Shape contructor: Not OBJ/STL file: " + url);
+        }
+
         if (shapes.size() != 1) {
-            throw new IllegalArgumentException("Contructing shape from OBJ file containing more or fewer than one mesh: " + url);
+            throw new IllegalArgumentException("Contructing shape from OBJ/STL file containing more or fewer than one mesh: " + url);
         }
         this.mesh = (TriangleMesh) shapes.get(0).getMesh();
         super.setMesh(this.mesh);
         setVisuals("green");
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     //
     // setVisuals
     // default vis attributes for shapes
@@ -120,6 +142,129 @@ public class Shape extends MeshView {
             }
         }
         return shapes;
+    }
+
+    public static Scanner openSTL(URL url) {
+        InputStream is;
+        try {
+            is = new FileInputStream(new File(url.toURI()));
+        } catch (Exception e) {
+            System.err.println("Error opening STL file " + url + ": " + e);
+            return null;
+        }
+        Scanner sc = new Scanner(is);
+        return sc;
+    }
+
+    public static String nextObject(Scanner sc) {
+        if (!sc.hasNextLine()) {
+            return null;
+        }
+        String object = sc.nextLine();
+        if (!object.startsWith("solid ")) {
+            return null;
+        }
+        return object.substring(6);
+    }
+
+    public static float[][] nextFacet(Scanner sc) {
+        if (!sc.hasNextLine() || !sc.nextLine().trim().startsWith("facet")) {
+            return null;
+        }
+
+        if (!sc.hasNextLine() || !sc.nextLine().trim().equals("outer loop")) {
+            return null;
+        }
+
+        float[][] face = new float[3][3];
+        for (int i = 0; i < 3; i++) {
+            String line = sc.nextLine();
+            if (!line.trim().startsWith("vertex")) {
+                return null;
+            }
+            line = line.trim().substring(7);
+            String[] numbers = line.split(" ");
+            for (int j = 0; j < 3; j++) {
+                face[i][j] = Float.valueOf(numbers[j]);
+            }
+        }
+
+        if (!sc.hasNextLine() || !sc.nextLine().trim().equals("endloop")) {
+            return null;
+        }
+
+        if (!sc.hasNextLine() || !sc.nextLine().trim().equals("endfacet")) {
+            return null;
+        }
+
+        return face;
+    }
+
+    public static ArrayList<Shape> loadSTL(URL url) {
+
+        Scanner sc = openSTL(url);
+        if (sc == null) {
+            return null;
+        }
+
+        ArrayList<Shape> result = new ArrayList<>();
+
+        String object = nextObject(sc);
+        while (object != null) {
+            TriangleMesh m = new TriangleMesh();
+            HashMap<Object, Integer> vertexMap = new HashMap<>();
+            ArrayList<int[]> facesList = new ArrayList<>();
+
+            // read all face data
+            float[][] face = nextFacet(sc);
+            while (face != null) {
+                int[] faceData = new int[6];
+                // for each vertex in the current face
+                for (int k = 0; k < 3; k++) { // 3 points in a triangle
+                    // convert it to float
+                    // try to find it
+                    int vertex = vertexMap.getOrDefault(face[k], -1);
+                    if (vertex == -1) {
+                        // if not found, insert
+                        vertex = vertexMap.size();
+                        vertexMap.put(face[k], vertex);
+                    }
+                    faceData[2 * k] = vertex;
+                    facesList.add(faceData);
+                }
+                face = nextFacet(sc);
+            }
+            // prepare mesh
+            m.setVertexFormat(VertexFormat.POINT_TEXCOORD);
+
+            // need to convert vertices 
+            float[] vertices = new float[vertexMap.size() * 3];
+            for (Entry<Object, Integer> e : vertexMap.entrySet()) {
+                System.arraycopy(((float[]) e.getKey()), 0, vertices, e.getValue(), 3);
+            }
+            // ad converted vertices to mesh
+            m.getPoints().addAll(vertices);
+
+            // set dummy texcoords
+            m.getTexCoords().addAll(0, 0);
+
+            // convert faces to flat array
+            int[] faces = new int[facesList.size() * 6];
+            for (int j = 0; j < facesList.size(); j++) {
+                System.arraycopy(facesList.get(j), 0, faces, j * 6, 6);
+            }
+            // add faces to mesh
+            m.getFaces().addAll(faces);
+
+            Shape s = new Shape(m);
+            s.setName(object);
+            result.add(s);
+
+            // and next object until done with file
+            object = nextObject(sc);
+        }
+
+        return result;
     }
 
     private double[] getVertices() {
@@ -186,15 +331,14 @@ public class Shape extends MeshView {
         if (java.lang.Math.abs(rayDirection.getNorm() - 1) > 1e-8) {
             System.out.println("direction not normalized in rayIntersect");
         }
-        
+
         double ox = rayOrigin.getX();
         double oy = rayOrigin.getY();
         double oz = rayOrigin.getZ();
-        
+
         double dx = rayDirection.getX();
         double dy = rayDirection.getY();
         double dz = rayDirection.getZ();
-        
 
         cacheVerticesAndFaces();
 //        System.out.println("Checking part" + this.part.name);
@@ -218,8 +362,7 @@ public class Shape extends MeshView {
 //            System.out.println(v1);
 //            System.out.println(v2);
 //           double t = Util.Math.rayTriangleIntersect(rayOrigin, rayDirection, v0, goingOut ? v2 : v1, goingOut ? v1 : v2);
-   
-           double t = Util.Math.rayTriangleIntersect(ox, oy, oz, dx, dy, dz, 
+            double t = Util.Math.rayTriangleIntersect(ox, oy, oz, dx, dy, dz,
                     vertices[3 * faces[i] + x], vertices[3 * faces[i] + y], vertices[3 * faces[i] + z],
                     goingOut ? vertices[3 * faces[i + 2 * vis] + x] : vertices[3 * faces[i + vis] + x],
                     goingOut ? vertices[3 * faces[i + 2 * vis] + y] : vertices[3 * faces[i + vis] + y],

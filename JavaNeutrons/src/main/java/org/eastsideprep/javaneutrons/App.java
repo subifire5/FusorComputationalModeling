@@ -40,9 +40,6 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        // random stuff first
-        Util.Math.random.setSeed(1234);
-
         this.root = new BorderPane();
         this.stats = new Group();
         this.progress = new Label(""); // need to hand this to Test()

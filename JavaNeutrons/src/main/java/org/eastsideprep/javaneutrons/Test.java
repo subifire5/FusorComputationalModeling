@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -25,15 +26,48 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
  */
 public class Test {
 
-   
-
     public static MonteCarloSimulation simulationTest(Group visualizations) {
+
+        ArrayList<Shape> stl = Shape.loadSTL(Test.class.getResource("/meshes/vac_chamber.stl"));
+        Shape vac = stl.get(0);
+        vac.setColor("red");
+        
+        // paraffin wall
+        Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
+        blockShape.getTransforms().add(new Translate(50+12.5, 0, 0));
+        blockShape.setColor("silver");
+        Part wall = new Part("Wall", blockShape, "Paraffin");
+
+        Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
+        detector1Shape.getTransforms().add(new Translate(100+1, 0, 0));
+        detector1Shape.setColor("pink");
+        Part detector1 = new Part("Treatment detector", detector1Shape, "Vacuum");
+
+        Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
+        detector2Shape.getTransforms().add(new Translate(-(100+1), 0, 0));
+        detector2Shape.setColor("pink");
+        Part detector2 = new Part("Control detector", detector2Shape, "Vacuum");
+
+    
+        // assemble the Fusor out of the other stuff
+        Assembly whitmer = new Assembly("Whitmer");
+        whitmer.addAll(wall, detector1, detector2);
+
+        // make some axes
+        Util.Graphics.drawCoordSystem(visualizations);
+        
+        visualizations.getChildren().add(stl.get(0));
+
+        return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
+    }
+
+    public static MonteCarloSimulation simulationTest2(Group visualizations) {
         //
         // Wall1
         // this cube-shaped wall is loaded from an obj file in resources
         // any obj files need to live their (folder src/main/resources in folder view)
         //
-        
+
         double gap = 3; // in cm
         double offset = 2 * gap; // in cm
         //
@@ -55,19 +89,17 @@ public class Test {
         //
         Shape bodyShape = new HumanBody();
         //bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
-        bodyShape.getTransforms().add(0,new Translate(0, 0, -200));
+        bodyShape.getTransforms().add(0, new Translate(0, 0, -200));
         Part body = new Part("Body", bodyShape, "HumanBodyMaterial");
-        
-        
+
         // vac chamber
         Part vacChamber = new Part("Vacuum chamber", new Shape(Test.class.getResource("/meshes/vac_chamber.obj")), "Steel");
-        
-        
+
         // assemble the Fusor out of the other stuff
         Assembly fusor = new Assembly("Fusor");
         fusor.addAll(igloo, detector, body, vacChamber);
         fusor.containsMaterialAt("Vacuum", Vector3D.ZERO);
-        
+
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
 

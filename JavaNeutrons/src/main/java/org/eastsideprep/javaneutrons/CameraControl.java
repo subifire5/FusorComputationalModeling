@@ -65,7 +65,7 @@ public class CameraControl {
         camera = new PerspectiveCamera(true);
         updateCamera();
         camera.setNearClip(0.1);
-        camera.setFarClip(2000);
+        camera.setFarClip(20000);
 
         root.getChildren().add(camera);
 

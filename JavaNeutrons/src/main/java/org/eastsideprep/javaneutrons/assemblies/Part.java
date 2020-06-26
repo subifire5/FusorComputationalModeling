@@ -85,7 +85,7 @@ public class Part {
         ArrayList<Part> parts = new ArrayList<>();
         int i = 0;
         for (Shape s : shapes) {
-            Part p = new Part(name + "." + i, s, material);
+            Part p = new Part(name + "." + (s.name != null?s.name:String.format("%03d", i)), s, material);
             p.shape.setDrawMode(DrawMode.LINE);
             p.shape.setOpacity(0.5);
             p.shape.setColor("blue");

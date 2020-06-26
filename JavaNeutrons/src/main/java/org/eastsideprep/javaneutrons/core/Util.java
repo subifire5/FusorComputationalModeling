@@ -7,25 +7,18 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.util.Random;
 import java.util.concurrent.LinkedTransferQueue;
-import javafx.animation.ScaleTransition;
-import javafx.application.Platform;
+import java.util.concurrent.ThreadLocalRandom;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.effect.Glow;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
-import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.Mesh;
-import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
-import javafx.util.Duration;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.fxyz3d.shapes.primitives.PyramidMesh;
 
 /**
  *
@@ -35,11 +28,9 @@ public class Util {
 
     static public class Math {
 
-        public static Random random = new Random();
-
         public static Vector3D randomDir() {
-            double phi = Util.Math.random.nextDouble() * 2 * java.lang.Math.PI;
-            double z = Util.Math.random.nextDouble() * 2 - 1;
+            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
+            double z = ThreadLocalRandom.current().nextDouble() * 2 - 1;
             double theta = java.lang.Math.asin(z);
             return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
         }
@@ -48,7 +39,9 @@ public class Util {
         // similar
         //
         public static Vector3D randomGaussianComponentVector(double sd) {
-            return new Vector3D(random.nextGaussian() * sd, random.nextGaussian() * sd, random.nextGaussian() * sd);
+            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * sd,
+                    ThreadLocalRandom.current().nextGaussian() * sd,
+                    ThreadLocalRandom.current().nextGaussian() * sd);
         }
 
         //

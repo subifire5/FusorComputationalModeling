@@ -44,7 +44,15 @@ public class Assembly extends Part {
 
         this.g = new AssemblyGroup(this);
 
-        ArrayList<Shape> shapes = Shape.loadOBJ(url);
+        ArrayList<Shape> shapes;
+
+        if (url.toString().toLowerCase().endsWith("obj")) {
+            shapes = Shape.loadSTL(url);
+        } else if (url.toString().toLowerCase().endsWith("stl")) {
+            shapes = Shape.loadSTL(url);
+        } else {
+            throw new IllegalArgumentException("Assembly contructor: Not OBJ/STL file: " + url);
+        }
         this.addAll(Part.NewPartsFromShapeList(name, shapes, (Material) material));
     }
 
