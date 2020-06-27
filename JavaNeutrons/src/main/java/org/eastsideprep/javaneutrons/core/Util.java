@@ -127,11 +127,12 @@ public class Util {
     static public class Physics {
 
         //final public static double boltzmann = 8.61733333353e-5; //eV/K
-        final public static double boltzmann = 1.38064852e-19; // SI with cm
+        final public static double boltzmann = 1.380649e-19; // SI with cm
         final public static double roomTemp = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
         final public static double barn = 1e-24; // 1 barn in SI cm
+        final public static double Da = 1.6605e-27; // Dalton amu in kg
         // factor 1e4 is from using cm, not m here - 100^2
     }
 
