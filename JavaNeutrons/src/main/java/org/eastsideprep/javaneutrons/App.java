@@ -174,7 +174,7 @@ public class App extends Application {
         tl.setCycleCount(Timeline.INDEFINITE);
         tl.play();
 
-        sim.simulateNeutrons(count);
+        sim.simulateNeutrons(count, 100000);
         root.setCenter(view);
     }
 

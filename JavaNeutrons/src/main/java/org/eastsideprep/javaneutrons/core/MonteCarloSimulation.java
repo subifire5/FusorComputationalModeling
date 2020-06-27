@@ -3,7 +3,6 @@ package org.eastsideprep.javaneutrons.core;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import javafx.application.Platform;
@@ -42,6 +41,7 @@ public class MonteCarloSimulation {
     private final Group dynamicGroup;
     private Air air;
     private long lastCount;
+    private int visualObjectLimit;
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
         this.assembly = assembly;
@@ -58,9 +58,12 @@ public class MonteCarloSimulation {
 
     // this will be called from UI thread
     public long update() {
-        viewGroup.getChildren().remove(this.dynamicGroup);
-        this.visualizations.drainTo(this.dynamicGroup.getChildren());
-        viewGroup.getChildren().add(this.dynamicGroup);
+        //viewGroup.getChildren().remove(this.dynamicGroup);
+        int size = this.dynamicGroup.getChildren().size();
+        if (size < this.visualObjectLimit) {
+            this.visualizations.drainTo(this.dynamicGroup.getChildren(), this.visualObjectLimit-size);
+        }
+        //viewGroup.getChildren().add(this.dynamicGroup);
         return completed.get();
     }
 
@@ -69,8 +72,9 @@ public class MonteCarloSimulation {
         this.viewGroup.getChildren().remove(this.assembly.getGroup());
     }
 
-    public void simulateNeutrons(long count) {
+    public void simulateNeutrons(long count, int visualObjectLimit) {
         this.lastCount = count;
+        this.visualObjectLimit = visualObjectLimit;
 
 //        Vector3D v0 = new Vector3D(200, 100, 100);
 //        Vector3D v1 = new Vector3D(-100, 100, 100);
@@ -130,7 +134,7 @@ public class MonteCarloSimulation {
             }
         });
 
-        Platform.runLater(()->th.start());
+        Platform.runLater(() -> th.start());
     }
 
     public void simulateNeutron(Neutron n) {
