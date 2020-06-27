@@ -13,6 +13,7 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.util.StringConverter;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
 import org.eastsideprep.javaneutrons.assemblies.Element;
@@ -61,7 +62,7 @@ public class MonteCarloSimulation {
         //viewGroup.getChildren().remove(this.dynamicGroup);
         int size = this.dynamicGroup.getChildren().size();
         if (size < this.visualObjectLimit) {
-            this.visualizations.drainTo(this.dynamicGroup.getChildren(), this.visualObjectLimit-size);
+            this.visualizations.drainTo(this.dynamicGroup.getChildren(), this.visualObjectLimit - size);
         }
         //viewGroup.getChildren().add(this.dynamicGroup);
         return completed.get();
@@ -171,10 +172,10 @@ public class MonteCarloSimulation {
                     f = new DecimalFormat("0.###E0");
                     e = f.format(p.getTotalFluence() / this.lastCount);
                     bc.setTitle("Part \"" + p.name + "\""
-                            + "\nTotal fluence/neutron: " + e + " cm^-2"
-                            + ", Total neutrons: " + this.lastCount);
+                            + "Total fluence = " + e + " (n/cm^2)/src"
+                            + ", src = " + this.lastCount);
                     xAxis.setLabel("Energy (eV)");
-                    yAxis.setLabel("Fluence/#(total neutrons) (cm^-2)");
+                    yAxis.setLabel("Fluence (n/cm^2)/src");
                     bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount));
                     break;
 
@@ -242,6 +243,7 @@ public class MonteCarloSimulation {
             );
             xAxis.setLabel("Energy (eV)");
             yAxis.setLabel("Count");
+
             bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
         }
         return bc;

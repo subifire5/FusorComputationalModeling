@@ -26,7 +26,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
  */
 public class Test {
 
-    public static MonteCarloSimulation simulationTestWhitmer(Group visualizations) {
+    public static MonteCarloSimulation simulationTest(Group visualizations) {
 
 //        Shape vac = new Shape (Test.class.getResource("/meshes/vac_chamber.stl"), "cm");
 //        vac.setColor("red");
@@ -57,7 +57,7 @@ public class Test {
         return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
     }
 
-    public static MonteCarloSimulation simulationTest(Group visualizations) {
+    public static MonteCarloSimulation simulationTest2(Group visualizations) {
         //
         // Wall1
         // this cube-shaped wall is loaded from an obj file in resources
