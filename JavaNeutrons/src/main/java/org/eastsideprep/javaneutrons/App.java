@@ -11,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -45,7 +47,8 @@ public class App extends Application {
         this.progress = new Label(""); // need to hand this to Test()
 
         // create camera control
-        CameraControl mainScene = new CameraControl(1500, 900);
+        CameraControl mainScene = new CameraControl(1000, 500);
+        ImageView heatMap = new ImageView(Util.Graphics.createHeatMap(100, 500));
 
         // prepare sim for later
         this.viewGroup = new Group();
@@ -62,6 +65,7 @@ public class App extends Application {
         bRun.setOnAction((e) -> {
             sim = Test.simulationTest(viewGroup);
             this.runSim(Long.parseLong(tf.getText()));
+            root.setRight(heatMap);
         });
         bRun.setPrefWidth(200);
 
@@ -90,7 +94,7 @@ public class App extends Application {
         bView.setOnAction((e) -> {
             root.setCenter(view);
             this.stats.getChildren().clear();
-
+            root.setRight(heatMap);
         });
         bView.setPrefWidth(200);
 
@@ -101,7 +105,6 @@ public class App extends Application {
         });
         bTest.setPrefWidth(200);
 
-
         VBox buttons = new VBox();
         buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, bStats, bView, bTest, progress, stats);
         root.setLeft(buttons);
@@ -110,13 +113,14 @@ public class App extends Application {
         view = mainScene.outer;
         mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
+        root.setRight(heatMap);
 
         Scene scene;
         Rectangle2D screenBounds = Screen.getPrimary().getBounds();
         if (screenBounds.getWidth() > 3000) {
             scene = new Scene(root, 1900, 1000, true);
         } else {
-            scene = new Scene(root, 1000, 500, true);
+            scene = new Scene(root, 1100, 500, true);
             System.out.println("Screen size: HD");
         }
         //scene.setOnKeyPressed((ex) -> mainScene.controlCamera(ex));
@@ -124,7 +128,7 @@ public class App extends Application {
         scene.setOnMouseDragged((ex) -> mainScene.handleDrag(ex));
         scene.setOnMousePressed((ex) -> mainScene.handleClick(ex));
         scene.setOnScroll((ex) -> mainScene.handleScroll(ex));
-        
+
         // scene and keyboard controls (old)
         scene.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
             mainScene.handleKeyPress(e);

@@ -22,12 +22,12 @@ import org.eastsideprep.javaneutrons.core.Util;
  */
 public class Element {
 
-    private class Entry {
+    private class CSEntry {
 
         double energy; 
         double area;
 
-        private Entry(double energy, double area) {
+        private CSEntry(double energy, double area) {
             this.energy = energy;
             this.area = area;
         }
@@ -39,8 +39,8 @@ public class Element {
     public double mass; // g
     public int atomicNumber;
     protected int neutrons;
-    private ArrayList<Entry> elasticEntries;
-    private ArrayList<Entry> totalEntries;
+    private ArrayList<CSEntry> elasticEntries;
+    private ArrayList<CSEntry> totalEntries;
 
     // for when you are too lazy to look up the correct mass
     public Element(String name, int atomicNumber, int neutrons) {
@@ -101,7 +101,7 @@ public class Element {
     //
     // kind is "elastic" or "total"
     //
-    private ArrayList<Entry> fillEntries(String fileName, String kind) {
+    private ArrayList<CSEntry> fillEntries(String fileName, String kind) {
 
         // read xyz.csv from resources/data
         InputStream is = Element.class.getResourceAsStream("/data/" + kind + "/" + fileName + ".csv");
@@ -111,13 +111,13 @@ public class Element {
         }
         Scanner sc = new Scanner(is);
 
-        ArrayList<Entry> newEntries = new ArrayList<>(); //reset
+        ArrayList<CSEntry> newEntries = new ArrayList<>(); //reset
         while (sc.hasNextLine()) {
             String line = sc.nextLine();
             String[] split = line.split(",");
             double energy = Double.parseDouble(split[0]);
             double area = Double.parseDouble(split[1]);
-            newEntries.add(new Entry(energy, area));
+            newEntries.add(new CSEntry(energy, area));
         }
         Collections.sort(newEntries, (a, b) -> {
             return (int) Math.signum(a.energy - b.energy);
@@ -126,11 +126,11 @@ public class Element {
         return newEntries;
     }
 
-    private double getArea(ArrayList<Entry> data, double energy) {
+    private double getArea(ArrayList<CSEntry> data, double energy) {
         // table data is in eV, convert to SI (cm)
         energy /= Util.Physics.eV;
         //System.out.println("Energy: "+energy+" eV");
-        int index = Collections.binarySearch(data, new Entry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
+        int index = Collections.binarySearch(data, new CSEntry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
         if (index >= 0) {
             return data.get(index).area * Util.Physics.barn;
         }
@@ -143,8 +143,8 @@ public class Element {
             //System.out.println("Not enough data to linear interpolate");
             return data.get(0).area * Util.Physics.barn;
         }
-        Entry e1 = data.get(index - 1); //the one with just lower energy
-        Entry e2 = data.get(index);   //the one with just higher energy
+        CSEntry e1 = data.get(index - 1); //the one with just lower energy
+        CSEntry e2 = data.get(index);   //the one with just higher energy
         double area = e1.area + (((energy - e1.energy) / (e2.energy - e1.energy)) * (e2.area - e1.area)); //linear interpolation function
 
         // convert back into SI (cm) and return

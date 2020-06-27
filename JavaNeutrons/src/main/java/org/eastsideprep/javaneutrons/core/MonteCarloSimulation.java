@@ -118,7 +118,7 @@ public class MonteCarloSimulation {
         ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            Neutron n = new Neutron(this.origin, direction, Neutron.startingEnergyDD);
+            Neutron n = new Neutron(this.origin, direction, Neutron.startingEnergyDD, count <= 10);
             neutrons.add(n);
         }
 

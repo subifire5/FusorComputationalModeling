@@ -8,6 +8,7 @@ package org.eastsideprep.javaneutrons;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
@@ -30,31 +31,29 @@ public class Test {
 //        Shape vac = new Shape (Test.class.getResource("/meshes/vac_chamber.stl"), "cm");
 //        vac.setColor("red");
 //        Part p = new Part("test", vac, "Paraffin");
-        
         // paraffin wall
         Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
-        blockShape.getTransforms().add(new Translate(50+12.5, 0, 0));
+        blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
         blockShape.setColor("silver");
         Part wall = new Part("Wall", blockShape, "Paraffin");
 
         Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
-        detector1Shape.getTransforms().add(new Translate(100+1, 0, 0));
+        detector1Shape.getTransforms().add(new Translate(100 + 1, 0, 0));
         detector1Shape.setColor("pink");
         Part detector1 = new Part("Treatment detector", detector1Shape, "Vacuum");
 
         Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
-        detector2Shape.getTransforms().add(new Translate(-(100+1), 0, 0));
+        detector2Shape.getTransforms().add(new Translate(-(100 + 1), 0, 0));
         detector2Shape.setColor("pink");
         Part detector2 = new Part("Control detector", detector2Shape, "Vacuum");
 
-    
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
         whitmer.addAll(wall, detector1, detector2/*, p*/);
 
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
-        
+
         return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
     }
 
@@ -103,10 +102,29 @@ public class Test {
         return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations);
     }
 
+    public static Group testVisuals() {
+        Group g = new Group();
+
+        Sphere s = new Sphere(100);
+        Util.Graphics.setColor(s, "gray");
+
+        for (int i = 0; i < 10000; i++) {
+            Vector3D v = Util.Math.randomDir().scalarMultiply(100);
+            Sphere p = new Sphere(1);
+            Util.Graphics.setColor(p, "red");
+            p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
+            g.getChildren().add(p);
+            Util.Graphics.drawCoordSystem(g);
+        }
+
+        g.getChildren().add(s);
+        return g;
+    }
+
     //
     // old stuff - Sydney, this is mostly for visual testing. Return a group you can add in main.
     //
-    public static Group testVisuals() {
+    public static Group testVisuals2() {
         Cuboid cube = new Cuboid(200);
         cube.setRotationAxis(new Point3D(1, 1, 1));
         cube.setTranslateX(100);

@@ -85,7 +85,7 @@ public class Part {
         ArrayList<Part> parts = new ArrayList<>();
         int i = 0;
         for (Shape s : shapes) {
-            Part p = new Part(name + "." + (s.name != null?s.name:String.format("%03d", i)), s, material);
+            Part p = new Part(name + "." + (s.name != null ? s.name : String.format("%03d", i)), s, material);
             p.shape.setDrawMode(DrawMode.LINE);
             p.shape.setOpacity(0.5);
             p.shape.setColor("blue");
@@ -130,7 +130,7 @@ public class Part {
 
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
-        n.setPosition(Util.Math.rayPoint(n.position, n.direction, epsilon));
+        n.setPosition(visualizations, Util.Math.rayPoint(n.position, n.direction, epsilon));
 
         this.processEntryEnergy(n.energy);
 
@@ -157,10 +157,11 @@ public class Part {
                 // scattering / absorption did really happen, process it
                 event = interactionEvent;
                 Util.Graphics.visualizeEvent(event, visualizations);
+                n.setPosition(visualizations, event.position);
                 this.processEvent(event);
             } else {
                 event = exitEvent;
-                n.setPosition(event.position);
+                n.setPosition(visualizations, event.position);
                 Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
                 event.exitMaterial = this.shape.getContactMaterial(event.face);
@@ -193,8 +194,8 @@ public class Part {
         this.entriesOverEnergy.record(1, e);
         this.currentEntryEnergy = e;
     }
-    
-      public void processEvent(Event event) {
+
+    public void processEvent(Event event) {
         // record stats for part
         if (event.code == Event.Code.Scatter) {
             this.scattersOverEnergyBefore.record(1, event.neutron.energy);
@@ -207,7 +208,7 @@ public class Part {
         event.neutron.processEvent(event);
 
         // record more stats for part
-        synchronized(this) {
+        synchronized (this) {
             this.totalEvents++;
         }
         if (event.code == Event.Code.Scatter) {
