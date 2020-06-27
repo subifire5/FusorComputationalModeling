@@ -24,7 +24,7 @@ public class Element {
 
     private class Entry {
 
-        double energy;
+        double energy; 
         double area;
 
         private Entry(double energy, double area) {
@@ -153,7 +153,7 @@ public class Element {
 
     public XYChart.Series makeCSSeries(String seriesName) {
         XYChart.Series series = new XYChart.Series();
-        ObservableList data = series.getData();
+        ObservableList<XYChart.Data<Number,String>> data = series.getData();
         series.setName(seriesName);
         boolean scatter = seriesName.equals("Scatter");
 
