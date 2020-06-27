@@ -8,6 +8,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -18,7 +19,6 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -72,7 +72,10 @@ public class App extends Application {
             this.runSim(Long.parseLong(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
+            } else {
+                root.setRight(null);
             }
+
         });
         bRun.setPrefWidth(200);
 
@@ -81,6 +84,8 @@ public class App extends Application {
             this.runSim(Long.parseLong(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
+            } else {
+                root.setRight(null);
             }
         });
         bRunSV.setPrefWidth(200);
@@ -90,6 +95,8 @@ public class App extends Application {
             this.runSim(Long.parseLong(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
+            } else {
+                root.setRight(null);
             }
         });
         bRunET.setPrefWidth(200);
@@ -110,16 +117,19 @@ public class App extends Application {
             this.stats.getChildren().clear();
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
+            } else {
+                root.setRight(null);
             }
         });
         bView.setPrefWidth(200);
 
         Button bCopy = new Button("Copy to clipboard");
-        bView.setOnAction((e) -> {
-            bView.setPrefWidth(200);
+        bCopy.setOnAction((e) -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
-            content.putImage(root.getCenter().snapshot(null, null));
+            Image snapshot = root.getCenter().snapshot(new SnapshotParameters(), null);
+            content.putImage(snapshot);
+            clipboard.setContent(content);
         });
         bCopy.setPrefWidth(200);
 
@@ -197,7 +207,7 @@ public class App extends Application {
                         bRun.setDisable(false);
                         bRunET.setDisable(false);
                         bRunSV.setDisable(false);
-                        progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000)+" s");
+                        progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000) + " s");
                     }
                 }));
         tl.setCycleCount(Timeline.INDEFINITE);

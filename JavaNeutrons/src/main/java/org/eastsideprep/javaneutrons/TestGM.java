@@ -81,12 +81,12 @@ public class TestGM {
         Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
         detector1Shape.getTransforms().add(new Translate(100 + 1, 0, 0));
         detector1Shape.setColor("pink");
-        Part detector1 = new Part("Treatment detector", detector1Shape, "Vacuum");
+        Part detector1 = new Part("Detector behind paraffin block", detector1Shape, "Vacuum");
 
         Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
         detector2Shape.getTransforms().add(new Translate(-(100 + 1), 0, 0));
         detector2Shape.setColor("pink");
-        Part detector2 = new Part("Control detector", detector2Shape, "Vacuum");
+        Part detector2 = new Part("Detector opposite paraffin block", detector2Shape, "Vacuum");
 
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
