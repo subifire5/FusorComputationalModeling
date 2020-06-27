@@ -198,7 +198,7 @@ public class Util {
 
         public static Color heatColor(double energy) {
             double value = java.lang.Math.log10(energy/Util.Physics.eV);
-            int min = -6;
+            int min = -4;
             int max = 7;
 
             double hue = Color.BLUE.getHue() + (Color.RED.getHue() - Color.BLUE.getHue()) * (value - (min)) / (max - min);
@@ -209,7 +209,7 @@ public class Util {
         public static Image createHeatMap(int width, int height) {
             WritableImage image = new WritableImage(width, height);
             PixelWriter pixelWriter = image.getPixelWriter();
-            int min = -6;
+            int min = -4;
             int max = 7;
 
             for (int y = 0; y < height; y++) {

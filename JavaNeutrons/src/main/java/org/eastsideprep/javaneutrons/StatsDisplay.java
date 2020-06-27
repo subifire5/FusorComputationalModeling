@@ -109,9 +109,9 @@ public class StatsDisplay extends Group {
         this.getChildren().add(hb);
 
         this.populateRadioButtons();
-
-        root.setCenter(this.sim.makeChart(null, null));
-        this.object.setVisible(false);
+        this.populateComboBoxWithParts();
+        this.setChart();
+        
     }
 
     private void populateRadioButtons() {
@@ -123,7 +123,7 @@ public class StatsDisplay extends Group {
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");
 
-        rb1.setSelected(true);
+        rb2.setSelected(true);
 
         RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb1, rb5, rb6, rb7};
 
@@ -176,7 +176,7 @@ public class StatsDisplay extends Group {
         this.object.valueProperty().addListener((ov, t, t1) -> setChart());
     }
 
-    void setComboBox() {
+    private void setComboBox() {
         Toggle t = tg.getSelectedToggle();
         if (t != null) {
             switch ((String) t.getUserData()) {
@@ -222,7 +222,7 @@ public class StatsDisplay extends Group {
         setChart();
     }
 
-    void setChart() {
+    private void setChart() {
         Toggle t = tg.getSelectedToggle();
         if (t != null) {
             switch ((String) t.getUserData()) {

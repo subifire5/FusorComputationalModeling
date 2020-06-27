@@ -41,8 +41,9 @@ public class MonteCarloSimulation {
     private final Group viewGroup;
     private final Group dynamicGroup;
     private Air air;
-    private long lastCount;
+    public long lastCount;
     private int visualObjectLimit;
+    private long start;
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
         this.assembly = assembly;
@@ -52,7 +53,11 @@ public class MonteCarloSimulation {
         this.viewGroup = g;
         this.dynamicGroup = new Group();
         this.viewGroup.getChildren().clear();
+        // make some axes
+        Util.Graphics.drawCoordSystem(g);
+        // add the assembly objects
         this.viewGroup.getChildren().add(this.assembly.getGroup());
+        // and a group for event visualiations
         this.viewGroup.getChildren().add(dynamicGroup);
         this.air = Air.getInstance();
     }
@@ -104,15 +109,17 @@ public class MonteCarloSimulation {
 //            System.out.println("Event: " + e);
 //            Util.Graphics.visualizeEvent(e, simVis);
 //        }
-        System.out.println("");
-        System.out.println("");
-        System.out.println("Running new MC simulation for " + count + " neutrons ...");
-
         // clear out the old simulation
         this.viewGroup.getChildren().remove(this.dynamicGroup);
         this.dynamicGroup.getChildren().clear();
         this.viewGroup.getChildren().add(this.dynamicGroup);
+        
+        System.out.println("");
+        System.out.println("");
+        System.out.println("Running new MC simulation for " + count + " neutrons ...");
 
+        this.start = System.currentTimeMillis();
+        
         assembly.resetDetectors();
         Collection<Material> c = Material.materials.values();
         c.stream().forEach(m -> m.resetDetector());
@@ -136,6 +143,10 @@ public class MonteCarloSimulation {
         });
 
         Platform.runLater(() -> th.start());
+    }
+
+    public long getElapsedTime() {
+        return System.currentTimeMillis() - this.start;
     }
 
     public void simulateNeutron(Neutron n) {
@@ -171,8 +182,8 @@ public class MonteCarloSimulation {
                     p = Part.getByName(detector);
                     f = new DecimalFormat("0.###E0");
                     e = f.format(p.getTotalFluence() / this.lastCount);
-                    bc.setTitle("Part \"" + p.name + "\""
-                            + "Total fluence = " + e + " (n/cm^2)/src"
+                    bc.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
+                            + "\nTotal fluence = " + e + " (n/cm^2)/src"
                             + ", src = " + this.lastCount);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Fluence (n/cm^2)/src");

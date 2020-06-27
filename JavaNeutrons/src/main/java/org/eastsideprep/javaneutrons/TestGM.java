@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.shape.Sphere;
+import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
@@ -24,14 +25,54 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
  *
  * @author gmein
  */
-public class Test {
+public class TestGM {
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
+        return simulationTestWhitmer(visualizations);
+    }
 
-//        Shape vac = new Shape (Test.class.getResource("/meshes/vac_chamber.stl"), "cm");
-//        vac.setColor("red");
-//        Part p = new Part("test", vac, "Paraffin");
-        // paraffin wall
+    public static MonteCarloSimulation simulationTestSmoosh(Group visualizations) {
+
+        double gap = 1;
+
+        // vac chamber
+        Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class.getResource("/meshes/vac_chamber.obj")), "Steel");
+
+        Shape iglooShape = new Shape(TestGM.class.getResource("/smoosh.obj"), "cm");
+        iglooShape.getTransforms().add(0, new Rotate(90, new Point3D(1, 0, 0)));
+        iglooShape.getTransforms().add(0, new Translate(0, 63, 0));
+        iglooShape.setColor("silver");
+        Part igloo = new Part("Wall1", iglooShape, "Paraffin");
+
+        Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
+        detector1Shape.getTransforms().add(0, new Translate(-(100 + 1), 0, 0));
+        detector1Shape.setColor("pink");
+        Part detector1 = new Part("Left detector", detector1Shape, "Vacuum");
+
+        Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
+        detector2Shape.getTransforms().add(0, new Rotate(90, new Point3D(0, 0, 1)));
+        detector2Shape.getTransforms().add(0, new Translate(0, 100 + 1, 0));
+        detector2Shape.setColor("pink");
+        Part detector2 = new Part("Bottom detector", detector2Shape, "Vacuum");
+
+        Shape detector3Shape = new Shape(new CuboidMesh(2, 100, 100));
+        detector3Shape.getTransforms().add(0, new Rotate(90, new Point3D(0, 1, 0)));
+        detector3Shape.getTransforms().add(0, new Translate(0, 0, 100 + 1));
+        detector3Shape.setColor("pink");
+        Part detector3 = new Part("Back detector", detector3Shape, "Vacuum");
+
+        // assemble the Fusor out of the other stuff
+        Assembly smoosh = new Assembly("Smooshed igloo");
+        smoosh.addAll(igloo, vacChamber, detector1, detector2, detector3);
+
+        // make some axes
+        Util.Graphics.drawCoordSystem(visualizations);
+
+        return new MonteCarloSimulation(smoosh, Vector3D.ZERO, visualizations);
+    }
+
+    public static MonteCarloSimulation simulationTestWhitmer(Group visualizations) {
+
         Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
         blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
         blockShape.setColor("silver");
@@ -51,9 +92,6 @@ public class Test {
         Assembly whitmer = new Assembly("Whitmer");
         whitmer.addAll(wall, detector1, detector2/*, p*/);
 
-        // make some axes
-        Util.Graphics.drawCoordSystem(visualizations);
-
         return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
     }
 
@@ -69,7 +107,7 @@ public class Test {
         //
         // igloo
         //
-        Assembly igloo = new Assembly("igloo", Test.class.getResource("/meshes/igloo.obj"), "Paraffin");
+        Assembly igloo = new Assembly("igloo", TestGM.class.getResource("/meshes/igloo.obj"), "Paraffin");
         //System.out.println("Macroscopic total cross-section for paraffin: "+Paraffin.getInstance().getSigma(1*Util.Physics.eV));
         //
         // The detector is made from a stock - FXyz CuboidMesh
@@ -89,7 +127,7 @@ public class Test {
         Part body = new Part("Body", bodyShape, "HumanBodyMaterial");
 
         // vac chamber
-        Part vacChamber = new Part("Vacuum chamber", new Shape(Test.class.getResource("/meshes/vac_chamber.obj")), "Steel");
+        Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class.getResource("/meshes/vac_chamber.obj")), "Steel");
 
         // assemble the Fusor out of the other stuff
         Assembly fusor = new Assembly("Fusor");
@@ -137,13 +175,13 @@ public class Test {
         cube2.setTranslateZ(100);
         cube2.setRotationAxis(new Point3D(-1, 1, 1));
 
-        Shape cube3 = new Shape(Test.class.getResource("/meshes/cube.obj"));
+        Shape cube3 = new Shape(TestGM.class.getResource("/meshes/cube.obj"));
         cube3.setTranslateX(100);
         cube3.setTranslateY(100);
         cube3.setTranslateZ(100);
         cube3.setRotationAxis(new Point3D(-1, -1, 1));
 
-        Shape body = new Shape(Test.class.getResource("/meshes/body.obj"));
+        Shape body = new Shape(TestGM.class.getResource("/meshes/body.obj"));
         body.setScaleX(100);
         body.setScaleY(100);
         body.setScaleZ(100);

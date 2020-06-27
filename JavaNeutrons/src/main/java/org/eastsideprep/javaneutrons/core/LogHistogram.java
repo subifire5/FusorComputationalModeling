@@ -11,6 +11,7 @@ import javafx.scene.chart.XYChart;
 
 public class LogHistogram {
 
+    static final int binsPerDecade = 10;
     int logMin;
     int logMax;
     double[] bins;
@@ -25,7 +26,7 @@ public class LogHistogram {
     public LogHistogram() {
         this.logMin = -6;
         this.logMax = 7;
-        this.bins = new double[(logMax - logMin) * 5];
+        this.bins = new double[(logMax - logMin) * LogHistogram.binsPerDecade];
         //this.bins = new double[logMax - logMin + 1];
     }
 

@@ -24,7 +24,7 @@ public class Neutron {
     public Vector3D direction; // no units
     public Vector3D position; // unit: (cm,cm,cm)
     public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
-    private boolean trace = false;
+    public boolean trace = false;
 
     ArrayList<Event> history = new ArrayList<>();
 
@@ -123,12 +123,16 @@ public class Neutron {
     //replace parameters with 1 Neutron object??
     public void record(Event e) {
         //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
-        history.add(e);
+        if (this.trace) {
+            history.add(e);
+        }
     }
 
     public void dumpEvents() {
-        synchronized (Event.class) {
-            history.stream().forEach(event -> System.out.println(event));
+        if (this.trace) {
+            synchronized (Event.class) {
+                history.stream().forEach(event -> System.out.println(event));
+            }
         }
     }
 }

@@ -140,14 +140,17 @@ public class Part {
             exitEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
 
             if (exitEvent == null) {
-                System.out.println("");
-                System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
+
                 //throw new IllegalArgumentException();
                 exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 n.record(exitEvent);
-                n.dumpEvents();
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
-                System.out.println("--end dump");
+                if (n.trace) {
+                    System.out.println("");
+                    System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
+                    n.dumpEvents();
+                    System.out.println("--end dump");
+                }
                 return exitEvent;
             }
 
