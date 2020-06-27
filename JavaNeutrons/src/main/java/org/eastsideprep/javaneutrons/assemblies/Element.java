@@ -151,9 +151,9 @@ public class Element {
         return area * Util.Physics.barn;
     }
 
-    public XYChart.Series<Number, String> makeCSSeries(String seriesName) {
-        XYChart.Series<Number, String> series = new XYChart.Series<>();
-        ObservableList<XYChart.Data<Number,String>> data = series.getData();
+    public XYChart.Series<String, Number> makeCSSeries(String seriesName) {
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        ObservableList<XYChart.Data<String,Number>> data = series.getData();
         series.setName(seriesName);
         boolean scatter = seriesName.equals("Scatter");
 
