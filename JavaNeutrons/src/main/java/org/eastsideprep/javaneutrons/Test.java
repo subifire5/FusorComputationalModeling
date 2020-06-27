@@ -5,7 +5,6 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -28,9 +27,9 @@ public class Test {
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
 
-        ArrayList<Shape> stl = Shape.loadSTL(Test.class.getResource("/meshes/vac_chamber.stl"));
-        Shape vac = stl.get(0);
-        vac.setColor("red");
+//        Shape vac = new Shape (Test.class.getResource("/meshes/vac_chamber.stl"), "cm");
+//        vac.setColor("red");
+//        Part p = new Part("test", vac, "Paraffin");
         
         // paraffin wall
         Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
@@ -51,13 +50,11 @@ public class Test {
     
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall, detector1, detector2);
+        whitmer.addAll(wall, detector1, detector2/*, p*/);
 
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
         
-        visualizations.getChildren().add(stl.get(0));
-
         return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
     }
 

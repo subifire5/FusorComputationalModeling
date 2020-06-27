@@ -151,8 +151,8 @@ public class Element {
         return area * Util.Physics.barn;
     }
 
-    public XYChart.Series makeCSSeries(String seriesName) {
-        XYChart.Series series = new XYChart.Series();
+    public XYChart.Series<Number, String> makeCSSeries(String seriesName) {
+        XYChart.Series<Number, String> series = new XYChart.Series<>();
         ObservableList<XYChart.Data<Number,String>> data = series.getData();
         series.setName(seriesName);
         boolean scatter = seriesName.equals("Scatter");
