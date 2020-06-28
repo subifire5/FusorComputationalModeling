@@ -224,11 +224,12 @@ public class MonteCarloSimulation {
                 case "Cross-sections":
                     lc = new LineChart<>(xAxis, yAxis);
                     Element element = Element.getByName(detector);
-                    lc.setTitle("Cross-sections for element " + detector);
+                    lc.setTitle("Microscopic ross-sections for element " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Cross-section (barn)");
                     lc.getData().add(element.makeCSSeries("Scatter"));
                     lc.getData().add(element.makeCSSeries("Capture"));
+                    lc.getData().add(element.makeCSSeries("Total"));
                     return lc;
 
                 case "Sigmas":

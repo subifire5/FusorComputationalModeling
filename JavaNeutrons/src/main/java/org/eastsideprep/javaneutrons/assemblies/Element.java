@@ -24,7 +24,7 @@ public class Element {
 
     private class CSEntry {
 
-        double energy; 
+        double energy;
         double area;
 
         private CSEntry(double energy, double area) {
@@ -40,6 +40,7 @@ public class Element {
     public int atomicNumber;
     protected int neutrons;
     private ArrayList<CSEntry> elasticEntries;
+    private ArrayList<CSEntry> captureEntries;
     private ArrayList<CSEntry> totalEntries;
 
     // for when you are too lazy to look up the correct mass
@@ -60,7 +61,7 @@ public class Element {
         // for the lightest stable isotope of the element
         readDataFiles(atomicNumber);
     }
-    
+
     public String getName() {
         return this.name;
     }
@@ -74,7 +75,7 @@ public class Element {
     }
 
     public double getCaptureCrossSection(double energy) {
-        return getArea(totalEntries, energy) - getArea(elasticEntries, energy);
+        return getArea(captureEntries, energy);
     }
 
     public double getTotalCrossSection(double energy) {
@@ -82,48 +83,60 @@ public class Element {
     }
 
     protected final void readDataFiles(int atomicNumber) {
-        String filename = Integer.toString(atomicNumber) + "25";
-        this.elasticEntries = fillEntries(filename, "elastic");
-        this.totalEntries = fillEntries(filename, "total");
-
-        // no xx25? try xx00 instad
-        if (this.elasticEntries == null) {
-            filename = Integer.toString(atomicNumber) + "00";
-            this.elasticEntries = fillEntries(filename, "elastic");
-            this.totalEntries = fillEntries(filename, "total");
-            if (this.elasticEntries == null) {
-                System.out.println("No data files found for element " + this.name + " (atomic number " + atomicNumber + ")");
-            }
-
-        }
+        String filename = Integer.toString(atomicNumber*1000+atomicNumber+neutrons);
+        fillEntries(filename);
     }
 
     //
     // kind is "elastic" or "total"
     //
-    private ArrayList<CSEntry> fillEntries(String fileName, String kind) {
+    private void fillEntries(String fileName) {
+        double epsilon = 0.1;
 
         // read xyz.csv from resources/data
-        InputStream is = Element.class.getResourceAsStream("/data/" + kind + "/" + fileName + ".csv");
+        InputStream is = Element.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace.csv");
         if (is == null) {
-            //System.out.println("Data file " + fileName + " (" + kind + ") not found for element "+this.name);
-            return null;
+            System.err.println("Data file " + fileName + " not found for element " + this.name);
+            return;
         }
         Scanner sc = new Scanner(is);
+        sc.nextLine(); // skip header
 
-        ArrayList<CSEntry> newEntries = new ArrayList<>(); //reset
+        ArrayList<CSEntry> newScatter = new ArrayList<>(); //reset
+        ArrayList<CSEntry> newCapture = new ArrayList<>(); //reset
+        ArrayList<CSEntry> newTotal = new ArrayList<>(); //reset
+
         while (sc.hasNextLine()) {
             String line = sc.nextLine();
             String[] split = line.split(",");
             double energy = Double.parseDouble(split[0]);
-            double area = Double.parseDouble(split[1]);
-            newEntries.add(new CSEntry(energy, area));
+            double scatter = Double.parseDouble(split[1]);
+            double capture = Double.parseDouble(split[2]);
+            double total = Double.parseDouble(split[3]);
+            if (Math.abs(total - (scatter + capture)) > total * epsilon &&
+                    energy < 2.6e6) {
+                System.out.println("Element " + this.name + ", energy " + energy + 
+                        ": inelastic events other than capture make up more than " + 
+                        (int) (epsilon * 100) + " % of cs: "+
+                        Math.round(100*Math.abs(total - (scatter + capture))/total*100)/100+" %");
+            }
+            newScatter.add(new CSEntry(energy, scatter));
+            newCapture.add(new CSEntry(energy, capture));
+            newTotal.add(new CSEntry(energy, total));
         }
-        Collections.sort(newEntries, (a, b) -> {
+        Collections.sort(newScatter, (a, b) -> {
+            return (int) Math.signum(a.energy - b.energy);
+        });
+        Collections.sort(newCapture, (a, b) -> {
+            return (int) Math.signum(a.energy - b.energy);
+        });
+        Collections.sort(newTotal, (a, b) -> {
             return (int) Math.signum(a.energy - b.energy);
         });
 
-        return newEntries;
+        this.elasticEntries = newScatter;
+        this.captureEntries = newCapture;
+        this.totalEntries = newTotal;
     }
 
     private double getArea(ArrayList<CSEntry> data, double energy) {
@@ -153,9 +166,10 @@ public class Element {
 
     public XYChart.Series<String, Number> makeCSSeries(String seriesName) {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        ObservableList<XYChart.Data<String,Number>> data = series.getData();
+        ObservableList<XYChart.Data<String, Number>> data = series.getData();
         series.setName(seriesName);
         boolean scatter = seriesName.equals("Scatter");
+        boolean total = seriesName.equals("Total");
 
         for (double energy = 1e-3; energy < 1e7; energy *= 1.1) {
             DecimalFormat f = new DecimalFormat("0.##E0");
@@ -163,7 +177,8 @@ public class Element {
 
             data.add(new XYChart.Data(tick, scatter
                     ? getScatterCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
-                    : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn));
+                    : (total ? getTotalCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
+                            : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn)));
         }
 
         return series;
