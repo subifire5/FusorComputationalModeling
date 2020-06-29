@@ -26,22 +26,22 @@ import org.eastsideprep.javaneutrons.core.Util;
  * @author gunnar
  */
 public class Material {
-
+    
     public static HashMap<String, Material> materials = new HashMap<>();
-
+    
     public class Component {
-
+        
         Element e;
         double density; // atoms/(barn*cm)
         double proportion;
-
+        
         Component(Element e, double proportion) {
             this.e = e;
             this.density = 0;
             this.proportion = proportion;
         }
     }
-
+    
     public String name;
     ArrayList<Component> components;
     public LogHistogram lengths;
@@ -51,22 +51,24 @@ public class Material {
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
-
+    
+    //public int temp;
+    
     public Material(String name) {
         materials.put(name, this);
         components = new ArrayList<>();
         this.name = name;
         resetDetector();
     }
-
+    
     public static Material getByName(String name) {
         return materials.get(name);
     }
-
+    
     public final void addComponent(Element element, double proportion) {
         components.add(new Component(element, proportion));
     }
-
+    
     public final void calculateAtomicDensities(double densityMass) {
         // input is mass per cubic meter! not centimeter!
         // see volume below
@@ -93,16 +95,17 @@ public class Material {
 //                + (this instanceof Element ? "(element) " : "")
 //                + this.name + " at 1 eV: " + getSigma(1 * Util.Physics.eV));
     }
-
+    
     public final void resetDetector() {
         this.totalEvents = 0;
         this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
         this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
         this.capturesOverEnergy = new LogEnergyEVHistogram();
-        this.lengths = new LogHistogram(-5, 5, 70);
+        this.lengths = new LogHistogram(-5, 7, 120);
         this.totalEvents = 0;
         this.totalFreePath = 0;
         this.pathCount = 0;
+        
     }
 
     // compute macroscopic cross-section
@@ -113,17 +116,25 @@ public class Material {
         }
         return sigma;
     }
-
+    
     private double randomPathLength(double energy) {
         double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy);
+        return length;
+    }
+    
+    public void recordLength(double length) {
         this.lengths.record(1, length);
         synchronized (this) {
             this.totalFreePath += length;
+        }
+    }
+    
+    public void recordCollision() {
+        synchronized (this) {
             this.pathCount++;
         }
-        return length;
     }
-
+    
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
         double t = randomPathLength(energy);
@@ -150,13 +161,13 @@ public class Material {
         if (slot < 0) {
             slot = -slot - 1;
         }
-
+        
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
-
+        
         return new Event(location, code, t, e, n);
     }
-
+    
     public static Material getRealMaterial(Object material) {
 
         // try named material instance
@@ -190,21 +201,45 @@ public class Material {
         if (material instanceof Part) {
             material = ((Part) material).material;
         }
-
+        
         return (Material) material;
     }
-
+    
     public void processEvent(Event event) {
-        // record stats for material
-        if (event.code == Event.Code.Scatter) {
-            this.scattersOverEnergyBefore.record(1, event.neutron.energy);
-        } else {
-            this.capturesOverEnergy.record(1, event.neutron.energy);
+        if (null != event.code) // record stats for material
+        {
+            switch (event.code) {
+                case Scatter:
+                    this.scattersOverEnergyBefore.record(1, event.neutron.energy);
+                    this.recordCollision();
+                    break;
+                case Capture:
+                    this.capturesOverEnergy.record(1, event.neutron.energy);
+                    this.recordCollision();
+                    break;
+                case Gone:
+                    Environment.recordEscape(event.neutron.energy);
+                    break;
+                default:
+                    break;
+            }
         }
 
-        // let the neutron do its thing
-        event.neutron.processEvent(event);
+        //if (event.neutron.energy > 2.44e6 * Util.Physics.eV) {
+        this.recordLength(event.t);
+//        if (this.name.equals("Air"))
+//        synchronized (this) {
+//            if (event.t > 300) {
+//                temp++;
+//                System.out.println("recorded " + temp);
+//            }
+//        }
+        //}
 
+        if (event.neutron != null) {
+            // let the neutron do its thing
+            event.neutron.processEvent(event);
+        }
         // record more stats for material
         synchronized (this) {
             this.totalEvents++;
@@ -213,20 +248,20 @@ public class Material {
             this.scattersOverEnergyAfter.record(1, event.neutron.energy);
         }
     }
-
+    
     public XYChart.Series makeSigmaSeries(String seriesName) {
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
         series.setName(seriesName);
-
+        
         for (double energy = 1e-3; energy < 1e7; energy *= 1.1) {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(energy);
-
+            
             data.add(new XYChart.Data(tick, getSigma(energy * Util.Physics.eV)));
         }
-
+        
         return series;
     }
-
+    
 }

@@ -162,11 +162,13 @@ public class Part {
                 Util.Graphics.visualizeEvent(event, visualizations);
                 n.setPosition(visualizations, event.position);
                 this.processEvent(event);
+                this.material.processEvent(event);
             } else {
                 event = exitEvent;
                 n.setPosition(visualizations, event.position);
                 Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
+                this.material.processEvent(event);
                 event.exitMaterial = this.shape.getContactMaterial(event.face);
             }
             // call for Detector parts to record

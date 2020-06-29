@@ -13,7 +13,6 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.core.Environment;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
@@ -87,10 +86,11 @@ public class Assembly extends Part {
         Event event;
         double t;
 
-        // we start in vacuum
-        Material medium = Vacuum.getInstance();
         // but we will mostly travel in air
         Air air = Air.getInstance();
+
+        // we start in a certain medium. Todo: API for either figring that out or setting it
+        Material medium = air;
 
         do {
             // find the closest part we intersect with
@@ -118,6 +118,8 @@ public class Assembly extends Part {
                 Part p = partEvent.part;
                 n.setPosition(visualizations, partEvent.position);
                 n.record(partEvent);
+                partEvent.neutron = n;
+                medium.processEvent(partEvent);
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
                 // coming out, we might be in a new material
@@ -126,9 +128,13 @@ public class Assembly extends Part {
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {
-                Environment.recordEscape(n.energy);
-                event = new Event(n.position.add(n.direction.scalarMultiply(Environment.limit)), Event.Code.Gone, Environment.limit, 0);
-                n.setPosition(visualizations, event.position);
+                t = Util.Math.raySphereIntersect(n.position, n.direction, Vector3D.ZERO, Environment.limit);
+                event.position = n.position.add(n.direction.scalarMultiply(t));
+                event.t = t;
+                event.code = Event.Code.Gone;
+                event.neutron = n;
+                medium.processEvent(event);
+                //n.setPosition(visualizations, event.position);
             }
             //visualizeEvent(event, visualizations);
         } while (event.code != Event.Code.Capture && event.code != Event.Code.Gone && event.code != Event.Code.EmergencyExit);
@@ -222,5 +228,20 @@ public class Assembly extends Part {
 
         s.markSurfaceInContactWith(location, direction, (Material) material, null);
         return true;
+    }
+
+    public double getVolume() {
+        double volume = 0;
+        for (Node node : this.g.getChildren()) {
+            if (node instanceof Shape) {
+                // link back to the Part that contains it
+                volume += ((Shape) node).getVolume();
+            } else if (node instanceof AssemblyGroup) {
+                // link back to the Assembly that contains it
+                volume+=  ((AssemblyGroup) node).assembly.getVolume();
+            }
+            
+        }
+        return volume;
     }
 }

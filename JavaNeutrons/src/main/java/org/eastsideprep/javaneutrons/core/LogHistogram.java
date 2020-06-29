@@ -79,6 +79,7 @@ public class LogHistogram {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(x);
             data.add(new XYChart.Data(tick, counts[i]));
+            //System.out.print(""+counts[i]);
             //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }
 

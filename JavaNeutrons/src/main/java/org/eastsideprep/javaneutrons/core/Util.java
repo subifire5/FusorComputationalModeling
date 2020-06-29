@@ -38,17 +38,71 @@ public class Util {
             return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
         }
 
-        //
-        // similar
-        //
         public static Vector3D randomGaussianComponentVector(double sd) {
             return new Vector3D(ThreadLocalRandom.current().nextGaussian() * sd,
                     ThreadLocalRandom.current().nextGaussian() * sd,
                     ThreadLocalRandom.current().nextGaussian() * sd);
         }
 
+        public static boolean solveQuadratic(double a, double b, double c, double[] result) {
+            double discr = b * b - 4 * a * c;
+            if (discr < 0) {
+                return false;
+            } else if (discr == 0) {
+                result[0] = -0.5 * b / a;
+                result[1] = result[0];
+            } else {
+                double q = (b > 0)
+                        ? -0.5 * (b + java.lang.Math.sqrt(discr))
+                        : -0.5 * (b - java.lang.Math.sqrt(discr));
+                result[0] = q / a;
+                result[1] = c / q;
+            }
+            if (result[0] > result[1]) {
+                double temp = result[0];
+                result[0] = result[1];
+                result[1] = temp;
+            }
+
+            return true;
+        }
+
         //
-        // rayTriangleIntersectNew
+        // raySphereIntersect
+        //
+        // credit: 
+        // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+        //
+        public static double raySphereIntersect(Vector3D orig, Vector3D dir, Vector3D center, double radius) {
+
+            double t0, t1;
+
+            Vector3D L = orig;
+            if (center != Vector3D.ZERO) {
+                L = L.subtract(center);
+            }
+
+            double a = dir.dotProduct(dir);
+            double b = 2 * dir.dotProduct(L);
+            double c = L.dotProduct(L) - radius * radius;
+            double[] result = new double[]{0, 0};
+            if (!solveQuadratic(a, b, c, result)) {
+                return -1;
+            }
+            t0 = result[0];
+            t1 = result[1];
+
+            if (t0 < 0) {
+                t0 = t1;
+                if (t0 < 0) {
+                    return -1;
+                }
+            }
+            return t0;
+        }
+
+        //
+        // rayTriangleIntersect
         //
         // static helper function
         // adapted from: 
@@ -149,7 +203,7 @@ public class Util {
         }
 
         public static void drawSphere(LinkedTransferQueue<Node> g, Vector3D position, float radius, String webColor) {
-            Sphere s = new Sphere(radius);
+            Sphere s = new Sphere(radius, 32);
             s.setTranslateX(position.getX());
             s.setTranslateY(position.getY());
             s.setTranslateZ(position.getZ());
@@ -198,7 +252,7 @@ public class Util {
         }
 
         public static Color heatColor(double energy) {
-            double value = java.lang.Math.log10(energy/Util.Physics.eV);
+            double value = java.lang.Math.log10(energy / Util.Physics.eV);
             int min = -4;
             int max = 7;
 
@@ -214,15 +268,15 @@ public class Util {
             int max = 7;
 
             for (int y = 0; y < height; y++) {
-                double value = max - (max - min) * y / (double)height;
-                Color color = heatColor(java.lang.Math.pow(10,value)*Util.Physics.eV);
+                double value = max - (max - min) * y / (double) height;
+                Color color = heatColor(java.lang.Math.pow(10, value) * Util.Physics.eV);
                 for (int x = 0; x < width; x++) {
                     pixelWriter.setColor(x, y, color);
                 }
             }
 
             for (int i = min; i < max; i++) {
-                int y = (int)((i-min)/(double)(max-min)*height);
+                int y = (int) ((i - min) / (double) (max - min) * height);
                 for (int x = 0; x < width; x++) {
                     pixelWriter.setColor(x, y, Color.BLACK);
                 }
@@ -236,6 +290,10 @@ public class Util {
         // will make a small golden sphere at the event point
         //
         public static void visualizeEvent(Event event, Vector3D direction, LinkedTransferQueue<Node> g) {
+            if (MonteCarloSimulation.visualLimitReached) {
+                return;
+            }
+
             if (event.code != Event.Code.Gone) {
                 String color;
                 float size = 0.2f;

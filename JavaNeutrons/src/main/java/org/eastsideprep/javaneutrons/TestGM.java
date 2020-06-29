@@ -8,6 +8,7 @@ package org.eastsideprep.javaneutrons;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
@@ -143,18 +144,26 @@ public class TestGM {
     public static Group testVisuals() {
         Group g = new Group();
 
-        Sphere s = new Sphere(100);
+        Sphere s = new Sphere(1000);
         Util.Graphics.setColor(s, "gray");
+        s.setOpacity(0.1);
+        s.setTranslateX(-500);
+        s.setDrawMode(DrawMode.LINE);
+        Vector3D orig = new Vector3D(200, 0, 0);
 
         for (int i = 0; i < 10000; i++) {
-            Vector3D v = Util.Math.randomDir().scalarMultiply(100);
-            Sphere p = new Sphere(1);
-            Util.Graphics.setColor(p, "red");
-            p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
-            g.getChildren().add(p);
-            Util.Graphics.drawCoordSystem(g);
+            // Vector3D v = Util.Math.randomDir().scalarMultiply(100);
+            Vector3D dir = Util.Math.randomDir();
+            double t = Util.Math.raySphereIntersect(orig, dir, new Vector3D(-500,0,0), 1000);
+            if (t >= 0) {
+                Vector3D v = orig.add(dir.scalarMultiply(t));
+                Sphere p = new Sphere(5);
+                Util.Graphics.setColor(p, "red");
+                p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
+                g.getChildren().add(p);
+            }
         }
-
+        Util.Graphics.drawCoordSystem(g);
         g.getChildren().add(s);
         return g;
     }

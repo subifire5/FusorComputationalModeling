@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
+import org.eastsideprep.javaneutrons.assemblies.Environment;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
@@ -114,7 +115,7 @@ public class Neutron {
                     System.out.println("");
                 }
             }
-        } else {
+        } else  if (event.code == Event.Code.Capture) {
             // capture
             Environment.recordCapture();
         }

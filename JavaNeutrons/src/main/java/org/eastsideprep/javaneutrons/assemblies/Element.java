@@ -8,9 +8,11 @@ package org.eastsideprep.javaneutrons.assemblies;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.eastsideprep.javaneutrons.core.Neutron;
@@ -42,6 +44,11 @@ public class Element {
     private ArrayList<CSEntry> elasticEntries;
     private ArrayList<CSEntry> captureEntries;
     private ArrayList<CSEntry> totalEntries;
+    
+    private double[] energies;
+    private double[] elastic;
+    private double[] capture;
+    private double[] total;
 
     // for when you are too lazy to look up the correct mass
     public Element(String name, int atomicNumber, int neutrons) {
@@ -71,19 +78,22 @@ public class Element {
     }
 
     public double getScatterCrossSection(double energy) {
-        return getArea(elasticEntries, energy);
+        //return getArea2(elasticEntries, energy);
+        return getArea(energies, elastic, energy);
     }
 
     public double getCaptureCrossSection(double energy) {
-        return getArea(captureEntries, energy);
+        //return getArea2(captureEntries, energy);
+        return getArea(energies, capture, energy);
     }
 
     public double getTotalCrossSection(double energy) {
-        return getArea(totalEntries, energy);
+        //return getArea2(totalEntries, energy);
+        return getArea(energies, total, energy);
     }
 
     protected final void readDataFiles(int atomicNumber) {
-        String filename = Integer.toString(atomicNumber*1000+atomicNumber+neutrons);
+        String filename = Integer.toString(atomicNumber * 1000 + atomicNumber + neutrons);
         fillEntries(filename);
     }
 
@@ -113,12 +123,12 @@ public class Element {
             double scatter = Double.parseDouble(split[1]);
             double capture = Double.parseDouble(split[2]);
             double total = Double.parseDouble(split[3]);
-            if (Math.abs(total - (scatter + capture)) > total * epsilon &&
-                    energy < 2.6e6) {
-                System.out.println("Element " + this.name + ", energy " + energy + 
-                        ": inelastic events other than capture make up more than " + 
-                        (int) (epsilon * 100) + " % of cs: "+
-                        Math.round(100*Math.abs(total - (scatter + capture))/total*100)/100+" %");
+            if (Math.abs(total - (scatter + capture)) > total * epsilon
+                    && energy < 2.6e6) {
+                System.out.println("Element " + this.name + ", energy " + energy
+                        + ": inelastic events other than capture make up more than "
+                        + (int) (epsilon * 100) + " % of cs: "
+                        + Math.round(100 * Math.abs(total - (scatter + capture)) / total * 100) / 100 + " %");
             }
             newScatter.add(new CSEntry(energy, scatter));
             newCapture.add(new CSEntry(energy, capture));
@@ -137,9 +147,14 @@ public class Element {
         this.elasticEntries = newScatter;
         this.captureEntries = newCapture;
         this.totalEntries = newTotal;
+
+        this.energies = newScatter.stream().mapToDouble(e->e.energy).toArray();
+        this.elastic = newScatter.stream().mapToDouble(e->e.area).toArray();
+        this.capture = newCapture.stream().mapToDouble(e->e.area).toArray();
+        this.total = newTotal.stream().mapToDouble(e->e.area).toArray();
     }
 
-    private double getArea(ArrayList<CSEntry> data, double energy) {
+    private double getArea2(ArrayList<CSEntry> data, double energy) {
         // table data is in eV, convert to SI (cm)
         energy /= Util.Physics.eV;
         //System.out.println("Energy: "+energy+" eV");
@@ -164,6 +179,30 @@ public class Element {
         return area * Util.Physics.barn;
     }
 
+    private double getArea(double energies[], double[] area, double energy) {
+        // table data is in eV, convert to SI (cm)
+        energy /= Util.Physics.eV;
+        //System.out.println("Energy: "+energy+" eV");
+        int index = Arrays.binarySearch(energies, energy);
+        if (index >= 0) {
+            return area[index] * Util.Physics.barn;
+        }
+        //else, linear interpolate between two nearest points
+        index = -index - 1;
+        if (index == 0 || index >= area.length) {
+            // todo: Our neutrons should not get this cold,
+            // but if they do, deal with it properly
+            // for now, just return the smallest cross-section
+            //System.out.println("Not enough data to linear interpolate");
+            return area[0] * Util.Physics.barn;
+        }
+        double resultArea = area[index - 1] + (((energy - energies[index - 1]) / (energies[index] - energies[index - 1]))
+                * (area[index] - area[index - 1])); //linear interpolation function
+
+        // convert back into SI (cm) and return
+        return resultArea * Util.Physics.barn;
+    }
+
     public XYChart.Series<String, Number> makeCSSeries(String seriesName) {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         ObservableList<XYChart.Data<String, Number>> data = series.getData();
@@ -175,10 +214,13 @@ public class Element {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(energy);
 
-            data.add(new XYChart.Data(tick, scatter
-                    ? getScatterCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
+            double value = scatter ? getScatterCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
                     : (total ? getTotalCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
-                            : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn)));
+                            : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn);
+
+            value = Math.log10(value);
+            
+            data.add(new XYChart.Data(tick, value));
         }
 
         return series;

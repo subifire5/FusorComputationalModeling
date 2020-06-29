@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.core;
+package org.eastsideprep.javaneutrons.assemblies;
+
+import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
 
 /**
  *
