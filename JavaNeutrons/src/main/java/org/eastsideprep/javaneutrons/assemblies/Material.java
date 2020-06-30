@@ -16,8 +16,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
-import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
-import org.eastsideprep.javaneutrons.core.LogHistogram;
+import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
+import org.eastsideprep.javaneutrons.core.Histogram;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 
@@ -44,11 +44,11 @@ public class Material {
 
     public String name;
     ArrayList<Component> components;
-    public LogHistogram lengths;
-    public LogEnergyEVHistogram scattersOverEnergyBefore;
-    public LogEnergyEVHistogram scattersOverEnergyAfter;
-    public LogEnergyEVHistogram capturesOverEnergy;
-    public LogEnergyEVHistogram lengthOverEnergy;
+    public Histogram lengths;
+    public EnergyEVHistogram scattersOverEnergyBefore;
+    public EnergyEVHistogram scattersOverEnergyAfter;
+    public EnergyEVHistogram capturesOverEnergy;
+    public EnergyEVHistogram lengthOverEnergy;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
@@ -90,25 +90,26 @@ public class Material {
         System.out.println(" atomic density " + String.format("%6.3e", densityAtoms) + " / b-cm");
         for (Component c : components) {
             c.density = densityAtoms * c.proportion;
-            System.out.println(" Element " + c.e.name + ": atomic density: " + String.format("%6.3e", c.density)+
-                    ", microscopic cs sigma at 2.45 MeV: "+String.format("%6.3e", c.e.getTotalCrossSection(2.45e6))+" barn");
+            System.out.println(" Element " + c.e.name + ": atomic density: " + String.format("%6.3e", c.density)
+                    + ", microscopic cs (s,c) sigma at 2.45 MeV: " + String.format("%6.3e", c.e.getScatterCrossSection(2.45e6)) + " barn"
+                    + ", " + String.format("%6.3e", c.e.getCaptureCrossSection(2.45e6)) + " barn");
         }
-        System.out.println(" Macroscopic cross-section Sigma at 2.45 MeV: " + String.format("%6.3e", getSigma(2.45e6))+" 1/cm");
-        System.out.println(" 1/Sigma(2.45 MeV): "+String.format("%6.3e", (1/getSigma(2.45e6)))+" cm");
-        System.out.println(" Macroscopic cross-section Sigma at 0.025 eV: " + 
-                String.format("%6.3e", getSigma(Util.Physics.thermalEnergy/Util.Physics.eV))+" 1/cm");
-        System.out.println(" 1/Sigma(0.025 eV): "+
-                String.format("%6.3e", (1/getSigma(Util.Physics.thermalEnergy/Util.Physics.eV)))+" cm");
+        System.out.println(" Macroscopic cross-section Sigma at 2.45 MeV: " + String.format("%6.3e", getSigma(2.45e6)) + " 1/cm");
+        System.out.println(" 1/Sigma(2.45 MeV): " + String.format("%6.3e", (1 / getSigma(2.45e6))) + " cm");
+        System.out.println(" Macroscopic cross-section Sigma at 0.025 eV: "
+                + String.format("%6.3e", getSigma(Util.Physics.thermalEnergy / Util.Physics.eV)) + " 1/cm");
+        System.out.println(" 1/Sigma(0.025 eV): "
+                + String.format("%6.3e", (1 / getSigma(Util.Physics.thermalEnergy / Util.Physics.eV))) + " cm");
         System.out.println("");
     }
 
     public final void resetDetector() {
         this.totalEvents = 0;
-        this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
-        this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
-        this.capturesOverEnergy = new LogEnergyEVHistogram();
-        this.lengthOverEnergy = new LogEnergyEVHistogram();
-        this.lengths = new LogHistogram(-5, 7, 120);
+        this.scattersOverEnergyBefore = new EnergyEVHistogram();
+        this.scattersOverEnergyAfter = new EnergyEVHistogram();
+        this.capturesOverEnergy = new EnergyEVHistogram();
+        this.lengthOverEnergy = new EnergyEVHistogram();
+        this.lengths = new Histogram(-5, 7, 120, false);
         this.totalEvents = 0;
         this.totalFreePath = 0;
         this.pathCount = 0;
@@ -127,7 +128,7 @@ public class Material {
 
     // input: SI(cm)
     private double randomPathLength(double energy) {
-        double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy/Util.Physics.eV);
+        double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy / Util.Physics.eV);
         return length;
     }
 
@@ -150,20 +151,34 @@ public class Material {
         double t = randomPathLength(energy);
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
 
+        if (n.trace) {
+            System.out.println("");
+            System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
+        }
         // make array of cumulative sums of sigmas
         double[] sigmas = new double[2 * components.size()];
         double sum = 0;
         for (int i = 0; i < sigmas.length; i += 2) {
             Component c = components.get(i / 2);
-            sum += c.e.getScatterCrossSection(energy) * c.density;
+            sum += c.e.getScatterCrossSection(energy/Util.Physics.eV) * c.density;
+            if (n.trace) {
+                System.out.println(" e " + c.e.name + " s to " + sum);
+            }
+
             sigmas[i] = sum;
-            sum += c.e.getCaptureCrossSection(energy) * c.density;
+            sum += c.e.getCaptureCrossSection(energy/Util.Physics.eV) * c.density;
+            if (n.trace) {
+                System.out.println(" e " + c.e.name + " c to " + sum);
+            }
+
             sigmas[i + 1] = sum;
         }
 
         // random draw from across the combined distribution
         double rand = ThreadLocalRandom.current().nextDouble() * sum;
-        //System.out.println("sum: "+sum+"draw: "+rand);
+        if (n.trace) {
+            System.out.println("sum: " + sum + ", draw: " + rand);
+        }
 
         // now find the component index
         int slot = Arrays.binarySearch(sigmas, rand);
@@ -171,9 +186,15 @@ public class Material {
         if (slot < 0) {
             slot = -slot - 1;
         }
+        if (n.trace) {
+            System.out.println("Slot " + slot);
+        }
 
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
+        if (n.trace) {
+            System.out.println("Component: " + e.name + ", code: " + code);
+        }
 
         return new Event(location, code, t, e, n);
     }
@@ -269,7 +290,7 @@ public class Material {
             String tick = f.format(energy);
 
             data.add(new XYChart.Data(tick, getSigma(energy)));
-            System.out.println(tick+" "+getSigma(energy));
+            System.out.println(tick + " " + getSigma(energy));
         }
 
         return series;

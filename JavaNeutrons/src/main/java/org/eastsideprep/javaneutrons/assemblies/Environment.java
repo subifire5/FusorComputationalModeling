@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.assemblies;
 
-import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
+import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
 
 /**
  *
@@ -15,7 +15,7 @@ public class Environment {
 
     public static final double limit = 1000; // 1000cm = 10m
     private static Environment instance;
-    public LogEnergyEVHistogram counts;
+    public EnergyEVHistogram counts;
     private long totalEscapes;
     private long totalCaptures; // not really part of environment, but counted here
 
@@ -46,7 +46,7 @@ public class Environment {
     }
 
     public void reset() {
-        counts = new LogEnergyEVHistogram();
+        counts = new EnergyEVHistogram();
         totalEscapes = 0;
         totalCaptures = 0;
     }

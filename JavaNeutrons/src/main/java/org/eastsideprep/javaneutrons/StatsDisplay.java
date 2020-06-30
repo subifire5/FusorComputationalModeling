@@ -17,9 +17,11 @@ import javafx.scene.chart.Chart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.Separator;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
@@ -27,6 +29,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.util.StringConverter;
 import org.eastsideprep.javaneutrons.assemblies.Element;
 import org.eastsideprep.javaneutrons.assemblies.Material;
@@ -44,6 +47,8 @@ public class StatsDisplay extends Group {
     VBox chartType = new VBox();
     ChoiceBox object = new ChoiceBox();
     Pane chartPane = new Pane();
+    CheckBox selectLog = new CheckBox("Log x-axis");
+    Boolean log = true;
 
     Slider slider = new Slider();
 
@@ -103,7 +108,14 @@ public class StatsDisplay extends Group {
         });
         object.setPrefWidth(200);
 
-        controls.getChildren().addAll(chartType, slider, object);
+        selectLog.setSelected(true);
+        selectLog.selectedProperty().addListener((a, b, c) -> {
+            this.log = selectLog.isSelected();
+            this.setChart();
+        });
+
+        controls.getChildren().addAll(chartType, new Separator(), selectLog, new Separator(),
+                new Text("Zoom"), slider, new Separator(), object);
         controls.setPadding(new Insets(10, 0, 10, 0));
         hb.getChildren().addAll(controls, chartPane);
         this.getChildren().add(hb);
@@ -122,10 +134,11 @@ public class StatsDisplay extends Group {
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");
+        RadioButton rb8 = new RadioButton("Custom test");
 
         rb2.setSelected(true);
 
-        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb1, rb5, rb6, rb7};
+        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb1, rb5, rb6, rb7, rb8};
 
         this.tg = new ToggleGroup();
         for (RadioButton rb : rbs) {
@@ -222,6 +235,15 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
+                case "Custom test":
+                    ArrayList<String> as = new ArrayList<>();
+                    as.add("Random direction");
+                    as.add("X-axis only");
+                    this.object.getItems().clear();
+                    this.populateComboBox(as);
+                    this.object.setVisible(true);
+                    break;
+
                 default:
                     this.object.setVisible(false);
                     break;
@@ -235,31 +257,34 @@ public class StatsDisplay extends Group {
         if (t != null) {
             switch ((String) t.getUserData()) {
                 case "Escape counts":
-                    root.setCenter(this.sim.makeChart(null, null));
+                    root.setCenter(this.sim.makeChart(null, null, log));
                     break;
 
                 case "Fluence":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Fluence"));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Fluence", log));
                     break;
 
                 case "Entry counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts"));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", log));
                     break;
 
                 case "Event counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Event counts"));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Event counts", log));
                     break;
 
                 case "Path lengths":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Path lengths"));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Path lengths", log));
                     break;
 
                 case "Sigmas":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Sigmas"));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Sigmas", log));
                     break;
 
                 case "Cross-sections":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections"));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", log));
+                    break;
+                case "Custom test":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Custom test", log));
                     break;
 
                 default:

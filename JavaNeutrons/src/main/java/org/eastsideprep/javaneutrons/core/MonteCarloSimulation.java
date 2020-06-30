@@ -17,6 +17,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.util.StringConverter;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.eastsideprep.javaneutrons.TestGM;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
 import org.eastsideprep.javaneutrons.assemblies.Element;
 import org.eastsideprep.javaneutrons.assemblies.Material;
@@ -142,7 +143,7 @@ public class MonteCarloSimulation {
         ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            Neutron n = new Neutron(this.origin, this.xOnly?Vector3D.PLUS_I:direction, Neutron.startingEnergyDD, count <= 10);
+            Neutron n = new Neutron(this.origin, this.xOnly ? Vector3D.PLUS_I : direction, Neutron.startingEnergyDD, count <= 10);
             neutrons.add(n);
         }
 
@@ -180,7 +181,7 @@ public class MonteCarloSimulation {
 
     }
 
-    public Chart makeChart(String detector, String series) {
+    public Chart makeChart(String detector, String series, boolean log) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
         BarChart<String, Number> bc;
@@ -201,7 +202,7 @@ public class MonteCarloSimulation {
                     bc.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
-                    bc.getData().add(p.entriesOverEnergy.makeSeries("Entry counts"));
+                    bc.getData().add(p.entriesOverEnergy.makeSeries("Entry counts", log));
                     break;
 
                 case "Fluence":
@@ -216,19 +217,19 @@ public class MonteCarloSimulation {
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount));
+                        bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, log));
                     } else {
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
                         m = Material.getByName("Air");
                         f = new DecimalFormat("0.###E0");
-                        e = f.format(m.totalFreePath / (this.lastCount*factor));
+                        e = f.format(m.totalFreePath / (this.lastCount * factor));
                         bc.setTitle("Interstitial air"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        bc.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount*factor));
+                        bc.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, log));
                     }
                     break;
 
@@ -239,17 +240,17 @@ public class MonteCarloSimulation {
                         bc.setTitle("Part \"" + p.name + "\", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
-                        bc.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)"));
-                        bc.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)"));
-                        bc.getData().add(p.capturesOverEnergy.makeSeries("Capture"));
+                        bc.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
+                        bc.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
+                        bc.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                     } else {
                         m = Material.getByName(detector.substring(detector.indexOf(' ') + 1));
                         bc.setTitle("Interstitial material \"" + m.name + "\", total events: " + m.totalEvents);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
-                        bc.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)"));
-                        bc.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)"));
-                        bc.getData().add(m.capturesOverEnergy.makeSeries("Capture"));
+                        bc.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
+                        bc.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
+                        bc.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
                     }
                     break;
 
@@ -259,7 +260,7 @@ public class MonteCarloSimulation {
                     m = Material.getByName(detector);
                     bc.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount) / 100.0) + " cm, "
-                            + "Fluence: " + String.format("%6.3e", m.totalFreePath / (this.lastCount *factor))
+                            + "Fluence: " + String.format("%6.3e", m.totalFreePath / (this.lastCount * factor))
                             + " (n/cm^2)/src = " + this.lastCount
                     );
                     xAxis.setLabel("Length (cm)");
@@ -287,6 +288,14 @@ public class MonteCarloSimulation {
                     lc.getData().add(m.makeSigmaSeries("Sigma (" + detector + ")"));
                     return lc;
 
+                case "Custom test":
+                    lc = new LineChart<>(xAxis, yAxis);
+                    lc.setTitle("Custom test");
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("counts");
+                    lc.getData().add(TestGM.customTest(log, detector.equals("X-axis only")));
+                    return lc;
+
                 default:
                     return null;
             }
@@ -302,7 +311,7 @@ public class MonteCarloSimulation {
             xAxis.setLabel("Energy (eV)");
             yAxis.setLabel("Count");
 
-            bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts"));
+            bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", log));
         }
         return bc;
     }

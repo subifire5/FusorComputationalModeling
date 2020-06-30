@@ -295,44 +295,44 @@ public class Util {
                 return;
             }
 
-            if (event.code != Event.Code.Gone) {
-                String color;
-                float size = 0.2f;
+            //  if (event.code != Event.Code.Gone) {
+            String color;
+            float size = 0.2f;
 
-                switch (event.code) {
-                    case Entry:
-                        color = "green";
-                        size *= 2;
-                        break;
-                    case Exit:
-                        color = "red";
-                        size *= 2;
-                        break;
-                    case Scatter:
-                        color = "yellow";
-                        size *= 0.5;
-                        break;
-                    case EmergencyExit:
-                        color = "purple";
-                        size *= 5;
-                        break;
-                    case Capture:
-                        color = "lightblue";
-                        size *= 2;
-                        break;
-                    default:
-                        color = "black";
-                        break;
-                }
-                Vector3D position = event.position;
-                if (direction != null) {
-                    double jitter = 0.1;
-                    position = position.add(direction.scalarMultiply(-jitter));
-                }
-
-                Util.Graphics.drawSphere(g, position, size, color);
-                //System.out.println("Visualizing "+event.code+" event at " + event.position);
+            switch (event.code) {
+                case Entry:
+                    color = "green";
+                    size *= 2;
+                    break;
+                case Exit:
+                    color = "red";
+                    size *= 2;
+                    break;
+                case Scatter:
+                    color = "yellow";
+                    size *= 0.5;
+                    break;
+                case EmergencyExit:
+                    color = "purple";
+                    size *= 5;
+                    break;
+                case Capture:
+                    color = "lightblue";
+                    size *= 2;
+                    break;
+                default:
+                    color = "black";
+                    break;
             }
+            Vector3D position = event.position;
+            if (direction != null) {
+                double jitter = 0.1;
+                position = position.add(direction.scalarMultiply(-jitter));
+            }
+
+            Util.Graphics.drawSphere(g, position, size, color);
+            //System.out.println("Visualizing "+event.code+" event at " + event.position);
+            //        }
         }
 
         //

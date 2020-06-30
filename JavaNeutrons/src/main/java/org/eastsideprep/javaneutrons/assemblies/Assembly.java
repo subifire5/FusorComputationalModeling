@@ -86,7 +86,7 @@ public class Assembly extends Part {
         Event event;
         double t;
 
-        // but we will mostly travel in air
+        // we will mostly travel in air
         Air air = Air.getInstance();
 
         // we start in a certain medium. Todo: API for either figring that out or setting it
@@ -133,6 +133,7 @@ public class Assembly extends Part {
                 event.t = t;
                 event.code = Event.Code.Gone;
                 event.neutron = n;
+                n.setPosition(visualizations, event.position);
                 medium.processEvent(event);
                 //n.setPosition(visualizations, event.position);
             }

@@ -26,6 +26,7 @@ public class Neutron {
     public Vector3D position; // unit: (cm,cm,cm)
     public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
     public boolean trace = false;
+    public double entryEnergy = 0;
 
     ArrayList<Event> history = new ArrayList<>();
 
@@ -103,7 +104,7 @@ public class Neutron {
             // update myself (energy and direction)
             this.setVelocity(velocityNLab);
             event.energyOut = this.energy;
-            if (this.trace) {
+            if (this.trace && false) {
                 synchronized (Neutron.class) {
                     System.out.println("Particle: " + event.element.name);
                     System.out.println("Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));

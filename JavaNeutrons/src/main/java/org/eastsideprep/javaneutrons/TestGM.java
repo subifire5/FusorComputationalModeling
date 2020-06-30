@@ -8,6 +8,7 @@ package org.eastsideprep.javaneutrons;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.chart.XYChart;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
@@ -17,7 +18,7 @@ import org.eastsideprep.javaneutrons.assemblies.Assembly;
 import org.eastsideprep.javaneutrons.assemblies.Element;
 import org.eastsideprep.javaneutrons.assemblies.Part;
 import org.eastsideprep.javaneutrons.core.Event;
-import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
+import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
@@ -48,26 +49,23 @@ public class TestGM {
 //        test.record(5000, 2e7);
 //        test.makeSeries("",1);
 //        
-//        LogEnergyEVHistogram test = new LogEnergyEVHistogram();
-//        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, false);
-//        Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
-//
-//        for (int i = 0; i < 1000000; i++) {
-//            n.setDirectionAndEnergy(Util.Math.randomDir(), Neutron.startingEnergyDD);
-//            if (i % 5 == 0) {
-//                event.element = Carbon.getInstance();
-//            } else {
-//                event.element = Hydrogen.getInstance();
-//            }
-//            n.processEvent(event);
-//            test.record(1, /*Neutron.startingEnergyDD - */ event.energyOut);
-//        }
-//
-//        test.makeSeries("test", 1);
-//
-//        System.exit(0);
-
         return simulationTestWhitmer(visualizations);
+    }
+
+    public static XYChart.Series customTest(boolean log, boolean xOnly) {
+        EnergyEVHistogram test = new EnergyEVHistogram();
+        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, false);
+        Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
+        event.element = Hydrogen.getInstance();
+
+        for (int i = 0; i < 100000; i++) {
+            n.setDirectionAndEnergy(xOnly?Vector3D.PLUS_I:Util.Math.randomDir(), Neutron.startingEnergyDD);
+            n.setPosition(Vector3D.ZERO);
+            n.processEvent(event);
+            test.record(1, event.energyOut);
+        }
+
+        return test.makeSeries("test", 1, log);
     }
 
     public static MonteCarloSimulation simulationTestSmoosh(Group visualizations) {
@@ -113,7 +111,7 @@ public class TestGM {
     public static MonteCarloSimulation simulationTestWhitmer(Group visualizations) {
 
         Paraffin.getInstance();
-        Shape blockShape = new Shape(new CuboidMesh(0.1, 100, 100));
+        Shape blockShape = new Shape(new CuboidMesh(025, 100, 100));
         blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
         blockShape.setColor("silver");
         Part wall = new Part("Block", blockShape, "Paraffin");
