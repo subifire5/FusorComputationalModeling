@@ -24,7 +24,7 @@ public class LogHistogram {
     }
 
     public LogHistogram() {
-        this.logMin = -6;
+        this.logMin = -3;
         this.logMax = 7;
         this.bins = new double[(logMax - logMin) * LogHistogram.binsPerDecade];
         //this.bins = new double[logMax - logMin + 1];

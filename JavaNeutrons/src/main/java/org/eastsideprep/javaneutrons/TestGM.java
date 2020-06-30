@@ -116,24 +116,24 @@ public class TestGM {
         Shape blockShape = new Shape(new CuboidMesh(0.1, 100, 100));
         blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
         blockShape.setColor("silver");
-        Part wall = new Part("Hydrogen block", blockShape, "HydrogenGas");
+        Part wall = new Part("Block", blockShape, "Paraffin");
 
         Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
         detector1Shape.getTransforms().add(new Translate(100 + 1, 0, 0));
         detector1Shape.setColor("pink");
-        Part detector1 = new Part("Detector behind hydrogen block", detector1Shape, "Vacuum");
+        Part detector1 = new Part("Detector behind block", detector1Shape, "Vacuum");
 
         Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
         detector2Shape.getTransforms().add(new Translate(-(100 + 1), 0, 0));
         detector2Shape.setColor("pink");
-        Part detector2 = new Part("Detector opposite hydrogen block", detector2Shape, "Vacuum");
+        Part detector2 = new Part("Detector opposite block", detector2Shape, "Vacuum");
 
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
         whitmer.addAll(wall, detector1, detector2);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
-        mcs.xOnly = true;
+        //mcs.xOnly = true;
         return mcs;
     }
 
