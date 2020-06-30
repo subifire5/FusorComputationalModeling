@@ -46,7 +46,8 @@ public class MonteCarloSimulation {
     public long lastCount;
     private int visualObjectLimit;
     private long start;
-    
+    public boolean xOnly = false;
+
     public static boolean visualLimitReached = false;
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
@@ -75,11 +76,11 @@ public class MonteCarloSimulation {
         } else {
             MonteCarloSimulation.visualLimitReached = true;
         }
-        
+
         // drain the rest and forget about it
         LinkedList<Node> list = new LinkedList<>();
         this.visualizations.drainTo(list);
-        
+
         return completed.get();
     }
 
@@ -124,13 +125,13 @@ public class MonteCarloSimulation {
         this.viewGroup.getChildren().remove(this.dynamicGroup);
         this.dynamicGroup.getChildren().clear();
         this.viewGroup.getChildren().add(this.dynamicGroup);
-        
+
         System.out.println("");
         System.out.println("");
         System.out.println("Running new MC simulation for " + count + " neutrons ...");
 
         this.start = System.currentTimeMillis();
-        
+
         assembly.resetDetectors();
         Collection<Material> c = Material.materials.values();
         c.stream().forEach(m -> m.resetDetector());
@@ -141,7 +142,7 @@ public class MonteCarloSimulation {
         ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            Neutron n = new Neutron(this.origin, direction, Neutron.startingEnergyDD, count <= 10);
+            Neutron n = new Neutron(this.origin, this.xOnly?Vector3D.PLUS_I:direction, Neutron.startingEnergyDD, count <= 10);
             neutrons.add(n);
         }
 
@@ -164,8 +165,8 @@ public class MonteCarloSimulation {
         this.assembly.evolveNeutronPath(n, this.visualizations, true);
         completed.incrementAndGet();
     }
-    
-    private class Formatter extends StringConverter<Number>{
+
+    private class Formatter extends StringConverter<Number> {
 
         @Override
         public String toString(Number n) {
@@ -176,7 +177,7 @@ public class MonteCarloSimulation {
         public Double fromString(String string) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
     }
 
     public Chart makeChart(String detector, String series) {
@@ -188,6 +189,7 @@ public class MonteCarloSimulation {
         Material m;
         DecimalFormat f;
         String e;
+        double factor;
 
         if (detector != null) {
             switch (series) {
@@ -205,15 +207,29 @@ public class MonteCarloSimulation {
                 case "Fluence":
                     bc = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
-                    f = new DecimalFormat("0.###E0");
-                    e = f.format(p.getTotalFluence() / this.lastCount);
-                    bc.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
-                            + "\nTotal fluence = " + e + " (n/cm^2)/src"
-                            + ", src = " + this.lastCount);
-                    xAxis.setLabel("Energy (eV)");
-                    yAxis.setLabel("Fluence (n/cm^2)/src");
-                    yAxis.setTickLabelFormatter(new Formatter());
-                    bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount));
+                    if (p != null) {
+                        f = new DecimalFormat("0.###E0");
+                        e = f.format(p.getTotalFluence() / this.lastCount);
+                        bc.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
+                                + "\nTotal fluence = " + e + " (n/cm^2)/src"
+                                + ", src = " + this.lastCount);
+                        xAxis.setLabel("Energy (eV)");
+                        yAxis.setLabel("Fluence (n/cm^2)/src");
+                        yAxis.setTickLabelFormatter(new Formatter());
+                        bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount));
+                    } else {
+                        factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
+                        m = Material.getByName("Air");
+                        f = new DecimalFormat("0.###E0");
+                        e = f.format(m.totalFreePath / (this.lastCount*factor));
+                        bc.setTitle("Interstitial air"
+                                + "\nTotal fluence = " + e + " (n/cm^2)/src"
+                                + ", src = " + this.lastCount);
+                        xAxis.setLabel("Energy (eV)");
+                        yAxis.setLabel("Fluence (n/cm^2)/src");
+                        yAxis.setTickLabelFormatter(new Formatter());
+                        bc.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount*factor));
+                    }
                     break;
 
                 case "Event counts":
@@ -238,12 +254,13 @@ public class MonteCarloSimulation {
                     break;
 
                 case "Path lengths":
+                    factor = detector.equals("Air") ? (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume()) : 1;
                     bc = new BarChart<>(xAxis, yAxis);
                     m = Material.getByName(detector);
                     bc.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount) / 100.0) + " cm, "
-                            + "Fluence: "+String.format("%6.3e", m.totalFreePath/(4/3*Math.PI*Math.pow(1000, 3)-this.assembly.getVolume()))
-                            + " (n/cm^2)/src = "+ this.lastCount
+                            + "Fluence: " + String.format("%6.3e", m.totalFreePath / (this.lastCount *factor))
+                            + " (n/cm^2)/src = " + this.lastCount
                     );
                     xAxis.setLabel("Length (cm)");
                     yAxis.setLabel("Count");

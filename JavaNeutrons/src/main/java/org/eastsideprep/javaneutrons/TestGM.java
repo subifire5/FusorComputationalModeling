@@ -14,9 +14,16 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.assemblies.Assembly;
+import org.eastsideprep.javaneutrons.assemblies.Element;
 import org.eastsideprep.javaneutrons.assemblies.Part;
+import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.LogEnergyEVHistogram;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
+import org.eastsideprep.javaneutrons.materials.Carbon;
+import org.eastsideprep.javaneutrons.materials.Hydrogen;
+import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.shapes.Shape;
@@ -29,6 +36,37 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
+
+//        LogHistogram test = new LogHistogram();
+//        test.record(1000, 0.5e-6);
+//        test.record(2000, 1e-6);
+//        test.record(2100, 1.1e-6);
+//        test.record(2500, 1.5e-6);
+//        
+//        test.record(3000, 0.5e7);
+//        test.record(4000, 1e7);
+//        test.record(5000, 2e7);
+//        test.makeSeries("",1);
+//        
+//        LogEnergyEVHistogram test = new LogEnergyEVHistogram();
+//        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, false);
+//        Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
+//
+//        for (int i = 0; i < 1000000; i++) {
+//            n.setDirectionAndEnergy(Util.Math.randomDir(), Neutron.startingEnergyDD);
+//            if (i % 5 == 0) {
+//                event.element = Carbon.getInstance();
+//            } else {
+//                event.element = Hydrogen.getInstance();
+//            }
+//            n.processEvent(event);
+//            test.record(1, /*Neutron.startingEnergyDD - */ event.energyOut);
+//        }
+//
+//        test.makeSeries("test", 1);
+//
+//        System.exit(0);
+
         return simulationTestWhitmer(visualizations);
     }
 
@@ -74,26 +112,29 @@ public class TestGM {
 
     public static MonteCarloSimulation simulationTestWhitmer(Group visualizations) {
 
-        Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
+        Paraffin.getInstance();
+        Shape blockShape = new Shape(new CuboidMesh(0.1, 100, 100));
         blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
         blockShape.setColor("silver");
-        Part wall = new Part("Wall", blockShape, "Paraffin");
+        Part wall = new Part("Hydrogen block", blockShape, "HydrogenGas");
 
         Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
         detector1Shape.getTransforms().add(new Translate(100 + 1, 0, 0));
         detector1Shape.setColor("pink");
-        Part detector1 = new Part("Detector behind paraffin block", detector1Shape, "Vacuum");
+        Part detector1 = new Part("Detector behind hydrogen block", detector1Shape, "Vacuum");
 
         Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
         detector2Shape.getTransforms().add(new Translate(-(100 + 1), 0, 0));
         detector2Shape.setColor("pink");
-        Part detector2 = new Part("Detector opposite paraffin block", detector2Shape, "Vacuum");
+        Part detector2 = new Part("Detector opposite hydrogen block", detector2Shape, "Vacuum");
 
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall, detector1, detector2/*, p*/);
+        whitmer.addAll(wall, detector1, detector2);
 
-        return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
+        mcs.xOnly = true;
+        return mcs;
     }
 
     public static MonteCarloSimulation simulationTest2(Group visualizations) {
@@ -154,7 +195,7 @@ public class TestGM {
         for (int i = 0; i < 10000; i++) {
             // Vector3D v = Util.Math.randomDir().scalarMultiply(100);
             Vector3D dir = Util.Math.randomDir();
-            double t = Util.Math.raySphereIntersect(orig, dir, new Vector3D(-500,0,0), 1000);
+            double t = Util.Math.raySphereIntersect(orig, dir, new Vector3D(-500, 0, 0), 1000);
             if (t >= 0) {
                 Vector3D v = orig.add(dir.scalarMultiply(t));
                 Sphere p = new Sphere(5);

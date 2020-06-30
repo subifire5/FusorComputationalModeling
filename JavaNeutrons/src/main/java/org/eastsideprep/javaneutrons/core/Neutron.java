@@ -29,7 +29,7 @@ public class Neutron {
 
     ArrayList<Event> history = new ArrayList<>();
 
-    Neutron(Vector3D position, Vector3D direction, double energy, boolean trace) {
+    public Neutron(Vector3D position, Vector3D direction, double energy, boolean trace) {
         setPosition(position);
         setDirectionAndEnergy(direction, energy);
         this.trace = trace;

@@ -168,6 +168,7 @@ public class Part {
                 n.setPosition(visualizations, event.position);
                 Util.Graphics.visualizeEvent(event, n.direction, visualizations);
                 this.processExitEnergy(n.energy);
+                event.neutron = n;
                 this.material.processEvent(event);
                 event.exitMaterial = this.shape.getContactMaterial(event.face);
             }

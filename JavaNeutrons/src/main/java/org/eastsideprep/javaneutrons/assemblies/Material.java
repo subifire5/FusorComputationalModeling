@@ -26,49 +26,49 @@ import org.eastsideprep.javaneutrons.core.Util;
  * @author gunnar
  */
 public class Material {
-    
+
     public static HashMap<String, Material> materials = new HashMap<>();
-    
+
     public class Component {
-        
+
         Element e;
         double density; // atoms/(barn*cm)
         double proportion;
-        
+
         Component(Element e, double proportion) {
             this.e = e;
             this.density = 0;
             this.proportion = proportion;
         }
     }
-    
+
     public String name;
     ArrayList<Component> components;
     public LogHistogram lengths;
     public LogEnergyEVHistogram scattersOverEnergyBefore;
     public LogEnergyEVHistogram scattersOverEnergyAfter;
     public LogEnergyEVHistogram capturesOverEnergy;
+    public LogEnergyEVHistogram lengthOverEnergy;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
-    
+
     //public int temp;
-    
     public Material(String name) {
         materials.put(name, this);
         components = new ArrayList<>();
         this.name = name;
         resetDetector();
     }
-    
+
     public static Material getByName(String name) {
         return materials.get(name);
     }
-    
+
     public final void addComponent(Element element, double proportion) {
         components.add(new Component(element, proportion));
     }
-    
+
     public final void calculateAtomicDensities(double densityMass) {
         // input is mass per cubic meter! not centimeter!
         // see volume below
@@ -76,39 +76,47 @@ public class Material {
         // first, how much mass in one of these units 
         // (proportion units are arbitrary)
         double massMolecule = 0;
-        double sumProps = 0;
         for (Component c : components) {
             massMolecule += c.e.mass * c.proportion;
-            sumProps += c.proportion;
         }
 
         // how many of these make up a cubic centimeter?
         double volume = 1e-6; // 1 cubic centimeter in m
-        double n = densityMass * volume / massMolecule;
+        double densityAtoms = densityMass * volume / massMolecule * Util.Physics.barn;
 
         // if there is n units per volume, 
         // then are are n*proportion units of the component
+        System.out.println("Material " + this.name + " mass density " + densityMass + " Kg / m^3");
+        System.out.println(" atomic density " + String.format("%6.3e", densityAtoms) + " / b-cm");
         for (Component c : components) {
-            c.density = n * c.proportion;
+            c.density = densityAtoms * c.proportion;
+            System.out.println(" Element " + c.e.name + ": atomic density: " + String.format("%6.3e", c.density)+
+                    ", microscopic cs sigma at 2.45 MeV: "+String.format("%6.3e", c.e.getTotalCrossSection(2.45e6))+" barn");
         }
-//        System.out.println("Macroscopic cross-section for "
-//                + (this instanceof Element ? "(element) " : "")
-//                + this.name + " at 1 eV: " + getSigma(1 * Util.Physics.eV));
+        System.out.println(" Macroscopic cross-section Sigma at 2.45 MeV: " + String.format("%6.3e", getSigma(2.45e6))+" 1/cm");
+        System.out.println(" 1/Sigma(2.45 MeV): "+String.format("%6.3e", (1/getSigma(2.45e6)))+" cm");
+        System.out.println(" Macroscopic cross-section Sigma at 0.025 eV: " + 
+                String.format("%6.3e", getSigma(Util.Physics.thermalEnergy/Util.Physics.eV))+" 1/cm");
+        System.out.println(" 1/Sigma(0.025 eV): "+
+                String.format("%6.3e", (1/getSigma(Util.Physics.thermalEnergy/Util.Physics.eV)))+" cm");
+        System.out.println("");
     }
-    
+
     public final void resetDetector() {
         this.totalEvents = 0;
         this.scattersOverEnergyBefore = new LogEnergyEVHistogram();
         this.scattersOverEnergyAfter = new LogEnergyEVHistogram();
         this.capturesOverEnergy = new LogEnergyEVHistogram();
+        this.lengthOverEnergy = new LogEnergyEVHistogram();
         this.lengths = new LogHistogram(-5, 7, 120);
         this.totalEvents = 0;
         this.totalFreePath = 0;
         this.pathCount = 0;
-        
+
     }
 
     // compute macroscopic cross-section
+    // input: eV
     public double getSigma(double energy) {
         double sigma = 0;
         for (Component c : components) {
@@ -116,25 +124,27 @@ public class Material {
         }
         return sigma;
     }
-    
+
+    // input: SI(cm)
     private double randomPathLength(double energy) {
-        double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy);
+        double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy/Util.Physics.eV);
         return length;
     }
-    
-    public void recordLength(double length) {
+
+    public void recordLength(double length, double energy) {
         this.lengths.record(1, length);
+        this.lengthOverEnergy.record(length, energy);
         synchronized (this) {
             this.totalFreePath += length;
         }
     }
-    
+
     public void recordCollision() {
         synchronized (this) {
             this.pathCount++;
         }
     }
-    
+
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
         double t = randomPathLength(energy);
@@ -161,13 +171,13 @@ public class Material {
         if (slot < 0) {
             slot = -slot - 1;
         }
-        
+
         Element e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
-        
+
         return new Event(location, code, t, e, n);
     }
-    
+
     public static Material getRealMaterial(Object material) {
 
         // try named material instance
@@ -201,10 +211,10 @@ public class Material {
         if (material instanceof Part) {
             material = ((Part) material).material;
         }
-        
+
         return (Material) material;
     }
-    
+
     public void processEvent(Event event) {
         if (null != event.code) // record stats for material
         {
@@ -226,7 +236,7 @@ public class Material {
         }
 
         //if (event.neutron.energy > 2.44e6 * Util.Physics.eV) {
-        this.recordLength(event.t);
+        this.recordLength(event.t, event.neutron.energy);
 //        if (this.name.equals("Air"))
 //        synchronized (this) {
 //            if (event.t > 300) {
@@ -248,20 +258,21 @@ public class Material {
             this.scattersOverEnergyAfter.record(1, event.neutron.energy);
         }
     }
-    
+
     public XYChart.Series makeSigmaSeries(String seriesName) {
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
         series.setName(seriesName);
-        
+
         for (double energy = 1e-3; energy < 1e7; energy *= 1.1) {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(energy);
-            
-            data.add(new XYChart.Data(tick, getSigma(energy * Util.Physics.eV)));
+
+            data.add(new XYChart.Data(tick, getSigma(energy)));
+            System.out.println(tick+" "+getSigma(energy));
         }
-        
+
         return series;
     }
-    
+
 }

@@ -36,18 +36,14 @@ public class LogHistogram {
         // take log in chosen base
         double logX = Math.log10(x) - logMin;
 
-        // cut of stuff that is too small
-        if (logX < 0) {
-            logX = 0;
-        }
-
         // find bin
-        bin = (int) Math.round(logX / (logMax - logMin) * this.bins.length);
+        bin = (int) Math.ceil(logX / (logMax - logMin) * (this.bins.length));
+
+        // cut of stuff that is too small
+        bin = Math.max(bin, 0);
 
         // cut off stuff that is too big
-        if (bin >= this.bins.length) {
-            bin = this.bins.length - 1;
-        }
+        bin = Math.min(bin, this.bins.length - 1);
 
         // increment the count
         if (bin < 0 || bin >= this.bins.length) {
@@ -79,6 +75,7 @@ public class LogHistogram {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(x);
             data.add(new XYChart.Data(tick, counts[i]));
+            System.out.println(tick + " " + counts[i]);
             //System.out.print(""+counts[i]);
             //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
         }
@@ -86,7 +83,7 @@ public class LogHistogram {
         return series;
     }
 
-    public XYChart.Series makeSeries(String seriesName, long count) {
+    public XYChart.Series makeSeries(String seriesName, double count) {
         //System.out.println("Retrieving series "+seriesName+":");
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
@@ -99,14 +96,16 @@ public class LogHistogram {
             System.arraycopy(this.bins, 0, counts, 0, counts.length);
         }
 
+        System.out.println("");
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
         for (int i = 0; i < bins.length; i++) {
             double x = Math.pow(10, logMin + i / ((double) bins.length) * (logMax - logMin));
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(x);
-            data.add(new XYChart.Data(tick, counts[i] / (double) count));
-            //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
+            data.add(new XYChart.Data(tick, counts[i] / count));
+            System.out.println(tick + " " + String.format("%6.3e",counts[i] / count));
         }
+        System.out.println("");
 
         return series;
     }

@@ -44,7 +44,7 @@ public class Element {
     private ArrayList<CSEntry> elasticEntries;
     private ArrayList<CSEntry> captureEntries;
     private ArrayList<CSEntry> totalEntries;
-    
+
     private double[] energies;
     private double[] elastic;
     private double[] capture;
@@ -125,10 +125,10 @@ public class Element {
             double total = Double.parseDouble(split[3]);
             if (Math.abs(total - (scatter + capture)) > total * epsilon
                     && energy < 2.6e6) {
-                System.out.println("Element " + this.name + ", energy " + energy
-                        + ": inelastic events other than capture make up more than "
-                        + (int) (epsilon * 100) + " % of cs: "
-                        + Math.round(100 * Math.abs(total - (scatter + capture)) / total * 100) / 100 + " %");
+//                System.out.println("Element " + this.name + ", energy " + energy
+//                        + ": inelastic events other than capture make up more than "
+//                        + (int) (epsilon * 100) + " % of cs: "
+//                        + Math.round(100 * Math.abs(total - (scatter + capture)) / total * 100) / 100 + " %");
             }
             newScatter.add(new CSEntry(energy, scatter));
             newCapture.add(new CSEntry(energy, capture));
@@ -148,44 +148,44 @@ public class Element {
         this.captureEntries = newCapture;
         this.totalEntries = newTotal;
 
-        this.energies = newScatter.stream().mapToDouble(e->e.energy).toArray();
-        this.elastic = newScatter.stream().mapToDouble(e->e.area).toArray();
-        this.capture = newCapture.stream().mapToDouble(e->e.area).toArray();
-        this.total = newTotal.stream().mapToDouble(e->e.area).toArray();
+        this.energies = newScatter.stream().mapToDouble(e -> e.energy).toArray();
+        this.elastic = newScatter.stream().mapToDouble(e -> e.area).toArray();
+        this.capture = newCapture.stream().mapToDouble(e -> e.area).toArray();
+        this.total = newTotal.stream().mapToDouble(e -> e.area).toArray();
     }
 
-    private double getArea2(ArrayList<CSEntry> data, double energy) {
-        // table data is in eV, convert to SI (cm)
-        energy /= Util.Physics.eV;
-        //System.out.println("Energy: "+energy+" eV");
-        int index = Collections.binarySearch(data, new CSEntry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
-        if (index >= 0) {
-            return data.get(index).area * Util.Physics.barn;
-        }
-        //else, linear interpolate between two nearest points
-        index = -index - 1;
-        if (index == 0 || index >= data.size()) {
-            // todo: Our neutrons should not get this cold,
-            // but if they do, deal with it properly
-            // for now, just return the smallest cross-section
-            //System.out.println("Not enough data to linear interpolate");
-            return data.get(0).area * Util.Physics.barn;
-        }
-        CSEntry e1 = data.get(index - 1); //the one with just lower energy
-        CSEntry e2 = data.get(index);   //the one with just higher energy
-        double area = e1.area + (((energy - e1.energy) / (e2.energy - e1.energy)) * (e2.area - e1.area)); //linear interpolation function
-
-        // convert back into SI (cm) and return
-        return area * Util.Physics.barn;
-    }
-
+//    private double getArea2(ArrayList<CSEntry> data, double energy) {
+//        // table data is in eV, convert to SI (cm)
+//        energy /= Util.Physics.eV;
+//        //System.out.println("Energy: "+energy+" eV");
+//        int index = Collections.binarySearch(data, new CSEntry(energy, 0), (a, b) -> (int) Math.signum(a.energy - b.energy));
+//        if (index >= 0) {
+//            return data.get(index).area * Util.Physics.barn;
+//        }
+//        //else, linear interpolate between two nearest points
+//        index = -index - 1;
+//        if (index == 0 || index >= data.size()) {
+//            // todo: Our neutrons should not get this cold,
+//            // but if they do, deal with it properly
+//            // for now, just return the smallest cross-section
+//            //System.out.println("Not enough data to linear interpolate");
+//            return data.get(0).area * Util.Physics.barn;
+//        }
+//        CSEntry e1 = data.get(index - 1); //the one with just lower energy
+//        CSEntry e2 = data.get(index);   //the one with just higher energy
+//        double area = e1.area + (((energy - e1.energy) / (e2.energy - e1.energy)) * (e2.area - e1.area)); //linear interpolation function
+//
+//        // convert back into SI (cm) and return
+//        return area;// * Util.Physics.barn;
+//    }
+    //
+    // input: eV, output: barn
+    //
     private double getArea(double energies[], double[] area, double energy) {
-        // table data is in eV, convert to SI (cm)
-        energy /= Util.Physics.eV;
         //System.out.println("Energy: "+energy+" eV");
         int index = Arrays.binarySearch(energies, energy);
         if (index >= 0) {
-            return area[index] * Util.Physics.barn;
+            return area[index];
         }
         //else, linear interpolate between two nearest points
         index = -index - 1;
@@ -194,13 +194,12 @@ public class Element {
             // but if they do, deal with it properly
             // for now, just return the smallest cross-section
             //System.out.println("Not enough data to linear interpolate");
-            return area[0] * Util.Physics.barn;
+            return area[0];
         }
         double resultArea = area[index - 1] + (((energy - energies[index - 1]) / (energies[index] - energies[index - 1]))
                 * (area[index] - area[index - 1])); //linear interpolation function
 
-        // convert back into SI (cm) and return
-        return resultArea * Util.Physics.barn;
+        return resultArea;
     }
 
     public XYChart.Series<String, Number> makeCSSeries(String seriesName) {
@@ -214,12 +213,12 @@ public class Element {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(energy);
 
-            double value = scatter ? getScatterCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
-                    : (total ? getTotalCrossSection(energy * Util.Physics.eV) / Util.Physics.barn
-                            : getCaptureCrossSection(energy * Util.Physics.eV) / Util.Physics.barn);
+            double value = scatter ? getScatterCrossSection(energy) 
+                    : (total ? getTotalCrossSection(energy)
+                            : getCaptureCrossSection(energy));
 
             value = Math.log10(value);
-            
+
             data.add(new XYChart.Data(tick, value));
         }
 

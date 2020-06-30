@@ -14,7 +14,7 @@ public class Hydrogen extends Element {
 
     private static Hydrogen instance;
 
-    Hydrogen() {
+    public Hydrogen() {
         super("Hydrogen", 1, 0);
         //System.out.println("in h constructor");
     }

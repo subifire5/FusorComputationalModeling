@@ -51,7 +51,7 @@ public class StatsDisplay extends Group {
     BorderPane root;
     ToggleGroup tg;
 
-    private class TickConverter extends StringConverter<Number>{
+    private class TickConverter extends StringConverter<Number> {
 
         @Override
         public String toString(Number n) {
@@ -60,13 +60,13 @@ public class StatsDisplay extends Group {
 
         @Override
         public Number fromString(String string) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
     }
-    
+
     public StatsDisplay(MonteCarloSimulation sim, BorderPane root) {
-        
+
         this.sim = sim;
         this.root = root;
 
@@ -84,7 +84,7 @@ public class StatsDisplay extends Group {
             if (n != null && n instanceof Chart) {
                 XYChart c = (XYChart) n;
                 double v = new_val.doubleValue();
-                v = v*v/100;
+                v = v * v / 100;
                 NumberAxis a = (NumberAxis) c.getYAxis();
                 a.setAutoRanging(false);
                 a.setTickLabelFormatter(new TickConverter());
@@ -98,7 +98,7 @@ public class StatsDisplay extends Group {
                     }
                 }
                 a.setUpperBound(max * v / 100);
-                a.setTickUnit(max * v /(100*10));
+                a.setTickUnit(max * v / (100 * 10));
             }
         });
         object.setPrefWidth(200);
@@ -109,9 +109,9 @@ public class StatsDisplay extends Group {
         this.getChildren().add(hb);
 
         this.populateRadioButtons();
-        this.populateComboBoxWithParts();
+        this.setComboBox();
         this.setChart();
-        
+
     }
 
     private void populateRadioButtons() {
@@ -165,6 +165,14 @@ public class StatsDisplay extends Group {
         populateComboBox(as);
     }
 
+    private void populateComboBoxWithPartsAndAir() {
+        this.object.getItems().clear();
+        populateComboBoxWithParts();
+        ArrayList<String> ms = new ArrayList<>();
+        ms.add("Interstitial air");
+        populateComboBox(ms);
+    }
+
     private void populateComboBox(Collection<String> s) {
         if (!(s instanceof ArrayList)) {
             ArrayList<String> items = new ArrayList<>(s);
@@ -185,7 +193,7 @@ public class StatsDisplay extends Group {
                     break;
 
                 case "Fluence":
-                    this.populateComboBoxWithParts();
+                    this.populateComboBoxWithPartsAndAir();
                     this.object.setVisible(true);
                     break;
 

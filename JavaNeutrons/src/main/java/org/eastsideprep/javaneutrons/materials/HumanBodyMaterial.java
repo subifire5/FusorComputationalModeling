@@ -17,10 +17,10 @@ public class HumanBodyMaterial extends Material {
 
     HumanBodyMaterial() {
         super("HumanBodyMaterial");
-        this.addComponent(Hydrogen.getInstance(), 62.0);
-        this.addComponent(Oxygen.getInstance(), 24.0);
-        this.addComponent(Carbon.getInstance(), 12.0);
-        this.addComponent(Nitrogen.getInstance(), 1.1);
+        this.addComponent(Hydrogen.getInstance(), 0.62);
+        this.addComponent(Oxygen.getInstance(), 0.24);
+        this.addComponent(Carbon.getInstance(), 0.12);
+        this.addComponent(Nitrogen.getInstance(), 0.11);
         this.calculateAtomicDensities(1000);
     }
 
