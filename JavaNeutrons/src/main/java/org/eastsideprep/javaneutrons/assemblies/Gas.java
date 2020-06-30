@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.materials;
+package org.eastsideprep.javaneutrons.assemblies;
 
 import org.eastsideprep.javaneutrons.assemblies.Element;
 import org.eastsideprep.javaneutrons.assemblies.Material;
@@ -21,13 +21,13 @@ public abstract class Gas extends Material {
 
     // pressure is in kPa
 
-    Gas(String name, double pressure) {
+    public Gas(String name, double pressure) {
         super(name);
         this.pressure = pressure;
     }
     
     // use this for a single-element gas
-    Gas(String name, Element element, double pressure, double massDensitySTP){
+    public Gas(String name, Element element, double pressure, double massDensitySTP){
         super(name);
         this.pressure = pressure;
         

@@ -22,8 +22,8 @@ import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.materials.Carbon;
-import org.eastsideprep.javaneutrons.materials.Hydrogen;
+import org.eastsideprep.javaneutrons.materials.E12C;
+import org.eastsideprep.javaneutrons.materials.E1H;
 import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
@@ -56,7 +56,7 @@ public class TestGM {
         EnergyEVHistogram test = new EnergyEVHistogram();
         Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, false);
         Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
-        event.element = Hydrogen.getInstance();
+        event.element = E1H.getInstance();
 
         for (int i = 0; i < 100000; i++) {
             n.setDirectionAndEnergy(xOnly?Vector3D.PLUS_I:Util.Math.randomDir(), Neutron.startingEnergyDD);

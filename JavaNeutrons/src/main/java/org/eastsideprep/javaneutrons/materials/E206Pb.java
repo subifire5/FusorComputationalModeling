@@ -12,18 +12,18 @@ import org.eastsideprep.javaneutrons.core.Util;
  *
  * @author gunnar
  */
-public class Iron extends Element {
+public class E206Pb extends Element {
 
-    private static Iron instance;
+    private static E206Pb instance;
 
-    Iron() {
-        super("Iron", 26, 30, 9.2732796e-26);
+    E206Pb() {
+        super("206 Pb", 82, 206-82, -1);
     }
 
     // we only need one of these objects
-    public static synchronized Iron getInstance() {
+    public static synchronized E206Pb getInstance() {
         if (instance == null) {
-            Iron.instance = new Iron();
+            E206Pb.instance = new E206Pb();
         }
         return instance;
     }

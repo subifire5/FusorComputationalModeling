@@ -7,24 +7,15 @@ package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.assemblies.Material;
 
-//
-// Paraffin
-// Cn H(2n+2)
-// one major component is hentriacontane n=31: C31 H64
-// source: https://en.wikipedia.org/wiki/Paraffin_wax
-// density 781 kg/m^3
-// source: Google answer "hentriacontane density"
-//
+// paraffin wax material ???
 public class Paraffin extends Material {
 
     private static Paraffin instance;
 
     Paraffin() {
         super("Paraffin");
-        this.addComponent(Carbon.getInstance(), 0.324689);
-        //System.out.println("before adding h");
-        this.addComponent(Hydrogen.getInstance(), 0.675311);
-        //System.out.println("before adding h");
+        this.addComponent(E12C.getInstance(), 0.324689);
+        this.addComponent(E1H.getInstance(), 0.675311);
         this.calculateAtomicDensities(930.0);
     }
 

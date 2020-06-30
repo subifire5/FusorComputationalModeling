@@ -8,7 +8,7 @@ package org.eastsideprep.javaneutrons.materials;
 import org.eastsideprep.javaneutrons.assemblies.Material;
 
 //
-// Steel
+// Carbon Steel material # ???
 //
 //
 public class Steel extends Material {
@@ -17,8 +17,8 @@ public class Steel extends Material {
 
     public Steel() {
         super("Steel");
-        this.addComponent(Carbon.getInstance(), 0.022831);
-        this.addComponent(Iron.getInstance(), 0.977169);
+        this.addComponent(E12C.getInstance(), 0.022831);
+        this.addComponent(E56Fe.getInstance(), 0.977169);
         this.calculateAtomicDensities(7820);
     }
 

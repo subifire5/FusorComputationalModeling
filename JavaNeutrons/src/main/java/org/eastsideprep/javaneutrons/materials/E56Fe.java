@@ -6,23 +6,24 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class Nitrogen extends Element {
+public class E56Fe extends Element {
 
-    private static Nitrogen instance;
+    private static E56Fe instance;
 
-    Nitrogen() {
-        super("Nitrogen", 7, 7, 2.3258671e-26);
+    E56Fe() {
+        super("56 Iron", 26, 30, 9.2732796e-26);
     }
 
     // we only need one of these objects
-    public static synchronized Nitrogen getInstance() {
+    public static synchronized E56Fe getInstance() {
         if (instance == null) {
-            Nitrogen.instance = new Nitrogen();
+            E56Fe.instance = new E56Fe();
         }
         return instance;
     }

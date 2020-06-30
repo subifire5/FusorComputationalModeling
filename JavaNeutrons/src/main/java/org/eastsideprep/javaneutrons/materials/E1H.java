@@ -6,25 +6,24 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.assemblies.Element;
-import org.eastsideprep.javaneutrons.core.Util;
 
-/**
- *
- * @author gunnar
- */
-public class Carbon extends Element {
+//
+// 
+//
+public class E1H extends Element {
 
-    private static Carbon instance;
+    private static E1H instance;
 
-    Carbon() {
-        super("Carbon", 6, 6, 1.9944235e-26);
+    public E1H() {
+        super("1H", 1, 0);
+        //System.out.println("in h constructor");
     }
 
-
     // we only need one of these objects
-    public static synchronized Carbon getInstance() {
+    public static synchronized E1H getInstance() {
+        //System.out.println("in h getinstance");
         if (instance == null) {
-            Carbon.instance = new Carbon();
+            E1H.instance = new E1H();
         }
         return instance;
     }

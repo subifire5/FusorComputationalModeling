@@ -6,24 +6,24 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.assemblies.Element;
+import org.eastsideprep.javaneutrons.core.Util;
 
-//
-// 
-//
-public class Hydrogen extends Element {
+/**
+ *
+ * @author gunnar
+ */
+public class E208Pb extends Element {
 
-    private static Hydrogen instance;
+    private static E208Pb instance;
 
-    public Hydrogen() {
-        super("Hydrogen", 1, 0);
-        //System.out.println("in h constructor");
+    E208Pb() {
+        super("208 Pb", 82, 208-82, -1);
     }
 
     // we only need one of these objects
-    public static synchronized Hydrogen getInstance() {
-        //System.out.println("in h getinstance");
+    public static synchronized E208Pb getInstance() {
         if (instance == null) {
-            Hydrogen.instance = new Hydrogen();
+            E208Pb.instance = new E208Pb();
         }
         return instance;
     }

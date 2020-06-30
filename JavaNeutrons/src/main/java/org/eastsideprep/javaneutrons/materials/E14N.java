@@ -6,24 +6,23 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.assemblies.Element;
-import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class Oxygen extends Element {
+public class E14N extends Element {
 
-    private static Oxygen instance;
+    private static E14N instance;
 
-    Oxygen() {
-        super("Oxygen", 8, 8, 2.6566962e-26);
+    E14N() {
+        super("14N", 7, 7, 2.3258671e-26);
     }
 
     // we only need one of these objects
-    public static synchronized Oxygen getInstance() {
+    public static synchronized E14N getInstance() {
         if (instance == null) {
-            Oxygen.instance = new Oxygen();
+            E14N.instance = new E14N();
         }
         return instance;
     }
