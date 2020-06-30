@@ -5,27 +5,24 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
+import org.eastsideprep.javaneutrons.assemblies.Gas;
 import org.eastsideprep.javaneutrons.core.Event;
 
 public class HydrogenGas extends Gas {
 
     private static HydrogenGas instance;
 
-    // use this for Air (or getInstance()
-    // pressure is in kPa
     HydrogenGas(double pressure) {
         this("HydrogenGas", pressure);
     }
 
-    // use this for air at different pressure
-    // give it a different name, of course
     HydrogenGas(String name, double pressure) {
         super(name, pressure);
         
         double massDensitySTP = 0.084;
-        massDensitySTP = 930.0*2.0/3.0;
+        // to equal 1H density in paraffin wax: massDensitySTP = 930.0*2.0/3.0;
 
-        this.addComponent(Hydrogen.getInstance(), 1);
+        this.addComponent(E1H.getInstance(), 1);
 
         // that's 100 Pa for STP
         this.calculateAtomicDensities(massDensitySTP * pressure / 100);

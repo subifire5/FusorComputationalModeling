@@ -5,15 +5,10 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
+import org.eastsideprep.javaneutrons.assemblies.Gas;
 import org.eastsideprep.javaneutrons.core.Event;
 
-/**
- *
- * @author gmein
- */
-//
-// air is the material for NegativeSpace - everything around the parts 
-// of an Assembly
+// material 4 - Air near sea-level
 public class Air extends Gas {
 
     private static Air instance;
@@ -30,13 +25,12 @@ public class Air extends Gas {
     Air(String name, double pressure) {
         super(name, pressure);
         
-        // Google answer "density of air"
         double massDensitySTP = 1.205;
 
-        this.addComponent(Carbon.getInstance(), 0.000150);
-        this.addComponent(Nitrogen.getInstance(), 0.784431);
-        this.addComponent(Oxygen.getInstance(), 0.210748);
-        this.addComponent(Argon.getInstance(), 0.004671);
+        this.addComponent(E12C.getInstance(), 0.000150);
+        this.addComponent(E14N.getInstance(), 0.784431);
+        this.addComponent(E16O.getInstance(), 0.210748);
+        this.addComponent(E40Ar.getInstance(), 0.004671);
 
         // that's 100 Pa for STP
         this.calculateAtomicDensities(massDensitySTP * pressure / 100);
