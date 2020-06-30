@@ -10,15 +10,15 @@ table = libFile.tables['1001.800nc']
 # print table.energy
 # print table.sigma_a
 # print table.sigma_t
-print table.reactions
-print table.reactions[2]
-print vars(table.reactions[2]).keys()
-print table.reactions[2].ang_cos
-print ""
-print ""
-print table.reactions[2].ang_pdf
 
-exit
+# print table.reactions
+# print table.reactions[2]
+# print vars(table.reactions[2]).keys()
+# print table.reactions[2].ang_cos
+# print ""
+# print ""
+# print table.reactions[2].ang_pdf
+
 
 
 def make_csv(t):
