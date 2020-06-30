@@ -59,7 +59,7 @@ public class TestGM {
         event.element = E1H.getInstance();
 
         for (int i = 0; i < 100000; i++) {
-            n.setDirectionAndEnergy(xOnly?Vector3D.PLUS_I:Util.Math.randomDir(), Neutron.startingEnergyDD);
+            n.setDirectionAndEnergy(xOnly ? Vector3D.PLUS_I : Util.Math.randomDir(), Neutron.startingEnergyDD);
             n.setPosition(Vector3D.ZERO);
             n.processEvent(event);
             test.record(1, event.energyOut);
@@ -112,19 +112,18 @@ public class TestGM {
 
         Paraffin.getInstance();
         Shape blockShape = new Shape(new CuboidMesh(025, 100, 100));
-        blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
-        blockShape.setColor("silver");
         Part wall = new Part("Block", blockShape, "Paraffin");
+        wall.getTransforms().add(new Translate(50 + 12.5, 0, 0));
+        wall.setColor("silver");
 
-        Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
-        detector1Shape.getTransforms().add(new Translate(100 + 1, 0, 0));
-        detector1Shape.setColor("pink");
-        Part detector1 = new Part("Detector behind block", detector1Shape, "Vacuum");
+        Shape detectorShape = new Shape(new CuboidMesh(2, 100, 100));
+        Part detector1 = new Part("Detector behind block", detectorShape, "Vacuum");
+        detector1.getTransforms().add(new Translate(100 + 1, 0, 0));
+        detector1.setColor("pink");
 
-        Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
-        detector2Shape.getTransforms().add(new Translate(-(100 + 1), 0, 0));
-        detector2Shape.setColor("pink");
-        Part detector2 = new Part("Detector opposite block", detector2Shape, "Vacuum");
+        Part detector2 = new Part("Detector opposite block", detectorShape, "Vacuum");
+        detector2.getTransforms().add(new Translate(-(100 + 1), 0, 0));
+        detector2.setColor("pink");
 
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");

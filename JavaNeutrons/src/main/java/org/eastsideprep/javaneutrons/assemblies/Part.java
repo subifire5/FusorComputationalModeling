@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
+import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
@@ -41,7 +43,9 @@ public class Part {
     private int totalEvents = 0;
 
     public Part(String name, Shape s, Object material) {
-        this.shape = s;
+        if (s != null) {
+            this.shape = new Shape(s);
+        }
         this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
@@ -234,5 +238,13 @@ public class Part {
 
     public int getTotalEvents() {
         return this.totalEvents;
+    }
+
+    public ObservableList<Transform> getTransforms() {
+        return this.shape.getTransforms();
+    }
+
+    public void setColor(String color) {
+        this.shape.setColor(color);
     }
 }
