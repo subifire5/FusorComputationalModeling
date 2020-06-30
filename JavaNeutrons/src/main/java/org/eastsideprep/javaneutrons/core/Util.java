@@ -302,11 +302,11 @@ public class Util {
             switch (event.code) {
                 case Entry:
                     color = "green";
-                    size *= 2;
+                    size *= 1;
                     break;
                 case Exit:
                     color = "red";
-                    size *= 2;
+                    size *= 1;
                     break;
                 case Scatter:
                     color = "yellow";
@@ -318,7 +318,7 @@ public class Util {
                     break;
                 case Capture:
                     color = "lightblue";
-                    size *= 2;
+                    size *= 0.5;
                     break;
                 default:
                     color = "black";

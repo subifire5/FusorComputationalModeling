@@ -160,13 +160,13 @@ public class Material {
         double sum = 0;
         for (int i = 0; i < sigmas.length; i += 2) {
             Component c = components.get(i / 2);
-            sum += c.e.getScatterCrossSection(energy/Util.Physics.eV) * c.density;
+            sum += c.e.getScatterCrossSection(energy / Util.Physics.eV) * c.density;
             if (n.trace) {
                 System.out.println(" e " + c.e.name + " s to " + sum);
             }
 
             sigmas[i] = sum;
-            sum += c.e.getCaptureCrossSection(energy/Util.Physics.eV) * c.density;
+            sum += c.e.getCaptureCrossSection(energy / Util.Physics.eV) * c.density;
             if (n.trace) {
                 System.out.println(" e " + c.e.name + " c to " + sum);
             }
@@ -243,10 +243,18 @@ public class Material {
                 case Scatter:
                     this.scattersOverEnergyBefore.record(1, event.neutron.energy);
                     this.recordCollision();
+                    // record more stats for material
+                    synchronized (this) {
+                        this.totalEvents++;
+                    }
                     break;
                 case Capture:
                     this.capturesOverEnergy.record(1, event.neutron.energy);
                     this.recordCollision();
+                    // record more stats for material
+                    synchronized (this) {
+                        this.totalEvents++;
+                    }
                     break;
                 case Gone:
                     Environment.recordEscape(event.neutron.energy);
@@ -271,10 +279,7 @@ public class Material {
             // let the neutron do its thing
             event.neutron.processEvent(event);
         }
-        // record more stats for material
-        synchronized (this) {
-            this.totalEvents++;
-        }
+
         if (event.code == Event.Code.Scatter) {
             this.scattersOverEnergyAfter.record(1, event.neutron.energy);
         }
