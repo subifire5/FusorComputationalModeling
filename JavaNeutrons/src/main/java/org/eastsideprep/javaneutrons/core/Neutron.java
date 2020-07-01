@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.assemblies.Environment;
+import org.eastsideprep.javaneutrons.core.Environment;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;

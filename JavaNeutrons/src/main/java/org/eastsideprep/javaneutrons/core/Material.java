@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.assemblies;
+package org.eastsideprep.javaneutrons.core;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,11 +15,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.core.Event;
-import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
-import org.eastsideprep.javaneutrons.core.Histogram;
-import org.eastsideprep.javaneutrons.core.Neutron;
-import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *

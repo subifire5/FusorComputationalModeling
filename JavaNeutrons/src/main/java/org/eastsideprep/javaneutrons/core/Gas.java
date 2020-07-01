@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.assemblies;
+package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.assemblies.Element;
-import org.eastsideprep.javaneutrons.assemblies.Material;
+import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Material;
 
 /**
  *

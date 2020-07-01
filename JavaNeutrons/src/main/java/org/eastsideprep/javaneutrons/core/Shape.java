@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.shapes;
+package org.eastsideprep.javaneutrons.core;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,9 +29,6 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.assemblies.Material;
-import org.eastsideprep.javaneutrons.assemblies.Part;
-import org.eastsideprep.javaneutrons.core.Util;
 import org.fxyz3d.importers.Importer3D;
 //import org.j3d.loaders.stl.STLFileReader;
 
@@ -41,7 +38,7 @@ import org.fxyz3d.importers.Importer3D;
  */
 public class Shape extends MeshView {
 
-    TriangleMesh mesh = null;
+    public TriangleMesh mesh = null;
     double[] vertices = null;
     int[] faces = null;
     public Part part;
@@ -50,7 +47,6 @@ public class Shape extends MeshView {
 
     // fresh
     public Shape() {
-        this.mesh = new TriangleMesh();
         super.setMesh(mesh);
         setVisuals("gray");
     }
@@ -535,14 +531,14 @@ public class Shape extends MeshView {
     public double getVolume() {
 
         double volume = 0;
-        cacheVerticesAndFaces();
 
-        double[] v = vertices;
+        double[] v = this.getVertices();
+        int[] f = this.getFaces();
 
-        for (int i = 0; i < faces.length; i += 6) {
-            Vector3D v0 = new Vector3D(v[3 * faces[i]], v[3 * faces[i] + 1], v[3 * faces[i] + 2]);
-            Vector3D v1 = new Vector3D(v[3 * faces[i + 2]], v[3 * faces[i + 2] + 1], v[3 * faces[i + 2] + 2]);
-            Vector3D v2 = new Vector3D(v[3 * faces[i + 4]], v[3 * faces[i + 4] + 1], v[3 * faces[i + 4] + 2]);
+        for (int i = 0; i < f.length; i += 6) {
+            Vector3D v0 = new Vector3D(v[3 * f[i]], v[3 * f[i] + 1], v[3 * f[i] + 2]);
+            Vector3D v1 = new Vector3D(v[3 * f[i + 2]], v[3 * f[i + 2] + 1], v[3 * f[i + 2] + 2]);
+            Vector3D v2 = new Vector3D(v[3 * f[i + 4]], v[3 * f[i + 4] + 1], v[3 * f[i + 4] + 2]);
 
             v0 = v0.crossProduct(v1);
             volume += v0.dotProduct(v2);
@@ -557,7 +553,7 @@ public class Shape extends MeshView {
     // calculates the max bondaries of a mesh in O(N)
     //
     public Vector3D getExtent() {
-        cacheVerticesAndFaces();
+        double[]v = this.getVertices();
 
         double xmin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
@@ -566,13 +562,13 @@ public class Shape extends MeshView {
         double zmin = Double.POSITIVE_INFINITY;
         double zmax = Double.NEGATIVE_INFINITY;
 
-        for (int i = 0; i < vertices.length; i += 3) {
-            xmin = Math.min(vertices[i], xmin);
-            xmax = Math.max(vertices[i], xmax);
-            ymin = Math.min(vertices[i + 1], ymin);
-            ymax = Math.max(vertices[i + 1], ymax);
-            zmin = Math.min(vertices[i + 2], zmin);
-            zmax = Math.max(vertices[i + 2], zmax);
+        for (int i = 0; i < v.length; i += 3) {
+            xmin = Math.min(v[i], xmin);
+            xmax = Math.max(v[i], xmax);
+            ymin = Math.min(v[i + 1], ymin);
+            ymax = Math.max(v[i + 1], ymax);
+            zmin = Math.min(v[i + 2], zmin);
+            zmax = Math.max(v[i + 2], zmax);
         }
 
         return new Vector3D(xmax - xmin, ymax - ymin, zmax - zmin);

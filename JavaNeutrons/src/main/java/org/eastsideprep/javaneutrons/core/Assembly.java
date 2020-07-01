@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.assemblies;
+package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,13 +13,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.core.Event;
-import org.eastsideprep.javaneutrons.core.Neutron;
-import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.materials.Air;
-import org.eastsideprep.javaneutrons.materials.Vacuum;
-import org.eastsideprep.javaneutrons.shapes.AssemblyGroup;
-import org.eastsideprep.javaneutrons.shapes.Shape;
 
 /**
  *
@@ -244,5 +238,33 @@ public class Assembly extends Part {
             
         }
         return volume;
+    }
+    
+    // recursive transform add
+    public void addTransform(Transform t) {
+          for (Node node : this.g.getChildren()) {
+            if (node instanceof Shape) {
+                // link back to the Part that contains it
+                ((Shape) node).getTransforms().add(t);
+            } else if (node instanceof AssemblyGroup) {
+                // link back to the Assembly that contains it
+                ((AssemblyGroup) node).assembly.addTransform(t);
+            }
+            
+        }
+    }
+    
+    // recursive transform insert
+    public void addTransform(int i, Transform t) {
+          for (Node node : this.g.getChildren()) {
+            if (node instanceof Shape) {
+                // link back to the Part that contains it
+                ((Shape) node).getTransforms().add(i,t);
+            } else if (node instanceof AssemblyGroup) {
+                // link back to the Assembly that contains it
+                ((AssemblyGroup) node).assembly.addTransform(i,t);
+            }
+            
+        }
     }
 }
