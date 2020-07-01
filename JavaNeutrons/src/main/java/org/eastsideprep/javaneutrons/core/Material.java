@@ -21,11 +21,11 @@ public class Material {
 
     public class Component {
 
-        Element e;
+        Isotope e;
         double density; // atoms/(barn*cm)
         double proportion;
 
-        Component(Element e, double proportion) {
+        Component(Isotope e, double proportion) {
             this.e = e;
             this.density = 0;
             this.proportion = proportion;
@@ -55,7 +55,7 @@ public class Material {
         return materials.get(name);
     }
 
-    public final void addComponent(Element element, double proportion) {
+    public final void addComponent(Isotope element, double proportion) {
         components.add(new Component(element, proportion));
     }
 
@@ -180,7 +180,7 @@ public class Material {
             System.out.println("Slot " + slot);
         }
 
-        Element e = components.get(slot / 2).e;
+        Isotope e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
         if (n.trace) {
             System.out.println("Component: " + e.name + ", code: " + code);

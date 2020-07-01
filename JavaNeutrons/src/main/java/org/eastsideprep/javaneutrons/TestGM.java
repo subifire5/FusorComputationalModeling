@@ -15,7 +15,7 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Assembly;
-import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;

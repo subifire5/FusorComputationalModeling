@@ -10,7 +10,7 @@ import java.util.Scanner;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
-public class Element {
+public class Isotope {
 
     private class CSEntry {
 
@@ -23,7 +23,7 @@ public class Element {
         }
     }
 
-    public static HashMap<String, Element> elements = new HashMap<>();
+    public static HashMap<String, Isotope> elements = new HashMap<>();
 
     public String name;
     public double mass; // g
@@ -39,13 +39,13 @@ public class Element {
     private double[] total;
 
     // for when you are too lazy to look up the correct mass
-    public Element(String name, int atomicNumber, int neutrons) {
+    public Isotope(String name, int atomicNumber, int neutrons) {
         this(name, atomicNumber, neutrons, atomicNumber * Util.Physics.protonMass + neutrons * Neutron.mass);
     }
 
     // use this when you know the mass in kg
-    public Element(String name, int atomicNumber, int neutrons, double mass) {
-        Element.elements.put(name, this);
+    public Isotope(String name, int atomicNumber, int neutrons, double mass) {
+        Isotope.elements.put(name, this);
 
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
@@ -61,8 +61,8 @@ public class Element {
         return this.name;
     }
 
-    public static Element getByName(String name) {
-        return Element.elements.get(name);
+    public static Isotope getByName(String name) {
+        return Isotope.elements.get(name);
     }
 
     public double getScatterCrossSection(double energy) {
@@ -92,7 +92,7 @@ public class Element {
         double epsilon = 0.1;
 
         // read xyz.csv from resources/data
-        InputStream is = Element.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace.csv");
+        InputStream is = Isotope.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace.csv");
         if (is == null) {
             System.err.println("Data file " + fileName + " not found for element " + this.name);
             return;

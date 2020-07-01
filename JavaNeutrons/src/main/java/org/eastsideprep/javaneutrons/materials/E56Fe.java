@@ -5,14 +5,14 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E56Fe extends Element {
+public class E56Fe extends Isotope {
 
     private static E56Fe instance;
 

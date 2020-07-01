@@ -31,7 +31,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.StringConverter;
-import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
@@ -164,7 +164,7 @@ public class StatsDisplay extends Group {
 
     private void populateComboBoxWithElements() {
         this.object.getItems().clear();
-        ArrayList<Element> elements = new ArrayList<>(Element.elements.values());
+        ArrayList<Isotope> elements = new ArrayList<>(Isotope.elements.values());
         elements.sort((a, b) -> (a.atomicNumber - b.atomicNumber));
         List<String> s = elements.stream().map(e -> e.name).collect(Collectors.toList());
         populateComboBox(s);

@@ -261,7 +261,7 @@ public class MonteCarloSimulation {
 
                 case "Cross-sections":
                     lc = new LineChart<>(xAxis, yAxis);
-                    Element element = Element.getByName(detector);
+                    Isotope element = Isotope.getByName(detector);
                     lc.setTitle("Microscopic ross-sections for element " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("log10(cross-section/barn)");
