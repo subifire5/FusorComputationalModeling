@@ -246,7 +246,7 @@ public class EField {
 
     // uses the positioning of each charge in the JavaFX Scene
     // instead of the saved positions that my be off
-    public Vector effectOnCharge(Sphere s, int polarity) {
+    public Vector forceOnCharge(Sphere s, int polarity) {
         Vector sumOfField = new Vector(0.0, 0.0, 0.0);
         List<Node> posNodes = positiveCharges.getChildren();
         List<Node> negNodes = negativeCharges.getChildren();
@@ -313,7 +313,7 @@ public class EField {
         return sumOfField;
     }
 
-    public Vector effectOnCharge(Charge c) {
+    public Vector forceOnCharge(Charge c) {
         Vector sumOfField = new Vector(0.0, 0.0, 0.0);
         double voltage;
         double vol;
@@ -322,9 +322,9 @@ public class EField {
         for (Charge t : charges) {
             voltage = vAnnode - vCathode;
             if (t.polarity > 0) {
-                vol = -c.polarity*voltage;
+                vol = -c.polarity * voltage;
             } else {
-                vol = c.polarity*t.polarity * voltage;
+                vol = c.polarity * t.polarity * voltage;
             }
             //vol = c.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(c);
@@ -349,7 +349,7 @@ public class EField {
     public double electricPotential(Charge c) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity;
+            ePotential += (t.polarity * k / (c.distanceTo(t) * scaleDistance)) * c.polarity;
         }
         return ePotential * chargeFactor;
     }

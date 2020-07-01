@@ -225,4 +225,5 @@ public class Vector {
         y *= s;
         z *= s;
     }
+
 }

@@ -235,7 +235,7 @@ public class App extends Application {
                     v.plusEquals(translateSlice);
                     /*
                     Charge c = new Charge(v, 1);
-                    Vector eSum = eField.effectOnCharge(c);
+                    Vector eSum = eField.forceOnCharge(c);
                     Double magnitude = eSum.norm();
 
                     if (sliceMax == null) {
@@ -263,7 +263,7 @@ public class App extends Application {
             pm.setSpecularColor(Color.WHITE);
             s.setMaterial(pm);
             //Charge c = new Charge(v, 1);
-            //Vector eSum = eField.effectOnCharge(c);
+            //Vector eSum = eField.forceOnCharge(c);
             //double norm = eSum.norm();
 
             //Color magnitude;
@@ -291,9 +291,9 @@ public class App extends Application {
             
         Charge c = new Charge(s.getTranslateX()+t.getTx(), s.getTranslateY()+t.getTy(), s.getTranslateZ()+t.getTz(), 1);
         
-        Vector eSum = eField.effectOnCharge(c);
+        Vector eSum = eField.forceOnCharge(c);
          */
-        Vector eSum = eField.effectOnCharge(s, 1);
+        Vector eSum = eField.forceOnCharge(s, 1);
         double length = eSum.norm();
         //System.out.println("norm / max: " + norm/max);
         return new Color(gradient(length), 0.0, 0.0, 1.0);
@@ -333,9 +333,9 @@ public class App extends Application {
             /*Transform t = n.getLocalToSceneTransform();
             
             Charge c = new Charge(n.getTranslateX()+t.getTx(), n.getTranslateY()+t.getTy(), n.getTranslateZ()+t.getTz(), 1);
-            Vector eSum = eField.effectOnCharge(c);
+            Vector eSum = eField.forceOnCharge(c);
              */
-            Vector eSum = eField.effectOnCharge(n, 1);
+            Vector eSum = eField.forceOnCharge(n, 1);
             Double magnitude = eSum.norm();
             if (max == null) {
                 max = magnitude;
