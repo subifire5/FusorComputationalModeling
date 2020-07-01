@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import static javafx.application.Application.launch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableFloatArray;
@@ -40,7 +41,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 
 /* todo:
-*  FIRST RIGHT NOW GO TO INPUT HANDLER, THERE IS A TODO THERE THAT'S VITAL
+*  
 * Done. fix triangle bug: this bug is making it so that a triangle is missing
 *    from the thin plates I put in. No charges appear on that triangle, 
 *    NO BUENO, probably wouldn't even notice the bug if I only ran
@@ -102,9 +103,7 @@ import javafx.stage.Screen;
  */
 public class App extends Application {
 
-    //EDIT THESE
-    double cap = 100000.0;
-    double b = 1.1;
+
     //IMPORTANT CONTROLS:
     // wasd move camera 
     // left click drag circles the camera
@@ -126,7 +125,6 @@ public class App extends Application {
     final Xform axisGroup = new Xform();
     final Xform positiveCharges = new Xform();
     final Xform negativeCharges = new Xform();
-    final Xform EFieldSlice = new Xform();
     Xform arrows = new Xform();
     final double CAMERA_NEAR_CLIP = 1;
     final double CAMERA_FAR_CLIP = 100000;
@@ -137,8 +135,6 @@ public class App extends Application {
     Vector NEGATIVE_TRANSLATE = new Vector(200.0, 50.0, 20.0);
     final double CAMERA_INITIAL_Y_ANGLE = 0.0;
     final double CAMERA_INITIAL_X_ANGLE = 0.0;
-    List<Sphere> slicePoints;
-    Vector translateSlice = new Vector(150.0, 150.0, 0.0);
     Stage primaryStage;
     final double wModifier = 1;
     double mousePosX;
@@ -156,38 +152,15 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
 
-        /*String chamberFilePath = "chamber.stl";
-        String gridFilePath = "FusorCubeGrid.stl";
-        Geometry geometry = new Geometry(chamberFilePath, 1.0, gridFilePath, -35000.0);
-        geometry.translateNegativeTriangles(new Vector(-30.0, 50.0, -80.0));
-         */
-        /*String leftPlatePath = "ThinPlate.stl";
-        String rightPlatePath = "ThinRightPlate.stl";
-        Geometry geometry = new Geometry(leftPlatePath, 1.0, rightPlatePath, -5.0);
-        geometry.sumUpSurfaceArea();
-
-        //Triangle[] triangles = testTriangleSet();
-        ChargeDistributer chargeDistributer = new ChargeDistributer(geometry, scaleDistance, 100);
-        chargeDistributer.balanceCharges(100);
-        EFieldFileWriter writer = new EFieldFileWriter(chargeDistributer);
-        writer.writeCSV("outputFile10.csv");
-        */
         InputHandler input = new InputHandler();
         input.getInput();
-        
-        
-        
+
         //Don't Read from Output file
         buildCharges(input.charges);
 
-        //Read from outputFile 
-        //EFieldFileParser parser = new EFieldFileParser();
-        //buildCharges(parser.parseFile("outputFile.csv"));
-        //eField = new EField(positiveCharges, negativeCharges, 1, -35000, scaleDistance, new Vector(0.0, 0.0, 0.0));
         eField = input.eField;
         buildCamera();
         buildAxes();
-        buildEFieldSlice();
         buildWorld();
         primaryStage = new Stage();
         buildStage(primaryStage);
@@ -206,191 +179,8 @@ public class App extends Application {
 
     }
 
-    public Triangle[] testTriangleSet() {
-        Triangle[] tList = new Triangle[4];
-        Vector topLeftForward = new Vector(0.0, 10.0, 10.0);
-        Vector topLeftBack = new Vector(0.0, 10.0, 0.0);
-        Vector topRightForward = new Vector(10.0, 10.0, 10.0);
-        Vector topRightBack = new Vector(10.0, 10.0, 0.0);
-        Vector botLeftForward = new Vector(0.0, 0.0, 10.0);
-        Vector botLeftBack = new Vector(0.0, 0.0, 0.0);
-        Vector botRightForward = new Vector(10.0, 0.0, 10.0);
-        Vector botRightBack = new Vector(10.0, 0.0, 0.0);
 
-        tList[0] = new Triangle(topLeftForward, topRightForward, botLeftForward, 1);
-        tList[1] = new Triangle(botLeftForward, botRightForward, topRightForward, 1);
-        tList[2] = new Triangle(topLeftBack, topRightBack, botLeftBack, -1);
-        tList[3] = new Triangle(botLeftBack, botRightBack, topRightBack, -1);
-        return tList;
-    }
 
-    public void buildEFieldSlice() {
-        List<Vector> slice = new ArrayList<Vector>();
-        slicePoints = new ArrayList<Sphere>();
-        Double sliceMax = null;
-        for (Double i = 0.0; i < 100.0; i += 10.0) {
-            for (Double j = 0.0; j < 100.0; j += 10.0) {
-                for (Double k = 0.0; k < 10.0; k++) {
-                    Vector v = new Vector(i, j, k);
-                    v.plusEquals(translateSlice);
-                    /*
-                    Charge c = new Charge(v, 1);
-                    Vector eSum = eField.forceOnCharge(c);
-                    Double magnitude = eSum.norm();
-
-                    if (sliceMax == null) {
-                        sliceMax = magnitude;
-                    }
-
-                    if (sliceMax < magnitude) {
-                        sliceMax = magnitude;
-                    }
-                     */
-                    slice.add(v);
-                }
-            }
-        }
-
-        for (int i = 0; i < slice.size(); i++) {
-            Vector v = slice.get(i);
-            final Sphere s = new Sphere(1);
-            //final PhongMaterial color = new PhongMaterial();
-            s.setTranslateX(v.x);
-            s.setTranslateY(v.y);
-            s.setTranslateZ(v.z);
-            PhongMaterial pm = new PhongMaterial();
-            pm.setDiffuseColor(Color.WHITE);
-            pm.setSpecularColor(Color.WHITE);
-            s.setMaterial(pm);
-            //Charge c = new Charge(v, 1);
-            //Vector eSum = eField.forceOnCharge(c);
-            //double norm = eSum.norm();
-
-            //Color magnitude;
-            //magnitude = new Color((norm / sliceMax), 0.0, 0.0, 1.0);
-            //color.setSpecularColor(magnitude);
-            //color.setDiffuseColor(magnitude);
-            //s.setMaterial(color);
-            //Vector endpoint = eSum.sum(v);
-            /*Point3D startPoint = new Point3D(c.x, c.y, c.z);
-            Point3D endPoint = new Point3D(endpoint.x, endpoint.y, endpoint.z);
-            Cylinder arrow = createConnection(startPoint, endPoint);
-            arrows.getChildren().add(arrow);
-             */
-            slicePoints.add(s);
-            EFieldSlice.getChildren().add(s);
-        }
-
-        //world.getChildren().add(arrows);
-        world.getChildren().add(EFieldSlice);
-    }
-
-    public Color getColor(Sphere s) {
-        PhongMaterial material = new PhongMaterial();
-        /*Transform t = s.getLocalToSceneTransform();
-            
-        Charge c = new Charge(s.getTranslateX()+t.getTx(), s.getTranslateY()+t.getTy(), s.getTranslateZ()+t.getTz(), 1);
-        
-        Vector eSum = eField.forceOnCharge(c);
-         */
-        Vector eSum = eField.forceOnCharge(s, 1);
-        double length = eSum.norm();
-        //System.out.println("norm / max: " + norm/max);
-        return new Color(gradient(length), 0.0, 0.0, 1.0);
-        // hard cap of 1.0
-        // use function ln((norm/number)+1)
-    }
-
-    public double gradient(double d) {
-        double x = d / cap;
-        x += b;
-        double y = getLesser(Math.log(x), 1.0);
-        y = getGreater(y, 0.0);
-        return y;
-    }
-
-    public double getLesser(double a, double b) {
-        if (a < b) {
-            return a;
-        } else {
-            return b;
-        }
-    }
-
-    public double getGreater(double a, double b) {
-        if (a > b) {
-            return a;
-        } else {
-            return b;
-        }
-    }
-
-    public Double getMax(List<Sphere> nodes) {
-        Double max = null;
-
-        for (int i = 0; i < nodes.size(); i++) {
-            Sphere n = nodes.get(i);
-            /*Transform t = n.getLocalToSceneTransform();
-            
-            Charge c = new Charge(n.getTranslateX()+t.getTx(), n.getTranslateY()+t.getTy(), n.getTranslateZ()+t.getTz(), 1);
-            Vector eSum = eField.forceOnCharge(c);
-             */
-            Vector eSum = eField.forceOnCharge(n, 1);
-            Double magnitude = eSum.norm();
-            if (max == null) {
-                max = magnitude;
-            }
-            if (max < magnitude) {
-                max = magnitude;
-            }
-        }
-        System.out.println("MAX: " + max);
-        return max;
-    }
-
-    public void updateSlice() {
-        //double max = getMax(slicePoints);
-        //System.out.println("hohfi");
-
-        for (int i = 0; i < slicePoints.size(); i++) {
-            Sphere s = slicePoints.get(i);
-            Color color = getColor(s);
-            PhongMaterial pm = (PhongMaterial) s.getMaterial();
-            //System.out.println("pm: " + pm);
-            pm.setDiffuseColor(color);
-            pm.setSpecularColor(color);
-            s.setMaterial(pm);
-            slicePoints.set(i, s);
-
-            /*Vector endpoint = eSum.sum(new Vector(c.x, c.y, c.z));
-            Point3D startPoint = new Point3D(c.x, c.y, c.z);
-            Point3D endPoint = new Point3D(endpoint.x, endpoint.y, endpoint.z);
-            Node m = arrows.getChildren().get(i);
-            m = createConnection(startPoint, endPoint
-             */
-        }
-    }
-    // code for making a cylinder from one point to another
-    //https://stackoverflow.com/questions/38799322/javafx-3d-transforming-cylinder-to-defined-start-and-end-points
-
-    public Cylinder createConnection(Point3D origin, Point3D target) {
-        Point3D yAxis = new Point3D(0, 1, 0);
-        Point3D diff = target.subtract(origin);
-        double height = diff.magnitude();
-
-        Point3D mid = target.midpoint(origin);
-        Translate moveToMidpoint = new Translate(mid.getX(), mid.getY(), mid.getZ());
-
-        Point3D axisOfRotation = diff.crossProduct(yAxis);
-        double angle = Math.acos(diff.normalize().dotProduct(yAxis));
-        Rotate rotateAroundCenter = new Rotate(-Math.toDegrees(angle), axisOfRotation);
-
-        Cylinder line = new Cylinder(0.1, height);
-
-        line.getTransforms().addAll(moveToMidpoint, rotateAroundCenter);
-
-        return line;
-    }
 
     public void buildStage(Stage primaryStage) {
         Screen screen = Screen.getPrimary();
@@ -401,104 +191,6 @@ public class App extends Application {
         primaryStage.setWidth(bounds.getWidth());
         primaryStage.setHeight(bounds.getHeight());
 
-    }
-
-    public TriangleMesh importObject(String fileName) {
-        Path path = Paths.get(fileName);
-        StlMeshImporter meshImporter = new StlMeshImporter();
-        File file = path.toFile();
-        meshImporter.read(file);
-        TriangleMesh mesh = meshImporter.getImport();
-        meshImporter.close();
-        return mesh;
-    }
-
-    public List<Triangle> getTriangles(TriangleMesh tMesh, int polarity) {
-
-        // .getfaces/.getPOints/whatever all return Observable(Object)Arrays
-        // to convert them into normal arrays
-        // you pass them an array
-        // then they return an array for you to use
-        float[] points = null;
-        points = tMesh.getPoints().toArray(points);
-        int[] faceIndeces = null;
-        faceIndeces = tMesh.getFaces().toArray(faceIndeces);
-        List<Triangle> triangles = new ArrayList<Triangle>();
-        System.out.println("Points mod 3: " + points.length % 3);
-        System.out.println("Faces mod 6: " + faceIndeces.length % 6);
-        System.out.println("Triangle Mesh Vertex Format: " + tMesh.getVertexFormat());
-        System.out.println("point size: " + points.length);
-
-        /*
-        The Triangle Mesh Vertex Format is POINT_TEXCOORD in this case
-        .getFaces returns an array of indeces into arrays
-        .getPoints returns an array of floats, each one representing the x, y, or z of a point
-        the array looks like this:
-        [x1, y1, z1, x2, y2, z2,...]
-        the .getFaces, however, is completely different
-        what the indexes of .getFaces returns depends on the Vertex Format of your triangle mesh
-        
-        For example, the faces with VertexFormat.POINT_TEXCOORD that represent a single textured rectangle, using 2 triangles, have the following data order: [ 
-        p0, t0, p1, t1, p3, t3, // First triangle of a textured rectangle 
-        p1, t1, p2, t2, p3, t3 // Second triangle of a textured rectangle 
-        ]
-        where p0, p1, p2 and p3 are indices into the points array, n0, n1, n2 and
-        n3 are indices into the normals array, and t0, t1, t2 and t3 are indices
-        into the texCoords array. 
-        
-        so if you want a triangle, and our triangle meshes are in TEXCOORD,
-        you move in sets of 6
-        you get the first item in the faces array
-        then use that index in the point array for x
-        to get the y, you add one ot that index
-        and z you add two
-        then you get the third item in the faces array
-        then the fifth item in the faces array;
-        
-
-        // this means poitns mod 9 should return 
-         */
-        for (int i = 0; i < faceIndeces.length; i += 6) {
-            // three values make up a vector
-            // three vectors (9 values) for a triangle
-            Vector A = new Vector((double) points[faceIndeces[i] * 3], (double) points[faceIndeces[i] * 3 + 1], (double) points[faceIndeces[i] * 3 + 2]);
-            Vector B = new Vector((double) points[faceIndeces[i + 2] * 3], (double) points[faceIndeces[i + 2] * 3 + 1], (double) points[faceIndeces[i + 2] * 3 + 2]);
-            Vector C = new Vector((double) points[faceIndeces[i + 4] * 3], (double) points[faceIndeces[i + 4] * 3 + 1], (double) points[faceIndeces[i + 4] * 3 + 2]);
-
-            Triangle t = new Triangle(A, B, C, polarity);
-            /*
-            if (polarity == 1) {
-                for (int j = 0; j < t.points.norm; j++) {
-                    // flip the x and y axis
-                    Double oldy = t.points[j].y;
-                    t.points[j].y = t.points[j].z;
-                    t.points[j].z = oldy;
-                    //reflecting
-                    t.points[j].y *= -1;
-                    //scaling
-                    t.points[j].scale(1.25);
-                    t.points[j].scale(POSITIVE_SCALE);
-                    
-                    /// translating
-                    t.points[j].plusEquals(new Vector(35.0, 0.0, -35.0));
-                    t.points[j].plusEquals(POSITIVE_TRANSLATE);
-                }
-            } else {
-                for (int j = 0; j < t.points.norm; j++) {
-                    //scaling
-                    t.points[j].scale(NEGATIVE_SCALE);
-                    
-                    /// translating
-                    t.points[j].plusEquals(new Vector(0.0, 50.0, 0.0));
-                    t.points[j].plusEquals(NEGATIVE_TRANSLATE);
-                }
-            }*/
-
-            t.getSurfaceArea();
-            triangles.add(t);
-
-        }
-        return triangles;
     }
 
     public void scaleCharges(double scale) {
@@ -688,47 +380,6 @@ public class App extends Application {
                         break;
                     case Q:
                         cameraXform.t.setY(cameraXform.t.getY() + wModifier);
-                        break;
-                    case U:
-
-                        EFieldSlice.setTranslateX(EFieldSlice.getTranslateX() + step);
-                        updateSlice();
-
-                        break;
-                    case I:
-                        EFieldSlice.setTranslateY(EFieldSlice.getTranslateY() + step);
-                        updateSlice();
-                        break;
-                    case O:
-                        EFieldSlice.setTranslateZ(EFieldSlice.getTranslateZ() + step);
-                        updateSlice();
-                        break;
-
-                    case R:
-                        EFieldSlice.rx.setAngle(EFieldSlice.rx.getAngle() + rotStep);
-                        updateSlice();
-                        break;
-                    case T:
-                        EFieldSlice.ry.setAngle(EFieldSlice.ry.getAngle() + rotStep);
-                        updateSlice();
-                        break;
-                    case Y:
-                        EFieldSlice.rz.setAngle(EFieldSlice.rz.getAngle() + rotStep);
-                        updateSlice();
-                        break;
-
-                    case V:
-                        double scaleStep;
-
-                        if (event.isControlDown()) {
-                            scaleStep = 0.95;
-                        } else {
-                            scaleStep = 1.05;
-                        }
-                        EFieldSlice.setScaleX(EFieldSlice.getScaleX() * scaleStep);
-                        EFieldSlice.setScaleY(EFieldSlice.getScaleX() * scaleStep);
-                        EFieldSlice.setScaleZ(EFieldSlice.getScaleX() * scaleStep);
-                        updateSlice();
                         break;
 
                 }

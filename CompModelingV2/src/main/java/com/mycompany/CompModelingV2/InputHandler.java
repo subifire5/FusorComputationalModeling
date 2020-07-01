@@ -11,23 +11,18 @@ package com.mycompany.CompModelingV2;
  */
 import java.io.File;
 import java.util.Scanner;
-//TODO: ADD IN THE STUFF FOR MAKIGN TABLES OF FORCE VECTORS, LOOK FOR THE COMMENT LIKE THIS ONE
+
 public class InputHandler {
 
     int numCharges = 100;
-    String positiveFilePath = "ThinRightPlate.csv";
-    String negativeFilePath = "ThinPlate.csv";
-    String outputFilePath = "outputFile.csv";
     String inputFilePath = "inputFilePath.csv";
     Double posCharge = 100.0;
     Double negCharge = 100.0;
     Double scaleDistance = 0.01;
     Double vAnnode;
     Double vCathode;
-    int shakeUps = 100;
-    Geometry geometry;
-    ChargeDistributer chargeDistributer;
-    Scanner s;
+
+    Scanner s = new Scanner(System.in);
     EField eField;
     Charge[] charges;
     Charge[] positiveCharges;
@@ -38,28 +33,7 @@ public class InputHandler {
 
     public void getInput() {
 
-        s = new Scanner(System.in);
-        Boolean inputRecieved = false;
-        String input = "";
-        while (!inputRecieved) {
-            System.out.println("Would you like to read from an Efield file (R) or generate one (G)");
-            input = s.nextLine();
-            if (input.equals("R") || input.equals("r")) {
-                inputRecieved = true;
-            } else if (input.equals("G") || input.equals("g")) {
-                inputRecieved = true;
-            } else {
-                System.out.println("Please respond with (R) or (G)");
-            }
-        }
-        if (input.equals("R")) {
-            readFromFile();
-        } else {
-            generateFile();
-
-        }
-
-        s.close();
+        readFromFile();
 
     }
 
@@ -270,8 +244,8 @@ public class InputHandler {
             potentialsTable = eField.potentialTable(graphAxis, lowerBound, upperBound, gaps);
             TableGraphWriter tableGraphWriter = new TableGraphWriter();
             String[] headers = {"X", "Y", "Z", "FX", "FY", "FZ", "Force"};
-            tableGraphWriter.writeCSV(potentialsTable, headers, tableFilePath);            
-            
+            tableGraphWriter.writeCSV(potentialsTable, headers, tableFilePath);
+
         } else if (makeForceVectors && makeSlice) {
             graphPlane = tableSettings[0];
             Vector blc = new Vector(tableSettings[1], tableSettings[2], tableSettings[3]);
@@ -315,39 +289,4 @@ public class InputHandler {
         }
     }
 
-    public void generateFile() {
-        positiveFilePath = "";
-        negativeFilePath = "";
-        outputFilePath = "";
-
-        positiveFilePath = fileNameGet("Please type in the annode (positive) file name");
-
-        negativeFilePath = fileNameGet("Please type cathode (negative) file name");
-
-        outputFilePath = fileCreate("Please enter your output file location");
-
-        System.out.println("How many charges of each polarity do you want?");
-        numCharges = Integer.valueOf(s.nextLine());
-
-        System.out.println("What charge are the positive charges?");
-        posCharge = Double.valueOf(s.nextLine());
-        System.out.println("What charge are the negative charges?");
-        negCharge = Double.valueOf(s.nextLine());
-
-        System.out.println("What is the distance, in meters, of 1 unit in the stl files?");
-        scaleDistance = Double.valueOf(s.nextLine());
-
-        System.out.println("How many shake-ups do you want?");
-        shakeUps = Integer.valueOf(s.nextLine());
-
-        geometry = new Geometry(positiveFilePath, negCharge, negativeFilePath, posCharge);
-        geometry.sumUpSurfaceArea();
-
-        chargeDistributer = new ChargeDistributer(geometry, scaleDistance, numCharges);
-        chargeDistributer.balanceCharges(shakeUps);
-        charges = chargeDistributer.charges;
-        TableGraphWriter writer = new TableGraphWriter();
-        writer.writeCSV(charges, outputFilePath);
-
-    }
 }
