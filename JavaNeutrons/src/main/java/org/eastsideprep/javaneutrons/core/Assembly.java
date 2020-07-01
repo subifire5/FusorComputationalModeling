@@ -2,6 +2,8 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
@@ -138,6 +140,7 @@ public class Assembly extends Part {
     Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue vis) {
         double tmin = -1;
         Part closestPart = null;
+        Event closestEvent = null;
         Part p = null;
 
         for (Node node : this.g.getChildren()) {
@@ -155,13 +158,15 @@ public class Assembly extends Part {
                 if (entryEvent != null) {
                     if (tmin == -1 || entryEvent.t < tmin) {
                         tmin = entryEvent.t;
-                        closestPart = p;
+                        closestEvent = entryEvent;
+                        closestEvent.part = p;
                     }
                 }
             }
         }
+        return closestEvent;
 
-        return (tmin == -1) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart, tmin);
+        //return (tmin == -1) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart, tmin);
     }
 
     public void add(Part part) {
@@ -254,6 +259,21 @@ public class Assembly extends Part {
             } else if (node instanceof AssemblyGroup) {
                 // link back to the Assembly that contains it
                 ((AssemblyGroup) node).assembly.addTransform(i,t);
+            }
+            
+        }
+    }
+    
+    
+    // recursive transform insert
+    public List<Part> getParts() {
+        LinkedList<Part> parts = new LinkedList<>();
+          for (Node node : this.g.getChildren()) {
+            if (node instanceof Shape) {
+                parts.add(((Shape) node).part);
+            } else if (node instanceof AssemblyGroup) {
+                // link back to the Assembly that contains it
+                parts.addAll(((AssemblyGroup) node).assembly.getParts());
             }
             
         }

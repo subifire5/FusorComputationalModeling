@@ -39,10 +39,18 @@ public class MonteCarloSimulation {
     private int visualObjectLimit;
     private long start;
     public boolean xOnly = false;
+    public Material interstitialMaterial;
+    public Material initialMaterial;
+    public double initialEnergy;
+    public ArrayList<Neutron> neutrons;
 
     public static boolean visualLimitReached = false;
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
+        this(assembly, origin, Neutron.startingEnergyDD, null, null, g);
+    }
+
+    public MonteCarloSimulation(Assembly assembly, Vector3D origin, double initialEnergy, Material interstitialMaterial, Material initialMaterial, Group g) {
         this.assembly = assembly;
         this.origin = origin;
         this.visualizations = new LinkedTransferQueue<Node>();
@@ -57,6 +65,34 @@ public class MonteCarloSimulation {
         // and a group for event visualiations
         this.viewGroup.getChildren().add(dynamicGroup);
         this.air = Air.getInstance();
+        this.interstitialMaterial = interstitialMaterial;
+        this.initialMaterial = initialMaterial;
+        this.initialEnergy = initialEnergy;
+        this.neutrons = new ArrayList<Neutron>();
+
+        if (this.interstitialMaterial == null) {
+            this.interstitialMaterial = Air.getInstance();
+        }
+
+        if (this.initialMaterial == null) {
+            // todo : find initial material from origin
+            Event e = this.assembly.rayIntersect(origin, Vector3D.PLUS_I, false, visualizations);
+            if (e != null && e.code == Event.Code.Entry) {
+                this.initialMaterial = e.part.shape.getContactMaterial(e.face);
+                if (this.initialMaterial != null) {
+                    System.out.println("Determined initial medium to be " + this.initialMaterial.name);
+                }
+            }
+            if (this.initialMaterial == null) {
+                this.initialMaterial = Air.getInstance();
+                System.out.println("No inital medium found, defaulting to " + this.initialMaterial.name);
+            }
+        }
+    }
+
+    public void checkTallies() {
+        double totalNeutronPath = this.neutrons.stream().mapToDouble(n->n.totalPath).sum();
+        double totalMaterialPath = this.assembly.getParts();
     }
 
     // this will be called from UI thread
@@ -86,34 +122,6 @@ public class MonteCarloSimulation {
         this.visualObjectLimit = visualObjectLimit;
         MonteCarloSimulation.visualLimitReached = false;
 
-//        Vector3D v0 = new Vector3D(200, 100, 100);
-//        Vector3D v1 = new Vector3D(-100, 100, 100);
-//        Vector3D v2 = new Vector3D(-100, 100, -200);
-//        Util.Graphics.drawLine(simVis, v0, v1, Color.GREEN);
-//        Util.Graphics.drawLine(simVis, v1, v2, Color.GREEN);
-//        Util.Graphics.drawLine(simVis, v2, v0, Color.GREEN);
-//
-//        Vector3D start = new Vector3D(0,25,0);
-//        double t = Util.Math.rayTriangleIntersect(start, Vector3D.PLUS_J, v0, v1, v2);
-//        if (t != -1) {
-//            System.out.println("t="+t);
-//            Util.Graphics.drawSphere(simVis, Util.Math.rayPoint(start, Vector3D.PLUS_J, t), 5, "blue");
-//        }
-//        t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_I.add(Vector3D.PLUS_J.scalarMultiply(0.5)), v0, v1, v2);
-//        Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_I.add(Vector3D.PLUS_J.scalarMultiply(0.5)).scalarMultiply(t)), 5, "yellow");
-//        
-//        t = Util.Math.rayTriangleIntersect(Vector3D.ZERO, Vector3D.PLUS_I.add(Vector3D.PLUS_K.scalarMultiply(-0.5)), v0, v1, v2);
-//        Util.Graphics.drawSphere(simVis, Vector3D.ZERO.add(Vector3D.PLUS_I.add(Vector3D.PLUS_K.scalarMultiply(-0.5)).scalarMultiply(t)), 5, "red");
-//
-//
-//        for (int i = 0; i < 10; i++) {
-//            Event e = assembly.rayIntersect(new Vector3D(25,0,0),
-//                    Vector3D.PLUS_I.add(new Vector3D(0, Util.Math.random.nextDouble() * 2 - 1, Util.Math.random.nextDouble() * 2 - 1)),
-//                    simVis);
-//            System.out.println("Event: " + e);
-//            Util.Graphics.visualizeEvent(e, simVis);
-//        }
-        // clear out the old simulation
         this.viewGroup.getChildren().remove(this.dynamicGroup);
         this.dynamicGroup.getChildren().clear();
         this.viewGroup.getChildren().add(this.dynamicGroup);
@@ -134,7 +142,7 @@ public class MonteCarloSimulation {
         ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            Neutron n = new Neutron(this.origin, this.xOnly ? Vector3D.PLUS_I : direction, Neutron.startingEnergyDD, count <= 10);
+            Neutron n = new Neutron(this.origin, this.xOnly ? Vector3D.PLUS_I : direction, this.initialEnergy, count <= 10);
             neutrons.add(n);
         }
 

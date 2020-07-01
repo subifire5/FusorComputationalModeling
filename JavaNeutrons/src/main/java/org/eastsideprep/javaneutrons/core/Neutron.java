@@ -17,6 +17,7 @@ public class Neutron {
     public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
     public boolean trace = false;
     public double entryEnergy = 0;
+    public double totalPath = 0;
 
     ArrayList<Event> history = new ArrayList<>();
 

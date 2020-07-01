@@ -125,10 +125,15 @@ public class TestGM {
         detector2.getTransforms().add(new Translate(-(100 + 1), 0, 0));
         detector2.setColor("pink");
 
+          // vac chamber
+        Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class.getResource("/meshes/vac_chamber.obj")), "Steel");
+      
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall, detector1, detector2);
-        whitmer.addTransform(new Translate(0,-100,0));
+        whitmer.addAll(wall, detector1, detector2, vacChamber);
+        //whitmer.addTransform(new Translate(0, -100, 0));
+
+        whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
         //mcs.xOnly = true;

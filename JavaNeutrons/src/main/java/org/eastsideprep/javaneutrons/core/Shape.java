@@ -34,6 +34,7 @@ public class Shape extends MeshView {
     public Part part;
     public Material containedMaterial;
     public String name;
+    private HashSet<Integer> facesContainingMaterial = new HashSet<>();
 
     // fresh
     public Shape() {
@@ -506,10 +507,10 @@ public class Shape extends MeshView {
     }
 
     public Material getContactMaterial(int faceIndex) {
-        if (faces[faceIndex + 1] == 0) {
-            return null;
+        if (this.facesContainingMaterial.contains(faceIndex)) {
+            return this.containedMaterial;
         }
-        return this.containedMaterial;
+        return null;
     }
 
     //
@@ -597,7 +598,7 @@ public class Shape extends MeshView {
             int nextFace = facesQueue.removeFirst();
 
             // mark it as "special"
-            faces[nextFace + 1] = 1; // regularly 0
+            this.facesContainingMaterial.add(nextFace);
 
             // queue all faces that share points with this one
             addFacesForPoint(faces[nextFace], facesQueue, facesAdded);

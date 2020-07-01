@@ -227,7 +227,7 @@ public class Part {
     }
 
     public ObservableList<Transform> getTransforms() {
-        System.out.println("part "+this+" Tx "+this.shape.getTransforms());
+        //System.out.println("part "+this+" Tx "+this.shape.getTransforms());
         return this.shape.getTransforms();
     }
     
