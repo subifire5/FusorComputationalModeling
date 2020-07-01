@@ -114,7 +114,7 @@ public class Part {
         Event exitEvent;
         Event interactionEvent;
         Event event;
-        double epsilon = 1e-7; // 1 nm (in cm) 
+        double epsilon = 1e-15; // 1 nm (in cm) 
 
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
@@ -131,7 +131,7 @@ public class Part {
                 //throw new IllegalArgumentException();
                 exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
-                if (n.trace) {
+                if (n.mcs.trace) {
                     System.out.println("");
                     System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
                     n.dumpEvents();
@@ -158,7 +158,7 @@ public class Part {
                 }
                 // call for Detector parts to record
                 this.material.processEvent(event);
-                this.processPathLength(event.t, currentEnergy);
+                this.processPathLength(event.t, n);
             }
 
             // also record event for the individual neutron
@@ -171,9 +171,11 @@ public class Part {
     //
     // detector functionality
     //
-    synchronized void processPathLength(double length, double energy) {
-        this.fluenceOverEnergy.record(length / volume, energy);
-        this.totalFluence += length / volume;
+    void processPathLength(double length, Neutron n) {
+        this.fluenceOverEnergy.record(length / volume, n.energy);
+        synchronized (this) {
+            this.totalFluence += length / volume;
+        }
 //        if (name.equals("Detector opposite block")) {
 //            System.out.println("Entry into detector path length log: " + length / volume
 //                    + ", new total: " + this.totalFluence
@@ -181,7 +183,7 @@ public class Part {
 //        }
     }
 
-    synchronized void processEntry(Neutron n) {
+    void processEntry(Neutron n) {
         this.entriesOverEnergy.record(1, n.energy);
         n.entryEnergy = n.energy;
 
@@ -222,6 +224,10 @@ public class Part {
         return this.totalFluence;
     }
 
+    public double getTotalPath() {
+        return this.totalFluence * this.volume;
+    }
+
     public int getTotalEvents() {
         return this.totalEvents;
     }
@@ -230,7 +236,7 @@ public class Part {
         //System.out.println("part "+this+" Tx "+this.shape.getTransforms());
         return this.shape.getTransforms();
     }
-    
+
     public void addTransform(Transform t) {
         this.shape.getTransforms().add(t);
     }

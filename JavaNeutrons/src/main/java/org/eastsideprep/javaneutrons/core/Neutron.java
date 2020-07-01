@@ -15,29 +15,33 @@ public class Neutron {
     public Vector3D direction; // no units
     public Vector3D position; // unit: (cm,cm,cm)
     public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
-    public boolean trace = false;
     public double entryEnergy = 0;
     public double totalPath = 0;
+    public MonteCarloSimulation mcs;
 
     ArrayList<Event> history = new ArrayList<>();
 
-    public Neutron(Vector3D position, Vector3D direction, double energy, boolean trace) {
-        setPosition(position);
+    public Neutron(Vector3D position, Vector3D direction, double energy, MonteCarloSimulation mcs) {
+        this.position = position;
         setDirectionAndEnergy(direction, energy);
-        this.trace = trace;
+        this.mcs = mcs;
     }
 
     public final void setPosition(LinkedTransferQueue<Node> q, Vector3D position) {
         Vector3D oldPosition = this.position;
         this.position = position;
 
-        if (this.trace) {
+        this.totalPath += position.subtract(oldPosition).getNorm();
+        if (this.mcs.trace) {
             Util.Graphics.drawLine(q, oldPosition, position, 0.1, this.energy);
         }
     }
 
-    public final void setPosition(Vector3D position) {
-        this.position = position;
+    public final void setPosition(Vector3D newPosition) {
+        if (this.position != null) {
+            this.totalPath += newPosition.subtract(this.position).getNorm();
+        }
+        this.position = newPosition;
     }
 
     public final void setVelocity(Vector3D velocity) {
@@ -95,7 +99,7 @@ public class Neutron {
             // update myself (energy and direction)
             this.setVelocity(velocityNLab);
             event.energyOut = this.energy;
-            if (this.trace && false) {
+            if (this.mcs.trace && false) {
                 synchronized (Neutron.class) {
                     System.out.println("Particle: " + event.element.name);
                     System.out.println("Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));
@@ -107,7 +111,7 @@ public class Neutron {
                     System.out.println("");
                 }
             }
-        } else  if (event.code == Event.Code.Capture) {
+        } else if (event.code == Event.Code.Capture) {
             // capture
             Environment.recordCapture();
         }
@@ -116,13 +120,13 @@ public class Neutron {
     //replace parameters with 1 Neutron object??
     public void record(Event e) {
         //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
-        if (this.trace) {
+        if (this.mcs.trace) {
             history.add(e);
         }
     }
 
     public void dumpEvents() {
-        if (this.trace) {
+        if (this.mcs.trace) {
             synchronized (Event.class) {
                 history.stream().forEach(event -> System.out.println(event));
             }

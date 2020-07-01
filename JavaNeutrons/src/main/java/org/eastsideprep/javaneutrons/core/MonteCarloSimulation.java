@@ -3,7 +3,6 @@ package org.eastsideprep.javaneutrons.core;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
@@ -45,6 +44,7 @@ public class MonteCarloSimulation {
     public Material initialMaterial;
     public double initialEnergy;
     public ArrayList<Neutron> neutrons;
+    public boolean trace;
 
     public static boolean visualLimitReached = false;
 
@@ -66,14 +66,13 @@ public class MonteCarloSimulation {
         this.viewGroup.getChildren().add(this.assembly.getGroup());
         // and a group for event visualiations
         this.viewGroup.getChildren().add(dynamicGroup);
-        this.air = Air.getInstance();
         this.interstitialMaterial = interstitialMaterial;
         this.initialMaterial = initialMaterial;
         this.initialEnergy = initialEnergy;
         this.neutrons = new ArrayList<Neutron>();
 
         if (this.interstitialMaterial == null) {
-            this.interstitialMaterial = Air.getInstance();
+            this.interstitialMaterial = Air.getInstance("Interstitial air");
         }
 
         if (this.initialMaterial == null) {
@@ -86,18 +85,30 @@ public class MonteCarloSimulation {
                 }
             }
             if (this.initialMaterial == null) {
-                this.initialMaterial = Air.getInstance();
+                this.initialMaterial = Air.getInstance("Interstitial air");
                 System.out.println("No inital medium found, defaulting to " + this.initialMaterial.name);
             }
         }
     }
 
-    
-//    public void checkTallies() {
-//        double totalNeutronPath = this.neutrons.stream().mapToDouble(n->n.totalPath).sum();
-//        double totalPartsPath = this.assembly.getParts().stream().mapToDouble(p->p.totalPath).sum();
-//        double totalMaterialsPath = new HashSet<Material>(Material.materials.values()).stream().mapToDouble(m->m.totalFreePath).sum();
-//    }
+    public void checkTallies() {
+        double totalNeutronPath = this.neutrons.stream().mapToDouble(n -> n.totalPath).sum();
+        double totalPartsPath = this.assembly.getParts().stream().mapToDouble(p -> p.getTotalPath()).sum();
+        Set<Material> materials = this.assembly.getMaterials();
+        double totalMaterialsPath = materials.stream().mapToDouble(m -> m == null ? 0.0 : m.totalFreePath).sum();
+        Set<Material> interstitials = this.assembly.getContainedMaterials();
+        interstitials.add(initialMaterial);
+        interstitials.add(interstitialMaterial);
+        double totalInterstitialsPath = interstitials.stream().mapToDouble(m->m.totalFreePath).sum();
+
+        System.out.println("Total neutron path: " + String.format("%6.3e", totalNeutronPath));
+        System.out.println("Total parts path: " + String.format("%6.3e", totalPartsPath));
+        System.out.println("Total materials path: " + String.format("%6.3e", totalMaterialsPath));
+        System.out.println("Total interstitials path: " + String.format("%6.3e", totalInterstitialsPath));
+        System.out.println("");
+        System.out.println("n: "+String.format("%10.7e", totalNeutronPath) +" = p+i: "+String.format("%10.7e", totalPartsPath+totalInterstitialsPath));
+        System.out.println("n: "+String.format("%10.7e", totalNeutronPath) +" = m+i: "+String.format("%10.7e", totalMaterialsPath+totalInterstitialsPath));
+    }
 
     // this will be called from UI thread
     public long update() {
@@ -142,19 +153,19 @@ public class MonteCarloSimulation {
 
         // and enviroment (will count escaped neutrons)
         Environment.getInstance().reset();
+        this.trace = count <= 10;
 
-        ArrayList<Neutron> neutrons = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             Vector3D direction = Util.Math.randomDir();
-            Neutron n = new Neutron(this.origin, this.xOnly ? Vector3D.PLUS_I : direction, this.initialEnergy, count <= 10);
-            neutrons.add(n);
+            Neutron n = new Neutron(this.origin, this.xOnly ? Vector3D.PLUS_I : direction, this.initialEnergy, this);
+            this.neutrons.add(n);
         }
 
         Thread th = new Thread(() -> {
             if (!MonteCarloSimulation.parallel || this.lastCount < 100) {
-                neutrons.stream().forEach(n -> simulateNeutron(n));
+                this.neutrons.stream().forEach(n -> simulateNeutron(n));
             } else {
-                neutrons.parallelStream().forEach(n -> simulateNeutron(n));
+                this.neutrons.parallelStream().forEach(n -> simulateNeutron(n));
             }
         });
 

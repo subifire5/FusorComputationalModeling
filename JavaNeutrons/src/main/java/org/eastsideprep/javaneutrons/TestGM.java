@@ -28,6 +28,7 @@ import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.core.Shape;
+import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
 /**
@@ -54,7 +55,7 @@ public class TestGM {
 
     public static XYChart.Series customTest(boolean log, boolean xOnly) {
         EnergyEVHistogram test = new EnergyEVHistogram();
-        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, false);
+        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, null);
         Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
         event.element = E1H.getInstance();
 
@@ -133,7 +134,7 @@ public class TestGM {
         whitmer.addAll(wall, detector1, detector2, vacChamber);
         //whitmer.addTransform(new Translate(0, -100, 0));
 
-        whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
+        whitmer.containsMaterialAt(new Vacuum("Insterstitial vacuum"), Vector3D.ZERO);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
         //mcs.xOnly = true;

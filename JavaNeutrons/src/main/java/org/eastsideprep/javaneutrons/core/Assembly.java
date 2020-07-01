@@ -2,9 +2,13 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -73,11 +77,8 @@ public class Assembly extends Part {
         Event event;
         double t;
 
-        // we will mostly travel in air
-        Air air = Air.getInstance();
-
         // we start in a certain medium. Todo: API for either figring that out or setting it
-        Material medium = air;
+        Material medium = n.mcs.initialMaterial;
 
         do {
             // find the closest part we intersect with
@@ -110,7 +111,7 @@ public class Assembly extends Part {
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
                 // coming out, we might be in a new material
-                medium = event.exitMaterial != null ? event.exitMaterial : air;
+                medium = event.exitMaterial != null ? event.exitMaterial : medium;
                 //System.out.println("Exit to material: "+medium.name);
             }
             // if things happened far enough from the origin, call it gone
@@ -229,16 +230,16 @@ public class Assembly extends Part {
                 volume += ((Shape) node).getVolume();
             } else if (node instanceof AssemblyGroup) {
                 // link back to the Assembly that contains it
-                volume+=  ((AssemblyGroup) node).assembly.getVolume();
+                volume += ((AssemblyGroup) node).assembly.getVolume();
             }
-            
+
         }
         return volume;
     }
-    
+
     // recursive transform add
     public void addTransform(Transform t) {
-          for (Node node : this.g.getChildren()) {
+        for (Node node : this.g.getChildren()) {
             if (node instanceof Shape) {
                 // link back to the Part that contains it
                 ((Shape) node).getTransforms().add(t);
@@ -246,37 +247,47 @@ public class Assembly extends Part {
                 // link back to the Assembly that contains it
                 ((AssemblyGroup) node).assembly.addTransform(t);
             }
-            
+
         }
     }
-    
+
     // recursive transform insert
     public void addTransform(int i, Transform t) {
-          for (Node node : this.g.getChildren()) {
+        for (Node node : this.g.getChildren()) {
             if (node instanceof Shape) {
                 // link back to the Part that contains it
-                ((Shape) node).getTransforms().add(i,t);
+                ((Shape) node).getTransforms().add(i, t);
             } else if (node instanceof AssemblyGroup) {
                 // link back to the Assembly that contains it
-                ((AssemblyGroup) node).assembly.addTransform(i,t);
+                ((AssemblyGroup) node).assembly.addTransform(i, t);
             }
-            
+
         }
     }
-    
-    
-    // recursive transform insert
+
+    //  parts list
     public List<Part> getParts() {
         LinkedList<Part> parts = new LinkedList<>();
-          for (Node node : this.g.getChildren()) {
+        for (Node node : this.g.getChildren()) {
             if (node instanceof Shape) {
                 parts.add(((Shape) node).part);
             } else if (node instanceof AssemblyGroup) {
                 // link back to the Assembly that contains it
                 parts.addAll(((AssemblyGroup) node).assembly.getParts());
             }
-            
+
         }
         return parts;
+    }
+
+    ;
+    
+    
+    public Set<Material> getMaterials() {
+        return getParts().stream().map(p -> p.material).filter(m -> m != null).collect(Collectors.toSet());
+    }
+
+    public Set<Material> getContainedMaterials() {
+        return getParts().stream().map(p -> p.shape.containedMaterial).filter(m -> m != null).collect(Collectors.toSet());
     }
 }
