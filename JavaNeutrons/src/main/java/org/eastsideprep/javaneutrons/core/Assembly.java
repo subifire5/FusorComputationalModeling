@@ -277,5 +277,6 @@ public class Assembly extends Part {
             }
             
         }
+        return parts;
     }
 }

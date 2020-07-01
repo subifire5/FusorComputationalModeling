@@ -3,7 +3,9 @@ package org.eastsideprep.javaneutrons.core;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import javafx.application.Platform;
@@ -90,10 +92,12 @@ public class MonteCarloSimulation {
         }
     }
 
-    public void checkTallies() {
-        double totalNeutronPath = this.neutrons.stream().mapToDouble(n->n.totalPath).sum();
-        double totalMaterialPath = this.assembly.getParts();
-    }
+    
+//    public void checkTallies() {
+//        double totalNeutronPath = this.neutrons.stream().mapToDouble(n->n.totalPath).sum();
+//        double totalPartsPath = this.assembly.getParts().stream().mapToDouble(p->p.totalPath).sum();
+//        double totalMaterialsPath = new HashSet<Material>(Material.materials.values()).stream().mapToDouble(m->m.totalFreePath).sum();
+//    }
 
     // this will be called from UI thread
     public long update() {
