@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.io.InputStream;
@@ -12,14 +7,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
-/**
- *
- * @author gunnar
- */
 public class Element {
 
     private class CSEntry {

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.io.File;
@@ -30,12 +25,7 @@ import javafx.scene.shape.VertexFormat;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.fxyz3d.importers.Importer3D;
-//import org.j3d.loaders.stl.STLFileReader;
 
-/**
- *
- * @author gunnar
- */
 public class Shape extends MeshView {
 
     public TriangleMesh mesh = null;

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
@@ -15,10 +10,6 @@ import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.materials.Air;
 
-/**
- *
- * @author gunnar
- */
 public class Assembly extends Part {
     // todo: acceleration structure
 

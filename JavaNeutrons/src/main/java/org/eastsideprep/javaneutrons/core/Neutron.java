@@ -1,20 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.core.Environment;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
-/**
- *
- * @author gunnar
- */
 public class Neutron {
 
     final public static double mass = 1.67492749804e-27; // SI

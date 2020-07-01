@@ -1,7 +1,5 @@
 package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.core.Neutron;
-import org.eastsideprep.javaneutrons.core.Environment;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,16 +17,8 @@ import javafx.scene.chart.NumberAxis;
 import javafx.util.StringConverter;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.TestGM;
-import org.eastsideprep.javaneutrons.core.Assembly;
-import org.eastsideprep.javaneutrons.core.Element;
-import org.eastsideprep.javaneutrons.core.Material;
-import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.materials.Air;
 
-/**
- *
- * @author gunnar
- */
 public class MonteCarloSimulation {
 
     static boolean parallel = true;

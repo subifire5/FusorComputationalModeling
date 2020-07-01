@@ -1,12 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
-import org.eastsideprep.javaneutrons.core.Event;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import javafx.geometry.Point3D;
@@ -25,10 +18,6 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-/**
- *
- * @author gmein
- */
 public class Util {
 
     static public class Math {
