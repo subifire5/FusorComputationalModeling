@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.assemblies.Material;
+import org.eastsideprep.javaneutrons.core.Material;
 
 //
 // Wood (Material 359, Southern Pine, with omissions)

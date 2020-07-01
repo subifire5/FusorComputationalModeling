@@ -5,6 +5,8 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
+import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Event;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import javafx.geometry.Point3D;

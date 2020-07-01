@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.assemblies;
+package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,11 +14,6 @@ import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.core.Event;
-import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
-import org.eastsideprep.javaneutrons.core.Neutron;
-import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.shapes.Shape;
 
 /**
  *
@@ -241,7 +236,16 @@ public class Part {
     }
 
     public ObservableList<Transform> getTransforms() {
+        System.out.println("part "+this+" Tx "+this.shape.getTransforms());
         return this.shape.getTransforms();
+    }
+    
+    public void addTransform(Transform t) {
+        this.shape.getTransforms().add(t);
+    }
+
+    public void addTransform(int i, Transform t) {
+        this.shape.getTransforms().add(i, t);
     }
 
     public void setColor(String color) {

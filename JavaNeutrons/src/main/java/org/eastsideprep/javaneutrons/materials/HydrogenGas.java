@@ -5,7 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.assemblies.Gas;
+import org.eastsideprep.javaneutrons.core.Gas;
 import org.eastsideprep.javaneutrons.core.Event;
 
 public class HydrogenGas extends Gas {

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.javaneutrons.assemblies;
+package org.eastsideprep.javaneutrons.core;
 
 import java.io.InputStream;
 import java.text.DecimalFormat;
@@ -15,8 +15,6 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
-import org.eastsideprep.javaneutrons.core.Neutron;
-import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *

@@ -5,10 +5,11 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
+import org.eastsideprep.javaneutrons.core.Neutron;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
-import org.eastsideprep.javaneutrons.assemblies.Element;
-import org.eastsideprep.javaneutrons.assemblies.Material;
-import org.eastsideprep.javaneutrons.assemblies.Part;
+import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Material;
+import org.eastsideprep.javaneutrons.core.Part;
 
 /**
  *
