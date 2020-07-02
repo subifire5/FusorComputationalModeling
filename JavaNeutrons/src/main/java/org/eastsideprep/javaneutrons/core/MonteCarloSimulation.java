@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -29,30 +30,31 @@ public class MonteCarloSimulation {
         void reportProgress(int p);
     }
 
-    private final Assembly assembly;
+    public final Assembly assembly;
     private final Vector3D origin;
+    private Vector3D direction;
     private final AtomicLong completed;
-    private final LinkedTransferQueue visualizations;
+    public final LinkedTransferQueue visualizations;
     private final Group viewGroup;
     private final Group dynamicGroup;
     private Air air;
     public long lastCount;
     private int visualObjectLimit;
     private long start;
-    public boolean xOnly = false;
     public Material interstitialMaterial;
     public Material initialMaterial;
     public double initialEnergy;
     public ArrayList<Neutron> neutrons;
     public boolean trace;
+    public boolean scatter;
 
     public static boolean visualLimitReached = false;
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
-        this(assembly, origin, Neutron.startingEnergyDD, null, null, g);
+        this(assembly, origin, null, Neutron.startingEnergyDD, null, null, g);
     }
 
-    public MonteCarloSimulation(Assembly assembly, Vector3D origin, double initialEnergy, Material interstitialMaterial, Material initialMaterial, Group g) {
+    public MonteCarloSimulation(Assembly assembly, Vector3D origin, Vector3D direction, double initialEnergy, Material interstitialMaterial, Material initialMaterial, Group g) {
         this.assembly = assembly;
         this.origin = origin;
         this.visualizations = new LinkedTransferQueue<Node>();
@@ -70,6 +72,7 @@ public class MonteCarloSimulation {
         this.initialMaterial = initialMaterial;
         this.initialEnergy = initialEnergy;
         this.neutrons = new ArrayList<Neutron>();
+        this.direction = direction;
 
         if (this.interstitialMaterial == null) {
             this.interstitialMaterial = Air.getInstance("Interstitial air");
@@ -85,7 +88,7 @@ public class MonteCarloSimulation {
                 }
             }
             if (this.initialMaterial == null) {
-                this.initialMaterial = Air.getInstance("Interstitial air");
+                this.initialMaterial = this.interstitialMaterial;
                 System.out.println("No inital medium found, defaulting to " + this.initialMaterial.name);
             }
         }
@@ -99,15 +102,15 @@ public class MonteCarloSimulation {
         Set<Material> interstitials = this.assembly.getContainedMaterials();
         interstitials.add(initialMaterial);
         interstitials.add(interstitialMaterial);
-        double totalInterstitialsPath = interstitials.stream().mapToDouble(m->m.totalFreePath).sum();
+        double totalInterstitialsPath = interstitials.stream().mapToDouble(m -> m.totalFreePath).sum();
 
         System.out.println("Total neutron path: " + String.format("%6.3e", totalNeutronPath));
         System.out.println("Total parts path: " + String.format("%6.3e", totalPartsPath));
         System.out.println("Total materials path: " + String.format("%6.3e", totalMaterialsPath));
         System.out.println("Total interstitials path: " + String.format("%6.3e", totalInterstitialsPath));
         System.out.println("");
-        System.out.println("n: "+String.format("%10.7e", totalNeutronPath) +" = p+i: "+String.format("%10.7e", totalPartsPath+totalInterstitialsPath));
-        System.out.println("n: "+String.format("%10.7e", totalNeutronPath) +" = m+i: "+String.format("%10.7e", totalMaterialsPath+totalInterstitialsPath));
+        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = p+i: " + String.format("%10.7e", totalPartsPath + totalInterstitialsPath));
+        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = m+i: " + String.format("%10.7e", totalMaterialsPath + totalInterstitialsPath));
     }
 
     // this will be called from UI thread
@@ -134,6 +137,7 @@ public class MonteCarloSimulation {
 
     public void simulateNeutrons(long count, int visualObjectLimit) {
         this.lastCount = count;
+        this.trace = count <= 10;
         this.visualObjectLimit = visualObjectLimit;
         MonteCarloSimulation.visualLimitReached = false;
 
@@ -154,22 +158,37 @@ public class MonteCarloSimulation {
         // and enviroment (will count escaped neutrons)
         Environment.getInstance().reset();
         this.trace = count <= 10;
+        
+//        Stream<Neutron> sn = Stream.iterate(null, (n)->new Neutron(this.origin, 
+//                this.direction != null ? this.direction : Util.Math.randomDir(), 
+//                this.initialEnergy, this));
 
-        for (long i = 0; i < count; i++) {
-            Vector3D direction = Util.Math.randomDir();
-            Neutron n = new Neutron(this.origin, this.xOnly ? Vector3D.PLUS_I : direction, this.initialEnergy, this);
-            this.neutrons.add(n);
-        }
-
-        Thread th = new Thread(() -> {
-            if (!MonteCarloSimulation.parallel || this.lastCount < 100) {
-                this.neutrons.stream().forEach(n -> simulateNeutron(n));
-            } else {
-                this.neutrons.parallelStream().forEach(n -> simulateNeutron(n));
+        if (count > 0) {
+            for (long i = 0; i < count; i++) {
+                Vector3D dir = this.direction != null ? this.direction : Util.Math.randomDir();
+                Neutron n = new Neutron(this.origin, dir, this.initialEnergy, this);
+                this.neutrons.add(n);
             }
-        });
+            Stream<Neutron> sn = this.neutrons.stream();
 
-        Platform.runLater(() -> th.start());
+            Thread th = new Thread(() -> {
+                if (!MonteCarloSimulation.parallel || this.lastCount < 100) {
+                    sn.forEach(n -> simulateNeutron(n));
+                } else {
+                    sn.parallel().forEach(n -> simulateNeutron(n));
+                }
+            });
+
+            Platform.runLater(() -> th.start());
+        } else {
+            this.scatter = false;
+            do {
+                Vector3D dir = this.direction != null ? this.direction : Util.Math.randomDir();
+                Neutron n = new Neutron(this.origin, dir, this.initialEnergy, this);
+                n.mcs = this;
+                simulateNeutron(n);
+            } while (!this.scatter);
+        }
     }
 
     public long getElapsedTime() {
@@ -179,6 +198,9 @@ public class MonteCarloSimulation {
     public void simulateNeutron(Neutron n) {
         this.assembly.evolveNeutronPath(n, this.visualizations, true);
         completed.incrementAndGet();
+        if (trace) {
+            System.out.println("");
+        }
     }
 
     private class Formatter extends StringConverter<Number> {
@@ -258,8 +280,8 @@ public class MonteCarloSimulation {
                         bc.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
                         bc.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                     } else {
-                        m = Material.getByName(detector.substring(detector.indexOf(' ') + 1));
-                        bc.setTitle("Interstitial material \"" + m.name + "\", total events: " + m.totalEvents);
+                        m = Material.getByName(detector);
+                        bc.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
                         bc.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
@@ -303,12 +325,12 @@ public class MonteCarloSimulation {
                     return lc;
 
                 case "Custom test":
-                    lc = new LineChart<>(xAxis, yAxis);
-                    lc.setTitle("Custom test");
+                    bc = new BarChart<>(xAxis, yAxis);
+                    bc.setTitle("Custom test");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("counts");
-                    lc.getData().add(TestGM.customTest(log, detector.equals("X-axis only")));
-                    return lc;
+                    bc.getData().add(TestGM.customTest(log, detector.equals("X-axis only")));
+                    return bc;
 
                 default:
                     return null;

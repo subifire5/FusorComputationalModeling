@@ -2,19 +2,16 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.materials.Air;
 
 public class Assembly extends Part {
     // todo: acceleration structure
@@ -97,7 +94,7 @@ public class Assembly extends Part {
                 if (event.position.getNorm() <= Environment.limit) {
                     // scattering / absorption in medium did really happen, process it
                     n.setPosition(visualizations, event.position);
-                    medium.processEvent(event);
+                    medium.processEvent(event, true);
                     Util.Graphics.visualizeEvent(event, visualizations);
                 }
             } else {
@@ -107,7 +104,7 @@ public class Assembly extends Part {
                 n.setPosition(visualizations, partEvent.position);
                 n.record(partEvent);
                 partEvent.neutron = n;
-                medium.processEvent(partEvent);
+                medium.processEvent(partEvent, true);
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
                 // coming out, we might be in a new material
@@ -122,7 +119,7 @@ public class Assembly extends Part {
                 event.code = Event.Code.Gone;
                 event.neutron = n;
                 n.setPosition(visualizations, event.position);
-                medium.processEvent(event);
+                medium.processEvent(event, true);
                 //n.setPosition(visualizations, event.position);
             }
             //visualizeEvent(event, visualizations);

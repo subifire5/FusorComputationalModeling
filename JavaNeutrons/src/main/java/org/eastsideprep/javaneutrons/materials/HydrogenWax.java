@@ -6,21 +6,19 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Gas;
-import org.eastsideprep.javaneutrons.core.Event;
 
-public class HydrogenGas extends Gas {
+public class HydrogenWax extends Gas {
 
-    private static HydrogenGas instance;
+    private static HydrogenWax instance;
 
-    HydrogenGas(double pressure) {
-        this("HydrogenGas", pressure);
+    HydrogenWax(double pressure) {
+        this("HydrogenWax", pressure);
     }
 
-    HydrogenGas(String name, double pressure) {
+    HydrogenWax(String name, double pressure) {
         super(name, pressure);
         
-        double massDensitySTP = 0.084;
-        // to equal 1H density in paraffin wax: massDensitySTP = 930.0*2.0/3.0;
+        double massDensitySTP = 138.1; //930.0*2.0/3.0/4.4894;  // to equal 1H density in paraffin wax
 
         this.addComponent(E1H.getInstance(), 1);
 
@@ -30,13 +28,12 @@ public class HydrogenGas extends Gas {
 
 
     // we only need one of these objects
-    public static synchronized HydrogenGas getInstance() {
+    public static synchronized HydrogenWax getInstance() {
         if (instance == null) {
-            HydrogenGas.instance = new HydrogenGas(100);
+            HydrogenWax.instance = new HydrogenWax(100);
         }
         return instance;
     }
-    
- 
+  
 
 }

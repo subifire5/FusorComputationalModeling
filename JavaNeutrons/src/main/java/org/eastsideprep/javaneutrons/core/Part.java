@@ -119,7 +119,10 @@ public class Part {
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
         n.setPosition(visualizations, Util.Math.rayPoint(n.position, n.direction, epsilon));
-
+        if (n.mcs.trace) {
+            System.out.println("Neutron " + n.hashCode() + " entry into part " + this.name);
+            System.out.println(" Neutron energy in: " + String.format("%6.3e eV", n.energy / Util.Physics.eV));
+        }
         this.processEntry(n);
 
         do {
@@ -157,7 +160,7 @@ public class Part {
                     event.exitMaterial = this.shape.getContactMaterial(event.face);
                 }
                 // call for Detector parts to record
-                this.material.processEvent(event);
+                this.material.processEvent(event, false);
                 this.processPathLength(event.t, n);
             }
 

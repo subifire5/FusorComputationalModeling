@@ -60,7 +60,7 @@ public class App extends Application {
         this.sim = TestGM.simulationTest(viewGroup);
 
         // control buttons and progress 
-        TextField tf = new TextField("200");
+        TextField tf = new TextField("10");
         tf.setPrefWidth(200);
 
         bRun = new Button("Start simulation - GM");
@@ -201,8 +201,10 @@ public class App extends Application {
                 (e) -> {
                     long completed;
                     completed = sim.update();
-                    progress.setText("Complete: " + Math.round(100 * completed / count) + " %");
-                    if (completed == count) {
+                    if (count > 0) {
+                        progress.setText("Complete: " + Math.round(100 * completed / count) + " %");
+                    }
+                    if (completed == count || (count == 0 && sim.scatter)) {
                         tl.stop();
                         bRun.setDisable(false);
                         bRunET.setDisable(false);

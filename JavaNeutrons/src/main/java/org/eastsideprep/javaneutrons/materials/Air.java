@@ -16,14 +16,14 @@ public class Air extends Gas {
 
     // use this for Air (or getInstance()
     // pressure is in kPa
-    Air(double pressure) {
+    public Air(double pressure) {
         this("Air", pressure);
 
     }
 
     // use this for air at different pressure
     // give it a different name, of course
-    Air(String name, double pressure) {
+    public Air(String name, double pressure) {
         super(name, pressure);
 
         double massDensitySTP = 1.205;
@@ -53,12 +53,5 @@ public class Air extends Gas {
         return instance;
     }
 
-    @Override
-    public void processEvent(Event e) {
-//        if (e.code == Event.Code.Capture && e.neutron.energy >= 2*Util.Physics.eV){
-//            System.out.println("hah!");
-//        }
-        super.processEvent(e);
-    }
-
+  
 }

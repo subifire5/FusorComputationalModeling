@@ -3,6 +3,7 @@ package org.eastsideprep.javaneutrons.core;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
 public class Neutron {
@@ -92,23 +93,30 @@ public class Neutron {
             Vector3D velocityNCM = this.velocity.subtract(velocityCM);
             //calculate elastic collision: entry speed = exit speed, random direction
             velocityNCM = Util.Math.randomDir().scalarMultiply(velocityNCM.getNorm());
-            double neutronSpeedCM = velocityNCM.getNorm();
+            //double neutronSpeedCM = velocityNCM.getNorm();
             //convert back into lab frame
             Vector3D velocityNLab = velocityNCM.add(velocityCM);
 
             // update myself (energy and direction)
+            double angle = Math.acos(this.velocity.normalize().dotProduct(velocityNLab.normalize()))/Math.PI*180;
+            double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(velocityNLab.normalize()))/Math.PI*180;
             this.setVelocity(velocityNLab);
             event.energyOut = this.energy;
-            if (this.mcs.trace && false) {
+            if (this.mcs != null && this.mcs.trace) {
+                this.mcs.scatter = true;
                 synchronized (Neutron.class) {
-                    System.out.println("Particle: " + event.element.name);
-                    System.out.println("Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));
-                    System.out.println("Neutron energy in: " + String.format("%6.3e eV", neutronEnergyIn / Util.Physics.eV));
-                    System.out.println("Speed of Neutron: " + String.format("%6.3e cm/s", neutronSpeed));
-                    System.out.println("Speed of Particle: " + String.format("%6.3e cm/s", particleSpeed));
-                    System.out.println("Speed of CM: " + String.format("%6.3e cm/s", speedCM));
-                    System.out.println("Neutron energy out: " + String.format("%6.3e eV", this.energy / Util.Physics.eV));
-                    System.out.println("");
+                    System.out.println("Neutron: "+this.hashCode());
+                    System.out.println(" Particle: " + event.element.name);
+                    System.out.println(" Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));
+                    System.out.println(" Neutron energy in: " + String.format("%6.3e eV", neutronEnergyIn / Util.Physics.eV));
+                    System.out.println(" Speed of Neutron: " + String.format("%6.3e cm/s", neutronSpeed));
+                    System.out.println(" Speed of Particle: " + String.format("%6.3e cm/s", particleSpeed));
+                    System.out.println(" Speed of CM: " + String.format("%6.3e cm/s", speedCM));
+                    System.out.println(" Neutron energy out: " + String.format("%6.3e eV", this.energy / Util.Physics.eV));
+                    System.out.println(" Scattering angle: "+angle);
+                    System.out.println(" Scattering angle with x-axis: "+angleWithX);
+                    System.out.println(" Velocity unit dir "+this.velocity.normalize());
+                    //Util.Graphics.drawLine(this.mcs.visualizations, position, position.add(velocity.normalize().scalarMultiply(45)), 1, Color.BLACK);
                 }
             }
         } else if (event.code == Event.Code.Capture) {

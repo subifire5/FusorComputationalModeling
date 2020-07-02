@@ -20,22 +20,27 @@ public class Event {
     public int face;
     public Material exitMaterial;
 
-    public Event(double x, double y, double z, Event.Code c) {
-        this.position = new Vector3D(x, y, z);
-        this.code = c;
-    }
-
-    public Event(double x, double y, double z, Event.Code c, double t) {
-        this.position = new Vector3D(x, y, z);
-        this.code = c;
-        this.t = t;
-    }
+//    public Event(double x, double y, double z, Event.Code c) {
+//        this.position = new Vector3D(x, y, z);
+//        this.code = c;
+//    }
+//
+//    public Event(double x, double y, double z, Event.Code c, double t) {
+//        this.position = new Vector3D(x, y, z);
+//        this.code = c;
+//        this.t = t;
+//    }
 
     public Event(Vector3D position, Event.Code c) {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.code = c;
     }
 
+   public Event(Vector3D position, Event.Code c, double t) {
+        this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
+        this.code = c;
+        this.t = t;
+    }
     public Event(Vector3D position, Event.Code c, double t, int face) {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.code = c;

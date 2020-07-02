@@ -8,6 +8,7 @@ package org.eastsideprep.javaneutrons;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -89,7 +90,8 @@ public class StatsDisplay extends Group {
             if (n != null && n instanceof Chart) {
                 XYChart c = (XYChart) n;
                 double v = new_val.doubleValue();
-                v = v * v / 100;
+                int scale = 5;
+                v = Math.pow(v,scale) / Math.pow(100, scale-1);
                 NumberAxis a = (NumberAxis) c.getYAxis();
                 a.setAutoRanging(false);
                 a.setTickLabelFormatter(new TickConverter());
@@ -174,16 +176,15 @@ public class StatsDisplay extends Group {
         this.object.getItems().clear();
         populateComboBoxWithParts();
         ArrayList<String> ms = new ArrayList<>(Material.materials.keySet());
-        List<String> as = ms.stream().map(s -> "Interstitial " + s).collect(Collectors.toList());
-        populateComboBox(as);
+        populateComboBox(ms);
     }
 
     private void populateComboBoxWithPartsAndAir() {
         this.object.getItems().clear();
         populateComboBoxWithParts();
-        ArrayList<String> ms = new ArrayList<>();
-        ms.add("Interstitial air");
-        populateComboBox(ms);
+        Set<Material> sm = this.sim.assembly.getContainedMaterials();
+        sm.add(this.sim.interstitialMaterial);
+        populateComboBox(sm.stream().map(m->m.name).collect(Collectors.toList()));
     }
 
     private void populateComboBox(Collection<String> s) {
