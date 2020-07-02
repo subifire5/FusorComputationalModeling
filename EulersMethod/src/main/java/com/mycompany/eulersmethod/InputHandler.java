@@ -36,14 +36,7 @@ public class InputHandler {
 
     public void getInput() {
 
-        s = new Scanner(System.in);
-        Boolean inputRecieved = false;
-        String input = "";
-        
         readFromFile();
-
-
-        s.close();
 
     }
 
