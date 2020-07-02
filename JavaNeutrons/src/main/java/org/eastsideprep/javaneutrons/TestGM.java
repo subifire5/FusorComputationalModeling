@@ -8,17 +8,26 @@ package org.eastsideprep.javaneutrons;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.chart.XYChart;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.assemblies.Assembly;
-import org.eastsideprep.javaneutrons.assemblies.Part;
+import org.eastsideprep.javaneutrons.core.Assembly;
+import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Part;
+import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
+import org.eastsideprep.javaneutrons.materials.E12C;
+import org.eastsideprep.javaneutrons.materials.E1H;
+import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
-import org.eastsideprep.javaneutrons.shapes.Shape;
+import org.eastsideprep.javaneutrons.core.Shape;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
 /**
@@ -28,7 +37,35 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
+
+//        LogHistogram test = new LogHistogram();
+//        test.record(1000, 0.5e-6);
+//        test.record(2000, 1e-6);
+//        test.record(2100, 1.1e-6);
+//        test.record(2500, 1.5e-6);
+//        
+//        test.record(3000, 0.5e7);
+//        test.record(4000, 1e7);
+//        test.record(5000, 2e7);
+//        test.makeSeries("",1);
+//        
         return simulationTestWhitmer(visualizations);
+    }
+
+    public static XYChart.Series customTest(boolean log, boolean xOnly) {
+        EnergyEVHistogram test = new EnergyEVHistogram();
+        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, false);
+        Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
+        event.element = E1H.getInstance();
+
+        for (int i = 0; i < 100000; i++) {
+            n.setDirectionAndEnergy(xOnly ? Vector3D.PLUS_I : Util.Math.randomDir(), Neutron.startingEnergyDD);
+            n.setPosition(Vector3D.ZERO);
+            n.processEvent(event);
+            test.record(1, event.energyOut);
+        }
+
+        return test.makeSeries("test", 1, log);
     }
 
     public static MonteCarloSimulation simulationTestSmoosh(Group visualizations) {
@@ -73,26 +110,29 @@ public class TestGM {
 
     public static MonteCarloSimulation simulationTestWhitmer(Group visualizations) {
 
-        Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
-        blockShape.getTransforms().add(new Translate(50 + 12.5, 0, 0));
-        blockShape.setColor("silver");
-        Part wall = new Part("Wall", blockShape, "Paraffin");
+        Paraffin.getInstance();
+        Shape blockShape = new Shape(new CuboidMesh(025, 100, 100));
+        Part wall = new Part("Block", blockShape, "Paraffin");
+        wall.getTransforms().add(new Translate(50 + 12.5, 0, 0));
+        wall.setColor("silver");
 
-        Shape detector1Shape = new Shape(new CuboidMesh(2, 100, 100));
-        detector1Shape.getTransforms().add(new Translate(100 + 1, 0, 0));
-        detector1Shape.setColor("pink");
-        Part detector1 = new Part("Detector behind paraffin block", detector1Shape, "Vacuum");
+        Shape detectorShape = new Shape(new CuboidMesh(2, 100, 100));
+        Part detector1 = new Part("Detector behind block", detectorShape, "Vacuum");
+        detector1.getTransforms().add(new Translate(100 + 1, 0, 0));
+        detector1.setColor("pink");
 
-        Shape detector2Shape = new Shape(new CuboidMesh(2, 100, 100));
-        detector2Shape.getTransforms().add(new Translate(-(100 + 1), 0, 0));
-        detector2Shape.setColor("pink");
-        Part detector2 = new Part("Detector opposite paraffin block", detector2Shape, "Vacuum");
+        Part detector2 = new Part("Detector opposite block", detectorShape, "Vacuum");
+        detector2.getTransforms().add(new Translate(-(100 + 1), 0, 0));
+        detector2.setColor("pink");
 
         // assemble the Fusor out of the other stuff
         Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall, detector1, detector2/*, p*/);
+        whitmer.addAll(wall, detector1, detector2);
+        whitmer.addTransform(new Translate(0,-100,0));
 
-        return new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer, Vector3D.ZERO, visualizations);
+        //mcs.xOnly = true;
+        return mcs;
     }
 
     public static MonteCarloSimulation simulationTest2(Group visualizations) {
@@ -143,18 +183,26 @@ public class TestGM {
     public static Group testVisuals() {
         Group g = new Group();
 
-        Sphere s = new Sphere(100);
+        Sphere s = new Sphere(1000);
         Util.Graphics.setColor(s, "gray");
+        s.setOpacity(0.1);
+        s.setTranslateX(-500);
+        s.setDrawMode(DrawMode.LINE);
+        Vector3D orig = new Vector3D(200, 0, 0);
 
         for (int i = 0; i < 10000; i++) {
-            Vector3D v = Util.Math.randomDir().scalarMultiply(100);
-            Sphere p = new Sphere(1);
-            Util.Graphics.setColor(p, "red");
-            p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
-            g.getChildren().add(p);
-            Util.Graphics.drawCoordSystem(g);
+            // Vector3D v = Util.Math.randomDir().scalarMultiply(100);
+            Vector3D dir = Util.Math.randomDir();
+            double t = Util.Math.raySphereIntersect(orig, dir, new Vector3D(-500, 0, 0), 1000);
+            if (t >= 0) {
+                Vector3D v = orig.add(dir.scalarMultiply(t));
+                Sphere p = new Sphere(5);
+                Util.Graphics.setColor(p, "red");
+                p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
+                g.getChildren().add(p);
+            }
         }
-
+        Util.Graphics.drawCoordSystem(g);
         g.getChildren().add(s);
         return g;
     }

@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons.core;
 
+import org.eastsideprep.javaneutrons.core.Environment;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
@@ -25,10 +26,11 @@ public class Neutron {
     public Vector3D position; // unit: (cm,cm,cm)
     public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
     public boolean trace = false;
+    public double entryEnergy = 0;
 
     ArrayList<Event> history = new ArrayList<>();
 
-    Neutron(Vector3D position, Vector3D direction, double energy, boolean trace) {
+    public Neutron(Vector3D position, Vector3D direction, double energy, boolean trace) {
         setPosition(position);
         setDirectionAndEnergy(direction, energy);
         this.trace = trace;
@@ -102,7 +104,7 @@ public class Neutron {
             // update myself (energy and direction)
             this.setVelocity(velocityNLab);
             event.energyOut = this.energy;
-            if (this.trace) {
+            if (this.trace && false) {
                 synchronized (Neutron.class) {
                     System.out.println("Particle: " + event.element.name);
                     System.out.println("Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));
@@ -114,7 +116,7 @@ public class Neutron {
                     System.out.println("");
                 }
             }
-        } else {
+        } else  if (event.code == Event.Code.Capture) {
             // capture
             Environment.recordCapture();
         }
