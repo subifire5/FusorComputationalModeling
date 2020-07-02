@@ -8,12 +8,11 @@ package org.eastsideprep.javaneutrons;
 import javafx.scene.Group;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.assemblies.Assembly;
-import org.eastsideprep.javaneutrons.assemblies.Part;
+import org.eastsideprep.javaneutrons.core.Assembly;
+import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.shapes.HumanBody;
-import org.eastsideprep.javaneutrons.shapes.Shape;
+import org.eastsideprep.javaneutrons.core.Shape;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
 /**
