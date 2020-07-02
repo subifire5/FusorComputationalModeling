@@ -11,12 +11,12 @@ package com.mycompany.EulersMethod;
  */
 public class Particle extends Charge {
 
-    
     public int polarity;
     public Double x;
     public Double y;
     public Double z;
     public Double EP;
+    public Double mass = 2.04 * 1.66E-27;
     public Vector vel = new Vector(0.0, 0.0, 0.0);
 
     public Particle() {
@@ -33,6 +33,7 @@ public class Particle extends Charge {
         this(pos.x, pos.y, pos.z);
         this.vel = vel;
     }
+
     public Particle(Vector pos) {
         this(pos.x, pos.y, pos.z);
     }
@@ -59,14 +60,13 @@ public class Particle extends Charge {
     public Particle(Vector v, int polarity, double EP) {
         this(v.x, v.y, v.z, polarity, EP);
     }
-    
-    public Particle(String[] s){
+
+    public Particle(String[] s) {
         this.x = Double.parseDouble(s[0]);
         this.y = Double.parseDouble(s[1]);
         this.z = Double.parseDouble(s[2]);
         this.polarity = Integer.parseInt(s[3]);
     }
-
 
     @Override
     public String toString() {
@@ -76,9 +76,9 @@ public class Particle extends Charge {
         particle += "Polarity: " + polarity;
         return particle;
     }
-    
-    public String[] toCSVString(){
-        String[] csvString = {""+this.x, ""+this.y, ""+this.z, ""+this.polarity};
+
+    public String[] toCSVString() {
+        String[] csvString = {"" + this.x, "" + this.y, "" + this.z, "" + this.polarity};
         return csvString;
     }
 
@@ -87,35 +87,38 @@ public class Particle extends Charge {
         y *= s;
         z *= s;
     }
-    
+
     /**
-     * Adds a scalar to this charge's position vector
-     * (the += sign)
+     * Adds a scalar to this charge's position vector (the += sign)
+     *
      * @param s the scalar
      */
-    public void plusEquals(Double s){
+    public void plusEquals(Double s) {
         this.x += s;
         this.y += s;
         this.z += s;
     }
+
     /**
      * Sets the position of this charge to a vector
+     *
      * @param v the vector
      */
-    public void setPosition(Vector v){
+    public void setPosition(Vector v) {
         this.x = v.x;
         this.y = v.y;
         this.z = v.z;
     }
-    
+
     /**
-     * Sets the position of this charge to a different charge's position
-     * Use instead of this = charge;
+     * Sets the position of this charge to a different charge's position Use
+     * instead of this = charge;
+     *
      * @param c the other charge
      */
-    public void setPosition(Charge c){
+    public void setPosition(Charge c) {
         this.x = c.x;
         this.y = c.y;
         this.z = c.z;
-    }    
+    }
 }

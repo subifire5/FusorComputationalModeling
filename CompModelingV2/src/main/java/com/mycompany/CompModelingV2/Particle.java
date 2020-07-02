@@ -18,6 +18,7 @@ public class Particle extends Charge {
     public Double y;
     public Double z;
     public Double EP;
+    public Double mass = 2.04*1.66E-27;
     public Vector vel = new Vector(0.0, 0.0, 0.0);
 
     public Particle() {

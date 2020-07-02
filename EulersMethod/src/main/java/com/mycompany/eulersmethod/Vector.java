@@ -220,9 +220,10 @@ public class Vector {
         return same;
     }
 
-    public void scale(Double s) {
+    public Vector scale(Double s) {
         x *= s;
         y *= s;
         z *= s;
+        return this;
     }
 }

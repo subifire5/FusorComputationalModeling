@@ -10,10 +10,10 @@ package com.mycompany.EulersMethod;
  * @author pjain
  */
 public class Main {
-    
-        public static void main(String[]args) {
+
+    public static void main(String[] args) {
         InputHandler ih = new InputHandler();
         ih.getInput();
-        EField eField = ih.eField;
-        }
+        EulersMethod em = new EulersMethod(ih.eField);
+    }
 }

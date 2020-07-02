@@ -5,24 +5,19 @@
  */
 package com.mycompany.EulersMethod;
 
-
 /**
  *
  * @author pjain
  */
+public class EulersMethod implements Solution {
 
-public class EulersMethod implements Solution{
-    
-    public static void main (String[] args){
-        EField eField; 
-        EulersMethod eulersMethod;
-        step(Particle p, Double stepSize){
-            /*eulersMethod = new EulersMethod(eField);
-            EulersMethod(Efield efield){
-                this.eField = eField;*/
-        }
+    EField eField;
+
+    EulersMethod(EField eField) {
+        this.eField = eField;
+    }
+
+    public Particle step(Particle p, Double stepSize) {
+
     }
 }
-    
-
-    
