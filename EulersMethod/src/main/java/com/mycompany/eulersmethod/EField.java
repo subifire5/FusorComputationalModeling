@@ -90,7 +90,7 @@ public class EField {
      * @param c is the charge
      * @return A force vector
      */
-    public Vector effectOnCharge(Charge c) {
+    public Vector forceOnCharge(Charge c) {
         Vector sumOfField = new Vector(0.0, 0.0, 0.0);
         double voltage;
         double vol;

@@ -155,6 +155,7 @@ public class App extends Application {
         InputHandler input = new InputHandler();
         input.getInput();
 
+        
         //Don't Read from Output file
         buildCharges(input.charges);
 
