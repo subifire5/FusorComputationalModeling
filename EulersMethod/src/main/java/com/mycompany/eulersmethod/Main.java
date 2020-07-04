@@ -6,6 +6,7 @@
 package com.mycompany.EulersMethod;
 
 import java.util.ArrayList;
+import java.util.List;
 /**
  *
  * @author pjain
@@ -17,7 +18,7 @@ public class Main {
         ih.getInput();
         EulersMethod em = new EulersMethod(ih.eField);
         Particle p = new Particle();
-        //ArrayList<Vector> particleList = new ArrayList<Vector>();
+        //List<Vector> particleList = new ArrayList<Vector>();
         //for (int i = 0; i < 100; i++) {
         System.out.println("position: " +p);
         em.step(p, 1E-20); 
