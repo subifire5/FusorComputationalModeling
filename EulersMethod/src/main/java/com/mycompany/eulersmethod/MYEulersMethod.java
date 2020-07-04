@@ -10,14 +10,18 @@ package com.mycompany.EulersMethod;
  * @author pjain
  */
 public class MYEulersMethod {
-        Vector a;
-        Double m;
-    public static void main (String[] args) {
         
-    }
+    EField eField;
     
     public void step (Particle p, Double stepSize) {
-        a.scale(1/m);
+       
+        p.pos.plusEquals(p.vel.scale(stepSize));
         
+        Vector acceleration = eField.forceOnCharge(p).scale(1/p.mass);
+        p.vel.plusEquals(acceleration.scale(stepSize));      
+       
+        p.time += stepSize;
     }
+    
+    
 }

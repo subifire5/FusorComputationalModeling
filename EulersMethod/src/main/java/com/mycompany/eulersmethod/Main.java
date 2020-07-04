@@ -5,6 +5,7 @@
  */
 package com.mycompany.EulersMethod;
 
+import java.util.ArrayList;
 /**
  *
  * @author pjain
@@ -16,9 +17,14 @@ public class Main {
         ih.getInput();
         EulersMethod em = new EulersMethod(ih.eField);
         Particle p = new Particle();
-        System.out.println("position: " +p);
-        em.step(p,1.0);
-        System.out.println("position of p:" + p);
+        ArrayList<Vector> particleList = new ArrayList<Vector>();
+        for (int i = 0; i < 100; i++) {
+            System.out.println("position: " +p);
+            em.step(p, 1E-20); 
+            System.out.println("position of p:" + p);
+            particleList.add(Vector p.pos);
+        }
+        
     }
     
     public static void times2(Double d){
