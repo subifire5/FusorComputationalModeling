@@ -17,7 +17,7 @@ public class MYEulersMethod {
     }
     
     
-    public void step (Particle p, Double stepSize) {
+    public Particle step (Particle p, Double stepSize) {
        
         p.pos.plusEquals(p.vel.scale(stepSize));
         
@@ -25,6 +25,8 @@ public class MYEulersMethod {
         p.vel.plusEquals(acceleration.scale(stepSize));      
        
         p.time += stepSize;
+        
+        return p;
     }
     
     

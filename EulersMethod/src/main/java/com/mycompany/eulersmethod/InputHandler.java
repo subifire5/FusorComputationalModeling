@@ -70,7 +70,7 @@ public class InputHandler {
             }
              */
         } else if (MY) {
-            /*
+            
             MYEulersMethod my = new MYEulersMethod(eField);
             particles[0] = my.step(initial, stepSize);
             Particle p = particles[0];
@@ -78,7 +78,7 @@ public class InputHandler {
                 particles[i] = my.step(p, stepSize);
                 p = particles[i];
             }
-             */
+             
         }
 
         String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Time", "Mass"};
