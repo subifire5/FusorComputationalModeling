@@ -10,5 +10,14 @@ package com.mycompany.EulersMethod;
  * @author pjain
  */
 public class MYEulersMethod {
+        Vector a;
+        Double m;
+    public static void main (String[] args) {
+        
+    }
     
+    public void step (Particle p, Double stepSize) {
+        a.scale(1/m);
+        
+    }
 }
