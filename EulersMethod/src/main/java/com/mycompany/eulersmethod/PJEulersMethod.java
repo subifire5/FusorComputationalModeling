@@ -14,7 +14,7 @@ import com.mycompany.EulersMethod.Vector;
  *
  * @author pjain
  */
-public class PJEulersMethod {
+/*public class PJEulersMethod {
         
     double m = 1E-27;
     EField eField;
@@ -32,8 +32,8 @@ public class PJEulersMethod {
             EulersMethod(Efield efield){
                 this.eField = eField;*/
             
-            Vector f = eField.effectOnCharge(p);
+            //Vector f = eField.effectOnCharge(p);
         //f = m*a
-        }
+        //} 
     
-}
+//}

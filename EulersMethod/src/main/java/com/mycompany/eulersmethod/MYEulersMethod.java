@@ -11,6 +11,10 @@ package com.mycompany.EulersMethod;
  */
 public class MYEulersMethod {
         
+    /*MYEulersMethod(EField eField) {
+        super(eField);
+    }*/
+    
     EField eField;
     
     public void step (Particle p, Double stepSize) {
