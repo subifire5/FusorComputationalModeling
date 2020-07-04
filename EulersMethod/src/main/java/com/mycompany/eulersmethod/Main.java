@@ -23,7 +23,7 @@ public class Main {
         em.step(p, 1E-20); 
         System.out.println("position of p:" + p);
         //particleList.add(p.pos);
-        }
+        
     }        
 
     public static void times2(Double d){
