@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Transform;
+import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Part {
@@ -165,7 +166,10 @@ public class Part {
             }
 
             // also record event for the individual neutron
-            n.record(event);
+            if (!n.record(event)) {
+                // too many events, get out
+                return event;
+            }
         } while (event.code != Event.Code.Exit && event.code != Event.Code.Capture);
 
         return event;
@@ -251,4 +255,16 @@ public class Part {
     public void setColor(String color) {
         this.shape.setColor(color);
     }
+
+    public Translate settleAgainst(Part other, Vector3D f) {
+    
+        return shape.settleAgainst(other.shape, f);
+    }
+
+    // what is the distance from our vertices to the other thing, 
+    // and vice-versa?
+    public double distance(Part other, Vector3D direction) {
+        return shape.distance(other.shape, direction);
+    }
+
 }

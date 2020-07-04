@@ -10,9 +10,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -23,6 +27,7 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
 import javafx.scene.transform.Transform;
+import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.fxyz3d.importers.Importer3D;
 
@@ -381,6 +386,7 @@ public class Shape extends MeshView {
         double[] verticesTransformed = new double[v.length];
         for (int i = this.getTransforms().size() - 1; i >= 0; i--) {
             Transform t = this.getTransforms().get(i);
+            //System.out.println("Shape "+this+", Transform: "+t);
             t.transform3DPoints(v, 0,
                     verticesTransformed, 0,
                     v.length / 3);
@@ -544,7 +550,7 @@ public class Shape extends MeshView {
     // calculates the max bondaries of a mesh in O(N)
     //
     public Vector3D getExtent() {
-        double[]v = this.getVertices();
+        double[] v = this.getVertices();
 
         double xmin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
@@ -607,6 +613,7 @@ public class Shape extends MeshView {
         }
 
         this.containedMaterial = material;
+        System.out.println("Part " + this.part.name + ": Marked " + facesAdded.size() + " faces as in contact with " + material.name);
     }
 
     private void addFacesForPoint(int pointIndex, LinkedList<Integer> facesQueue, HashSet<Integer> facesAdded) {
@@ -619,4 +626,69 @@ public class Shape extends MeshView {
             }
         }
     }
+
+    Translate settleAgainst(Shape other, final Vector3D f) {
+        // equality within epsilon
+        double epsilon = 1e-12;
+        int jiggleCount = 200;
+        double sd = 1.0;
+
+        // first, move it with the force vector, to up to within 1mm of the target
+        double t = distance(other, f);
+        if (t == -1) {
+            return null;
+        }
+        this.getTransforms().add(0, new Translate(t * f.getX(), Math.min(t * f.getY(), t*f.getY()-0.1), t * f.getZ()));
+
+        // now, jiggle it
+        List<Vector3D> jiggles = Stream
+                .generate(() -> Util.Math.jiggle(f, sd))
+                .limit(jiggleCount)
+                .collect(Collectors.toList());
+
+        double tmin = -1;
+        Vector3D best = null;
+        for (Vector3D j : jiggles) {
+            t = distance(other, j);
+            tmin = Util.Math.minIfValid(t, tmin);
+            if (t != -1 && t == tmin) {
+                best = j;
+            }
+        }
+
+        if (best == null) {
+            return null;
+        }
+
+        return new Translate(tmin * best.getX(), tmin * best.getY(), tmin * best.getZ());
+    }
+
+    // what is the distance from our vertices to the other thing, 
+    // and vice-versa?
+    double distance(Shape other, Vector3D direction) {
+        double t1 = this.oneWayDistance(other, direction);
+        double t2 = other.oneWayDistance(this, direction.negate());
+
+        return Math.min(t1, t2);
+    }
+
+    // what is the distance of our vertices to 
+    private double oneWayDistance(Shape other, Vector3D direction) {
+        // for every vertex in this shape,
+        // would it intersect the other shape if moved in direction dir?
+        // if so, at what distance? Find the min.
+
+        Vector3D d = direction.normalize();
+        double[] v = this.getTransformedVertices();
+        double tmin = -1;
+
+        for (int i = 0; i < v.length; i += 3) {
+            Vector3D vertex = new Vector3D(v[i], v[i + 1], v[i + 2]);
+            double t = other.rayIntersect(vertex, d, false, null, null);
+            tmin = Util.Math.minIfValid(t, tmin);
+        }
+
+        return tmin;
+    }
+
 }

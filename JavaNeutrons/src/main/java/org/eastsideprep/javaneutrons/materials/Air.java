@@ -6,7 +6,6 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Gas;
-import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Material;
 
 // material 4 - Air near sea-level
@@ -35,6 +34,15 @@ public class Air extends Gas {
 
         // that's 100 Pa for STP
         this.calculateAtomicDensities(massDensitySTP * pressure / 100);
+    }
+
+    // we only need one of these objects
+    public static synchronized Air getInstance() {
+        // or dish out the shared anonymous instance
+        if (instance == null) {
+            Air.instance = new Air(100);
+        }
+        return instance;
     }
 
     // we only need one of these objects

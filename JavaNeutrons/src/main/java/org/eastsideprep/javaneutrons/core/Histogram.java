@@ -1,6 +1,5 @@
 package org.eastsideprep.javaneutrons.core;
 
-import java.text.DecimalFormat;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 
@@ -36,9 +35,9 @@ public class Histogram {
             this.max = 7;
             this.bins = new double[(max - min) * this.binsPerDecade];
         } else {
-            this.min = 0;
-            this.max = 2500000;
-            this.bins = new double[10 * this.binsPerDecade];
+            this.min = 25000;
+            this.max = 2525000;
+            this.bins = new double[(int)(this.max - this.min) / 25000];
         }
     }
 
@@ -66,33 +65,7 @@ public class Histogram {
     }
 
     public XYChart.Series makeSeries(String seriesName) {
-        //System.out.println("Retrieving series "+seriesName+":");
-//        XYChart.Series series = new XYChart.Series();
-//        ObservableList data = series.getData();
-//        series.setName(seriesName);
-//
-//        // put in all the data
-//        double[] counts = new double[this.bins.length];
-//
-//        synchronized (this) {
-//            System.arraycopy(this.bins, 0, counts, 0, counts.length);
-//        }
-//
-//        //System.out.println(""+this.hashCode()+Arrays.toString(bins));
-//        for (int i = 0; i < bins.length; i++) {
-//            double x = min + i / ((double) bins.length) * (max - min);
-//            if (this.log) {
-//                x = Math.pow(10, x);
-//            }
-//            DecimalFormat f = new DecimalFormat("0.##E0");
-//            String tick = f.format(x);
-//            data.add(new XYChart.Data(tick, counts[i]));
-//            System.out.println(tick + " " + counts[i]);
-//            //System.out.print(""+counts[i]);
-//            //System.out.println(""+this.hashCode() +": "+ tick +":"+ counts[i - logMin] + " ");
-//        }
-//
-//        return series;
+
         return this.makeSeries(seriesName, 1.0);
     }
 
@@ -109,19 +82,18 @@ public class Histogram {
             System.arraycopy(this.bins, 0, counts, 0, counts.length);
         }
 
-        System.out.println("");
+        //System.out.println("");
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
         for (int i = 0; i < bins.length; i++) {
             double x = min + i / ((double) bins.length) * (max - min);
             if (this.log) {
                 x = Math.pow(10, x);
             }
-            DecimalFormat f = new DecimalFormat("0.##E0");
-            String tick = f.format(x);
+            String tick = String.format("%6.3e", x);
             data.add(new XYChart.Data(tick, counts[i] / count));
             System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
-        System.out.println("");
+        //System.out.println("");
 
         return series;
     }

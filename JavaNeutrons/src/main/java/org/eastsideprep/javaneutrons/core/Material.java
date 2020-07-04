@@ -291,7 +291,7 @@ public class Material {
             String tick = f.format(energy);
 
             data.add(new XYChart.Data(tick, getSigma(energy)));
-            System.out.println(tick + " " + getSigma(energy));
+            //System.out.println(tick + " " + getSigma(energy));
         }
 
         return series;

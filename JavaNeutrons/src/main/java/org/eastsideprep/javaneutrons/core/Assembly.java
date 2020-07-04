@@ -102,7 +102,10 @@ public class Assembly extends Part {
                 Util.Graphics.visualizeEvent(partEvent, n.direction, visualizations);
                 Part p = partEvent.part;
                 n.setPosition(visualizations, partEvent.position);
-                n.record(partEvent);
+                if (!n.record(partEvent)) {
+                    // to many events, get out
+                    return partEvent;
+                }
                 partEvent.neutron = n;
                 medium.processEvent(partEvent, true);
                 //System.out.println("Entering part " + p.name);

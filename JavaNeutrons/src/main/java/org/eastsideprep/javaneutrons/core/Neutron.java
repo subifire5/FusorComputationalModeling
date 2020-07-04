@@ -3,7 +3,6 @@ package org.eastsideprep.javaneutrons.core;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
-import javafx.scene.paint.Color;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
 public class Neutron {
@@ -65,6 +64,27 @@ public class Neutron {
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
     }
 
+     public Vector3D getScatteredVelocity(Isotope i, Vector3D neutronVelocity) {
+        if (i.angles != null) {
+            double neutronSpeed = neutronVelocity.getNorm();
+            double energyEV = 0.5 * Neutron.mass * neutronSpeed * neutronSpeed/Util.Physics.eV;
+            
+            // get the scattering angle from a random lookup in the tables
+            double cos_theta = i.getScatterCosTheta(energyEV);
+        
+            // construct vector and return
+            Vector3D v = Util.Math.randomDir(cos_theta, neutronSpeed);
+            Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
+            v = r.applyTo(v);
+           
+            //System.out.println("v: " + v);
+            return v;
+
+        } else {
+            return Util.Math.randomDir().scalarMultiply(neutronVelocity.getNorm());
+        }
+    }
+    
     public void processEvent(Event event) {
         if (event.code == Event.Code.Scatter) {
             // other particle, velocity following Maxwell-Boltzmann speed distribution
@@ -92,20 +112,22 @@ public class Neutron {
             //convert neutron and particle --> center of mass frame
             Vector3D velocityNCM = this.velocity.subtract(velocityCM);
             //calculate elastic collision: entry speed = exit speed, random direction
-            velocityNCM = Util.Math.randomDir().scalarMultiply(velocityNCM.getNorm());
+            //velocityNCM = Util.Math.randomDir().scalarMultiply(velocityNCM.getNorm());
+            double speedNCM = velocityNCM.getNorm();
+            velocityNCM = this.getScatteredVelocity(event.element, velocityNCM);
             //double neutronSpeedCM = velocityNCM.getNorm();
             //convert back into lab frame
             Vector3D velocityNLab = velocityNCM.add(velocityCM);
 
             // update myself (energy and direction)
-            double angle = Math.acos(this.velocity.normalize().dotProduct(velocityNLab.normalize()))/Math.PI*180;
-            double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(velocityNLab.normalize()))/Math.PI*180;
+            double angle = Math.acos(this.velocity.normalize().dotProduct(velocityNLab.normalize())) / Math.PI * 180;
+            double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(velocityNLab.normalize())) / Math.PI * 180;
             this.setVelocity(velocityNLab);
             event.energyOut = this.energy;
             if (this.mcs != null && this.mcs.trace) {
                 this.mcs.scatter = true;
                 synchronized (Neutron.class) {
-                    System.out.println("Neutron: "+this.hashCode());
+                    System.out.println("Neutron: " + this.hashCode());
                     System.out.println(" Particle: " + event.element.name);
                     System.out.println(" Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));
                     System.out.println(" Neutron energy in: " + String.format("%6.3e eV", neutronEnergyIn / Util.Physics.eV));
@@ -113,9 +135,9 @@ public class Neutron {
                     System.out.println(" Speed of Particle: " + String.format("%6.3e cm/s", particleSpeed));
                     System.out.println(" Speed of CM: " + String.format("%6.3e cm/s", speedCM));
                     System.out.println(" Neutron energy out: " + String.format("%6.3e eV", this.energy / Util.Physics.eV));
-                    System.out.println(" Scattering angle: "+angle);
-                    System.out.println(" Scattering angle with x-axis: "+angleWithX);
-                    System.out.println(" Velocity unit dir "+this.velocity.normalize());
+                    System.out.println(" Scattering angle: " + angle);
+                    System.out.println(" Scattering angle with x-axis: " + angleWithX);
+                    System.out.println(" Velocity unit dir " + this.velocity.normalize());
                     //Util.Graphics.drawLine(this.mcs.visualizations, position, position.add(velocity.normalize().scalarMultiply(45)), 1, Color.BLACK);
                 }
             }
@@ -126,18 +148,23 @@ public class Neutron {
     }
 
     //replace parameters with 1 Neutron object??
-    public void record(Event e) {
+    public boolean record(Event e) {
         //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
-        if (this.mcs.trace) {
-            history.add(e);
+        history.add(e);
+        if (history.size() > 1000) {
+            dumpEvents();
+            return false;
         }
+        return true;
     }
 
     public void dumpEvents() {
-        if (this.mcs.trace) {
-            synchronized (Event.class) {
-                history.stream().forEach(event -> System.out.println(event));
-            }
+        synchronized (Event.class) {
+            System.out.println("");
+            System.out.println("-- start of neutron events:");
+            history.stream().forEach(event -> System.out.println(event));
+            System.out.println("-- done");
+            System.out.println("");
         }
     }
 }

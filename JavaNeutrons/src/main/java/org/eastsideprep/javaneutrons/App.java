@@ -69,7 +69,7 @@ public class App extends Application {
 
         bRun.setOnAction((e) -> {
             sim = TestGM.simulationTest(viewGroup);
-            this.runSim(Long.parseLong(tf.getText()));
+            this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
             } else {
@@ -81,7 +81,7 @@ public class App extends Application {
 
         bRunSV.setOnAction((e) -> {
             sim = TestSV.simulationTest(viewGroup);
-            this.runSim(Long.parseLong(tf.getText()));
+            this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
             } else {
@@ -92,7 +92,7 @@ public class App extends Application {
 
         bRunET.setOnAction((e) -> {
             sim = TestET.simulationTest(viewGroup);
-            this.runSim(Long.parseLong(tf.getText()));
+            this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
             } else {
@@ -178,7 +178,7 @@ public class App extends Application {
 
     }
 
-    public void runSim(long count) {
+    public void runSim(int count) {
         if (this.sim == null) {
             return;
         }
@@ -204,13 +204,13 @@ public class App extends Application {
                     if (count > 0) {
                         progress.setText("Complete: " + Math.round(100 * completed / count) + " %");
                     }
-                    if (completed == count || (count == 0 && sim.scatter)) {
+                    if (completed >= count || (count == 0 && sim.scatter)) {
                         tl.stop();
                         bRun.setDisable(false);
                         bRunET.setDisable(false);
                         bRunSV.setDisable(false);
                         progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000) + " s");
-                        sim.checkTallies();
+                        //sim.checkTallies();
                     }
                 }));
         tl.setCycleCount(Timeline.INDEFINITE);
