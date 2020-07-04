@@ -229,17 +229,17 @@ public class App extends Application {
             if (c.polarity < 0) {
                 final Sphere s = new Sphere(0.4);
                 s.setMaterial(RedColor);
-                s.setTranslateX(c.x);
-                s.setTranslateY(c.y);
-                s.setTranslateZ(c.z);
+                s.setTranslateX(c.pos.x);
+                s.setTranslateY(c.pos.y);
+                s.setTranslateZ(c.pos.z);
                 negativeCharges.getChildren().add(s);
                 negativeCharges.setScale(NEGATIVE_SCALE);
             } else {
                 final Sphere s = new Sphere(0.4);
                 s.setMaterial(BlueColor);
-                s.setTranslateX(c.x);
-                s.setTranslateY(c.y);
-                s.setTranslateZ(c.z);
+                s.setTranslateX(c.pos.x);
+                s.setTranslateY(c.pos.y);
+                s.setTranslateZ(c.pos.z);
                 positiveCharges.getChildren().add(s);
             }
         }

@@ -16,8 +16,11 @@ public class EulersMethod implements Solution {
     EulersMethod(EField eField) {
         this.eField = eField;
     }
+
+
     @Override
-    public void step(Particle p, Double stepSize) {
-        Particle m = new Particle(0.0,0.0,0.0);
+    public Particle step(Particle p, Double stepSize) {
+        Particle testParticle = new Particle(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0.0, 0.0);
+        return testParticle;
     }
 }

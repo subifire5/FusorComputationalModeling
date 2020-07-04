@@ -13,6 +13,7 @@ import java.lang.Math;
 
 public class Vector {
 
+
     Double x;
     Double y;
     Double z;
@@ -46,7 +47,7 @@ public class Vector {
     }
 
     public Double distanceTo(Charge c) {
-        return Math.sqrt(Math.pow(x - c.x, 2) + Math.pow(y - c.y, 2) + Math.pow(z - c.z, 2));
+        return Math.sqrt(Math.pow(x - c.pos.x, 2) + Math.pow(y - c.pos.y, 2) + Math.pow(z - c.pos.z, 2));
     }
 
     public Double distanceSquared(Vector v) {
@@ -54,7 +55,7 @@ public class Vector {
     }
 
     public Double distanceSquared(Charge c) {
-        return Math.pow(x - c.x, 2) + Math.pow(y - c.y, 2) + Math.pow(z - c.z, 2);
+        return Math.pow(x - c.pos.x, 2) + Math.pow(y - c.pos.y, 2) + Math.pow(z - c.pos.z, 2);
     }
 
     public Double dotProduct(Vector v) {
@@ -126,7 +127,7 @@ public class Vector {
      * @return the result of this - c (a line from c to this)
      */
     public Vector thatToThis(Charge c) {
-        return new Vector((x - c.x), (y - c.y), (z - c.z));
+        return new Vector((x - c.pos.x), (y - c.pos.y), (z - c.pos.z));
     }
 
     /**
@@ -146,11 +147,11 @@ public class Vector {
      * @return the result of C-this (a line from this to C)
      */
     public Vector thisToThat(Charge c) {
-        return new Vector((c.x - x), (c.y - y), (c.z - z));
+        return new Vector((c.pos.x - x), (c.pos.y - y), (c.pos.z - z));
     }
 
     /**
-     *
+     * A function for getting a version of this vector that is pointing in the same direction, but with a length of 1
      * @return the normalized version of this vector
      */
     public Vector normalized() {
@@ -226,5 +227,4 @@ public class Vector {
         z *= s;
         return this;
     }
-
 }
