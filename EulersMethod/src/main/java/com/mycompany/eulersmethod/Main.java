@@ -16,13 +16,13 @@ public class Main {
     public static void main(String[] args) {
         InputHandler ih = new InputHandler();
         ih.getInput();
-        EulersMethod em = new EulersMethod(ih.eField);
-        Particle p = new Particle();
+        //EulersMethod em = new EulersMethod(ih.eField);
+        //Particle p = new Particle();
         //List<Vector> particleList = new ArrayList<Vector>();
         //for (int i = 0; i < 100; i++) {
-        System.out.println("position: " +p);
-        em.step(p, 1E-20); 
-        System.out.println("position of p:" + p);
+        //System.out.println("position: " +p);
+        //em.step(p, 1E-20); 
+        //System.out.println("position of p:" + p);
         //particleList.add(p.pos);
         
     }        
