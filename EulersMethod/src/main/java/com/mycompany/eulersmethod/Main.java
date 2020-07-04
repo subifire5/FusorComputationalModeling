@@ -15,5 +15,13 @@ public class Main {
         InputHandler ih = new InputHandler();
         ih.getInput();
         EulersMethod em = new EulersMethod(ih.eField);
+        Particle p = new Particle();
+        System.out.println("position: " +p);
+        em.step(p,1.0);
+        System.out.println("position of p:" + p);
+    }
+    
+    public static void times2(Double d){
+        d=d*2;
     }
 }
