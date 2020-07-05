@@ -112,13 +112,16 @@ public class MonteCarloSimulation {
         this.completed = new AtomicLong(0);
         this.viewGroup = g;
         this.dynamicGroup = new Group();
-        this.viewGroup.getChildren().clear();
-        // make some axes
-        Util.Graphics.drawCoordSystem(g);
-        // add the assembly objects
-        this.viewGroup.getChildren().add(this.assembly.getGroup());
-        // and a group for event visualiations
-        this.viewGroup.getChildren().add(dynamicGroup);
+        if (this.viewGroup != null) {
+            this.viewGroup.getChildren().clear();
+            // make some axes
+            Util.Graphics.drawCoordSystem(g);
+            // add the assembly objects
+            this.viewGroup.getChildren().add(this.assembly.getGroup());
+            // and a group for event visualiations
+            this.viewGroup.getChildren().add(dynamicGroup);
+        }
+
         this.interstitialMaterial = (Material) interstitialMaterial;
         this.initialMaterial = (Material) initialMaterial;
         this.initialEnergy = initialEnergy == 0 ? Neutron.startingEnergyDD : initialEnergy;
@@ -126,6 +129,10 @@ public class MonteCarloSimulation {
 
         if (this.interstitialMaterial == null) {
             this.interstitialMaterial = Air.getInstance("Interstitial air");
+        }
+
+        if (this.assembly == null) {
+            return;
         }
 
         if (this.initialMaterial == null) {
@@ -162,7 +169,7 @@ public class MonteCarloSimulation {
 //        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = p+i: " + String.format("%10.7e", totalPartsPath + totalInterstitialsPath));
 //        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = m+i: " + String.format("%10.7e", totalMaterialsPath + totalInterstitialsPath));
 //    }
-    // this will be called from UI thread
+// this will be called from UI thread
     public long update() {
         //viewGroup.getChildren().remove(this.dynamicGroup);
         int size = this.dynamicGroup.getChildren().size();
@@ -241,6 +248,7 @@ public class MonteCarloSimulation {
         completed.incrementAndGet();
         if (trace) {
             System.out.println("");
+
         }
     }
 

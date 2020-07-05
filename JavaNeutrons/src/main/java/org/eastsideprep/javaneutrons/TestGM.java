@@ -9,23 +9,24 @@ import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.chart.XYChart;
-import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Assembly;
-import org.eastsideprep.javaneutrons.core.Part;
-import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
+import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Histogram;
+import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
-import org.eastsideprep.javaneutrons.materials.E1H;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.core.Shape;
+import org.eastsideprep.javaneutrons.materials.E12C;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
@@ -55,21 +56,22 @@ public class TestGM {
 //        System.out.println("");
 //        histTest(new Histogram(true));
 //        System.exit(0);
-
         return simulationTestWhitmerCarbon(visualizations);
     }
 
     public static XYChart.Series customTest(boolean log, boolean xOnly) {
         EnergyEVHistogram test = new EnergyEVHistogram();
-        Neutron n = new Neutron(Vector3D.ZERO, Util.Math.randomDir(), Neutron.startingEnergyDD, null);
-        Event event = new Event(Vector3D.ZERO, Event.Code.Scatter);
-        event.element = E1H.getInstance();
+        //Histogram test = new Histogram(-102,102,104, false);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
+        //mcs.trace= true;
+        Neutron n = new Neutron (Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
+        Isotope is = E12C.getInstance();
+        Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
 
         for (int i = 0; i < 100000; i++) {
-            n.setDirectionAndEnergy(xOnly ? Vector3D.PLUS_I : Util.Math.randomDir(), Neutron.startingEnergyDD);
-            n.setPosition(Vector3D.ZERO);
-            n.processEvent(event);
-            test.record(1, event.energyOut);
+            n.setDirectionAndEnergy(Vector3D.PLUS_I, Neutron.startingEnergyDD);
+            n.processEvent(e);
+            test.record(1, e.energyOut);
         }
 
         return test.makeSeries("test", 1, log);
@@ -120,17 +122,17 @@ public class TestGM {
         //String m = "HydrogenWax";
         String m = "CarbonWax";
         //String m = "Paraffin";
-        
-        Part wall = new Part("Wall: "+m, blockShape, m);
+
+        Part wall = new Part("Wall: " + m, blockShape, m);
         wall.getTransforms().add(new Translate(50 + thickness / 2, 0, 0));
         wall.setColor("silver");
 
         Shape detectorShape = new Shape(new CuboidMesh(2, 100, 100));
-        Part detector1 = new Part("Detector behind "+m+" wall", detectorShape, "HighVacuum");
+        Part detector1 = new Part("Detector behind " + m + " wall", detectorShape, "HighVacuum");
         detector1.getTransforms().add(new Translate(100 + 1, 0, 0));
         detector1.setColor("pink");
 
-        Part detector2 = new Part("Detector opposite "+m+" wall", detectorShape, "HighVacuum");
+        Part detector2 = new Part("Detector opposite " + m + " wall", detectorShape, "HighVacuum");
         detector2.getTransforms().add(new Translate(-(100 + 1), 0, 0));
         detector2.setColor("pink");
 
@@ -280,22 +282,52 @@ public class TestGM {
 
     public static Group testVisuals() {
         Group g = new Group();
+        double radius = 200;
 
-        Sphere s = new Sphere(1000);
-        Util.Graphics.setColor(s, "gray");
+        Sphere s = new Sphere(radius);
+        s.setRotationAxis(new Point3D(0, 0, 1));
+        s.setRotate(90);
+        Util.Graphics.setColor(s, "white");
         s.setOpacity(0.1);
         //s.setTranslateX(-500);
-        s.setDrawMode(DrawMode.LINE);
-        Vector3D orig = new Vector3D(200, 0, 0);
+        //s.setDrawMode(DrawMode.LINE);
+        Vector3D orig = new Vector3D(0, 0, 0);
 
-        for (int i = 0; i < 10000; i++) {
+        Isotope is = E12C.getInstance();
+
+        for (int i = 0; i < 5000; i++) {
             // Vector3D v = Util.Math.randomDir().scalarMultiply(100);
-            Vector3D dir = Util.Math.randomGaussianComponentVector(1);
-            double t = Util.Math.raySphereIntersect(orig, dir, Vector3D.ZERO, 1000);
-            if (t >= 0) {
-                Vector3D v = orig.add(dir.scalarMultiply(t));
-                Sphere p = new Sphere(5);
+            Vector3D dir1 = Util.Math.randomDir();
+          
+            double t1 = Util.Math.raySphereIntersect(orig, dir1, Vector3D.ZERO, radius);
+            if (t1 >= 0) {
+                Vector3D v = orig.add(dir1.scalarMultiply(t1));
+                Sphere p = new Sphere(1);
                 Util.Graphics.setColor(p, "red");
+                p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
+                g.getChildren().add(p);
+            }
+            
+            double cos_theta = is.getScatterCosTheta(2.44e6);
+            System.out.println("cos_theta "+cos_theta);
+            Vector3D dir2 = Util.Math.randomDir(cos_theta, 1.0);
+            System.out.println("dir2 "+dir2);
+            if ( Math.abs(dir2.getNorm() -1) > 1e-12) {
+                System.out.println("not normal");
+            }
+            
+            //dir2 = Util.Math.randomDir();
+            
+            Rotation r = new Rotation(Vector3D.PLUS_K, Vector3D.PLUS_I);
+            dir2 = r.applyTo(dir2);
+            System.out.println("x1 "+dir2.getX());
+            double t2 = Util.Math.raySphereIntersect(orig, dir2, Vector3D.ZERO, radius);
+            if (t2 >= 0) {
+                System.out.println("dir2 "+dir2+" t "+t2);
+                Vector3D v = orig.add(dir2.scalarMultiply(t2));
+                Sphere p = new Sphere(1);
+                Util.Graphics.setColor(p, "green");
+                System.out.println("v "+v);
                 p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
                 g.getChildren().add(p);
             }

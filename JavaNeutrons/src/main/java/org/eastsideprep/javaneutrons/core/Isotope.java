@@ -128,7 +128,7 @@ public class Isotope {
     protected final void readDataFiles(int atomicNumber) {
         String filename = Integer.toString(atomicNumber * 1000 + atomicNumber + neutrons);
         fillEntries(filename);
-        //fillAngleEntries(filename);
+        fillAngleEntries(filename);
     }
 
     private void fillEntries(String fileName) {

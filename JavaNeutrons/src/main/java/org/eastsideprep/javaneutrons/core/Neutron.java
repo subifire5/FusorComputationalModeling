@@ -1,47 +1,17 @@
 package org.eastsideprep.javaneutrons.core;
 
-import java.util.ArrayList;
-import java.util.concurrent.LinkedTransferQueue;
-import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
-public class Neutron {
+public final class Neutron extends Particle {
 
     final public static double mass = 1.67492749804e-27; // SI
     final public static double startingEnergyDD = 3.925333e-13 * 1e4; //SI for cm
     // factor 1e4 is from using cm, not m here - 100^2
 
-    public double energy; // unit: SI for cm
-    public Vector3D direction; // no units
-    public Vector3D position; // unit: (cm,cm,cm)
     public Vector3D velocity; // kept in parallel with energy and direction, see set() methods
-    public double entryEnergy = 0;
-    public double totalPath = 0;
-    public MonteCarloSimulation mcs;
-
-    ArrayList<Event> history = new ArrayList<>();
 
     public Neutron(Vector3D position, Vector3D direction, double energy, MonteCarloSimulation mcs) {
-        this.position = position;
-        setDirectionAndEnergy(direction, energy);
-        this.mcs = mcs;
-    }
-
-    public final void setPosition(LinkedTransferQueue<Node> q, Vector3D position) {
-        Vector3D oldPosition = this.position;
-        this.position = position;
-
-        this.totalPath += position.subtract(oldPosition).getNorm();
-        if (this.mcs.trace) {
-            Util.Graphics.drawLine(q, oldPosition, position, 0.1, this.energy);
-        }
-    }
-
-    public final void setPosition(Vector3D newPosition) {
-        if (this.position != null) {
-            this.totalPath += newPosition.subtract(this.position).getNorm();
-        }
-        this.position = newPosition;
+        super(position, direction, energy, mcs);
     }
 
     public final void setVelocity(Vector3D velocity) {
@@ -53,38 +23,42 @@ public class Neutron {
         this.velocity = velocity;
     }
 
-    public final void setDirectionAndEnergy(Vector3D direction, double energy) {
+    @Override
+    public void setDirectionAndEnergy(Vector3D direction, double energy) {
         this.direction = direction.normalize();
         this.energy = energy;
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
     }
 
-    public final void randomizeDirection() {
-        this.direction = Util.Math.randomDir();
-        this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
-    }
-
-     public Vector3D getScatteredVelocity(Isotope i, Vector3D neutronVelocity) {
+    public Vector3D getScatteredVelocity(Event e, Vector3D neutronVelocity) {
+        Isotope i = e.element;
         if (i.angles != null) {
             double neutronSpeed = neutronVelocity.getNorm();
-            double energyEV = 0.5 * Neutron.mass * neutronSpeed * neutronSpeed/Util.Physics.eV;
-            
+            double energyEV = 0.5 * Neutron.mass * neutronSpeed * neutronSpeed / Util.Physics.eV;
+
             // get the scattering angle from a random lookup in the tables
             double cos_theta = i.getScatterCosTheta(energyEV);
-        
+
             // construct vector and return
             Vector3D v = Util.Math.randomDir(cos_theta, neutronSpeed);
             Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
             v = r.applyTo(v);
-           
+
+            e.cos_theta = cos_theta;
+
             //System.out.println("v: " + v);
             return v;
 
         } else {
-            return Util.Math.randomDir().scalarMultiply(neutronVelocity.getNorm());
+
+            Vector3D v = Util.Math.randomDir().scalarMultiply(neutronVelocity.getNorm());
+            double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(v.normalize())) / Math.PI * 180;
+            e.cos_theta = Math.cos(angleWithX);
+            return v;
         }
     }
-    
+
+    @Override
     public void processEvent(Event event) {
         if (event.code == Event.Code.Scatter) {
             // other particle, velocity following Maxwell-Boltzmann speed distribution
@@ -114,7 +88,7 @@ public class Neutron {
             //calculate elastic collision: entry speed = exit speed, random direction
             //velocityNCM = Util.Math.randomDir().scalarMultiply(velocityNCM.getNorm());
             double speedNCM = velocityNCM.getNorm();
-            velocityNCM = this.getScatteredVelocity(event.element, velocityNCM);
+            velocityNCM = this.getScatteredVelocity(event, velocityNCM);
             //double neutronSpeedCM = velocityNCM.getNorm();
             //convert back into lab frame
             Vector3D velocityNLab = velocityNCM.add(velocityCM);
@@ -144,27 +118,6 @@ public class Neutron {
         } else if (event.code == Event.Code.Capture) {
             // capture
             Environment.recordCapture();
-        }
-    }
-
-    //replace parameters with 1 Neutron object??
-    public boolean record(Event e) {
-        //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
-        history.add(e);
-        if (history.size() > 1000) {
-            dumpEvents();
-            return false;
-        }
-        return true;
-    }
-
-    public void dumpEvents() {
-        synchronized (Event.class) {
-            System.out.println("");
-            System.out.println("-- start of neutron events:");
-            history.stream().forEach(event -> System.out.println(event));
-            System.out.println("-- done");
-            System.out.println("");
         }
     }
 }

@@ -50,7 +50,7 @@ public class StatsDisplay extends Group {
     ChoiceBox object = new ChoiceBox();
     Pane chartPane = new Pane();
     CheckBox selectLog = new CheckBox("Log x-axis");
-    Boolean log = true;
+    Boolean log = false;
 
     Slider slider = new Slider();
 
@@ -111,7 +111,7 @@ public class StatsDisplay extends Group {
         });
         object.setPrefWidth(200);
 
-        selectLog.setSelected(true);
+        selectLog.setSelected(this.log);
         selectLog.selectedProperty().addListener((a, b, c) -> {
             this.log = selectLog.isSelected();
             this.setChart();

@@ -66,8 +66,7 @@ public class Util {
         public static Vector3D randomDir(double cos_theta, double magnitude) {
             double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
             double theta = java.lang.Math.acos(cos_theta);
-            double z = java.lang.Math.sin(theta);
-            return new Vector3D(magnitude * cos_theta * java.lang.Math.cos(phi), magnitude * cos_theta * java.lang.Math.sin(phi), magnitude * z);
+            return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
         public static Vector3D randomGaussianComponentVector(double sd) {
@@ -379,9 +378,9 @@ public class Util {
         public static void drawCoordSystem(Group g) {
             LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
             Util.Graphics.drawSphere(q, Vector3D.ZERO, 1, "red");
-            Util.Graphics.drawLine(q, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.1, Color.CYAN);
-            Util.Graphics.drawLine(q, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.1, Color.YELLOW);
-            Util.Graphics.drawLine(q, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.1, Color.RED);
+            Util.Graphics.drawLine(q, new Vector3D(-2000, 0, 0), new Vector3D(2000, 0, 0), 0.1, Color.CYAN);
+            Util.Graphics.drawLine(q, new Vector3D(0, -2000, 0), new Vector3D(0, 2000, 0), 0.1, Color.YELLOW);
+            Util.Graphics.drawLine(q, new Vector3D(0, 0, -2000), new Vector3D(0, 0, 2000), 0.1, Color.RED);
             q.drainTo(g.getChildren());
         }
 
