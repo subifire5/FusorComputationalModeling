@@ -10,10 +10,7 @@ package com.mycompany.EulersMethod;
  * @author subif
  */
 public class Particle extends Charge {
-
-    public Vector pos;
     public Vector vel = new Vector(0.0, 0.0, 0.0);
-    public int polarity;
     public Double time = 0.0;
     public Double mass = 2.014 * 1.66E-27;
 
