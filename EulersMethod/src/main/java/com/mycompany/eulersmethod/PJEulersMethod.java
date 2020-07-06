@@ -14,26 +14,24 @@ import com.mycompany.EulersMethod.Vector;
  *
  * @author pjain
  */
-/*public class PJEulersMethod {
+public class PJEulersMethod implements Solution {   
+        EField eField; 
         
-    double m = 1E-27;
-    EField eField;
-    InputHandler ih;
+        PJEulersMethod(EField efield){
+            this.eField = eField;
+        }
     
-    public static void main (String[] args){
-        //EField eField; 
-        //EulersMethod eulersMethod;
-        ih = new InputHandler();
-        ih.getInput();
-        ih.eField;
+    public Particle step(Particle p, Double stepSize){
+        
+        Particle bruh = new Particle();
+          
+        Vector acceleration = eField.forceOnCharge(bruh).scale(1/bruh.mass);
+        Vector velocity = acceleration.scale(stepSize).sum(bruh.vel);
+        Vector position = bruh.pos.sum(velocity);
+        
+        bruh.time += stepSize;
+        
+        return bruh; 
+        } 
+    
     }
-    public void step(Particle p, Double stepSize){
-            /*eulersMethod = new EulersMethod(eField);
-            EulersMethod(Efield efield){
-                this.eField = eField;*/
-            
-            //Vector f = eField.effectOnCharge(p);
-        //f = m*a
-        //} 
-    
-//}
