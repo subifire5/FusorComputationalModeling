@@ -37,6 +37,8 @@ import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
@@ -92,7 +94,7 @@ public class StatsDisplay extends Group {
                 XYChart c = (XYChart) n;
                 double v = new_val.doubleValue();
                 int scale = 5;
-                v = Math.pow(v,scale) / Math.pow(100, scale-1);
+                v = Math.pow(v, scale) / Math.pow(100, scale - 1);
                 NumberAxis a = (NumberAxis) c.getYAxis();
                 a.setAutoRanging(false);
                 a.setTickLabelFormatter(new TickConverter());
@@ -133,15 +135,16 @@ public class StatsDisplay extends Group {
         RadioButton rb1 = new RadioButton("Escape counts");
         RadioButton rb2 = new RadioButton("Fluence");
         RadioButton rb3 = new RadioButton("Entry counts");
-        RadioButton rb4 = new RadioButton("Event counts");
+        RadioButton rb4 = new RadioButton("Scatter counts");
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");
         RadioButton rb8 = new RadioButton("Custom test");
+        RadioButton rb4b = new RadioButton("Capture counts");
 
         rb2.setSelected(true);
 
-        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb1, rb5, rb6, rb7, rb8};
+        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb4b, rb1, rb5, rb6, rb7, rb8};
 
         this.tg = new ToggleGroup();
         for (RadioButton rb : rbs) {
@@ -185,7 +188,7 @@ public class StatsDisplay extends Group {
         populateComboBoxWithParts();
         Set<Material> sm = this.sim.assembly.getContainedMaterials();
         sm.add(this.sim.interstitialMaterial);
-        populateComboBox(sm.stream().map(m->m.name).collect(Collectors.toList()));
+        populateComboBox(sm.stream().map(m -> m.name).collect(Collectors.toList()));
     }
 
     private void populateComboBox(Collection<String> s) {
@@ -212,7 +215,12 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
-                case "Entry counts":
+                case "Scatter counts":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+
+                case "Capture counts":
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
                     break;
@@ -270,8 +278,12 @@ public class StatsDisplay extends Group {
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", log));
                     break;
 
-                case "Event counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Event counts", log));
+                case "Scatter counts":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter counts", log));
+                    break;
+
+                case "Capture counts":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Capture counts", log));
                     break;
 
                 case "Path lengths":
@@ -287,6 +299,9 @@ public class StatsDisplay extends Group {
                     break;
                 case "Custom test":
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Custom test", log));
+                    System.out.println("Avg room energy: " + (Neutron.totalPE / Neutron.countPE / Util.Physics.eV + " eV"));
+                    System.out.println("Avg neutron energy in: " + (Neutron.totalNE / Neutron.countNE / Util.Physics.eV + " eV"));
+                    System.out.println("Avg neutron energy out : " + (Neutron.totalNE2 / Neutron.countNE2 / Util.Physics.eV + " eV"));
                     break;
 
                 default:
@@ -295,7 +310,7 @@ public class StatsDisplay extends Group {
             }
         }
         slider.setValue(100);
-       
+
     }
 
 }

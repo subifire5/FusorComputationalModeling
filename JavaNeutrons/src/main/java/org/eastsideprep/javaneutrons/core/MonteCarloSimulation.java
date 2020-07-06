@@ -16,6 +16,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.util.StringConverter;
@@ -146,7 +147,7 @@ public class MonteCarloSimulation {
             }
             if (this.initialMaterial == null) {
                 this.initialMaterial = this.interstitialMaterial;
-                System.out.println("No inital medium found, defaulting to " + this.initialMaterial.name);
+                System.out.println("No initial medium found, defaulting to " + this.initialMaterial.name);
             }
         }
     }
@@ -299,12 +300,16 @@ public class MonteCarloSimulation {
                         e = f.format(p.getTotalFluence() / this.lastCount);
                         c.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
-                                + ", src = " + this.lastCount);
+                                + ", src = " + this.lastCount
+                                + " \nThermal energy stats:\n"
+                                + p.fluenceOverEnergy.getStatsString(log)
+                        );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, log));
-                        chartData = "Energy,Fluence";
+                        //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
+                        chartData = "Energy,Fluence and Captures";
                     } else {
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
                         m = Material.getByName("Air");
@@ -317,20 +322,22 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, log));
+                        //c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Fluence";
                     }
                     break;
 
-                case "Event counts":
+                case "Scatter counts":
                     c = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     if (p != null) {
-                        c.setTitle("Part \"" + p.name + "\", total events: " + p.getTotalEvents());
+                        c.setTitle("Part \"" + p.name + "\", "
+                                + ", src = " + this.lastCount
+                                +", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");
-                        yAxis.setLabel("Count");
-                        c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
-                        c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
-                        c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
+                        yAxis.setLabel("Count/src");
+                        c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, log));
+                        c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", this.lastCount, log));
                         chartData = "Energy,Event Count";
                     } else {
                         m = Material.getByName(detector);
@@ -339,11 +346,31 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Count");
                         c.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
                         c.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
-                        c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Event Count";
                     }
                     break;
 
+           case "Capture counts":
+                    c = new BarChart<>(xAxis, yAxis);
+                    p = Part.getByName(detector);
+                    if (p != null) {
+                        c.setTitle("Part \"" + p.name + "\", "
+                                + ", src = " + this.lastCount
+                                +", total events: " + p.getTotalEvents());
+                        xAxis.setLabel("Energy (eV)");
+                        yAxis.setLabel("Count/src");
+                        c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, log));
+                        chartData = "Energy,Event Count";
+                    } else {
+                        m = Material.getByName(detector);
+                        c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
+                        xAxis.setLabel("Energy (eV)");
+                        yAxis.setLabel("Count");
+                        c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
+                        chartData = "Energy,Event Count";
+                    }
+                    break;
+                    
                 case "Path lengths":
                     factor = detector.equals("Air") ? (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume()) : 1;
                     c = new BarChart<>(xAxis, yAxis);
@@ -408,10 +435,14 @@ public class MonteCarloSimulation {
             c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", log));
             chartData = "Energy,Count";
         }
-        // place first series into clipboard
+        // place all series into clipboard
         chartData += "\n";
-        for (Data<String, Number> d : c.getData().get(0).getData()) {
-            chartData += d.getXValue() + "," + d.getYValue() + "\n";
+        for (Series<String, Number> s : c.getData()) {
+            chartData += "Series: " + s.getName() + "\n";
+            for (Data<String, Number> d : s.getData()) {
+                chartData += d.getXValue() + "," + d.getYValue() + "\n";
+            }
+            chartData += "\n";
         }
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();

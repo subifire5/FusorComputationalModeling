@@ -117,7 +117,7 @@ public class Material {
     }
 
     // input: SI(cm)
-    private double randomPathLength(double energy) {
+    public double randomPathLength(double energy) {
         double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy / Util.Physics.eV);
         return length;
     }

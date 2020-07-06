@@ -56,16 +56,17 @@ public class Particle {
     public boolean record(Event e) {
         //System.out.println("Neutron"+this.hashCode()+" recording event "+e);
         history.add(e);
-        if (history.size() > 1000) {
-            dumpEvents();
+        if (history.size() > 2000) {
+            dumpEvents("Neturon scattered 2000 times:");
             return false;
         }
         return true;
     }
 
-    public void dumpEvents() {
+    public void dumpEvents(String reason) {
         synchronized (Event.class) {
             System.out.println("");
+            System.out.println(reason);
             System.out.println("-- start of particle events:");
             history.stream().forEach(event -> System.out.println(event));
             System.out.println("-- done");

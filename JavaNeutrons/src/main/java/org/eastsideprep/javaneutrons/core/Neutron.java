@@ -4,6 +4,13 @@ import org.apache.commons.math3.geometry.euclidean.threed.*;
 
 public final class Neutron extends Particle {
 
+    public static double totalPE = 0.0;
+    public static int countPE = 0;
+    public static double totalNE = 0.0;
+    public static int countNE = 0;
+    public static double totalNE2 = 0.0;
+    public static int countNE2 = 0;
+
     final public static double mass = 1.67492749804e-27; // SI
     final public static double startingEnergyDD = 3.925333e-13 * 1e4; //SI for cm
     // factor 1e4 is from using cm, not m here - 100^2
@@ -64,8 +71,10 @@ public final class Neutron extends Particle {
             // other particle, velocity following Maxwell-Boltzmann speed distribution
             // derived through: <Ex> = 0.5*kB*T (x component takes a third of the kinetic energy)
             // => 0.5*m*<vx^2> = 0.5*kB*T
-            // with <vx^2> = var(vx)
-            // => m*sd(vx) = sqrt(kB*T)
+            // => m<vx^2> = kB*T
+            // with <vx^2> = var(vx) because mean(vx) = 0
+            // => m*var(vx) = kB*T
+            // => var(vx) = kB*t/m
             // => sd(vx) = sd(vy) = sd(vz) = sqrt(kB*T/m)
             double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / event.element.mass);
             Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
@@ -73,6 +82,14 @@ public final class Neutron extends Particle {
             // making these for later debug out
             double particleSpeed = particleVelocity.getNorm();
             double particleEnergy = event.element.mass * particleSpeed * particleSpeed / 2;
+
+            synchronized (Neutron.class) {
+                Neutron.totalPE += particleEnergy;
+                Neutron.countPE++;
+                Neutron.totalNE += this.energy;
+                Neutron.countNE++;
+            }
+
             double neutronSpeed = this.velocity.getNorm();
             double neutronEnergyIn = this.energy;
 
@@ -98,6 +115,12 @@ public final class Neutron extends Particle {
             double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(velocityNLab.normalize())) / Math.PI * 180;
             this.setVelocity(velocityNLab);
             event.energyOut = this.energy;
+
+            synchronized (Neutron.class) {
+                Neutron.totalNE2 += this.energy;
+                Neutron.countNE2++;
+            }
+
             if (this.mcs != null && this.mcs.trace) {
                 this.mcs.scatter = true;
                 synchronized (Neutron.class) {

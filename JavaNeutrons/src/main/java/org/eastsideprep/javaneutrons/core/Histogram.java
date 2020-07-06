@@ -35,9 +35,12 @@ public class Histogram {
             this.max = 7;
             this.bins = new double[(max - min) * this.binsPerDecade];
         } else {
-            this.min = 25000;
-            this.max = 2525000;
-            this.bins = new double[(int)(this.max - this.min) / 25000];
+//            this.min = 25000;
+//            this.max = 2525000;
+//            this.bins = new double[(int)(this.max - this.min) / 25000];
+            this.min = 0;
+            this.max = 1;
+            this.bins = new double[200];
         }
     }
 
@@ -91,7 +94,7 @@ public class Histogram {
             }
             String tick = String.format("%6.3e", x);
             data.add(new XYChart.Data(tick, counts[i] / count));
-            System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
+            //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
         //System.out.println("");
 

@@ -136,10 +136,7 @@ public class Part {
                 exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
                 if (n.mcs.trace) {
-                    System.out.println("");
-                    System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
-                    n.dumpEvents();
-                    System.out.println("--end dump");
+                    n.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
                 }
                 event = exitEvent;
             } else {

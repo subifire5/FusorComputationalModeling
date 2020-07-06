@@ -24,6 +24,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
@@ -53,6 +54,7 @@ public class App extends Application {
         CameraControl mainScene = new CameraControl(1000, 500);
         ImageView heatMap = new ImageView(Util.Graphics.createHeatMap(100, 500));
         heatMap.fitHeightProperty().bind(root.heightProperty());
+        heatMap.setVisible(false);
         mainScene.subScene.heightProperty().bind(root.heightProperty());
 
         // prepare sim for later

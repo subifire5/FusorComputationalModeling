@@ -27,6 +27,8 @@ import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.core.Shape;
 import org.eastsideprep.javaneutrons.materials.E12C;
+import org.eastsideprep.javaneutrons.materials.E1H;
+import org.eastsideprep.javaneutrons.materials.HydrogenWax;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
@@ -51,6 +53,13 @@ public class TestGM {
     }
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
+//        Isotope i = E1H.getInstance();
+//        System.out.println("1H mass: " + i.mass);
+//        double sd = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / i.mass);
+//        System.out.println("SD for hydrogen: " + sd);
+//        double e = (3.0/2.0*Util.Physics.boltzmann * Util.Physics.roomTemp/Util.Physics.eV);
+//        System.out.println("Room temp avg energy in eV: " + e);
+//        System.exit(0);
 
 //        histTest(new Histogram(false));
 //        System.out.println("");
@@ -64,14 +73,16 @@ public class TestGM {
         //Histogram test = new Histogram(-102,102,104, false);
         MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
         //mcs.trace= true;
-        Neutron n = new Neutron (Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
+        Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
         Isotope is = E12C.getInstance();
         Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
 
-        for (int i = 0; i < 100000; i++) {
-            n.setDirectionAndEnergy(Vector3D.PLUS_I, Neutron.startingEnergyDD);
+        for (int i = 0; i < 1000000; i++) {
+            n.setDirectionAndEnergy(Vector3D.PLUS_I, 0.037 * Util.Physics.eV);
             n.processEvent(e);
-            test.record(1, e.energyOut);
+            if (n.direction.getX() > 0 && Math.abs(n.direction.getY()) < 0.7 && Math.abs(n.direction.getZ()) < 0.7) {
+                test.record(1, e.energyOut);
+            }
         }
 
         return test.makeSeries("test", 1, log);
@@ -117,10 +128,10 @@ public class TestGM {
     }
 
     public static MonteCarloSimulation simulationTestWhitmerCarbon(Group visualizations) {
-        double thickness = 0.025; //block thickness in cm
+        double thickness = 25; //block thickness in cm
         Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
-        //String m = "HydrogenWax";
-        String m = "CarbonWax";
+        String m = "HydrogenWax";
+        //String m = "CarbonWax";
         //String m = "Paraffin";
 
         Part wall = new Part("Wall: " + m, blockShape, m);
@@ -298,7 +309,7 @@ public class TestGM {
         for (int i = 0; i < 5000; i++) {
             // Vector3D v = Util.Math.randomDir().scalarMultiply(100);
             Vector3D dir1 = Util.Math.randomDir();
-          
+
             double t1 = Util.Math.raySphereIntersect(orig, dir1, Vector3D.ZERO, radius);
             if (t1 >= 0) {
                 Vector3D v = orig.add(dir1.scalarMultiply(t1));
@@ -307,27 +318,26 @@ public class TestGM {
                 p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
                 g.getChildren().add(p);
             }
-            
+
             double cos_theta = is.getScatterCosTheta(2.44e6);
-            System.out.println("cos_theta "+cos_theta);
+            System.out.println("cos_theta " + cos_theta);
             Vector3D dir2 = Util.Math.randomDir(cos_theta, 1.0);
-            System.out.println("dir2 "+dir2);
-            if ( Math.abs(dir2.getNorm() -1) > 1e-12) {
+            System.out.println("dir2 " + dir2);
+            if (Math.abs(dir2.getNorm() - 1) > 1e-12) {
                 System.out.println("not normal");
             }
-            
+
             //dir2 = Util.Math.randomDir();
-            
             Rotation r = new Rotation(Vector3D.PLUS_K, Vector3D.PLUS_I);
             dir2 = r.applyTo(dir2);
-            System.out.println("x1 "+dir2.getX());
+            System.out.println("x1 " + dir2.getX());
             double t2 = Util.Math.raySphereIntersect(orig, dir2, Vector3D.ZERO, radius);
             if (t2 >= 0) {
-                System.out.println("dir2 "+dir2+" t "+t2);
+                System.out.println("dir2 " + dir2 + " t " + t2);
                 Vector3D v = orig.add(dir2.scalarMultiply(t2));
                 Sphere p = new Sphere(1);
                 Util.Graphics.setColor(p, "green");
-                System.out.println("v "+v);
+                System.out.println("v " + v);
                 p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
                 g.getChildren().add(p);
             }
