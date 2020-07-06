@@ -60,22 +60,22 @@ public class InputHandler {
     public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, int numberOfSteps, Double stepSize, String outputFilePath) {
         Particle[] particles = new Particle[numberOfSteps];
         if (PJ) {
-            /*
+            
             PJEulersMethod pj = new PJEulersMethod(eField);
-            particles[0] = pj.step(initial, stepSize);
+            particles[0] = pj.step(initial, stepSize).clone();
             Particle p = particles[0];
             for (int i = 1; i < numberOfSteps; i++) {
-                particles[i] = pj.step(p, stepSize);
+                particles[i] = pj.step(p, stepSize).clone();
                 p = particles[i];
             }
-             */
+             
         } else if (MY) {
 
             MYEulersMethod my = new MYEulersMethod(eField);
-            particles[0] = my.step(initial, stepSize);
-            Particle p = particles[0];
+            particles[0] = my.step(initial, stepSize).clone();
+            Particle p = particles[0].clone();
             for (int i = 1; i < numberOfSteps; i++) {
-                particles[i] = my.step(p, stepSize);
+                particles[i] = my.step(p, stepSize).clone();
                 p = particles[i];
             }
 

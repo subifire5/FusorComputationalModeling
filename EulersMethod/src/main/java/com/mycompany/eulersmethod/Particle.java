@@ -151,5 +151,9 @@ public class Particle extends Charge {
             "" + this.polarity, "" + this.time, "" + this.mass};
         return csvString;
     }
+    
+    public Particle clone(){
+        return new Particle(pos, vel, polarity, time, mass);
+    }
 
 }
