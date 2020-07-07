@@ -21,6 +21,16 @@
             <version>3.2</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.fxyz3d</groupId>
+            <artifactId>fxyz3d</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fxyz3d</groupId>
+            <artifactId>fxyz3d-importers</artifactId>
+            <version>0.5.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
