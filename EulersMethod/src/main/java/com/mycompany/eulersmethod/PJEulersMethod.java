@@ -24,14 +24,12 @@ public class PJEulersMethod implements Solution {
 
     public Particle step(Particle p, Double stepSize) {
 
-        System.out.println("stepsize:" + stepSize);
-        System.out.println("Velocity:" + p.vel);
-        System.out.println("Efield:" + eField);
-        System.out.println("Mass:" + p.mass);
-        Vector acceleration = eField.forceOnCharge(p).scale(1 / p.mass);
+        p.totalEnergy(eField);
+        Vector acceleration = eField.forceOnCharge(p).scale(1/p.mass);
         Vector velocity = acceleration.scale(stepSize).sum(p.vel);
         Vector position = p.pos.sum(velocity);
-
+        
+        p.vel = velocity;
         p.time += stepSize;
 
         return p;
