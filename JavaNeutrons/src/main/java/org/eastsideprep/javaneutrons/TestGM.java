@@ -65,7 +65,7 @@ public class TestGM {
 //        System.out.println("");
 //        histTest(new Histogram(true));
 //        System.exit(0);
-        return simulationTestWhitmerCarbon(visualizations);
+        return simulationTestSmoosh(visualizations);
     }
 
     public static XYChart.Series customTest(boolean log, boolean xOnly) {

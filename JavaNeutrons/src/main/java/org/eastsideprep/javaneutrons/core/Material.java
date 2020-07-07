@@ -147,7 +147,7 @@ public class Material {
             return new Event(location, Event.Code.Gone, t);
         }
         
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("");
             //System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
         }
@@ -157,13 +157,13 @@ public class Material {
         for (int i = 0; i < sigmas.length; i += 2) {
             Component c = components.get(i / 2);
             sum += c.e.getScatterCrossSection(energy / Util.Physics.eV) * c.density;
-            if (n.mcs.trace) {
+            if (n.mcs.traceLevel >= 2) {
                 //System.out.println(" e " + c.e.name + " s to " + sum);
             }
 
             sigmas[i] = sum;
             sum += c.e.getCaptureCrossSection(energy / Util.Physics.eV) * c.density;
-            if (n.mcs.trace) {
+            if (n.mcs.traceLevel >= 2) {
                 //System.out.println(" e " + c.e.name + " c to " + sum);
             }
 
@@ -172,7 +172,7 @@ public class Material {
 
         // random draw from across the combined distribution
         double rand = ThreadLocalRandom.current().nextDouble() * sum;
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("sum: " + sum + ", draw: " + rand);
         }
 
@@ -182,13 +182,13 @@ public class Material {
         if (slot < 0) {
             slot = -slot - 1;
         }
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("Slot " + slot);
         }
 
         Isotope e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("Component: " + e.name + ", code: " + code);
         }
 

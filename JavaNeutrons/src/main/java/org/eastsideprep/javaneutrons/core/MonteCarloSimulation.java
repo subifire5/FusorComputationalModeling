@@ -92,7 +92,7 @@ public class MonteCarloSimulation {
     public Material interstitialMaterial;
     public Material initialMaterial;
     public double initialEnergy;
-    public boolean trace;
+    public int traceLevel;
     public boolean scatter;
     public String lastChartData = "";
 
@@ -192,9 +192,9 @@ public class MonteCarloSimulation {
         this.viewGroup.getChildren().remove(this.assembly.getGroup());
     }
 
-    public void simulateNeutrons(int count, int visualObjectLimit) {
+    public void simulateNeutrons(int count, int visualObjectLimit, boolean textTrace) {
         this.lastCount = count;
-        this.trace = count <= 10;
+        this.traceLevel = count <= 10 ? (1+(textTrace?1:0)):0;
         this.visualObjectLimit = visualObjectLimit;
         MonteCarloSimulation.visualLimitReached = false;
 
@@ -214,7 +214,6 @@ public class MonteCarloSimulation {
 
         // and enviroment (will count escaped neutrons)
         Environment.getInstance().reset();
-        this.trace = count <= 10;
 
         NeutronCollection neutrons = new NeutronCollection(count, this.origin, this.direction, this.initialEnergy, this);
         if (count > 0) {
@@ -247,7 +246,7 @@ public class MonteCarloSimulation {
     public void simulateNeutron(Neutron n) {
         this.assembly.evolveNeutronPath(n, this.visualizations, true);
         completed.incrementAndGet();
-        if (trace) {
+        if (traceLevel >= 2) {
             System.out.println("");
 
         }
@@ -354,7 +353,7 @@ public class MonteCarloSimulation {
                     c = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     if (p != null) {
-                        c.setTitle("Part \"" + p.name + "\", "
+                        c.setTitle("Part \"" + p.name + "\""
                                 + ", src = " + this.lastCount
                                 +", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");

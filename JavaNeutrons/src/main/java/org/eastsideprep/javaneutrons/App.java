@@ -3,6 +3,7 @@ package org.eastsideprep.javaneutrons;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Camera;
@@ -43,6 +44,7 @@ public class App extends Application {
     Button bRunET;
 
     Label progress;
+    boolean idleFlag = false;
 
     @Override
     public void start(Stage stage) {
@@ -177,7 +179,9 @@ public class App extends Application {
         });
         stage.setScene(scene);
         stage.show();
+        idle();
 
+        stage.setOnCloseRequest((e) -> noIdle());
     }
 
     public void runSim(int count) {
@@ -198,6 +202,14 @@ public class App extends Application {
 
         Group p = new Group();
 
+        noIdle();
+        this.progressTimeline(count);
+        sim.simulateNeutrons(count, 100000, true);
+        root.setCenter(view);
+    }
+
+    private Timeline progressTimeline(int count) {
+        root.setCenter(view);
         final Timeline tl = new Timeline();
         tl.getKeyFrames().add(new KeyFrame(Duration.seconds(0.1),
                 (e) -> {
@@ -213,13 +225,43 @@ public class App extends Application {
                         bRunSV.setDisable(false);
                         progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000) + " s");
                         //sim.checkTallies();
+                        idle();
                     }
                 }));
         tl.setCycleCount(Timeline.INDEFINITE);
         tl.play();
+        return tl;
+    }
 
-        sim.simulateNeutrons(count, 100000);
-        root.setCenter(view);
+    public static void runWithDelay(Runnable r, int delay) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+            }
+            Platform.runLater(r);
+        }).start();
+    }
+
+    private void idle() {
+        idleFlag = true;
+  //      idleLoop();
+    }
+
+    private void idleLoop() {
+        if (!idleFlag) {
+            return;
+        }
+        sim.simulateNeutrons(1, 3000, false);
+        sim.update();
+
+        if (this.idleFlag) {
+            runWithDelay(() -> idleLoop(),1000);
+        }
+    }
+
+    private void noIdle() {
+        idleFlag = false;
     }
 
     public static void main(String[] args) {

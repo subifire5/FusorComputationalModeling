@@ -121,7 +121,7 @@ public final class Neutron extends Particle {
                 Neutron.countNE2++;
             }
 
-            if (this.mcs != null && this.mcs.trace) {
+            if (this.mcs != null && this.mcs.traceLevel >= 2) {
                 this.mcs.scatter = true;
                 synchronized (Neutron.class) {
                     System.out.println("Neutron: " + this.hashCode());

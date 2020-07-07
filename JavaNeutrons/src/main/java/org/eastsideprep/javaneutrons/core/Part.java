@@ -120,7 +120,7 @@ public class Part {
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
         n.setPosition(visualizations, Util.Math.rayPoint(n.position, n.direction, epsilon));
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             System.out.println("Neutron " + n.hashCode() + " entry into part " + this.name);
             System.out.println(" Neutron energy in: " + String.format("%6.3e eV", n.energy / Util.Physics.eV));
         }
@@ -135,7 +135,7 @@ public class Part {
                 //throw new IllegalArgumentException();
                 exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
-                if (n.mcs.trace) {
+                if (n.mcs.traceLevel >= 2) {
                     n.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
                 }
                 event = exitEvent;

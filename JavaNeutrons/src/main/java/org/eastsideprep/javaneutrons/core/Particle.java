@@ -27,7 +27,7 @@ public class Particle {
         this.position = position;
 
         this.totalPath += position.subtract(oldPosition).getNorm();
-        if (this.mcs.trace) {
+        if (this.mcs.traceLevel >= 1) {
             Util.Graphics.drawLine(q, oldPosition, position, 0.1, this.energy);
         }
     }
