@@ -10,9 +10,13 @@ package com.mycompany.EulersMethod;
  * @author subif
  */
 public class Particle extends Charge {
+
     public Vector vel = new Vector(0.0, 0.0, 0.0);
     public Double time = 0.0;
     public Double mass = 2.014 * 1.66E-27;
+    public Double ePotentialEnergy = 0.0;
+    public Double kineticEnergy = 0.0;
+    public Double totalEnergy = 0.0;
 
     public Particle() {
     }
@@ -50,7 +54,8 @@ public class Particle extends Charge {
      * @param vz
      * @param polarity
      */
-    public Particle(Double x, Double y, Double z, Double vx, Double vy, Double vz, int polarity) {
+    public Particle(Double x, Double y, Double z, Double vx, Double vy,
+            Double vz, int polarity) {
         this.pos = new Vector(x, y, z);
         this.vel = new Vector(vx, vy, vz);
         this.polarity = polarity;
@@ -77,7 +82,8 @@ public class Particle extends Charge {
      * @param polarity
      * @param time
      */
-    public Particle(Double x, Double y, Double z, Double vx, Double vy, Double vz, int polarity, Double time) {
+    public Particle(Double x, Double y, Double z, Double vx, Double vy,
+            Double vz, int polarity, Double time) {
         this.pos = new Vector(x, y, z);
         this.vel = new Vector(vx, vy, vz);
         this.polarity = polarity;
@@ -107,7 +113,8 @@ public class Particle extends Charge {
      * @param time
      * @param mass
      */
-    public Particle(Double x, Double y, Double z, Double vx, Double vy, Double vz, int polarity, Double time, Double mass) {
+    public Particle(Double x, Double y, Double z, Double vx, Double vy,
+            Double vz, int polarity, Double time, Double mass) {
         this.pos = new Vector(x, y, z);
         this.vel = new Vector(vx, vy, vz);
         this.polarity = polarity;
@@ -123,13 +130,16 @@ public class Particle extends Charge {
      * @param time
      * @param mass
      */
-    public Particle(Vector p, Vector v, int polarity, Double time, Double mass) {
+    public Particle(Vector p, Vector v, int polarity, Double time,
+            Double mass) {
         this(p.x, p.y, p.z, v.x, v.y, v.z, polarity, time, mass);
     }
 
     public Particle(String[] s) {
-        this.pos = new Vector(Double.parseDouble(s[0]), Double.parseDouble(s[1]), Double.parseDouble(s[2]));
-        this.vel = new Vector(Double.parseDouble(s[3]), Double.parseDouble(s[4]), Double.parseDouble(s[5]));
+        this.pos = new Vector(Double.parseDouble(s[0]),
+                Double.parseDouble(s[1]), Double.parseDouble(s[2]));
+        this.vel = new Vector(Double.parseDouble(s[3]),
+                Double.parseDouble(s[4]), Double.parseDouble(s[5]));
         this.polarity = Integer.parseInt(s[6]);
         this.time = Double.parseDouble(s[7]);
         this.mass = Double.parseDouble(s[8]);
@@ -142,18 +152,45 @@ public class Particle extends Charge {
         particle += "Polarity: " + polarity;
         particle += "Time: " + time;
         particle += "Mass: " + mass;
+        particle += "Electric Potential Energy: " + ePotentialEnergy;
+        particle += "Kinetic Energy: " + kineticEnergy;
         return particle;
     }
 
     public String[] toCSVString() {
         String[] csvString = {"" + this.pos.x, "" + this.pos.y, "" + this.pos.z,
             "" + this.vel.x, "" + this.vel.y, "" + this.vel.z,
-            "" + this.polarity, "" + this.time, "" + this.mass};
+            "" + this.polarity, "" + this.time, "" + this.mass,
+            "" + this.ePotentialEnergy, "" + this.kineticEnergy,
+            "" + this.totalEnergy};
         return csvString;
     }
-    
-    public Particle clone(){
-        return new Particle(pos, vel, polarity, time, mass);
+
+    public Particle clone() {
+        Particle clone =  new Particle(pos, vel, polarity, time, mass);
+        clone.ePotentialEnergy = this.ePotentialEnergy;
+        clone.kineticEnergy = this.kineticEnergy;
+        clone.totalEnergy = this.totalEnergy;
+        return clone;
     }
 
+    public double kineticEnergy() {
+        Vector zero = new Vector(0.0, 0.0, 0.0);
+        this.kineticEnergy = 0.5 * this.mass * this.distanceSquared(zero);
+        return this.kineticEnergy;
+    }
+    
+    public double electricPotentialEnergy(EField e){
+        double ePotential = 0;
+        for (Charge t : e.charges) {
+            ePotential += (t.polarity * e.k / (this.distanceTo(t) * e.scaleDistance)) * this.polarity;
+        }
+        this.ePotentialEnergy = ePotential * e.chargeFactor;
+        return this.ePotentialEnergy;
+    }
+    
+    public double totalEnergy(EField e){
+        this.totalEnergy = kineticEnergy()+electricPotentialEnergy(e);
+        return this.totalEnergy;
+    }
 }

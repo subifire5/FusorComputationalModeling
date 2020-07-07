@@ -3,13 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 // PRAVEER AND MAGGIE, the package below is something you should definitely change to whatever you want your package name to be
 // other notes
 // you will most likely want the electric potential energy, not the electric potential
 // as for the 'ignore charge', that's saying don't include the charge that we're finding the electric potential of
- package com.mycompany.EulersMethod;
-
+package com.mycompany.EulersMethod;
 
 /**
  *
@@ -17,7 +15,6 @@
  */
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class EField {
 
@@ -56,7 +53,9 @@ public class EField {
     }
 
     /**
-     * This is the electric field at a given point assuming a positive charge of 1
+     * This is the electric field at a given point assuming a positive charge of
+     * 1
+     *
      * @param v is the location (as a vector)
      * @return a force vector
      */
@@ -85,8 +84,10 @@ public class EField {
         sumOfField.scale(chargeFactor);
         return sumOfField;
     }
+
     /**
      * This is the electric field on a charge.
+     *
      * @param c is the charge
      * @return A force vector
      */
@@ -118,8 +119,9 @@ public class EField {
     }
 
     /**
-     * The electric potential of a specific charge 
-     * this is NOT the electric potential ENERGY
+     * The electric potential of a specific charge this is NOT the electric
+     * potential ENERGY
+     *
      * @param c Selected charge
      * @return electric potential of a given charge
      */
@@ -183,6 +185,21 @@ public class EField {
     }
 
     /**
+     * The electric potential ENERGY of a given charge Recommended for use with
+     * particles only or charges not on the grid
+     *
+     * @param c Selected Charge
+     * @return electric potential of a given charge
+     */
+    public double electricPotentialEnergy(Charge c) {
+        double ePotential = 0;
+        for (Charge t : charges) {
+            ePotential += (t.polarity * k / (c.distanceTo(t) * scaleDistance)) * c.polarity;
+        }
+        return ePotential * chargeFactor;
+    }
+
+    /**
      * The electric potential ENERGY of a given charge without the inclusion of
      * a specified charge
      *
@@ -200,4 +217,14 @@ public class EField {
         return ePotential * chargeFactor;
     }
 
+    public double kineticEnergy(Particle p){
+        Vector zero = new Vector(0.0,0.0,0.0);
+        return 0.5*p.mass*p.distanceSquared(zero);
+    }
+    
+    public double totalEnergy(Particle p){
+        double ePotentialEnergy = electricPotentialEnergy(p);
+        double kineticEnergy = kineticEnergy(p);
+        return ePotentialEnergy+kineticEnergy;
+    }
 }

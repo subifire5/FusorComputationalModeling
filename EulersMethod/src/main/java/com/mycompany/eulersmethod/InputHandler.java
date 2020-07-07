@@ -81,7 +81,8 @@ public class InputHandler {
 
         }
 
-        String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Time", "Mass"};
+        String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Time",
+            "Mass", "Electric Potential Energy", "Kinetic Energy"};
 
         TableGraphWriter tgw = new TableGraphWriter();
         tgw.writeCSV(particles, headers, outputFilePath);
