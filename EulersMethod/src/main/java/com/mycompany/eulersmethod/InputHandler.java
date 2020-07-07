@@ -60,15 +60,15 @@ public class InputHandler {
     public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, int numberOfSteps, Double stepSize, String outputFilePath) {
         Particle[] particles = new Particle[numberOfSteps];
         if (PJ) {
-            
+
             PJEulersMethod pj = new PJEulersMethod(eField);
             particles[0] = pj.step(initial, stepSize).clone();
-            Particle p = particles[0];
+            Particle p = particles[0].clone();
             for (int i = 1; i < numberOfSteps; i++) {
                 particles[i] = pj.step(p, stepSize).clone();
                 p = particles[i];
             }
-             
+
         } else if (MY) {
 
             MYEulersMethod my = new MYEulersMethod(eField);
