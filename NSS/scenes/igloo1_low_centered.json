@@ -1,0 +1,332 @@
+[
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            -600.01,
+            -508.01,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -349.82,
+            -508.01,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -99.63,
+            -508.01,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            150.56000000000006,
+            -508.01,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -600.01,
+            -0.009999999999990905,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            -349.82,
+            -0.009999999999990905,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            -99.63,
+            -0.009999999999990905,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            150.56000000000006,
+            -0.009999999999990905,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -600.01,
+            -508.01,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -349.82,
+            -508.01,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -99.63,
+            -508.01,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            150.56000000000006,
+            -508.01,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            -600.01,
+            -0.009999999999990905,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            -349.82,
+            -0.009999999999990905,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock2_low.stl",
+        "offset": [
+            -99.63,
+            -0.009999999999990905,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "waxblock1_low.stl",
+        "offset": [
+            150.56000000000006,
+            -0.009999999999990905,
+            224.47000000000003
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            -600.01,
+            177.78999999999996,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            -349.82,
+            177.78999999999996,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            -99.63,
+            177.78999999999996,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            150.56000000000006,
+            177.78999999999996,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            -600.01,
+            -508.01,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            -349.82,
+            -508.01,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            -99.63,
+            -508.01,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            150.56000000000006,
+            -508.01,
+            -283.53
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            400.75,
+            -508.01,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            400.75,
+            -508.01,
+            -4.1299999999999955
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            400.75,
+            -259.09000000000003,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            400.75,
+            -259.09000000000003,
+            -4.1299999999999955
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            400.75,
+            -10.170000000000016,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            400.75,
+            -10.170000000000016,
+            -4.1299999999999955
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside1_low.stl",
+        "offset": [
+            400.75,
+            238.75,
+            -512.13
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editwaxblockside2_low.stl",
+        "offset": [
+            400.75,
+            238.75,
+            -4.1299999999999955
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    },
+    {
+        "file": "editbaseparaffinblock_low.stl",
+        "offset": [
+            -600.01,
+            -266.51,
+            -252.92999999999995
+        ],
+        "material": "125",
+        "number_density_amg": 2958.1
+    }
+]
