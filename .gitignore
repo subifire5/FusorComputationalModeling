@@ -15,4 +15,8 @@ JavaNeutrons/src/main/.DS_Store
 JavaNeutrons/.DS_Store
 JavaNeutrons/src/.DS_Store
 FusorCompModeling/nbproject/private/private.properties
+
 FusorVis/nbproject/private/private.properties
+
+/CompModelingV2/target/
+/EFieldGeneration/target/
