@@ -19,19 +19,20 @@ public class MYEulersMethod {
     
     public Particle step (Particle p, Double stepSize) {
         
-        Particle pReturn = new Particle(p.pos, p.vel, p.polarity, p.time, p.mass);
+        //Particle pReturn = new Particle(p.pos, p.vel, p.polarity, p.time, p.mass);
+        p.totalEnergy(eField);
         
         Vector acceleration = eField.forceOnCharge(p).scale(1/p.mass); 
-        System.out.println("Acceleration: " + acceleration);
+        //System.out.println("Acceleration: " + acceleration);
         Vector velocity = p.vel.sum(acceleration.scale(stepSize)); 
-        System.out.println("Velocity: " + p.vel);
-        pReturn.pos.plusEquals(p.vel.scale(stepSize)); 
-        System.out.println("Position: " + p.pos);  
+        //System.out.println("Velocity: " + p.vel);
+        p.pos.plusEquals(p.vel.scale(stepSize)); 
+        //System.out.println("Position: " + p.pos);  
         
-        pReturn.vel = velocity;
-        pReturn.time += stepSize;
+        p.vel = velocity;
+        p.time += stepSize;
         
-        return pReturn;
+        return p;
     }
     
     
