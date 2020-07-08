@@ -37,21 +37,38 @@ public class TestGM {
 
     private static void histTest() {
         EnergyHistogram test = new EnergyHistogram();
-        test.record(1000, 0.5e-4*Util.Physics.eV);
-        test.record(2000, 1e-3*Util.Physics.eV);
-        test.record(2100, 1.1e-3*Util.Physics.eV);
-        test.record(2500, 1.5e-3*Util.Physics.eV);
+        test.record(1000, 0.5e-4 * Util.Physics.eV);
+        test.record(2000, 1e-3 * Util.Physics.eV);
+        test.record(2100, 1.1e-3 * Util.Physics.eV);
+        test.record(2500, 1.5e-3 * Util.Physics.eV);
 
-        test.record(3333, 2.51e6*Util.Physics.eV);
+        test.record(3333, 2.51e6 * Util.Physics.eV);
 
-        test.record(3000, 0.5e7*Util.Physics.eV);
-        test.record(4000, 1e7*Util.Physics.eV);
-        test.record(5000, 2e7*Util.Physics.eV);
-        
+        test.record(3000, 0.5e7 * Util.Physics.eV);
+        test.record(4000, 1e7 * Util.Physics.eV);
+        test.record(5000, 2e7 * Util.Physics.eV);
+
         XYChart.Series<String, Number> xy = test.makeSeries("", 1, "Linear (thermal)");
         for (XYChart.Data<String, Number> d : xy.getData()) {
             System.out.println(d.getXValue() + "," + d.getYValue());
         }
+        System.exit(0);
+    }
+
+    private static void rTest() {
+        EnergyHistogram h = new EnergyHistogram();
+        for (int i = 0; i < 10000000; i++) {
+            double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / Util.Physics.protonMass);
+            Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+
+            // making these for later debug out
+            double particleSpeed = particleVelocity.getNorm();
+            double particleEnergy = Util.Physics.protonMass * particleSpeed * particleSpeed / 2;
+            h.record(1, particleEnergy);
+        }
+
+        h.fitMaxwell();
+        //System.out.println(h.getStatsString("Linear (thermal)"));
         System.exit(0);
     }
 
@@ -69,7 +86,11 @@ public class TestGM {
 //        System.out.println("");
 //        histTest(new Histogram(true));
 //        System.exit(0);
-        return spherical(visualizations);
+
+
+//        rTest();
+
+        return bigBlock(visualizations);
     }
 
     public static XYChart.Series customTest(String scale, boolean xOnly) {
@@ -137,7 +158,7 @@ public class TestGM {
         //String m = "CarbonWax";
         //String m = "Paraffin";
 
-        Part wall = new Part("Block: " + m, new Shape(new CuboidMesh(thickness, thickness, thickness)), m);
+        Part wall = new Part("Block: " + m, new Cuboid(thickness), m);
         wall.getTransforms().add(new Translate(50, 0, 0));
         wall.setColor("silver");
 
@@ -149,12 +170,12 @@ public class TestGM {
         whitmer.addAll(wall, detector);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, 0.0253 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                null, Vector3D.PLUS_I, 2.451e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
         return mcs;
     }
 
-    public static MonteCarloSimulation simulationTestWhitmerCarbon(Group visualizations) {
+    public static MonteCarloSimulation bigBlock(Group visualizations) {
         double thickness = 25; //block thickness in cm
         Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
         String m = "HydrogenWax";
