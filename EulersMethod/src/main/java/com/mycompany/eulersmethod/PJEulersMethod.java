@@ -27,11 +27,11 @@ public class PJEulersMethod implements Solution {
         p.totalEnergy(eField);
         Vector acceleration = eField.forceOnCharge(p).scale(1/p.mass);
         Vector velocity = acceleration.scale(stepSize).sum(p.vel);
-        Vector position = p.pos.sum(velocity);
+        Vector position = p.pos.sum(p.vel.scale(stepSize));
         
         p.vel = velocity;
+        p.pos = position;
         p.time += stepSize;
-
         return p;
     }
 
