@@ -266,7 +266,7 @@ public class MonteCarloSimulation {
 
     }
 
-    public Chart makeChart(String detector, String series, boolean log) {
+    public Chart makeChart(String detector, String series, String scale) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
         XYChart<String, Number> c;
@@ -287,7 +287,7 @@ public class MonteCarloSimulation {
                     c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
-                    c.getData().add(p.entriesOverEnergy.makeSeries("Entry counts", log));
+                    c.getData().add(p.entriesOverEnergy.makeSeries("Entry counts", scale));
                     chartData = "Energy,Entry Count";
                     break;
 
@@ -301,12 +301,12 @@ public class MonteCarloSimulation {
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount
                                 + " \nThermal energy stats:\n"
-                                + p.fluenceOverEnergy.getStatsString(log)
+                                + p.fluenceOverEnergy.getStatsString(scale)
                         );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, log));
+                        c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Fluence and Captures";
                     } else {
@@ -320,7 +320,7 @@ public class MonteCarloSimulation {
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, log));
+                        c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, scale));
                         //c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Fluence";
                     }
@@ -335,16 +335,16 @@ public class MonteCarloSimulation {
                                 +", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
-                        c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, log));
-                        c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", this.lastCount, log));
+                        c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, scale));
+                        c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", this.lastCount, scale));
                         chartData = "Energy,Event Count";
                     } else {
                         m = Material.getByName(detector);
                         c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
-                        c.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
-                        c.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
+                        c.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", scale));
+                        c.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", scale));
                         chartData = "Energy,Event Count";
                     }
                     break;
@@ -358,14 +358,14 @@ public class MonteCarloSimulation {
                                 +", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
-                        c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, log));
+                        c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, scale));
                         chartData = "Energy,Event Count";
                     } else {
                         m = Material.getByName(detector);
                         c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
-                        c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
+                        c.getData().add(m.capturesOverEnergy.makeSeries("Capture", scale));
                         chartData = "Energy,Event Count";
                     }
                     break;
@@ -412,7 +412,7 @@ public class MonteCarloSimulation {
                     c.setTitle("Custom test");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("counts");
-                    c.getData().add(TestGM.customTest(log, detector.equals("X-axis only")));
+                    c.getData().add(TestGM.customTest(scale, detector.equals("X-axis only")));
                     chartData = "Energy,Count";
                     break;
 
@@ -431,7 +431,7 @@ public class MonteCarloSimulation {
             xAxis.setLabel("Energy (eV)");
             yAxis.setLabel("Count");
 
-            c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", log));
+            c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", scale));
             chartData = "Energy,Count";
         }
         // place all series into clipboard

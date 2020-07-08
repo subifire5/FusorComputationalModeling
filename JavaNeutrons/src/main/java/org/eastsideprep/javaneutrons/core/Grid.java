@@ -70,8 +70,13 @@ public class Grid {
     double gmaxx = Double.NEGATIVE_INFINITY;
     double gmaxy = Double.NEGATIVE_INFINITY;
     double gmaxz = Double.NEGATIVE_INFINITY;
+    
+    
+    public void addAssembly(Assembly a) {
+        a.getParts().stream().forEach(p->addPart(p));
+    }
 
-    void addPart(Part p) {
+    public void addPart(Part p) {
         Shape s = p.shape;
         s.cacheVerticesAndFaces();
         for (int f = 0; f < s.faces.length; f += 6) {
@@ -170,17 +175,18 @@ public class Grid {
             double ty = Math.ceil(oy * Math.signum(dy) / side) * side / dy;
             double tz = Math.ceil(ox * Math.signum(dz) / side) * side / dz;
 
-            if (tx <= ty && tx <= tz) {
+            double tmin = Math.min(Math.min(tx, ty), tz);
+            if (tx == tmin) {
                 // exit in x direction
                 cx += Math.signum(dx);
-            } else if (ty <= tx && ty <= tz) {
+            }
+            if (ty == tmin) {
                 // exit in y direction
                 cy += Math.signum(dy);
-            } else if (tz <= tx && tz <= ty) {
+            }
+            if (tz == tmin) {
                 // exit in y direction
                 cz += Math.signum(dz);
-            } else {
-                // you shouldn't have come here
             }
         }
         return null;

@@ -4,7 +4,7 @@ public class Environment {
 
     public static final double limit = 1000; // 1000cm = 10m
     private static Environment instance;
-    public EnergyEVHistogram counts;
+    public EnergyHistogram counts;
     private long totalEscapes;
     private long totalCaptures; // not really part of environment, but counted here
 
@@ -35,7 +35,7 @@ public class Environment {
     }
 
     public void reset() {
-        counts = new EnergyEVHistogram();
+        counts = new EnergyHistogram();
         totalEscapes = 0;
         totalCaptures = 0;
     }

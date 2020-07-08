@@ -19,11 +19,11 @@ public class Part {
     public String name;
 
     // universal detector functionality
-    public EnergyEVHistogram entriesOverEnergy;
-    public EnergyEVHistogram fluenceOverEnergy;
-    public EnergyEVHistogram scattersOverEnergyBefore;
-    public EnergyEVHistogram scattersOverEnergyAfter;
-    public EnergyEVHistogram capturesOverEnergy;
+    public EnergyHistogram entriesOverEnergy;
+    public EnergyHistogram fluenceOverEnergy;
+    public EnergyHistogram scattersOverEnergyBefore;
+    public EnergyHistogram scattersOverEnergyAfter;
+    public EnergyHistogram capturesOverEnergy;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
     private double totalFluence = 0;
@@ -63,11 +63,11 @@ public class Part {
         this.totalDepositedEnergy = 0;
         this.totalFluence = 0;
         this.totalEvents = 0;
-        this.entriesOverEnergy = new EnergyEVHistogram();
-        this.fluenceOverEnergy = new EnergyEVHistogram();
-        this.scattersOverEnergyBefore = new EnergyEVHistogram();
-        this.capturesOverEnergy = new EnergyEVHistogram();
-        this.scattersOverEnergyAfter = new EnergyEVHistogram();
+        this.entriesOverEnergy = new EnergyHistogram();
+        this.fluenceOverEnergy = new EnergyHistogram();
+        this.scattersOverEnergyBefore = new EnergyHistogram();
+        this.capturesOverEnergy = new EnergyHistogram();
+        this.scattersOverEnergyAfter = new EnergyHistogram();
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {

@@ -6,12 +6,12 @@ import javafx.scene.chart.XYChart;
 public class Histogram {
 
     int binsPerDecade = 10;
-    int min;
-    int max;
+    double min;
+    double max;
     double[] bins;
     boolean log;
 
-    public Histogram(int min, int max, int bins, boolean log) {
+    public Histogram(double min, double max, int bins, boolean log) {
         this.min = min;
         this.max = max;
         this.bins = new double[bins];
@@ -22,27 +22,25 @@ public class Histogram {
     public Histogram() {
         this.min = -3;
         this.max = 7;
-        this.bins = new double[(max - min) * this.binsPerDecade];
+        this.bins = new double[(int)Math.ceil((max - min) * this.binsPerDecade)];
         this.log = true;
         //this.bins = new double[logMax - logMin + 1];
     }
 
-    public Histogram(boolean log) {
-        this.log = log;
-
-        if (log) {
-            this.min = -3;
-            this.max = 7;
-            this.bins = new double[(max - min) * this.binsPerDecade];
-        } else {
-            this.min = 25000;
-            this.max = 2525000;
-            this.bins = new double[(int)(this.max - this.min) / 25000];
-//            this.min = 0;
-//            this.max = 1;
-//            this.bins = new double[200];
-        }
-    }
+//    public Histogram(boolean log) {
+//        this.log = log;
+//
+//        if (log) {
+//            this.min = -3;
+//            this.max = 7;
+//            this.bins = new double[(max - min) * this.binsPerDecade];
+//        } else {
+//            this.min = 25000;
+//            this.max = 2525000;
+//            this.bins = new double[(int)(this.max - this.min) / 25000];
+//
+//        }
+//    }
 
     public void record(double value, double x) {
         int bin;

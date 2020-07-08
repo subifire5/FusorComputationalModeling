@@ -18,15 +18,12 @@ import javafx.scene.chart.Chart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -51,8 +48,8 @@ public class StatsDisplay extends Group {
     VBox chartType = new VBox();
     ChoiceBox object = new ChoiceBox();
     Pane chartPane = new Pane();
-    CheckBox selectLog = new CheckBox("Log x-axis");
-    Boolean log = false;
+    ChoiceBox selectScale = new ChoiceBox();
+    String scale = "Log";
 
     Slider slider = new Slider();
 
@@ -113,13 +110,14 @@ public class StatsDisplay extends Group {
         });
         object.setPrefWidth(200);
 
-        selectLog.setSelected(this.log);
-        selectLog.selectedProperty().addListener((a, b, c) -> {
-            this.log = selectLog.isSelected();
+        selectScale.getItems().addAll("Log", "Linear (all)", "Linear (thermal)");
+        selectScale.setValue("Log");
+        selectScale.valueProperty().addListener((a, b, c) -> {
+            this.scale = (String) selectScale.getValue();
             this.setChart();
         });
 
-        controls.getChildren().addAll(chartType, new Separator(), selectLog, new Separator(),
+        controls.getChildren().addAll(chartType, new Separator(), selectScale, new Separator(),
                 new Text("Zoom"), slider, new Separator(), object);
         controls.setPadding(new Insets(10, 0, 10, 0));
         hb.getChildren().addAll(controls, chartPane);
@@ -157,6 +155,7 @@ public class StatsDisplay extends Group {
         chartType.getChildren()
                 .addAll(rbs);
     }
+    
 
     private void populateComboBoxWithParts() {
         this.object.getItems().clear();
@@ -267,38 +266,38 @@ public class StatsDisplay extends Group {
         if (t != null) {
             switch ((String) t.getUserData()) {
                 case "Escape counts":
-                    root.setCenter(this.sim.makeChart(null, null, log));
+                    root.setCenter(this.sim.makeChart(null, null, scale));
                     break;
 
                 case "Fluence":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Fluence", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Fluence", scale));
                     break;
 
                 case "Entry counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", scale));
                     break;
 
                 case "Scatter counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter counts", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter counts", scale));
                     break;
 
                 case "Capture counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Capture counts", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Capture counts", scale));
                     break;
 
                 case "Path lengths":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Path lengths", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Path lengths", scale));
                     break;
 
                 case "Sigmas":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Sigmas", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Sigmas", scale));
                     break;
 
                 case "Cross-sections":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", scale));
                     break;
                 case "Custom test":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Custom test", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Custom test", scale));
                     System.out.println("Avg room energy: " + (Neutron.totalPE / Neutron.countPE / Util.Physics.eV + " eV"));
                     System.out.println("Avg neutron energy in: " + (Neutron.totalNE / Neutron.countNE / Util.Physics.eV + " eV"));
                     System.out.println("Avg neutron energy out : " + (Neutron.totalNE2 / Neutron.countNE2 / Util.Physics.eV + " eV"));

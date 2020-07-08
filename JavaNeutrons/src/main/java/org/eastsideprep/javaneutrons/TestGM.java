@@ -15,10 +15,9 @@ import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Assembly;
-import org.eastsideprep.javaneutrons.core.EnergyEVHistogram;
+import org.eastsideprep.javaneutrons.core.EnergyHistogram;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Part;
-import org.eastsideprep.javaneutrons.core.Histogram;
 import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Neutron;
@@ -27,8 +26,6 @@ import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.core.Shape;
 import org.eastsideprep.javaneutrons.materials.E12C;
-import org.eastsideprep.javaneutrons.materials.E1H;
-import org.eastsideprep.javaneutrons.materials.HydrogenWax;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
@@ -38,21 +35,28 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
  */
 public class TestGM {
 
-    private static void histTest(Histogram test) {
-        test.record(1000, 0.5e-3);
-        test.record(2000, 1e-3);
-        test.record(2100, 1.1e-3);
-        test.record(2500, 1.5e-3);
+    private static void histTest() {
+        EnergyHistogram test = new EnergyHistogram();
+        test.record(1000, 0.5e-4*Util.Physics.eV);
+        test.record(2000, 1e-3*Util.Physics.eV);
+        test.record(2100, 1.1e-3*Util.Physics.eV);
+        test.record(2500, 1.5e-3*Util.Physics.eV);
 
-        test.record(3333, 2.51e6);
+        test.record(3333, 2.51e6*Util.Physics.eV);
 
-        test.record(3000, 0.5e7);
-        test.record(4000, 1e7);
-        test.record(5000, 2e7);
-        test.makeSeries("", 1);
+        test.record(3000, 0.5e7*Util.Physics.eV);
+        test.record(4000, 1e7*Util.Physics.eV);
+        test.record(5000, 2e7*Util.Physics.eV);
+        
+        XYChart.Series<String, Number> xy = test.makeSeries("", 1, "Linear (thermal)");
+        for (XYChart.Data<String, Number> d : xy.getData()) {
+            System.out.println(d.getXValue() + "," + d.getYValue());
+        }
+        System.exit(0);
     }
 
     public static MonteCarloSimulation simulationTest(Group visualizations) {
+        //histTest();
 //        Isotope i = E1H.getInstance();
 //        System.out.println("1H mass: " + i.mass);
 //        double sd = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / i.mass);
@@ -68,8 +72,8 @@ public class TestGM {
         return spherical(visualizations);
     }
 
-    public static XYChart.Series customTest(boolean log, boolean xOnly) {
-        EnergyEVHistogram test = new EnergyEVHistogram();
+    public static XYChart.Series customTest(String scale, boolean xOnly) {
+        EnergyHistogram test = new EnergyHistogram();
         //Histogram test = new Histogram(-102,102,104, false);
         MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
         //mcs.trace= true;
@@ -85,7 +89,7 @@ public class TestGM {
             }
         }
 
-        return test.makeSeries("test", 1, log);
+        return test.makeSeries("test", 1, scale);
     }
 
     public static MonteCarloSimulation simulationTestSmoosh(Group visualizations) {
@@ -126,8 +130,8 @@ public class TestGM {
 
         return new MonteCarloSimulation(smoosh, null, visualizations);
     }
-    
-     public static MonteCarloSimulation spherical(Group visualizations) {
+
+    public static MonteCarloSimulation spherical(Group visualizations) {
         double thickness = 0.025; //block thickness in cm
         String m = "HydrogenWax";
         //String m = "CarbonWax";
@@ -145,7 +149,7 @@ public class TestGM {
         whitmer.addAll(wall, detector);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, 2.451e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                null, Vector3D.PLUS_I, 0.0253 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
         return mcs;
     }

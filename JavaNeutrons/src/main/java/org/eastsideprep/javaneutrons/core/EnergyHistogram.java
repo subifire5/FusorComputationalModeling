@@ -1,39 +1,45 @@
 package org.eastsideprep.javaneutrons.core;
 
-import java.util.Arrays;
 import javafx.scene.chart.XYChart;
 
-public class EnergyEVHistogram extends Histogram {
+public class EnergyHistogram extends Histogram {
 
     Histogram hFlat;
+    Histogram hLow;
 
-    public EnergyEVHistogram() {
-        super(true);
-        hFlat = new Histogram(false);
+    public EnergyHistogram() {
+        super(-3, 7, 100, true);
+        hFlat = new Histogram(15000, 3e6, 199, false);
+        hLow = new Histogram(1e-3, 0.15, 149, false);
     }
 
     @Override
     public void record(double value, double energy) {
         super.record(value, energy / Util.Physics.eV);
         hFlat.record(value, energy / Util.Physics.eV);
+        hLow.record(value, energy / Util.Physics.eV);
     }
 
-    public XYChart.Series makeSeries(String seriesName, boolean log) {
-        return makeSeries(seriesName, 1, log);
+    public XYChart.Series makeSeries(String seriesName, String scale) {
+        return makeSeries(seriesName, 1, scale);
     }
 
-    public XYChart.Series makeSeries(String seriesName, double count, boolean log) {
-        if (log) {
-            return super.makeSeries(seriesName, count);
+    public XYChart.Series makeSeries(String seriesName, double count, String scale) {
+        switch (scale) {
+            case "Log":
+                return super.makeSeries(seriesName, count);
+            case "Linear (all)":
+                return hFlat.makeSeries(seriesName, count);
+            default:
+                //return hFlat.makeSeries(seriesName, count);
+                return hLow.makeSeries(seriesName, count);
         }
-
-        return hFlat.makeSeries(seriesName, count);
     }
 
-    public double getThermalEnergyMean(boolean log) {
+    public double getThermalEnergyMean(String scale) {
         double total = 0;
         double totalCount = 0;
-        Histogram h = log ? this : this.hFlat;
+        Histogram h = getHistogram(scale);
 
         // put in all the data
         double[] counts = new double[h.bins.length];
@@ -56,10 +62,10 @@ public class EnergyEVHistogram extends Histogram {
         return total / totalCount;
     }
 
-    public double getThermalEnergyMode(boolean log) {
+    public double getThermalEnergyMode(String scale) {
+        Histogram h = getHistogram(scale);
         double maxCount = 0;
         double maxAt = 0;
-        Histogram h = log ? this : this.hFlat;
 
         // put in all the data
         double[] counts = new double[h.bins.length];
@@ -83,9 +89,21 @@ public class EnergyEVHistogram extends Histogram {
         }
         return maxAt;
     }
+    
+    public Histogram getHistogram(String scale) {
+           switch (scale) {
+            case "Log":
+                return this;
+            case "Linear (all)":
+                return hFlat;
+            default:
+                //return hFlat.makeSeries(seriesName, count);
+                return hLow;
+        }
+    }
 
-    public double getThermalEnergyMedian(boolean log) {
-        Histogram h = log ? this : this.hFlat;
+    public double getThermalEnergyMedian(String scale) {
+        Histogram h = getHistogram(scale);
         double x = 0;
 
         // put in all the data
@@ -125,9 +143,9 @@ public class EnergyEVHistogram extends Histogram {
         return x;
     }
 
-    public String getStatsString(boolean log) {
-        return "Mean = " + String.format("%6.3e", getThermalEnergyMean(log)) + " eV, "
-                + "Median = " + String.format("%6.3e", getThermalEnergyMedian(log)) + " eV, "
-                + "Mode = " + String.format("%6.3e", getThermalEnergyMode(log)) + " eV";
+    public String getStatsString(String scale) {
+        return "Mean = " + String.format("%6.3e", getThermalEnergyMean(scale)) + " eV, "
+                + "Median = " + String.format("%6.3e", getThermalEnergyMedian(scale)) + " eV, "
+                + "Mode = " + String.format("%6.3e", getThermalEnergyMode(scale)) + " eV";
     }
 }

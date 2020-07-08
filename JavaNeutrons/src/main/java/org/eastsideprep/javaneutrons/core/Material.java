@@ -35,10 +35,10 @@ public class Material {
     public String name;
     ArrayList<Component> components;
     public Histogram lengths;
-    public EnergyEVHistogram scattersOverEnergyBefore;
-    public EnergyEVHistogram scattersOverEnergyAfter;
-    public EnergyEVHistogram capturesOverEnergy;
-    public EnergyEVHistogram lengthOverEnergy;
+    public EnergyHistogram scattersOverEnergyBefore;
+    public EnergyHistogram scattersOverEnergyAfter;
+    public EnergyHistogram capturesOverEnergy;
+    public EnergyHistogram lengthOverEnergy;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
@@ -95,10 +95,10 @@ public class Material {
 
     public final void resetDetector() {
         this.totalEvents = 0;
-        this.scattersOverEnergyBefore = new EnergyEVHistogram();
-        this.scattersOverEnergyAfter = new EnergyEVHistogram();
-        this.capturesOverEnergy = new EnergyEVHistogram();
-        this.lengthOverEnergy = new EnergyEVHistogram();
+        this.scattersOverEnergyBefore = new EnergyHistogram();
+        this.scattersOverEnergyAfter = new EnergyHistogram();
+        this.capturesOverEnergy = new EnergyHistogram();
+        this.lengthOverEnergy = new EnergyHistogram();
         this.lengths = new Histogram(-5, 7, 120, false);
         this.totalEvents = 0;
         this.totalFreePath = 0;
