@@ -65,7 +65,7 @@ public class TestGM {
 //        System.out.println("");
 //        histTest(new Histogram(true));
 //        System.exit(0);
-        return simulationTestSmoosh(visualizations);
+        return spherical(visualizations);
     }
 
     public static XYChart.Series customTest(boolean log, boolean xOnly) {
@@ -125,6 +125,29 @@ public class TestGM {
         Util.Graphics.drawCoordSystem(visualizations);
 
         return new MonteCarloSimulation(smoosh, null, visualizations);
+    }
+    
+     public static MonteCarloSimulation spherical(Group visualizations) {
+        double thickness = 0.025; //block thickness in cm
+        String m = "HydrogenWax";
+        //String m = "CarbonWax";
+        //String m = "Paraffin";
+
+        Part wall = new Part("Block: " + m, new Shape(new CuboidMesh(thickness, thickness, thickness)), m);
+        wall.getTransforms().add(new Translate(50, 0, 0));
+        wall.setColor("silver");
+
+        Part detector = new Part("Spherical detector", new Shape(TestGM.class.getResource("/meshes/spherical_detector.stl"), "cm"), "HighVacuum");
+        detector.getTransforms().add(new Translate(50, 0, 0));
+        detector.setColor("pink");
+
+        Assembly whitmer = new Assembly("Whitmer");
+        whitmer.addAll(wall, detector);
+
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
+                null, Vector3D.PLUS_I, 2.451e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                "Vacuum", null, visualizations); // interstitial, initial
+        return mcs;
     }
 
     public static MonteCarloSimulation simulationTestWhitmerCarbon(Group visualizations) {
