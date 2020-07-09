@@ -1,24 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.eastsideprep.javaneutrons.materials.Air;
 
-/**
- *
- * @author gunnar
- */
 public class Assembly extends Part {
     // todo: acceleration structure
 
@@ -80,11 +74,8 @@ public class Assembly extends Part {
         Event event;
         double t;
 
-        // we will mostly travel in air
-        Air air = Air.getInstance();
-
         // we start in a certain medium. Todo: API for either figring that out or setting it
-        Material medium = air;
+        Material medium = n.mcs.initialMaterial;
 
         do {
             // find the closest part we intersect with
@@ -103,7 +94,7 @@ public class Assembly extends Part {
                 if (event.position.getNorm() <= Environment.limit) {
                     // scattering / absorption in medium did really happen, process it
                     n.setPosition(visualizations, event.position);
-                    medium.processEvent(event);
+                    medium.processEvent(event, true);
                     Util.Graphics.visualizeEvent(event, visualizations);
                 }
             } else {
@@ -111,13 +102,16 @@ public class Assembly extends Part {
                 Util.Graphics.visualizeEvent(partEvent, n.direction, visualizations);
                 Part p = partEvent.part;
                 n.setPosition(visualizations, partEvent.position);
-                n.record(partEvent);
+                if (!n.record(partEvent)) {
+                    // to many events, get out
+                    return partEvent;
+                }
                 partEvent.neutron = n;
-                medium.processEvent(partEvent);
+                medium.processEvent(partEvent, true);
                 //System.out.println("Entering part " + p.name);
                 event = p.evolveNeutronPath(n, visualizations, false);
                 // coming out, we might be in a new material
-                medium = event.exitMaterial != null ? event.exitMaterial : air;
+                medium = event.exitMaterial != null ? event.exitMaterial : medium;
                 //System.out.println("Exit to material: "+medium.name);
             }
             // if things happened far enough from the origin, call it gone
@@ -128,7 +122,7 @@ public class Assembly extends Part {
                 event.code = Event.Code.Gone;
                 event.neutron = n;
                 n.setPosition(visualizations, event.position);
-                medium.processEvent(event);
+                medium.processEvent(event, true);
                 //n.setPosition(visualizations, event.position);
             }
             //visualizeEvent(event, visualizations);
@@ -147,6 +141,7 @@ public class Assembly extends Part {
     Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue vis) {
         double tmin = -1;
         Part closestPart = null;
+        Event closestEvent = null;
         Part p = null;
 
         for (Node node : this.g.getChildren()) {
@@ -164,13 +159,15 @@ public class Assembly extends Part {
                 if (entryEvent != null) {
                     if (tmin == -1 || entryEvent.t < tmin) {
                         tmin = entryEvent.t;
-                        closestPart = p;
+                        closestEvent = entryEvent;
+                        closestEvent.part = p;
                     }
                 }
             }
         }
+        return closestEvent;
 
-        return (tmin == -1) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart, tmin);
+        //return (tmin == -1) ? null : new Event(rayOrigin.add(rayDirection.scalarMultiply(tmin)), closestPart, tmin);
     }
 
     public void add(Part part) {
@@ -233,16 +230,16 @@ public class Assembly extends Part {
                 volume += ((Shape) node).getVolume();
             } else if (node instanceof AssemblyGroup) {
                 // link back to the Assembly that contains it
-                volume+=  ((AssemblyGroup) node).assembly.getVolume();
+                volume += ((AssemblyGroup) node).assembly.getVolume();
             }
-            
+
         }
         return volume;
     }
-    
+
     // recursive transform add
     public void addTransform(Transform t) {
-          for (Node node : this.g.getChildren()) {
+        for (Node node : this.g.getChildren()) {
             if (node instanceof Shape) {
                 // link back to the Part that contains it
                 ((Shape) node).getTransforms().add(t);
@@ -250,21 +247,47 @@ public class Assembly extends Part {
                 // link back to the Assembly that contains it
                 ((AssemblyGroup) node).assembly.addTransform(t);
             }
-            
+
         }
     }
-    
+
     // recursive transform insert
     public void addTransform(int i, Transform t) {
-          for (Node node : this.g.getChildren()) {
+        for (Node node : this.g.getChildren()) {
             if (node instanceof Shape) {
                 // link back to the Part that contains it
-                ((Shape) node).getTransforms().add(i,t);
+                ((Shape) node).getTransforms().add(i, t);
             } else if (node instanceof AssemblyGroup) {
                 // link back to the Assembly that contains it
-                ((AssemblyGroup) node).assembly.addTransform(i,t);
+                ((AssemblyGroup) node).assembly.addTransform(i, t);
             }
-            
+
         }
+    }
+
+    //  parts list
+    public List<Part> getParts() {
+        LinkedList<Part> parts = new LinkedList<>();
+        for (Node node : this.g.getChildren()) {
+            if (node instanceof Shape) {
+                parts.add(((Shape) node).part);
+            } else if (node instanceof AssemblyGroup) {
+                // link back to the Assembly that contains it
+                parts.addAll(((AssemblyGroup) node).assembly.getParts());
+            }
+
+        }
+        return parts;
+    }
+
+    ;
+    
+    
+    public Set<Material> getMaterials() {
+        return getParts().stream().map(p -> p.material).filter(m -> m != null).collect(Collectors.toSet());
+    }
+
+    public Set<Material> getContainedMaterials() {
+        return getParts().stream().map(p -> p.shape.containedMaterial).filter(m -> m != null).collect(Collectors.toSet());
     }
 }

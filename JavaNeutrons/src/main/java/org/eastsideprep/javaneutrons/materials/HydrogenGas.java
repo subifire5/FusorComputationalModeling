@@ -37,12 +37,6 @@ public class HydrogenGas extends Gas {
         return instance;
     }
     
-    @Override
-    public void processEvent(Event e){
-//        if (e.code == Event.Code.Capture && e.neutron.energy >= 2*Util.Physics.eV){
-//            System.out.println("hah!");
-//        }
-        super.processEvent(e);
-    }
+ 
 
 }

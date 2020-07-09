@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.lang.reflect.InvocationTargetException;
@@ -26,11 +21,11 @@ public class Material {
 
     public class Component {
 
-        Element e;
+        Isotope e;
         double density; // atoms/(barn*cm)
         double proportion;
 
-        Component(Element e, double proportion) {
+        Component(Isotope e, double proportion) {
             this.e = e;
             this.density = 0;
             this.proportion = proportion;
@@ -40,10 +35,10 @@ public class Material {
     public String name;
     ArrayList<Component> components;
     public Histogram lengths;
-    public EnergyEVHistogram scattersOverEnergyBefore;
-    public EnergyEVHistogram scattersOverEnergyAfter;
-    public EnergyEVHistogram capturesOverEnergy;
-    public EnergyEVHistogram lengthOverEnergy;
+    public EnergyHistogram scattersOverEnergyBefore;
+    public EnergyHistogram scattersOverEnergyAfter;
+    public EnergyHistogram capturesOverEnergy;
+    public EnergyHistogram lengthOverEnergy;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
@@ -60,7 +55,7 @@ public class Material {
         return materials.get(name);
     }
 
-    public final void addComponent(Element element, double proportion) {
+    public final void addComponent(Isotope element, double proportion) {
         components.add(new Component(element, proportion));
     }
 
@@ -100,10 +95,10 @@ public class Material {
 
     public final void resetDetector() {
         this.totalEvents = 0;
-        this.scattersOverEnergyBefore = new EnergyEVHistogram();
-        this.scattersOverEnergyAfter = new EnergyEVHistogram();
-        this.capturesOverEnergy = new EnergyEVHistogram();
-        this.lengthOverEnergy = new EnergyEVHistogram();
+        this.scattersOverEnergyBefore = new EnergyHistogram();
+        this.scattersOverEnergyAfter = new EnergyHistogram();
+        this.capturesOverEnergy = new EnergyHistogram();
+        this.lengthOverEnergy = new EnergyHistogram();
         this.lengths = new Histogram(-5, 7, 120, false);
         this.totalEvents = 0;
         this.totalFreePath = 0;
@@ -122,7 +117,7 @@ public class Material {
     }
 
     // input: SI(cm)
-    private double randomPathLength(double energy) {
+    public double randomPathLength(double energy) {
         double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy / Util.Physics.eV);
         return length;
     }
@@ -144,11 +139,17 @@ public class Material {
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
         double t = randomPathLength(energy);
+        
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
 
-        if (n.trace) {
-            System.out.println("");
-            System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
+        if (t > 2*Environment.limit) {
+            // we don't go that far
+            return new Event(location, Event.Code.Gone, t);
+        }
+        
+        if (n.mcs.traceLevel >= 2) {
+            //System.out.println("");
+            //System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
         }
         // make array of cumulative sums of sigmas
         double[] sigmas = new double[2 * components.size()];
@@ -156,14 +157,14 @@ public class Material {
         for (int i = 0; i < sigmas.length; i += 2) {
             Component c = components.get(i / 2);
             sum += c.e.getScatterCrossSection(energy / Util.Physics.eV) * c.density;
-            if (n.trace) {
-                System.out.println(" e " + c.e.name + " s to " + sum);
+            if (n.mcs.traceLevel >= 2) {
+                //System.out.println(" e " + c.e.name + " s to " + sum);
             }
 
             sigmas[i] = sum;
             sum += c.e.getCaptureCrossSection(energy / Util.Physics.eV) * c.density;
-            if (n.trace) {
-                System.out.println(" e " + c.e.name + " c to " + sum);
+            if (n.mcs.traceLevel >= 2) {
+                //System.out.println(" e " + c.e.name + " c to " + sum);
             }
 
             sigmas[i + 1] = sum;
@@ -171,8 +172,8 @@ public class Material {
 
         // random draw from across the combined distribution
         double rand = ThreadLocalRandom.current().nextDouble() * sum;
-        if (n.trace) {
-            System.out.println("sum: " + sum + ", draw: " + rand);
+        if (n.mcs.traceLevel >= 2) {
+            //System.out.println("sum: " + sum + ", draw: " + rand);
         }
 
         // now find the component index
@@ -181,14 +182,14 @@ public class Material {
         if (slot < 0) {
             slot = -slot - 1;
         }
-        if (n.trace) {
-            System.out.println("Slot " + slot);
+        if (n.mcs.traceLevel >= 2) {
+            //System.out.println("Slot " + slot);
         }
 
-        Element e = components.get(slot / 2).e;
+        Isotope e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
-        if (n.trace) {
-            System.out.println("Component: " + e.name + ", code: " + code);
+        if (n.mcs.traceLevel >= 2) {
+            //System.out.println("Component: " + e.name + ", code: " + code);
         }
 
         return new Event(location, code, t, e, n);
@@ -231,7 +232,7 @@ public class Material {
         return (Material) material;
     }
 
-    public void processEvent(Event event) {
+    public void processEvent(Event event, boolean processNeutron) {
         if (null != event.code) // record stats for material
         {
             switch (event.code) {
@@ -270,7 +271,7 @@ public class Material {
 //        }
         //}
 
-        if (event.neutron != null) {
+        if (event.neutron != null && processNeutron) {
             // let the neutron do its thing
             event.neutron.processEvent(event);
         }
@@ -290,7 +291,7 @@ public class Material {
             String tick = f.format(energy);
 
             data.add(new XYChart.Data(tick, getSigma(energy)));
-            System.out.println(tick + " " + getSigma(energy));
+            //System.out.println(tick + " " + getSigma(energy));
         }
 
         return series;

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
@@ -13,12 +8,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Transform;
+import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-/**
- *
- * @author gunnar
- */
 public class Part {
 
     public static HashMap<String, Part> namedParts = new HashMap<>();
@@ -27,11 +19,11 @@ public class Part {
     public String name;
 
     // universal detector functionality
-    public EnergyEVHistogram entriesOverEnergy;
-    public EnergyEVHistogram fluenceOverEnergy;
-    public EnergyEVHistogram scattersOverEnergyBefore;
-    public EnergyEVHistogram scattersOverEnergyAfter;
-    public EnergyEVHistogram capturesOverEnergy;
+    public EnergyHistogram entriesOverEnergy;
+    public EnergyHistogram fluenceOverEnergy;
+    public EnergyHistogram scattersOverEnergyBefore;
+    public EnergyHistogram scattersOverEnergyAfter;
+    public EnergyHistogram capturesOverEnergy;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
     private double totalFluence = 0;
@@ -71,11 +63,11 @@ public class Part {
         this.totalDepositedEnergy = 0;
         this.totalFluence = 0;
         this.totalEvents = 0;
-        this.entriesOverEnergy = new EnergyEVHistogram();
-        this.fluenceOverEnergy = new EnergyEVHistogram();
-        this.scattersOverEnergyBefore = new EnergyEVHistogram();
-        this.capturesOverEnergy = new EnergyEVHistogram();
-        this.scattersOverEnergyAfter = new EnergyEVHistogram();
+        this.entriesOverEnergy = new EnergyHistogram();
+        this.fluenceOverEnergy = new EnergyHistogram();
+        this.scattersOverEnergyBefore = new EnergyHistogram();
+        this.capturesOverEnergy = new EnergyHistogram();
+        this.scattersOverEnergyAfter = new EnergyHistogram();
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
@@ -123,12 +115,15 @@ public class Part {
         Event exitEvent;
         Event interactionEvent;
         Event event;
-        double epsilon = 1e-7; // 1 nm (in cm) 
+        double epsilon = 1e-15; // 1 nm (in cm) 
 
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
         n.setPosition(visualizations, Util.Math.rayPoint(n.position, n.direction, epsilon));
-
+        if (n.mcs.traceLevel >= 2) {
+            System.out.println("Neutron " + n.hashCode() + " entry into part " + this.name);
+            System.out.println(" Neutron energy in: " + String.format("%6.3e eV", n.energy / Util.Physics.eV));
+        }
         this.processEntry(n);
 
         do {
@@ -140,11 +135,8 @@ public class Part {
                 //throw new IllegalArgumentException();
                 exitEvent = new Event(n.position.add(n.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
                 Util.Graphics.visualizeEvent(exitEvent, n.direction, visualizations);
-                if (n.trace) {
-                    System.out.println("");
-                    System.out.println("--no way out of part, emergency exit, dumping events" + this.name);
-                    n.dumpEvents();
-                    System.out.println("--end dump");
+                if (n.mcs.traceLevel >= 2) {
+                    n.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
                 }
                 event = exitEvent;
             } else {
@@ -166,12 +158,15 @@ public class Part {
                     event.exitMaterial = this.shape.getContactMaterial(event.face);
                 }
                 // call for Detector parts to record
-                this.material.processEvent(event);
-                this.processPathLength(event.t, currentEnergy);
+                this.material.processEvent(event, false);
+                this.processPathLength(event.t, n);
             }
 
             // also record event for the individual neutron
-            n.record(event);
+            if (!n.record(event)) {
+                // too many events, get out
+                return event;
+            }
         } while (event.code != Event.Code.Exit && event.code != Event.Code.Capture);
 
         return event;
@@ -180,9 +175,11 @@ public class Part {
     //
     // detector functionality
     //
-    synchronized void processPathLength(double length, double energy) {
-        this.fluenceOverEnergy.record(length / volume, energy);
-        this.totalFluence += length / volume;
+    void processPathLength(double length, Neutron n) {
+        this.fluenceOverEnergy.record(length / volume, n.energy);
+        synchronized (this) {
+            this.totalFluence += length / volume;
+        }
 //        if (name.equals("Detector opposite block")) {
 //            System.out.println("Entry into detector path length log: " + length / volume
 //                    + ", new total: " + this.totalFluence
@@ -190,7 +187,7 @@ public class Part {
 //        }
     }
 
-    synchronized void processEntry(Neutron n) {
+    void processEntry(Neutron n) {
         this.entriesOverEnergy.record(1, n.energy);
         n.entryEnergy = n.energy;
 
@@ -231,15 +228,19 @@ public class Part {
         return this.totalFluence;
     }
 
+    public double getTotalPath() {
+        return this.totalFluence * this.volume;
+    }
+
     public int getTotalEvents() {
         return this.totalEvents;
     }
 
     public ObservableList<Transform> getTransforms() {
-        System.out.println("part "+this+" Tx "+this.shape.getTransforms());
+        //System.out.println("part "+this+" Tx "+this.shape.getTransforms());
         return this.shape.getTransforms();
     }
-    
+
     public void addTransform(Transform t) {
         this.shape.getTransforms().add(t);
     }
@@ -251,4 +252,16 @@ public class Part {
     public void setColor(String color) {
         this.shape.setColor(color);
     }
+
+    public Translate settleAgainst(Part other, Vector3D f) {
+    
+        return shape.settleAgainst(other.shape, f);
+    }
+
+    // what is the distance from our vertices to the other thing, 
+    // and vice-versa?
+    public double distance(Part other, Vector3D direction) {
+        return shape.distance(other.shape, direction);
+    }
+
 }

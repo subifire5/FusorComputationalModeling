@@ -5,14 +5,14 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Element;
+import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E206Pb extends Element {
+public class E206Pb extends Isotope {
 
     private static E206Pb instance;
 

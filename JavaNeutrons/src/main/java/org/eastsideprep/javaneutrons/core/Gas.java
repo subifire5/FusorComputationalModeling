@@ -1,17 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.core.Element;
-import org.eastsideprep.javaneutrons.core.Material;
-
-/**
- *
- * @author gmein
- */
 //
 // air is the material for NegativeSpace - everything around the parts 
 // of an Assembly
@@ -27,7 +15,7 @@ public abstract class Gas extends Material {
     }
     
     // use this for a single-element gas
-    public Gas(String name, Element element, double pressure, double massDensitySTP){
+    public Gas(String name, Isotope element, double pressure, double massDensitySTP){
         super(name);
         this.pressure = pressure;
         

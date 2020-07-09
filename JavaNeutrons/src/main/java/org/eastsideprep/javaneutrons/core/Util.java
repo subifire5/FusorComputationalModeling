@@ -1,12 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eastsideprep.javaneutrons.core;
 
-import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
-import org.eastsideprep.javaneutrons.core.Event;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import javafx.geometry.Point3D;
@@ -25,19 +18,55 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-/**
- *
- * @author gmein
- */
 public class Util {
 
     static public class Math {
+
+        //
+        // helping to keep a counter tmin valid through comparison with many t values
+        // just hides a little ugliness
+        //
+        public static double minIfValid(double t, double tmin) {
+            if (t != -1) {
+                if (tmin != -1) {
+                    tmin = java.lang.Math.min(t, tmin);
+                } else {
+                    tmin = t;
+                }
+            }
+            return tmin;
+        }
+
+        //
+        // jiggle vector
+        //
+        public static Vector3D jiggle(Vector3D v, double sd) {
+            double epsilon = 1e-12;
+            // pick a couple of normals to the vector
+            Vector3D n1 = v.crossProduct(Vector3D.PLUS_I);
+            if (n1.getNorm() < epsilon) {
+                n1 = v.crossProduct(Vector3D.PLUS_J);
+            }
+
+            n1 = n1.normalize();
+            Vector3D n2 = v.crossProduct(n1).normalize();
+
+            return v.add(n1.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
+                    .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
+                    .normalize();
+        }
 
         public static Vector3D randomDir() {
             double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
             double z = ThreadLocalRandom.current().nextDouble() * 2 - 1;
             double theta = java.lang.Math.asin(z);
             return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+        }
+
+        public static Vector3D randomDir(double cos_theta, double magnitude) {
+            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
+            double theta = java.lang.Math.acos(cos_theta);
+            return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
         public static Vector3D randomGaussianComponentVector(double sd) {
@@ -349,9 +378,9 @@ public class Util {
         public static void drawCoordSystem(Group g) {
             LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
             Util.Graphics.drawSphere(q, Vector3D.ZERO, 1, "red");
-            Util.Graphics.drawLine(q, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.1, Color.CYAN);
-            Util.Graphics.drawLine(q, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.1, Color.YELLOW);
-            Util.Graphics.drawLine(q, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.1, Color.RED);
+            Util.Graphics.drawLine(q, new Vector3D(-2000, 0, 0), new Vector3D(2000, 0, 0), 0.1, Color.CYAN);
+            Util.Graphics.drawLine(q, new Vector3D(0, -2000, 0), new Vector3D(0, 2000, 0), 0.1, Color.YELLOW);
+            Util.Graphics.drawLine(q, new Vector3D(0, 0, -2000), new Vector3D(0, 0, 2000), 0.1, Color.RED);
             q.drainTo(g.getChildren());
         }
 
