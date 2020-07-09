@@ -1,14 +1,12 @@
 package org.eastsideprep.javaneutrons.core;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
+import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
-import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
@@ -16,6 +14,11 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.util.StringConverter;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.TestGM;
@@ -24,6 +27,51 @@ import org.eastsideprep.javaneutrons.materials.Air;
 public class MonteCarloSimulation {
 
     static boolean parallel = true;
+
+    private class NeutronCollection extends AbstractCollection<Neutron> {
+
+        int count;
+        int produced;
+        Vector3D position;
+        Vector3D direction;
+        double energy;
+        MonteCarloSimulation mcs;
+
+        private class NeutronIterator implements Iterator<Neutron> {
+
+            @Override
+            synchronized public boolean hasNext() {
+                return produced < count || count == 0;
+            }
+
+            @Override
+            synchronized public Neutron next() {
+                produced++;
+                return new Neutron(position, direction == null ? Util.Math.randomDir() : direction, energy, mcs);
+            }
+
+        }
+
+        NeutronCollection(int count, Vector3D position, Vector3D direction, double energy, MonteCarloSimulation mcs) {
+            this.count = count;
+            this.produced = 0;
+            this.position = position;
+            this.direction = direction;
+            this.energy = energy;
+            this.mcs = mcs;
+        }
+
+        @Override
+        public Iterator<Neutron> iterator() {
+            return new NeutronIterator();
+        }
+
+        @Override
+        public int size() {
+            return count;
+        }
+
+    }
 
     public interface ProgressLambda {
 
@@ -44,9 +92,9 @@ public class MonteCarloSimulation {
     public Material interstitialMaterial;
     public Material initialMaterial;
     public double initialEnergy;
-    public ArrayList<Neutron> neutrons;
-    public boolean trace;
+    public int traceLevel;
     public boolean scatter;
+    public String lastChartData = "";
 
     public static boolean visualLimitReached = false;
 
@@ -54,33 +102,43 @@ public class MonteCarloSimulation {
         this(assembly, origin, null, Neutron.startingEnergyDD, null, null, g);
     }
 
-    public MonteCarloSimulation(Assembly assembly, Vector3D origin, Vector3D direction, double initialEnergy, Material interstitialMaterial, Material initialMaterial, Group g) {
+    public MonteCarloSimulation(Assembly assembly, Vector3D origin, Vector3D direction, double initialEnergy,
+            Object interstitialMaterial, Object initialMaterial, Group g) {
+        interstitialMaterial = Material.getRealMaterial(interstitialMaterial);
+        initialMaterial = Material.getRealMaterial(initialMaterial);
+
         this.assembly = assembly;
-        this.origin = origin;
+        this.origin = origin == null ? Vector3D.ZERO : origin;
         this.visualizations = new LinkedTransferQueue<Node>();
         this.completed = new AtomicLong(0);
         this.viewGroup = g;
         this.dynamicGroup = new Group();
-        this.viewGroup.getChildren().clear();
-        // make some axes
-        Util.Graphics.drawCoordSystem(g);
-        // add the assembly objects
-        this.viewGroup.getChildren().add(this.assembly.getGroup());
-        // and a group for event visualiations
-        this.viewGroup.getChildren().add(dynamicGroup);
-        this.interstitialMaterial = interstitialMaterial;
-        this.initialMaterial = initialMaterial;
-        this.initialEnergy = initialEnergy;
-        this.neutrons = new ArrayList<Neutron>();
+        if (this.viewGroup != null) {
+            this.viewGroup.getChildren().clear();
+            // make some axes
+            Util.Graphics.drawCoordSystem(g);
+            // add the assembly objects
+            this.viewGroup.getChildren().add(this.assembly.getGroup());
+            // and a group for event visualiations
+            this.viewGroup.getChildren().add(dynamicGroup);
+        }
+
+        this.interstitialMaterial = (Material) interstitialMaterial;
+        this.initialMaterial = (Material) initialMaterial;
+        this.initialEnergy = initialEnergy == 0 ? Neutron.startingEnergyDD : initialEnergy;
         this.direction = direction;
 
         if (this.interstitialMaterial == null) {
             this.interstitialMaterial = Air.getInstance("Interstitial air");
         }
 
+        if (this.assembly == null) {
+            return;
+        }
+
         if (this.initialMaterial == null) {
             // todo : find initial material from origin
-            Event e = this.assembly.rayIntersect(origin, Vector3D.PLUS_I, false, visualizations);
+            Event e = this.assembly.rayIntersect(this.origin, Vector3D.PLUS_I, false, visualizations);
             if (e != null && e.code == Event.Code.Entry) {
                 this.initialMaterial = e.part.shape.getContactMaterial(e.face);
                 if (this.initialMaterial != null) {
@@ -89,31 +147,30 @@ public class MonteCarloSimulation {
             }
             if (this.initialMaterial == null) {
                 this.initialMaterial = this.interstitialMaterial;
-                System.out.println("No inital medium found, defaulting to " + this.initialMaterial.name);
+                System.out.println("No initial medium found, defaulting to " + this.initialMaterial.name);
             }
         }
     }
 
-    public void checkTallies() {
-        double totalNeutronPath = this.neutrons.stream().mapToDouble(n -> n.totalPath).sum();
-        double totalPartsPath = this.assembly.getParts().stream().mapToDouble(p -> p.getTotalPath()).sum();
-        Set<Material> materials = this.assembly.getMaterials();
-        double totalMaterialsPath = materials.stream().mapToDouble(m -> m == null ? 0.0 : m.totalFreePath).sum();
-        Set<Material> interstitials = this.assembly.getContainedMaterials();
-        interstitials.add(initialMaterial);
-        interstitials.add(interstitialMaterial);
-        double totalInterstitialsPath = interstitials.stream().mapToDouble(m -> m.totalFreePath).sum();
-
-        System.out.println("Total neutron path: " + String.format("%6.3e", totalNeutronPath));
-        System.out.println("Total parts path: " + String.format("%6.3e", totalPartsPath));
-        System.out.println("Total materials path: " + String.format("%6.3e", totalMaterialsPath));
-        System.out.println("Total interstitials path: " + String.format("%6.3e", totalInterstitialsPath));
-        System.out.println("");
-        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = p+i: " + String.format("%10.7e", totalPartsPath + totalInterstitialsPath));
-        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = m+i: " + String.format("%10.7e", totalMaterialsPath + totalInterstitialsPath));
-    }
-
-    // this will be called from UI thread
+//    public void checkTallies() {
+//        double totalNeutronPath = this.neutrons.stream().mapToDouble(n -> n.totalPath).sum();
+//        double totalPartsPath = this.assembly.getParts().stream().mapToDouble(p -> p.getTotalPath()).sum();
+//        Set<Material> materials = this.assembly.getMaterials();
+//        double totalMaterialsPath = materials.stream().mapToDouble(m -> m == null ? 0.0 : m.totalFreePath).sum();
+//        Set<Material> interstitials = this.assembly.getContainedMaterials();
+//        interstitials.add(initialMaterial);
+//        interstitials.add(interstitialMaterial);
+//        double totalInterstitialsPath = interstitials.stream().mapToDouble(m -> m.totalFreePath).sum();
+//
+//        System.out.println("Total neutron path: " + String.format("%6.3e", totalNeutronPath));
+//        System.out.println("Total parts path: " + String.format("%6.3e", totalPartsPath));
+//        System.out.println("Total materials path: " + String.format("%6.3e", totalMaterialsPath));
+//        System.out.println("Total interstitials path: " + String.format("%6.3e", totalInterstitialsPath));
+//        System.out.println("");
+//        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = p+i: " + String.format("%10.7e", totalPartsPath + totalInterstitialsPath));
+//        System.out.println("n: " + String.format("%10.7e", totalNeutronPath) + " = m+i: " + String.format("%10.7e", totalMaterialsPath + totalInterstitialsPath));
+//    }
+// this will be called from UI thread
     public long update() {
         //viewGroup.getChildren().remove(this.dynamicGroup);
         int size = this.dynamicGroup.getChildren().size();
@@ -135,9 +192,9 @@ public class MonteCarloSimulation {
         this.viewGroup.getChildren().remove(this.assembly.getGroup());
     }
 
-    public void simulateNeutrons(long count, int visualObjectLimit) {
+    public void simulateNeutrons(int count, int visualObjectLimit, boolean textTrace) {
         this.lastCount = count;
-        this.trace = count <= 10;
+        this.traceLevel = count <= 10 ? (1+(textTrace?1:0)):0;
         this.visualObjectLimit = visualObjectLimit;
         MonteCarloSimulation.visualLimitReached = false;
 
@@ -157,37 +214,28 @@ public class MonteCarloSimulation {
 
         // and enviroment (will count escaped neutrons)
         Environment.getInstance().reset();
-        this.trace = count <= 10;
-        
-//        Stream<Neutron> sn = Stream.iterate(null, (n)->new Neutron(this.origin, 
-//                this.direction != null ? this.direction : Util.Math.randomDir(), 
-//                this.initialEnergy, this));
 
+        NeutronCollection neutrons = new NeutronCollection(count, this.origin, this.direction, this.initialEnergy, this);
         if (count > 0) {
-            for (long i = 0; i < count; i++) {
-                Vector3D dir = this.direction != null ? this.direction : Util.Math.randomDir();
-                Neutron n = new Neutron(this.origin, dir, this.initialEnergy, this);
-                this.neutrons.add(n);
-            }
-            Stream<Neutron> sn = this.neutrons.stream();
-
-            Thread th = new Thread(() -> {
-                if (!MonteCarloSimulation.parallel || this.lastCount < 100) {
-                    sn.forEach(n -> simulateNeutron(n));
-                } else {
-                    sn.parallel().forEach(n -> simulateNeutron(n));
+            if (!MonteCarloSimulation.parallel || this.lastCount < 10) {
+                neutrons.stream().forEach(n -> simulateNeutron(n));
+            } else {
+                for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+                    new Thread(() -> {
+                        for (Neutron n : neutrons) {
+                            simulateNeutron(n);
+                        }
+                    }).start();
                 }
-            });
-
-            Platform.runLater(() -> th.start());
+            }
         } else {
             this.scatter = false;
-            do {
-                Vector3D dir = this.direction != null ? this.direction : Util.Math.randomDir();
-                Neutron n = new Neutron(this.origin, dir, this.initialEnergy, this);
-                n.mcs = this;
+            for (Neutron n : neutrons) {
                 simulateNeutron(n);
-            } while (!this.scatter);
+                if (this.scatter) {
+                    break;
+                }
+            }
         }
     }
 
@@ -198,8 +246,9 @@ public class MonteCarloSimulation {
     public void simulateNeutron(Neutron n) {
         this.assembly.evolveNeutronPath(n, this.visualizations, true);
         completed.incrementAndGet();
-        if (trace) {
+        if (traceLevel >= 2) {
             System.out.println("");
+
         }
     }
 
@@ -217,128 +266,163 @@ public class MonteCarloSimulation {
 
     }
 
-    public Chart makeChart(String detector, String series, boolean log) {
+    public Chart makeChart(String detector, String series, String scale) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
-        BarChart<String, Number> bc;
-        LineChart<String, Number> lc;
+        XYChart<String, Number> c;
         Part p;
         Material m;
         DecimalFormat f;
         String e;
         double factor;
+        String chartData = "";
 
         if (detector != null) {
             switch (series) {
                 case "Entry counts":
-                    bc = new BarChart<>(xAxis, yAxis);
+                    c = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     f = new DecimalFormat("0.###E0");
                     e = f.format(p.getTotalDepositedEnergy() * 1e-4);
-                    bc.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
+                    c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
-                    bc.getData().add(p.entriesOverEnergy.makeSeries("Entry counts", log));
+                    c.getData().add(p.entriesOverEnergy.makeSeries("Entry counts", scale));
+                    chartData = "Energy,Entry Count";
                     break;
 
                 case "Fluence":
-                    bc = new BarChart<>(xAxis, yAxis);
+                    c = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     if (p != null) {
                         f = new DecimalFormat("0.###E0");
                         e = f.format(p.getTotalFluence() / this.lastCount);
-                        bc.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
+                        c.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
-                                + ", src = " + this.lastCount);
+                                + ", src = " + this.lastCount
+                                + " \nThermal energy stats:\n"
+                                + p.fluenceOverEnergy.getStatsString(scale)
+                        );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        bc.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, log));
+                        c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
+                        //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
+                        chartData = "Energy,Fluence and Captures";
                     } else {
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
                         m = Material.getByName("Air");
                         f = new DecimalFormat("0.###E0");
                         e = f.format(m.totalFreePath / (this.lastCount * factor));
-                        bc.setTitle("Interstitial air"
+                        c.setTitle("Interstitial air"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        bc.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, log));
+                        c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, scale));
+                        //c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
+                        chartData = "Energy,Fluence";
                     }
                     break;
 
-                case "Event counts":
-                    bc = new BarChart<>(xAxis, yAxis);
+                case "Scatter counts":
+                    c = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     if (p != null) {
-                        bc.setTitle("Part \"" + p.name + "\", total events: " + p.getTotalEvents());
+                        c.setTitle("Part \"" + p.name + "\", "
+                                + ", src = " + this.lastCount
+                                +", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");
-                        yAxis.setLabel("Count");
-                        bc.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
-                        bc.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
-                        bc.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
+                        yAxis.setLabel("Count/src");
+                        c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, scale));
+                        c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", this.lastCount, scale));
+                        chartData = "Energy,Event Count";
                     } else {
                         m = Material.getByName(detector);
-                        bc.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
+                        c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
-                        bc.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", log));
-                        bc.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", log));
-                        bc.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
+                        c.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", scale));
+                        c.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", scale));
+                        chartData = "Energy,Event Count";
                     }
                     break;
 
+           case "Capture counts":
+                    c = new BarChart<>(xAxis, yAxis);
+                    p = Part.getByName(detector);
+                    if (p != null) {
+                        c.setTitle("Part \"" + p.name + "\""
+                                + ", src = " + this.lastCount
+                                +", total events: " + p.getTotalEvents());
+                        xAxis.setLabel("Energy (eV)");
+                        yAxis.setLabel("Count/src");
+                        c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, scale));
+                        chartData = "Energy,Event Count";
+                    } else {
+                        m = Material.getByName(detector);
+                        c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
+                        xAxis.setLabel("Energy (eV)");
+                        yAxis.setLabel("Count");
+                        c.getData().add(m.capturesOverEnergy.makeSeries("Capture", scale));
+                        chartData = "Energy,Event Count";
+                    }
+                    break;
+                    
                 case "Path lengths":
                     factor = detector.equals("Air") ? (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume()) : 1;
-                    bc = new BarChart<>(xAxis, yAxis);
+                    c = new BarChart<>(xAxis, yAxis);
                     m = Material.getByName(detector);
-                    bc.setTitle("Material \"" + m.name + "\"\nMean free path: "
+                    c.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount) / 100.0) + " cm, "
                             + "Fluence: " + String.format("%6.3e", m.totalFreePath / (this.lastCount * factor))
                             + " (n/cm^2)/src = " + this.lastCount
                     );
                     xAxis.setLabel("Length (cm)");
                     yAxis.setLabel("Count");
-                    bc.getData().add(m.lengths.makeSeries("Length"));
+                    c.getData().add(m.lengths.makeSeries("Length"));
+                    chartData = "Length,Count";
                     break;
 
                 case "Cross-sections":
-                    lc = new LineChart<>(xAxis, yAxis);
+                    c = new LineChart<>(xAxis, yAxis);
                     Isotope element = Isotope.getByName(detector);
-                    lc.setTitle("Microscopic ross-sections for element " + detector);
+                    c.setTitle("Microscopic ross-sections for element " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("log10(cross-section/barn)");
-                    lc.getData().add(element.makeCSSeries("Scatter"));
-                    lc.getData().add(element.makeCSSeries("Capture"));
-                    lc.getData().add(element.makeCSSeries("Total"));
-                    return lc;
+                    c.getData().add(element.makeCSSeries("Scatter"));
+                    c.getData().add(element.makeCSSeries("Capture"));
+                    c.getData().add(element.makeCSSeries("Total"));
+                    chartData = "Energy,Total Crosssection";
+                    break;
 
                 case "Sigmas":
-                    lc = new LineChart<>(xAxis, yAxis);
+                    c = new LineChart<>(xAxis, yAxis);
                     m = Material.getByName(detector);
-                    lc.setTitle("Macroscopic cross-sections for material " + detector);
+                    c.setTitle("Macroscopic cross-sections for material " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Sigma (cm^-1)");
-                    lc.getData().add(m.makeSigmaSeries("Sigma (" + detector + ")"));
-                    return lc;
+                    c.getData().add(m.makeSigmaSeries("Sigma (" + detector + ")"));
+                    chartData = "Energy,Sigma";
+                    break;
 
                 case "Custom test":
-                    bc = new BarChart<>(xAxis, yAxis);
-                    bc.setTitle("Custom test");
+                    c = new BarChart<>(xAxis, yAxis);
+                    c.setTitle("Custom test");
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("counts");
-                    bc.getData().add(TestGM.customTest(log, detector.equals("X-axis only")));
-                    return bc;
+                    c.getData().add(TestGM.customTest(scale, detector.equals("X-axis only")));
+                    chartData = "Energy,Count";
+                    break;
 
                 default:
                     return null;
             }
         } else {
             // Enviroment chart
-            bc = new BarChart<>(xAxis, yAxis);
-            bc.setTitle("Environment:\nP(escape)="
+            c = new BarChart<>(xAxis, yAxis);
+            c.setTitle("Environment:\nP(escape)="
                     + (Math.round(10000 * Environment.getEscapeProbability()) / 10000.0)
                     + ", P(capture)="
                     + (Math.round(10000 * (1 - Environment.getEscapeProbability())) / 10000.0)
@@ -347,9 +431,23 @@ public class MonteCarloSimulation {
             xAxis.setLabel("Energy (eV)");
             yAxis.setLabel("Count");
 
-            bc.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", log));
+            c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", scale));
+            chartData = "Energy,Count";
         }
-        return bc;
+        // place all series into clipboard
+        chartData += "\n";
+        for (Series<String, Number> s : c.getData()) {
+            chartData += "Series: " + s.getName() + "\n";
+            for (Data<String, Number> d : s.getData()) {
+                chartData += d.getXValue() + "," + d.getYValue() + "\n";
+            }
+            chartData += "\n";
+        }
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(chartData);
+        clipboard.setContent(content);
+        return c;
     }
 
 }

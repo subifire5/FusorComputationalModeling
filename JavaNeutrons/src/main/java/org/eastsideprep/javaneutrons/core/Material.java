@@ -35,10 +35,10 @@ public class Material {
     public String name;
     ArrayList<Component> components;
     public Histogram lengths;
-    public EnergyEVHistogram scattersOverEnergyBefore;
-    public EnergyEVHistogram scattersOverEnergyAfter;
-    public EnergyEVHistogram capturesOverEnergy;
-    public EnergyEVHistogram lengthOverEnergy;
+    public EnergyHistogram scattersOverEnergyBefore;
+    public EnergyHistogram scattersOverEnergyAfter;
+    public EnergyHistogram capturesOverEnergy;
+    public EnergyHistogram lengthOverEnergy;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
@@ -95,10 +95,10 @@ public class Material {
 
     public final void resetDetector() {
         this.totalEvents = 0;
-        this.scattersOverEnergyBefore = new EnergyEVHistogram();
-        this.scattersOverEnergyAfter = new EnergyEVHistogram();
-        this.capturesOverEnergy = new EnergyEVHistogram();
-        this.lengthOverEnergy = new EnergyEVHistogram();
+        this.scattersOverEnergyBefore = new EnergyHistogram();
+        this.scattersOverEnergyAfter = new EnergyHistogram();
+        this.capturesOverEnergy = new EnergyHistogram();
+        this.lengthOverEnergy = new EnergyHistogram();
         this.lengths = new Histogram(-5, 7, 120, false);
         this.totalEvents = 0;
         this.totalFreePath = 0;
@@ -117,7 +117,7 @@ public class Material {
     }
 
     // input: SI(cm)
-    private double randomPathLength(double energy) {
+    public double randomPathLength(double energy) {
         double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy / Util.Physics.eV);
         return length;
     }
@@ -147,7 +147,7 @@ public class Material {
             return new Event(location, Event.Code.Gone, t);
         }
         
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("");
             //System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
         }
@@ -157,13 +157,13 @@ public class Material {
         for (int i = 0; i < sigmas.length; i += 2) {
             Component c = components.get(i / 2);
             sum += c.e.getScatterCrossSection(energy / Util.Physics.eV) * c.density;
-            if (n.mcs.trace) {
+            if (n.mcs.traceLevel >= 2) {
                 //System.out.println(" e " + c.e.name + " s to " + sum);
             }
 
             sigmas[i] = sum;
             sum += c.e.getCaptureCrossSection(energy / Util.Physics.eV) * c.density;
-            if (n.mcs.trace) {
+            if (n.mcs.traceLevel >= 2) {
                 //System.out.println(" e " + c.e.name + " c to " + sum);
             }
 
@@ -172,7 +172,7 @@ public class Material {
 
         // random draw from across the combined distribution
         double rand = ThreadLocalRandom.current().nextDouble() * sum;
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("sum: " + sum + ", draw: " + rand);
         }
 
@@ -182,13 +182,13 @@ public class Material {
         if (slot < 0) {
             slot = -slot - 1;
         }
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("Slot " + slot);
         }
 
         Isotope e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
-        if (n.mcs.trace) {
+        if (n.mcs.traceLevel >= 2) {
             //System.out.println("Component: " + e.name + ", code: " + code);
         }
 
@@ -291,7 +291,7 @@ public class Material {
             String tick = f.format(energy);
 
             data.add(new XYChart.Data(tick, getSigma(energy)));
-            System.out.println(tick + " " + getSigma(energy));
+            //System.out.println(tick + " " + getSigma(energy));
         }
 
         return series;

@@ -19,6 +19,7 @@ public class Event {
     public Part part;
     public int face;
     public Material exitMaterial;
+    public double cos_theta;
 
 //    public Event(double x, double y, double z, Event.Code c) {
 //        this.position = new Vector3D(x, y, z);
