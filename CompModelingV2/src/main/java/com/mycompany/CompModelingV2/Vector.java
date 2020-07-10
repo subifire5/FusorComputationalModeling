@@ -227,4 +227,7 @@ public class Vector {
         z *= s;
         return this;
     }
+        public Vector product(Double s){
+        return new Vector(x,y,z).scale(s);
+    }
 }

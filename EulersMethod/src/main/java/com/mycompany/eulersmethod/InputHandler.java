@@ -46,7 +46,8 @@ public class InputHandler {
 
         s.close();
     }
-
+    
+    
     /**
      *
      * @param PJ
@@ -59,10 +60,12 @@ public class InputHandler {
      */
     public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, int numberOfSteps, Double stepSize, String outputFilePath) {
         Particle[] particles = new Particle[numberOfSteps];
+        initial.setScaleDistance(scaleDistance);
+        initial.totalEnergy(eField);
         if (PJ) {
 
             PJEulersMethod pj = new PJEulersMethod(eField);
-            particles[0] = pj.step(initial, stepSize).clone();
+            particles[0] = initial;
             Particle p = particles[0].clone();
             for (int i = 1; i < numberOfSteps; i++) {
                 particles[i] = pj.step(p, stepSize).clone();
@@ -72,7 +75,7 @@ public class InputHandler {
         } else if (MY) {
 
             MYEulersMethod my = new MYEulersMethod(eField);
-            particles[0] = my.step(initial, stepSize).clone();
+            particles[0] = initial;
             Particle p = particles[0].clone();
             for (int i = 1; i < numberOfSteps; i++) {
                 particles[i] = my.step(p, stepSize).clone();
@@ -81,7 +84,7 @@ public class InputHandler {
 
         }
 
-        String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Time",
+        String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Charge", "Time",
             "Mass", "Electric Potential Energy", "Kinetic Energy"};
 
         TableGraphWriter tgw = new TableGraphWriter();
@@ -153,6 +156,10 @@ public class InputHandler {
 
         System.out.println("Polarity: ");
         int polarity = Integer.valueOf(s.nextLine());
+
+        System.out.println("Charge (measured in elementary charge [charge of an electron or proton]): ");
+        Double charge = Double.valueOf(s.nextLine()) * 1.602E-19;
+
         System.out.println("To denote a number several decimals below the ones position,"
                 + "\n use the following 2.014E-27, where -27 is the number of,"
                 + "\n digits behind the ones position that the number starts");
@@ -162,7 +169,7 @@ public class InputHandler {
         System.out.println("Mass (in Atomic Mass Units, for Deuterium this is 2.0141)");
         Double mass = Double.valueOf(s.nextLine()) * 1.66E-27;
 
-        return new Particle(x, y, z, Vx, Vy, Vz, polarity, time, mass);
+        return new Particle(x, y, z, Vx, Vy, Vz, polarity, charge, time, mass);
     }
 
     public void readFromFile() {

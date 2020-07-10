@@ -12,5 +12,5 @@ package com.mycompany.CompModelingV2;
 public interface Solution {
     // your solution should probably have a method like "step" in it
     // so you can inherit this interface
-    public void step(Particle p, Double stepSize);
+    public Particle step(Particle p, Double stepSize);
 }
