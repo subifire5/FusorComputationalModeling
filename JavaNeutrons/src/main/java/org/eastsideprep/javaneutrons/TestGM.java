@@ -128,7 +128,7 @@ public class TestGM {
 //        histTest(new Histogram(true));
 //        System.exit(0);
         //rTest();
-        return prison(visualizations);
+        return simulationTestSmoosh(visualizations);
     }
 
     public static MonteCarloSimulation prison(Group visualizations) {
@@ -137,7 +137,8 @@ public class TestGM {
         //String m = "CarbonWax";
         //String m = "Paraffin";
 
-        Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
+        //Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
+        Part wall = new Part("Prison: " + m, new Cuboid(thickness), m);
         wall.setColor("silver");
 
         Assembly whitmer = new Assembly("Whitmer");

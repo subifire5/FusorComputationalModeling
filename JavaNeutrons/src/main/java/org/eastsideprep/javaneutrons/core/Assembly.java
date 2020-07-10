@@ -88,6 +88,16 @@ public class Assembly extends Part {
             // find possible interactions along the way
             interactionEvent = medium.nextPoint(n);
 
+            // did we not find a part, mayb e we started inside a part?
+            if (partEvent == null && outermost) {
+                // repeat search looking at triangle meshes from the inside
+                partEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+                if (partEvent != null) {
+                    // we are alsready inside the part. 
+                    partEvent.t = 0;
+                }
+            }
+
             // did we not find a part, or is it further than an air event?
             if (partEvent == null || partEvent.t > interactionEvent.t) {
                 event = interactionEvent;
@@ -99,9 +109,12 @@ public class Assembly extends Part {
                 }
             } else {
                 // no interaction, we will just enter a new part
-                Util.Graphics.visualizeEvent(partEvent, n.direction, visualizations);
                 Part p = partEvent.part;
-                n.setPosition(visualizations, partEvent.position);
+                if (partEvent.t != 0) {
+                    // we entered the part from the outside, visualize it
+                    Util.Graphics.visualizeEvent(partEvent, n.direction, visualizations);
+                    n.setPosition(visualizations, partEvent.position);
+                } 
                 if (!n.record(partEvent)) {
                     // to many events, get out
                     return partEvent;
@@ -154,7 +167,7 @@ public class Assembly extends Part {
             }
             if (p != null) {
                 // intersect with that part, false means "going in"
-                Event entryEvent = p.rayIntersect(rayOrigin, rayDirection, false, vis);
+                Event entryEvent = p.rayIntersect(rayOrigin, rayDirection, goingOut, vis);
                 // event != null means we found a triangle
                 if (entryEvent != null) {
                     if (tmin == -1 || entryEvent.t < tmin) {
