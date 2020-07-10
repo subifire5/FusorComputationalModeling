@@ -249,7 +249,7 @@ public class Material {
                     break;
                 case Capture:
                     this.capturesOverEnergy.record(1, event.neutron.energy);
-                    this.recordCollision();
+                    this.recordCollision(); // this needs to be here because it ends a path
                     // record more stats for material
                     synchronized (this) {
                         this.totalEvents++;

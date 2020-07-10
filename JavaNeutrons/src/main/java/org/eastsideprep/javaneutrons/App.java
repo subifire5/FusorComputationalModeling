@@ -56,7 +56,6 @@ public class App extends Application {
         CameraControl mainScene = new CameraControl(1000, 500);
         ImageView heatMap = new ImageView(Util.Graphics.createHeatMap(100, 500));
         heatMap.fitHeightProperty().bind(root.heightProperty());
-        heatMap.setVisible(false);
         mainScene.subScene.heightProperty().bind(root.heightProperty());
 
         // prepare sim for later
@@ -155,7 +154,7 @@ public class App extends Application {
         view = mainScene.outer;
         mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
-        root.setRight(heatMap);
+        root.setRight(null);
 
         Scene scene;
         Rectangle2D screenBounds = Screen.getPrimary().getBounds();

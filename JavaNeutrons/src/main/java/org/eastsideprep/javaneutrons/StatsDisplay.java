@@ -116,6 +116,7 @@ public class StatsDisplay extends Group {
             this.scale = (String) selectScale.getValue();
             this.setChart();
         });
+        selectScale.setPrefWidth(200);
 
         controls.getChildren().addAll(chartType, new Separator(), selectScale, new Separator(),
                 new Text("Zoom"), slider, new Separator(), object);

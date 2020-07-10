@@ -128,7 +128,7 @@ public class TestGM {
 //        histTest(new Histogram(true));
 //        System.exit(0);
         //rTest();
-        return simulationTestSmoosh(visualizations);
+        return prison(visualizations);
     }
 
     public static MonteCarloSimulation prison(Group visualizations) {

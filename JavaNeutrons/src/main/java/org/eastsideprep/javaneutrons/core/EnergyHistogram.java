@@ -205,8 +205,12 @@ public class EnergyHistogram extends Histogram {
             if (y == 0) {
                 continue;
             }
-            double residual = y - ity.transform(x, r.predict(tx.transform(x)));
-            vr += residual * residual / hLow.bins.length;
+            double yhat = ity.transform(x, r.predict(tx.transform(x)));
+            if (Double.isNaN(yhat)) {
+                System.out.println("");
+            }
+            double residual = y - yhat;
+            vr += (residual * residual) / (hLow.bins.length-1);
             total += y;
         }
         return Math.sqrt(vr/total);
