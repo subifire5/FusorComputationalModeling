@@ -32,9 +32,13 @@ public class EnergyHistogram extends Histogram {
                 return super.makeSeries(seriesName, count);
             case "Linear (all)":
                 return hFlat.makeSeries(seriesName, count);
+            case "Linear (thermal)":
+                return hLow.makeSeries(seriesName, count);
+            case "Linear (thermal fit)":
+                return hLow.makeFittedSeries(seriesName, count);
             default:
                 //return hFlat.makeSeries(seriesName, count);
-                return hLow.makeSeries(seriesName, count);
+                return null;
         }
     }
 
@@ -158,99 +162,40 @@ public class EnergyHistogram extends Histogram {
         return result;
     }
 
-    private interface DoubleTransform {
-
-        double transform(double x);
-    }
-
-    private interface XYTransform {
-
-        double transform(double x, double y);
-    }
-
-    private static class Identity {
-
-        public static double x(double x) {
-            return x;
-        }
-
-        public static double y(double x, double y) {
-            return x;
-        }
-    }
-
-    private SimpleRegression regression(DoubleTransform tx, XYTransform ty) {
-        SimpleRegression r = new SimpleRegression(true);
-
-        // skip last bucket since it has the overflow
-        for (int i = 0; i < hLow.bins.length - 1; i++) {
-            double x = (hLow.min + i / ((double) hLow.bins.length) * (hLow.max - hLow.min)) * Util.Physics.eV;
-            double y = hLow.bins[i];
-            if (y == 0 || x == 0) {
-                continue;
-            }
-
-            r.addData(tx.transform(x), ty.transform(x, y));
-        }
-        return r;
-    }
-
-    private double RMSE(SimpleRegression r, DoubleTransform tx, XYTransform ity) {
-        double vr = 0;
-        double total = 0;
-        // skip last bucket since it has the overflow
-        for (int i = 0; i < hLow.bins.length - 1; i++) {
-            double x = (hLow.min + i / ((double) hLow.bins.length) * (hLow.max - hLow.min)) * Util.Physics.eV;
-            double y = hLow.bins[i];
-            if (y == 0) {
-                continue;
-            }
-            double yhat = ity.transform(x, r.predict(tx.transform(x)));
-            if (Double.isNaN(yhat)) {
-                System.out.println("");
-            }
-            double residual = y - yhat;
-            vr += (residual * residual) / (hLow.bins.length-1);
-            total += y;
-        }
-        return Math.sqrt(vr/total);
-    }
-
     public String fitDistributions(long count) {
         SimpleRegression r;
         double RMSE;
         String result = "";
 
-        r = regression(Identity::x, (x, y) -> Math.log(y));
-        RMSE = RMSE(r, Identity::x, (x,y)->Math.exp(y));
+        r = hLow.regression(Identity::x, (x, y) -> Math.log(y));
+        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.exp(y));
         result += "Gaussian distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
                 + "*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
-                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e",RMSE/count)+ "\n";
+                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
 
-        r = regression(Identity::x, (x, y) -> (y * y));
-        RMSE = RMSE(r, Identity::x, (x,y)->Math.sqrt(y));
+        r = hLow.regression(Identity::x, (x, y) -> (y * y));
+        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(y));
         result += "Path length distribution fit: y = sqrt("
                 + String.format("%6.3e", r.getSlope())
-                + "*E), normalized RMSE = " + String.format("%6.3e",RMSE/count) + "\n";
+                + "*E), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
 
-        r = regression(Identity::x, (x, y) -> Math.log(y / x));
-        RMSE = RMSE(r, Identity::x, (x,y)->x*Math.exp(y));
+        r = hLow.regression(Identity::x, (x, y) -> Math.log(y / x));
+        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> x * Math.exp(y));
         result += "Flux distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
                 + "*E*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
-                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e",RMSE/count) + "\n";
+                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
 
-        r = regression(Identity::x, (x, y) -> Math.log(y / Math.sqrt(x)));
-        RMSE = RMSE(r, Identity::x, (x,y)->Math.sqrt(x)*Math.exp(y));
+        r = hLow.regression(Identity::x, (x, y) -> Math.log((y * Util.Physics.kB * Util.Physics.T) / Math.sqrt(x)));
+        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(x) * Math.exp(y) / (Util.Physics.kB * Util.Physics.T));
         result += "Energy distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
-                + "*sqrt(E)*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
-                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e",RMSE/count) + "";
+                + "*sqrt(E)*exp(" + String.format("%6.3e", r.getSlope())
+                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "";
 
         System.out.println(result);
 
         return result;
     }
-    
-    
+
     public EnergyHistogram normalizeBy(EnergyHistogram other) {
         EnergyHistogram h = new EnergyHistogram();
         h.mutateClone(this);

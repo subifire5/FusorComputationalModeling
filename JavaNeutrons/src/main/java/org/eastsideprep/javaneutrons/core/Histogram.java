@@ -2,6 +2,7 @@ package org.eastsideprep.javaneutrons.core;
 
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class Histogram {
 
@@ -98,6 +99,100 @@ public class Histogram {
         return series;
     }
 
+    protected interface DoubleTransform {
+
+        double transform(double x);
+    }
+
+    protected interface XYTransform {
+
+        double transform(double x, double y);
+    }
+
+    protected static class Identity {
+
+        public static double x(double x) {
+            return x;
+        }
+
+        public static double y(double x, double y) {
+            return x;
+        }
+    }
+
+    protected SimpleRegression regression(DoubleTransform tx, XYTransform ty) {
+        SimpleRegression r = new SimpleRegression(true);
+
+        // skip last bucket since it has the overflow
+        for (int i = 0; i < bins.length - 1; i++) {
+            double x = (min + i / ((double) bins.length) * (max - min)) * Util.Physics.eV;
+            double y = bins[i];
+            if (y == 0 || x == 0) {
+                continue;
+            }
+
+            r.addData(tx.transform(x), ty.transform(x, y));
+        }
+        return r;
+    }
+
+    protected double RMSE(SimpleRegression r, DoubleTransform tx, XYTransform ity) {
+        double vr = 0;
+        double total = 0;
+        // skip last bucket since it has the overflow
+        for (int i = 0; i < bins.length - 1; i++) {
+            double x = (min + i / ((double) bins.length) * (max - min)) * Util.Physics.eV;
+            double y = bins[i];
+            if (y == 0) {
+                continue;
+            }
+            double yhat = ity.transform(x, r.predict(tx.transform(x)));
+            if (Double.isNaN(yhat)) {
+                System.out.println("");
+            }
+            double residual = y - yhat;
+            vr += (residual * residual) / (bins.length - 1);
+            total += y;
+        }
+        return Math.sqrt(vr / total);
+    }
+
+    public XYChart.Series makeFittedSeries(String seriesName, double count) {
+        //System.out.println("Retrieving series "+seriesName+":");
+        XYChart.Series series = new XYChart.Series();
+        ObservableList data = series.getData();
+        series.setName(seriesName);
+
+        // put in all the data
+        double[] counts = new double[this.bins.length];
+
+        synchronized (this) {
+            System.arraycopy(this.bins, 0, counts, 0, counts.length);
+        }
+
+        DoubleTransform tx = Identity::x;
+        XYTransform ty = (x, y) -> Math.log(y / x);
+        XYTransform ity = (x, y) -> x * Math.exp(y);
+      
+        SimpleRegression r = this.regression(tx, ty);
+
+        //System.out.println("");
+        //System.out.println(""+this.hashCode()+Arrays.toString(bins));
+        for (int i = 0; i < bins.length; i++) {
+            double x = (min + i / ((double) bins.length) * (max - min)) * Util.Physics.eV;
+            if (this.log) {
+                x = Math.pow(10, x);
+            }
+            double yActual = bins[i];
+            double yPred = ity.transform(x, r.predict(tx.transform(x)));
+            String tick = String.format("%6.3e", x/ Util.Physics.eV);
+            data.add(new XYChart.Data(tick, yPred / count));
+            //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
+        }
+        //System.out.println("");
+        return series;
+    }
+  
     public void mutateNormalizeBy(Histogram other) {
         for (int i = 0; i < this.bins.length; i++) {
             if (other.bins[i] != 0) {

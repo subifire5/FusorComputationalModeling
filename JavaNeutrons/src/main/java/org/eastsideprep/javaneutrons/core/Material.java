@@ -119,8 +119,8 @@ public class Material {
     }
 
     // input: SI(cm)
-    public double randomPathLength(double energy) {
-        double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy / Util.Physics.eV);
+    public double getPathLength(double energy, double rand) {
+        double length = -Math.log(rand) / getSigma(energy / Util.Physics.eV);
         return length;
     }
 
@@ -141,15 +141,17 @@ public class Material {
 
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
-        double t = randomPathLength(energy);
-        
+        double rand = Util.Math.random();
+
+        double t = getPathLength(energy, rand);
+
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
 
-        if (t > 2*Environment.limit) {
+        if (t > 2 * Environment.limit) {
             // we don't go that far
             return new Event(location, Event.Code.Gone, t);
         }
-        
+
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("");
             //System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
@@ -173,8 +175,8 @@ public class Material {
             sigmas[i + 1] = sum;
         }
 
-        // random draw from across the combined distribution
-        double rand = ThreadLocalRandom.current().nextDouble() * sum;
+        // random draw from earlier scaled up across the combined distribution
+        rand *= sum;
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("sum: " + sum + ", draw: " + rand);
         }

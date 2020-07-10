@@ -55,16 +55,21 @@ public class Util {
                     .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
                     .normalize();
         }
+        
+        public static double random() {
+            return ThreadLocalRandom.current().nextDouble();
+        }
 
         public static Vector3D randomDir() {
-            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
-            double z = ThreadLocalRandom.current().nextDouble() * 2 - 1;
-            double theta = java.lang.Math.asin(z);
-            return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+//            double phi = random() * 2 * java.lang.Math.PI;
+//            double z = random() * 2 - 1;
+//            double theta = java.lang.Math.asin(z);
+//            return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+            return randomDir(random() * 2 - 1, 1.0);
         }
 
         public static Vector3D randomDir(double cos_theta, double magnitude) {
-            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
+            double phi = random() * 2 * java.lang.Math.PI;
             double theta = java.lang.Math.acos(cos_theta);
             return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
         }

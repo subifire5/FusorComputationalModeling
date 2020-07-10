@@ -111,7 +111,7 @@ public class StatsDisplay extends Group {
         object.setPrefWidth(200);
 
         selectScale.getItems().addAll("Log", "Linear (all)", "Linear (thermal)");
-        selectScale.setValue("Log");
+        selectScale.setValue("Linear (thermal)");
         selectScale.valueProperty().addListener((a, b, c) -> {
             this.scale = (String) selectScale.getValue();
             this.setChart();
@@ -139,7 +139,7 @@ public class StatsDisplay extends Group {
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");
-        RadioButton rb8 = new RadioButton("Custom test");
+        RadioButton rb8 = new RadioButton("0-D Monte Carlo");
         RadioButton rb4b = new RadioButton("Capture counts");
 
         rb2.setSelected(true);
@@ -199,7 +199,7 @@ public class StatsDisplay extends Group {
         }
         this.object.getItems().addAll(s);
         this.object.setValue(this.object.getItems().get(0));
-        this.object.valueProperty().addListener((ov, t, t1) -> setChart());
+        this.object.onActionProperty().addListener((ov, t, t1) -> setChart());
     }
 
     private void setComboBox() {
@@ -255,7 +255,7 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
-                case "Custom test":
+                case "0-D Monte Carlo":
                     ArrayList<String> as = new ArrayList<>();
                     as.add("Random direction");
                     as.add("X-axis only");
@@ -311,11 +311,11 @@ public class StatsDisplay extends Group {
                 case "Cross-sections":
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", scale));
                     break;
-                case "Custom test":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Custom test", scale));
-                    System.out.println("Avg room energy: " + (Neutron.totalPE / Neutron.countPE / Util.Physics.eV + " eV"));
-                    System.out.println("Avg neutron energy in: " + (Neutron.totalNE / Neutron.countNE / Util.Physics.eV + " eV"));
-                    System.out.println("Avg neutron energy out : " + (Neutron.totalNE2 / Neutron.countNE2 / Util.Physics.eV + " eV"));
+                case "0-D Monte Carlo":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "0-D Monte Carlo", scale));
+//                    System.out.println("Avg room energy: " + (Neutron.totalPE / Neutron.countPE / Util.Physics.eV + " eV"));
+//                    System.out.println("Avg neutron energy in: " + (Neutron.totalNE / Neutron.countNE / Util.Physics.eV + " eV"));
+//                    System.out.println("Avg neutron energy out : " + (Neutron.totalNE2 / Neutron.countNE2 / Util.Physics.eV + " eV"));
                     break;
 
                 default:

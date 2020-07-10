@@ -310,7 +310,7 @@ public class MonteCarloSimulation {
                     break;
 
                 case "Fluence":
-                    c = new BarChart<>(xAxis, yAxis);
+                    c = new LineChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     if (p != null) {
                         f = new DecimalFormat("0.###E0");
@@ -325,6 +325,9 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
+                        if (scale.equals("Linear (thermal)")) {
+                            c.getData().add(p.fluenceOverEnergy.makeSeries("Fitted values (flux fit)", this.lastCount, "Linear (thermal fit)"));
+                        }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Fluence and Captures";
                     } else {
@@ -431,13 +434,17 @@ public class MonteCarloSimulation {
                     chartData = "Energy,Sigma";
                     break;
 
-                case "Custom test":
-                    c = new BarChart<>(xAxis, yAxis);
-                    c.setTitle("Custom test");
+                case "0-D Monte Carlo":
+                    c = new LineChart<>(xAxis, yAxis);
+                    c.setTitle("0-D Monte Carlo Simulation");
                     xAxis.setLabel("Energy (eV)");
-                    yAxis.setLabel("counts");
-                    c.getData().add(TestGM.customTest(scale, detector.equals("X-axis only")));
-                    chartData = "Energy,Count";
+                    yAxis.setLabel("Total path length (cm)/src");
+                    EnergyHistogram custom = TestGM.customTest(this.lastCount, scale, detector.equals("X-axis only"));
+                    c.getData().add(custom.makeSeries("Fluence", this.lastCount, scale));
+                    if (scale.equals("Linear (thermal)")) {
+                        c.getData().add(custom.makeSeries("Fitted values (flux fit)", this.lastCount, "Linear (thermal fit)"));
+                    }
+                    chartData = "Energy, total path length";
                     break;
 
                 default:

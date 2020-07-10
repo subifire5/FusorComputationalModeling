@@ -96,7 +96,7 @@ public class TestGM {
             }
             h1.record(1, e.energyOut);
 
-            h2.record(hw.randomPathLength(n.energy), e.energyOut);
+            h2.record(hw.getPathLength(n.energy, Util.Math.random()), e.energyOut);
 
             if ((i + 1) % 100 == 0) {
                 System.out.print(".");
@@ -180,24 +180,46 @@ public class TestGM {
         return mcs;
     }
 
-    public static XYChart.Series customTest(String scale, boolean xOnly) {
-        EnergyHistogram test = new EnergyHistogram();
-        //Histogram test = new Histogram(-102,102,104, false);
+    public static EnergyHistogram customTest(long count, String scale, boolean xOnly) {
+        int s = 50;
+
         MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
-        //mcs.trace= true;
+        //mcs.traceLevel = 2;
+
+        System.out.println("");
+        System.out.println("");
+
+        System.out.println("" + count + " neutrons");
+        System.out.println("" + s + " scatter events each");
+        //EnergyHistogram h1 = new EnergyHistogram();
+        EnergyHistogram h2 = new EnergyHistogram();
         Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
-        Isotope is = E12C.getInstance();
+        Isotope is = E1H.getInstance();
+        Material hw = HydrogenWax.getInstance();
         Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
+        for (int i = 0; i < count; i++) {
+            n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.kB * Util.Physics.T/*Neutron.startingEnergyDD*/);
+            for (int j = 0; j < s; j++) {
+                //n.setDirectionAndEnergy(Util.Math.randomDir(), n.energy);
 
-        for (int i = 0; i < 1000000; i++) {
-            n.setDirectionAndEnergy(Vector3D.PLUS_I, 0.037 * Util.Physics.eV);
-            n.processEvent(e);
-            if (n.direction.getX() > 0 && Math.abs(n.direction.getY()) < 0.7 && Math.abs(n.direction.getZ()) < 0.7) {
-                test.record(1, e.energyOut);
+                n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
+                n.processEvent(e);
+
+//                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / Util.Physics.protonMass);
+//                Vector3D particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+//                double particleSpeedIn = particleVelocityIn.getNorm();
+//                double particleEnergyIn = Util.Physics.protonMass * particleSpeedIn * particleSpeedIn / 2;
+//                h.record(1, particleEnergyIn);
+//
+                //h.record(1, e.energyOut);
+                //h.record(1, e.energyOut);
+                //h.record(1, e.energyOut);
             }
-        }
+            //h1.record(1, e.energyOut);
 
-        return test.makeSeries("test", 1, scale);
+            h2.record(hw.getPathLength(n.energy, Util.Math.random()), e.energyOut);
+        }
+        return h2;
     }
 
     public static MonteCarloSimulation simulationTestSmoosh(Group visualizations) {
@@ -425,27 +447,29 @@ public class TestGM {
                 g.getChildren().add(p);
             }
 
-            double cos_theta = is.getScatterCosTheta(2.44e6);
-            System.out.println("cos_theta " + cos_theta);
-            Vector3D dir2 = Util.Math.randomDir(cos_theta, 1.0);
-            System.out.println("dir2 " + dir2);
-            if (Math.abs(dir2.getNorm() - 1) > 1e-12) {
-                System.out.println("not normal");
-            }
+            if (is.angles != null) {
+                double cos_theta = is.getScatterCosTheta(2.44e6);
+                System.out.println("cos_theta " + cos_theta);
+                Vector3D dir2 = Util.Math.randomDir(cos_theta, 1.0);
+                System.out.println("dir2 " + dir2);
+                if (Math.abs(dir2.getNorm() - 1) > 1e-12) {
+                    System.out.println("not normal");
+                }
 
-            //dir2 = Util.Math.randomDir();
-            Rotation r = new Rotation(Vector3D.PLUS_K, Vector3D.PLUS_I);
-            dir2 = r.applyTo(dir2);
-            System.out.println("x1 " + dir2.getX());
-            double t2 = Util.Math.raySphereIntersect(orig, dir2, Vector3D.ZERO, radius);
-            if (t2 >= 0) {
-                System.out.println("dir2 " + dir2 + " t " + t2);
-                Vector3D v = orig.add(dir2.scalarMultiply(t2));
-                Sphere p = new Sphere(1);
-                Util.Graphics.setColor(p, "green");
-                System.out.println("v " + v);
-                p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
-                g.getChildren().add(p);
+                //dir2 = Util.Math.randomDir();
+                Rotation r = new Rotation(Vector3D.PLUS_K, Vector3D.PLUS_I);
+                dir2 = r.applyTo(dir2);
+                System.out.println("x1 " + dir2.getX());
+                double t2 = Util.Math.raySphereIntersect(orig, dir2, Vector3D.ZERO, radius);
+                if (t2 >= 0) {
+                    System.out.println("dir2 " + dir2 + " t " + t2);
+                    Vector3D v = orig.add(dir2.scalarMultiply(t2));
+                    Sphere p = new Sphere(1);
+                    Util.Graphics.setColor(p, "green");
+                    System.out.println("v " + v);
+                    p.getTransforms().add(new Translate(v.getX(), v.getY(), v.getZ()));
+                    g.getChildren().add(p);
+                }
             }
         }
         Util.Graphics.drawCoordSystem(g);
