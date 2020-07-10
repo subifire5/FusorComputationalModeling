@@ -39,6 +39,7 @@ public class Material {
     public EnergyHistogram scattersOverEnergyAfter;
     public EnergyHistogram capturesOverEnergy;
     public EnergyHistogram lengthOverEnergy;
+    public EnergyHistogram pathCounts;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
@@ -99,6 +100,7 @@ public class Material {
         this.scattersOverEnergyAfter = new EnergyHistogram();
         this.capturesOverEnergy = new EnergyHistogram();
         this.lengthOverEnergy = new EnergyHistogram();
+        this.pathCounts = new EnergyHistogram();
         this.lengths = new Histogram(-5, 7, 120, false);
         this.totalEvents = 0;
         this.totalFreePath = 0;
@@ -125,6 +127,7 @@ public class Material {
     public void recordLength(double length, double energy) {
         this.lengths.record(1, length);
         this.lengthOverEnergy.record(length, energy);
+        this.pathCounts.record(1, energy);
         synchronized (this) {
             this.totalFreePath += length;
         }
@@ -290,7 +293,7 @@ public class Material {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(energy);
 
-            data.add(new XYChart.Data(tick, getSigma(energy)));
+            data.add(new XYChart.Data(tick, Math.log(getSigma(energy))));
             //System.out.println(tick + " " + getSigma(energy));
         }
 

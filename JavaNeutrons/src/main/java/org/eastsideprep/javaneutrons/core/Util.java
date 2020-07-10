@@ -69,10 +69,10 @@ public class Util {
             return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
-        public static Vector3D randomGaussianComponentVector(double sd) {
-            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * sd,
-                    ThreadLocalRandom.current().nextGaussian() * sd,
-                    ThreadLocalRandom.current().nextGaussian() * sd);
+        public static Vector3D randomGaussianComponentVector(double componentSD) {
+            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * componentSD,
+                    ThreadLocalRandom.current().nextGaussian() * componentSD,
+                    ThreadLocalRandom.current().nextGaussian() * componentSD);
         }
 
         public static boolean solveQuadratic(double a, double b, double c, double[] result) {
@@ -212,8 +212,8 @@ public class Util {
     static public class Physics {
 
         //final public static double boltzmann = 8.61733333353e-5; //eV/K
-        final public static double boltzmann = 1.380649e-19; // SI with cm
-        final public static double roomTemp = 293.0; // K
+        final public static double kB = 1.380649e-19; // SI with cm
+        final public static double T = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
         final public static double barn = 1e-24; // 1 barn in SI cm

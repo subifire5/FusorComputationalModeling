@@ -20,6 +20,7 @@ public class Part {
 
     // universal detector functionality
     public EnergyHistogram entriesOverEnergy;
+    public EnergyHistogram exitsOverEnergy;
     public EnergyHistogram fluenceOverEnergy;
     public EnergyHistogram scattersOverEnergyBefore;
     public EnergyHistogram scattersOverEnergyAfter;
@@ -63,6 +64,7 @@ public class Part {
         this.totalDepositedEnergy = 0;
         this.totalFluence = 0;
         this.totalEvents = 0;
+        this.exitsOverEnergy = new EnergyHistogram();
         this.entriesOverEnergy = new EnergyHistogram();
         this.fluenceOverEnergy = new EnergyHistogram();
         this.scattersOverEnergyBefore = new EnergyHistogram();
@@ -217,6 +219,7 @@ public class Part {
     }
 
     synchronized void processExit(Neutron n) {
+        this.exitsOverEnergy.record(1, n.energy);
         this.totalDepositedEnergy += (n.entryEnergy - n.energy);
     }
 

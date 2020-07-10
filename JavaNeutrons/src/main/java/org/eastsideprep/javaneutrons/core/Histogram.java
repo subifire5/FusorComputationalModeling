@@ -22,7 +22,7 @@ public class Histogram {
     public Histogram() {
         this.min = -3;
         this.max = 7;
-        this.bins = new double[(int)Math.ceil((max - min) * this.binsPerDecade)];
+        this.bins = new double[(int) Math.ceil((max - min) * this.binsPerDecade)];
         this.log = true;
         //this.bins = new double[logMax - logMin + 1];
     }
@@ -41,7 +41,6 @@ public class Histogram {
 //
 //        }
 //    }
-
     public void record(double value, double x) {
         int bin;
 
@@ -99,4 +98,22 @@ public class Histogram {
         return series;
     }
 
+    public void mutateNormalizeBy(Histogram other) {
+        for (int i = 0; i < this.bins.length; i++) {
+            if (other.bins[i] != 0) {
+                bins[i] /= other.bins[i];
+            }
+        }
+    }
+
+    public void mutateClone(Histogram other) {
+        System.arraycopy(other.bins, 0, bins, 0, bins.length);
+    }
+
+    public Histogram normalizeBy(Histogram other) {
+        Histogram h = new Histogram(this.min, this.max, this.bins.length, false);
+        h.mutateClone(this);
+        h.mutateNormalizeBy(other);
+        return h;
+    }
 }

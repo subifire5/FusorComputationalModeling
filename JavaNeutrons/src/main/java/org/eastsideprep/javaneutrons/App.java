@@ -224,7 +224,6 @@ public class App extends Application {
                         bRunET.setDisable(false);
                         bRunSV.setDisable(false);
                         progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000) + " s");
-                        //sim.checkTallies();
                         idle();
                     }
                 }));

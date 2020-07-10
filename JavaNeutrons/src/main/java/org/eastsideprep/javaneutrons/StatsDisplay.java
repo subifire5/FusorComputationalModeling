@@ -133,6 +133,7 @@ public class StatsDisplay extends Group {
         RadioButton rb1 = new RadioButton("Escape counts");
         RadioButton rb2 = new RadioButton("Fluence");
         RadioButton rb3 = new RadioButton("Entry counts");
+        RadioButton rb3b = new RadioButton("Exit counts");
         RadioButton rb4 = new RadioButton("Scatter counts");
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
@@ -142,7 +143,7 @@ public class StatsDisplay extends Group {
 
         rb2.setSelected(true);
 
-        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb4b, rb1, rb5, rb6, rb7, rb8};
+        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb3b, rb4, rb4b, rb1, rb5, rb6, rb7, rb8};
 
         this.tg = new ToggleGroup();
         for (RadioButton rb : rbs) {
@@ -155,7 +156,6 @@ public class StatsDisplay extends Group {
         chartType.getChildren()
                 .addAll(rbs);
     }
-    
 
     private void populateComboBoxWithParts() {
         this.object.getItems().clear();
@@ -182,7 +182,7 @@ public class StatsDisplay extends Group {
         populateComboBox(ms);
     }
 
-    private void populateComboBoxWithPartsAndAir() {
+    private void populateComboBoxWithPartsAndInterstitial() {
         this.object.getItems().clear();
         populateComboBoxWithParts();
         Set<Material> sm = this.sim.assembly.getContainedMaterials();
@@ -210,7 +210,7 @@ public class StatsDisplay extends Group {
                     break;
 
                 case "Fluence":
-                    this.populateComboBoxWithPartsAndAir();
+                    this.populateComboBoxWithPartsAndInterstitial();
                     this.object.setVisible(true);
                     break;
 
@@ -219,6 +219,16 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
+                case "Entry counts":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+                    
+                case "Exit counts":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+                    
                 case "Capture counts":
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
@@ -275,6 +285,10 @@ public class StatsDisplay extends Group {
 
                 case "Entry counts":
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", scale));
+                    break;
+
+                case "Exit counts":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Exit counts", scale));
                     break;
 
                 case "Scatter counts":

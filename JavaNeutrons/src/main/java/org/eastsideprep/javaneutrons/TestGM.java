@@ -19,6 +19,7 @@ import org.eastsideprep.javaneutrons.core.EnergyHistogram;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
@@ -26,6 +27,8 @@ import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.core.Shape;
 import org.eastsideprep.javaneutrons.materials.E12C;
+import org.eastsideprep.javaneutrons.materials.E1H;
+import org.eastsideprep.javaneutrons.materials.HydrogenWax;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
@@ -56,18 +59,56 @@ public class TestGM {
     }
 
     private static void rTest() {
-        EnergyHistogram h = new EnergyHistogram();
-        for (int i = 0; i < 10000000; i++) {
-            double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / Util.Physics.protonMass);
-            Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+        int k = 100000;
+        int s = 50;
 
-            // making these for later debug out
-            double particleSpeed = particleVelocity.getNorm();
-            double particleEnergy = Util.Physics.protonMass * particleSpeed * particleSpeed / 2;
-            h.record(1, particleEnergy);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
+        //mcs.traceLevel = 2;
+
+        System.out.println("");
+        System.out.println("");
+
+        System.out.println("" + k + " neutrons");
+        System.out.println("" + s + " scatter events each");
+        EnergyHistogram h1 = new EnergyHistogram();
+        EnergyHistogram h2 = new EnergyHistogram();
+        Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
+        Isotope is = E1H.getInstance();
+        Material hw = HydrogenWax.getInstance();
+        Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
+        for (int i = 0; i < k; i++) {
+            n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.kB * Util.Physics.T/*Neutron.startingEnergyDD*/);
+            for (int j = 0; j < s; j++) {
+                //n.setDirectionAndEnergy(Util.Math.randomDir(), n.energy);
+
+                n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
+                n.processEvent(e);
+
+//                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / Util.Physics.protonMass);
+//                Vector3D particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+//                double particleSpeedIn = particleVelocityIn.getNorm();
+//                double particleEnergyIn = Util.Physics.protonMass * particleSpeedIn * particleSpeedIn / 2;
+//                h.record(1, particleEnergyIn);
+//
+                //h.record(1, e.energyOut);
+                //h.record(1, e.energyOut);
+                //h.record(1, e.energyOut);
+            }
+            h1.record(1, e.energyOut);
+
+            h2.record(hw.randomPathLength(n.energy), e.energyOut);
+
+            if ((i + 1) % 100 == 0) {
+                System.out.print(".");
+            }
+
         }
+        System.out.println("");
+        //mcs.trace= true;
 
-        h.fitMaxwell();
+        h1.fitDistributions(k);
+        System.out.println("");
+        h2.fitDistributions(k);
         //System.out.println(h.getStatsString("Linear (thermal)"));
         System.exit(0);
     }
@@ -86,11 +127,56 @@ public class TestGM {
 //        System.out.println("");
 //        histTest(new Histogram(true));
 //        System.exit(0);
+        //rTest();
+        return prison(visualizations);
+    }
 
+    public static MonteCarloSimulation prison(Group visualizations) {
+        double thickness = 200; //block thickness in cm
+        String m = "HydrogenWax";
+        //String m = "CarbonWax";
+        //String m = "Paraffin";
 
-//        rTest();
+        Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
+        wall.setColor("silver");
 
-        return bigBlock(visualizations);
+        Assembly whitmer = new Assembly("Whitmer");
+        whitmer.addAll(wall);
+        whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
+
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
+                null, Vector3D.PLUS_I, 2.53e-2 * Util.Physics.eV/*2.451e6 * Util.Physics.eV*/, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                "Vacuum", null, visualizations); // interstitial, initial
+        return mcs;
+    }
+
+    public static MonteCarloSimulation bigBlock(Group visualizations) {
+        double thickness = 25; //block thickness in cm
+        Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
+        String m = "HydrogenWax";
+        //String m = "CarbonWax";
+        //String m = "Paraffin";
+
+        Part wall = new Part("Wall: " + m, blockShape, m);
+        wall.getTransforms().add(new Translate(50 + thickness / 2, 0, 0));
+        wall.setColor("silver");
+
+        Shape detectorShape = new Shape(new CuboidMesh(2, 100, 100));
+        Part detector1 = new Part("Detector behind " + m + " wall", detectorShape, "HighVacuum");
+        detector1.getTransforms().add(new Translate(100 + 1, 0, 0));
+        detector1.setColor("pink");
+
+        Part detector2 = new Part("Detector opposite " + m + " wall", detectorShape, "HighVacuum");
+        detector2.getTransforms().add(new Translate(-(100 + 1), 0, 0));
+        detector2.setColor("pink");
+
+        Assembly whitmer = new Assembly("Whitmer");
+        whitmer.addAll(wall, detector1, detector2);
+
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
+                null, Util.Math.randomDir(), Util.Physics.thermalEnergy/*2.451e6 * Util.Physics.eV*/, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                "Vacuum", null, visualizations); // interstitial, initial
+        return mcs;
     }
 
     public static XYChart.Series customTest(String scale, boolean xOnly) {
@@ -168,35 +254,6 @@ public class TestGM {
 
         Assembly whitmer = new Assembly("Whitmer");
         whitmer.addAll(wall, detector);
-
-        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, 2.451e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
-                "Vacuum", null, visualizations); // interstitial, initial
-        return mcs;
-    }
-
-    public static MonteCarloSimulation bigBlock(Group visualizations) {
-        double thickness = 25; //block thickness in cm
-        Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
-        String m = "HydrogenWax";
-        //String m = "CarbonWax";
-        //String m = "Paraffin";
-
-        Part wall = new Part("Wall: " + m, blockShape, m);
-        wall.getTransforms().add(new Translate(50 + thickness / 2, 0, 0));
-        wall.setColor("silver");
-
-        Shape detectorShape = new Shape(new CuboidMesh(2, 100, 100));
-        Part detector1 = new Part("Detector behind " + m + " wall", detectorShape, "HighVacuum");
-        detector1.getTransforms().add(new Translate(100 + 1, 0, 0));
-        detector1.setColor("pink");
-
-        Part detector2 = new Part("Detector opposite " + m + " wall", detectorShape, "HighVacuum");
-        detector2.getTransforms().add(new Translate(-(100 + 1), 0, 0));
-        detector2.setColor("pink");
-
-        Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall, detector1, detector2);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
                 null, Vector3D.PLUS_I, 2.451e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV

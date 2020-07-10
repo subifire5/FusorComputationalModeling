@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import javafx.scene.Group;
@@ -181,8 +180,7 @@ public class MonteCarloSimulation {
         }
 
         // drain the rest and forget about it
-        LinkedList<Node> list = new LinkedList<>();
-        this.visualizations.drainTo(list);
+        this.visualizations.clear();
 
         return completed.get();
     }
@@ -194,7 +192,7 @@ public class MonteCarloSimulation {
 
     public void simulateNeutrons(int count, int visualObjectLimit, boolean textTrace) {
         this.lastCount = count;
-        this.traceLevel = count <= 10 ? (1+(textTrace?1:0)):0;
+        this.traceLevel = count <= 10 ? (1 + (textTrace ? 1 : 0)) : 0;
         this.visualObjectLimit = visualObjectLimit;
         MonteCarloSimulation.visualLimitReached = false;
 
@@ -284,11 +282,31 @@ public class MonteCarloSimulation {
                     p = Part.getByName(detector);
                     f = new DecimalFormat("0.###E0");
                     e = f.format(p.getTotalDepositedEnergy() * 1e-4);
-                    c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J");
+                    c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J"
+                            + ", src = " + this.lastCount
+                            + " \nThermal energy stats:\n"
+                            + p.entriesOverEnergy.getStatsString(scale, this.lastCount)
+                    );
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
-                    c.getData().add(p.entriesOverEnergy.makeSeries("Entry counts", scale));
-                    chartData = "Energy,Entry Count";
+                    c.getData().add(p.entriesOverEnergy.makeSeries(series, scale));
+                    chartData = "Energy, " + series;
+                    break;
+
+                case "Exit counts":
+                    c = new BarChart<>(xAxis, yAxis);
+                    p = Part.getByName(detector);
+                    f = new DecimalFormat("0.###E0");
+                    e = f.format(p.getTotalDepositedEnergy() * 1e-4);
+                    c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J"
+                            + ", src = " + this.lastCount
+                            + " \nThermal energy stats:\n"
+                            + p.exitsOverEnergy.getStatsString(scale, this.lastCount)
+                    );
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Count");
+                    c.getData().add(p.exitsOverEnergy.makeSeries(series, scale));
+                    chartData = "Energy, " + series;
                     break;
 
                 case "Fluence":
@@ -301,7 +319,7 @@ public class MonteCarloSimulation {
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount
                                 + " \nThermal energy stats:\n"
-                                + p.fluenceOverEnergy.getStatsString(scale)
+                                + p.fluenceOverEnergy.getStatsString(scale, this.lastCount)
                         );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
@@ -310,11 +328,12 @@ public class MonteCarloSimulation {
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Fluence and Captures";
                     } else {
+                        // this is only for the interstitial medium
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
-                        m = Material.getByName("Air");
+                        m = Material.getByName(detector);
                         f = new DecimalFormat("0.###E0");
                         e = f.format(m.totalFreePath / (this.lastCount * factor));
-                        c.setTitle("Interstitial air"
+                        c.setTitle("Interstitial medium"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount);
                         xAxis.setLabel("Energy (eV)");
@@ -332,7 +351,7 @@ public class MonteCarloSimulation {
                     if (p != null) {
                         c.setTitle("Part \"" + p.name + "\", "
                                 + ", src = " + this.lastCount
-                                +", total events: " + p.getTotalEvents());
+                                + ", total events: " + p.getTotalEvents());
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
                         c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, scale));
@@ -349,13 +368,16 @@ public class MonteCarloSimulation {
                     }
                     break;
 
-           case "Capture counts":
+                case "Capture counts":
                     c = new BarChart<>(xAxis, yAxis);
                     p = Part.getByName(detector);
                     if (p != null) {
                         c.setTitle("Part \"" + p.name + "\""
                                 + ", src = " + this.lastCount
-                                +", total events: " + p.getTotalEvents());
+                                + ", total events: " + p.getTotalEvents()
+                                + " \nThermal energy stats:\n"
+                                + p.capturesOverEnergy.getStatsString(scale, this.lastCount)
+                        );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
                         c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, scale));
@@ -369,20 +391,22 @@ public class MonteCarloSimulation {
                         chartData = "Energy,Event Count";
                     }
                     break;
-                    
+
                 case "Path lengths":
                     factor = detector.equals("Air") ? (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume()) : 1;
                     c = new BarChart<>(xAxis, yAxis);
                     m = Material.getByName(detector);
+                    EnergyHistogram h = m.lengthOverEnergy.normalizeBy(m.pathCounts);
                     c.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount) / 100.0) + " cm, "
-                            + "Fluence: " + String.format("%6.3e", m.totalFreePath / (this.lastCount * factor))
-                            + " (n/cm^2)/src = " + this.lastCount
+                            + "src = " + this.lastCount
+                            + " \nThermal energy stats:\n"
+                            + h.getStatsString(scale, this.lastCount)
                     );
-                    xAxis.setLabel("Length (cm)");
+                    xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
-                    c.getData().add(m.lengths.makeSeries("Length"));
-                    chartData = "Length,Count";
+                    c.getData().add(h.makeSeries("Length", scale));
+                    chartData = "Energy, avg. length";
                     break;
 
                 case "Cross-sections":
@@ -402,7 +426,7 @@ public class MonteCarloSimulation {
                     m = Material.getByName(detector);
                     c.setTitle("Macroscopic cross-sections for material " + detector);
                     xAxis.setLabel("Energy (eV)");
-                    yAxis.setLabel("Sigma (cm^-1)");
+                    yAxis.setLabel("log(Sigma (cm^-1))");
                     c.getData().add(m.makeSigmaSeries("Sigma (" + detector + ")"));
                     chartData = "Energy,Sigma";
                     break;

@@ -13,13 +13,17 @@ public class Event {
     public Neutron neutron;
 
     // additional info - presence depends on event
-    public Isotope element;
+    public Isotope particle;
     public double energyOut;
     public double t; // how far along was this on the vector we took to get here
     public Part part;
     public int face;
     public Material exitMaterial;
+    
+    // debug stuff
     public double cos_theta;
+    public double particleEnergyIn;
+    public double particleEnergyOut;
 
 //    public Event(double x, double y, double z, Event.Code c) {
 //        this.position = new Vector3D(x, y, z);
@@ -53,7 +57,7 @@ public class Event {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.code = c;
         this.t = t;
-        this.element = e;
+        this.particle = e;
         this.neutron = n;
     }
 
