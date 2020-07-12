@@ -25,14 +25,18 @@ public class PJEulersMethod implements Solution {
     public Particle step(Particle p, Double stepSize) {
 
         p.totalEnergy(eField);
-        Vector acceleration = eField.forceOnCharge(p).scale(1/p.mass);
+        Vector acceleration = eField.forceOnCharge(p).scale(1 / p.mass);
         Vector velocity = acceleration.scale(stepSize).sum(p.vel);
         Vector position = p.pos.sum(p.vel.scale(stepSize));
-        
+
         p.vel = velocity;
         p.pos = position;
         p.time += stepSize;
         return p;
     }
 
+    @Override
+    public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

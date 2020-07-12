@@ -46,8 +46,7 @@ public class InputHandler {
 
         s.close();
     }
-    
-    
+
     /**
      *
      * @param PJ
@@ -58,36 +57,51 @@ public class InputHandler {
      * @param outputFilePath
      * @return
      */
-    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, int numberOfSteps, Double stepSize, String outputFilePath) {
-        Particle[] particles = new Particle[numberOfSteps];
+    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize) {
+        Particle[] particles = new Particle[1];
         initial.setScaleDistance(scaleDistance);
         initial.totalEnergy(eField);
-        if (PJ) {
+        if (batch) {
+            if (PJ) {
+                PJEulersMethod pj = new PJEulersMethod(eField);
 
-            PJEulersMethod pj = new PJEulersMethod(eField);
-            particles[0] = initial;
-            Particle p = particles[0].clone();
-            for (int i = 1; i < numberOfSteps; i++) {
-                particles[i] = pj.step(p, stepSize).clone();
-                p = particles[i];
+                particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (MY) {
+                MYEulersMethod my = new MYEulersMethod(eField);
+                particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
+
             }
 
-        } else if (MY) {
+        } else {
+            particles = new Particle[numberOfSteps.intValue()];
+            if (PJ) {
 
-            MYEulersMethod my = new MYEulersMethod(eField);
-            particles[0] = initial;
-            Particle p = particles[0].clone();
-            for (int i = 1; i < numberOfSteps; i++) {
-                particles[i] = my.step(p, stepSize).clone();
-                p = particles[i];
+                PJEulersMethod pj = new PJEulersMethod(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = pj.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+
+            } else if (MY) {
+
+                MYEulersMethod my = new MYEulersMethod(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+
             }
-
         }
 
         String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Charge", "Time",
             "Mass", "Electric Potential Energy", "Kinetic Energy"};
 
         TableGraphWriter tgw = new TableGraphWriter();
+
         tgw.writeCSV(particles, headers, outputFilePath);
 
     }
@@ -175,9 +189,11 @@ public class InputHandler {
     public void readFromFile() {
         Boolean PJ = false;
         Boolean MY = false;
+        Boolean batch = true; // true by default
+        int batchSize = 0;
         Particle initial = null;
         boolean inputRecieved = false;
-        int numberOfSteps = 0;
+        Double numberOfSteps = 0.0;
         Double stepSize = 1.0;
         String outputFilePath = "";
 
@@ -232,7 +248,7 @@ public class InputHandler {
             stepSize = Double.valueOf(s.nextLine());
 
             System.out.println("Number of Steps:");
-            numberOfSteps = Integer.valueOf(s.nextLine());
+            numberOfSteps = Double.valueOf(s.nextLine());
 
             inputRecieved = false;
 
@@ -250,7 +266,33 @@ public class InputHandler {
                 }
             }
 
-            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath);
+            input = "";
+            inputRecieved = false;
+            while (!inputRecieved && numberOfSteps < 100000) {
+                System.out.println("Do want to split them into batches? (Y/N)");
+
+                input = s.nextLine();
+                if (input.equals("Y") || input.equals("y")) {
+                    inputRecieved = true;
+                    batch = true;
+                } else if (input.equals("N") || input.equals("n")) {
+                    inputRecieved = true;
+                    batch = false;
+                } else {
+                    System.out.println("Please respond with (Y) or (N)");
+                }
+
+            }
+
+            if (batch) {
+                if (numberOfSteps > 100000) {
+                    System.out.println("Your number of steps is too large without batching");
+                }
+                System.out.println("Please enter the size of a batch");
+                batchSize = Integer.valueOf(s.nextLine());
+            }
+
+            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize);
         }
 
         inputRecieved = false;
