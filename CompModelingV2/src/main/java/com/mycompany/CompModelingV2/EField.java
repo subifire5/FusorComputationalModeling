@@ -48,6 +48,9 @@ public class EField {
         this.charges = charges;
         this.k = 8.9875517923E9;
         this.scaleDistance = scaleDistance;
+        for (Charge c : charges) {
+            c.scale(scaleDistance);
+        }
         if (centerOfGrid == null) {
             centerOfGrid = new Vector(0.0, 0.0, 0.0);
         }
@@ -77,6 +80,8 @@ public class EField {
      * @return
      */
     public Double[][] potentialTable(String axis, double lowerBound, double upperBound, int numberOfPotentials) {
+        lowerBound*=scaleDistance;
+        upperBound*=scaleDistance;
         Double[][] potentials = new Double[numberOfPotentials][2];
         Double gap = (upperBound - lowerBound) / numberOfPotentials;
         if (axis.equals("X") || axis.equals("x")) {
@@ -119,6 +124,8 @@ public class EField {
      * @return
      */
     public Double[][] potentialSlice(String graphPlane, Vector bottomLeftCorner, Vector upperRightCorner, int numberOfPotentials) {
+        bottomLeftCorner.scale(scaleDistance);
+        upperRightCorner.scale(scaleDistance);
         if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
             Double[][] potentials = new Double[numberOfPotentials * numberOfPotentials][3];
             Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfPotentials;
@@ -165,6 +172,8 @@ public class EField {
     }
 
     public Vector[][] forceVectorLine(String axis, double lowerBound, double upperBound, int numberOfVectors) {
+        lowerBound*=scaleDistance;
+        upperBound*=scaleDistance;
         Vector[][] fVectors = new Vector[numberOfVectors][2];
         Double gap = (upperBound - lowerBound) / numberOfVectors;
         if (axis.equals("X") || axis.equals("x")) {
@@ -200,6 +209,8 @@ public class EField {
     }
 
     public Vector[][] forceVectorSlice(String graphPlane, Vector bottomLeftCorner, Vector upperRightCorner, int numberOfVectors) {
+        bottomLeftCorner.scale(scaleDistance);
+        upperRightCorner.scale(scaleDistance);
         if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
             Vector[][] fVectors = new Vector[numberOfVectors * numberOfVectors][2];
             Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfVectors;
@@ -370,7 +381,7 @@ public class EField {
             if (t.polarity > 0) {
                 vol = -p.charge * voltage;
             } else {
-                vol =p.charge * t.polarity * voltage;
+                vol = p.charge * t.polarity * voltage;
             }
             //vol = c.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(p);
@@ -508,5 +519,11 @@ public class EField {
         double ePotentialEnergy = electricPotentialEnergy(p);
         double kineticEnergy = kineticEnergy(p);
         return ePotentialEnergy + kineticEnergy;
+    }
+
+    public void deScale() {
+        for (Charge c : charges) {
+            c.scale(1/scaleDistance);
+        }
     }
 }
