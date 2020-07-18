@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
@@ -201,7 +202,8 @@ public class Util {
 
             // At this stage we can compute t to find out where the intersection point is on the line.
             double t = f * (edge2x * qx + edge2y * qy + edge2z * qz);
-            if (t > kEpsilon) {
+//            if (t > kEpsilon) {
+            if (t >= 0) {
                 return t;
             } else {
                 return -1;
@@ -261,6 +263,7 @@ public class Util {
             pm.setSpecularColor(Color.web(webColor));
             pm.setDiffuseColor(Color.web(webColor));
             s.setMaterial(pm);
+            s.setDrawMode(DrawMode.LINE);
 
             g.add(s);
         }

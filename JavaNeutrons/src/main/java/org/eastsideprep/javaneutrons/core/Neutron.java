@@ -56,14 +56,18 @@ public final class Neutron extends Particle {
             return v;
 
         } else {
+           return getIsotropicScatteredVelocity(e, neutronVelocity);
+        }
+    }
+   public Vector3D getIsotropicScatteredVelocity(Event e, Vector3D neutronVelocity) {
+        Isotope i = e.particle;
+        boolean mncpMethod = false;
             double speed = neutronVelocity.getNorm();
             Vector3D v = Util.Math.randomDir();
             e.cos_theta = v.dotProduct(neutronVelocity.scalarMultiply(1/speed));
             v = v.scalarMultiply(speed);
             return v;
-        }
     }
-
     @Override
     public void processEvent(Event event) {
         if (event.code == Event.Code.Scatter) {

@@ -49,7 +49,7 @@ public class StatsDisplay extends Group {
     ChoiceBox object = new ChoiceBox();
     Pane chartPane = new Pane();
     ChoiceBox selectScale = new ChoiceBox();
-    String scale = "Log";
+    String scale;
 
     Slider slider = new Slider();
 
@@ -116,6 +116,7 @@ public class StatsDisplay extends Group {
             this.scale = (String) selectScale.getValue();
             this.setChart();
         });
+        this.scale = "Linear (thermal)";
         selectScale.setPrefWidth(200);
 
         controls.getChildren().addAll(chartType, new Separator(), selectScale, new Separator(),
@@ -255,15 +256,6 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
-                case "0-D Monte Carlo":
-                    ArrayList<String> as = new ArrayList<>();
-                    as.add("Random direction");
-                    as.add("X-axis only");
-                    this.object.getItems().clear();
-                    this.populateComboBox(as);
-                    this.object.setVisible(true);
-                    break;
-
                 default:
                     this.object.setVisible(false);
                     break;
@@ -311,13 +303,7 @@ public class StatsDisplay extends Group {
                 case "Cross-sections":
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", scale));
                     break;
-                case "0-D Monte Carlo":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "0-D Monte Carlo", scale));
-//                    System.out.println("Avg room energy: " + (Neutron.totalPE / Neutron.countPE / Util.Physics.eV + " eV"));
-//                    System.out.println("Avg neutron energy in: " + (Neutron.totalNE / Neutron.countNE / Util.Physics.eV + " eV"));
-//                    System.out.println("Avg neutron energy out : " + (Neutron.totalNE2 / Neutron.countNE2 / Util.Physics.eV + " eV"));
-                    break;
-
+                
                 default:
                     root.setCenter(null);
                     break;

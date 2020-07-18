@@ -120,18 +120,18 @@ public class Histogram {
         }
     }
 
-    protected SimpleRegression regression(DoubleTransform tx, XYTransform ty) {
+    protected SimpleRegression regression( XYTransform ty) {
         SimpleRegression r = new SimpleRegression(true);
 
         // skip last bucket since it has the overflow
         for (int i = 0; i < bins.length - 1; i++) {
-            double x = (min + i / ((double) bins.length) * (max - min)) * Util.Physics.eV;
+            double x = (min + i / ((double) bins.length) * (max - min));// * Util.Physics.eV;
             double y = bins[i];
             if (y == 0 || x == 0) {
                 continue;
             }
 
-            r.addData(tx.transform(x), ty.transform(x, y));
+            r.addData(x, ty.transform(x, y));
         }
         return r;
     }
@@ -141,7 +141,7 @@ public class Histogram {
         double total = 0;
         // skip last bucket since it has the overflow
         for (int i = 0; i < bins.length - 1; i++) {
-            double x = (min + i / ((double) bins.length) * (max - min)) * Util.Physics.eV;
+            double x = (min + i / ((double) bins.length) * (max - min));// * Util.Physics.eV;
             double y = bins[i];
             if (y == 0) {
                 continue;
@@ -170,29 +170,39 @@ public class Histogram {
             System.arraycopy(this.bins, 0, counts, 0, counts.length);
         }
 
-        DoubleTransform tx = Identity::x;
-        XYTransform ty = (x, y) -> Math.log(y / x);
-        XYTransform ity = (x, y) -> x * Math.exp(y);
-      
-        SimpleRegression r = this.regression(tx, ty);
+        XYTransform ty = null;
+        XYTransform ity = null;
+
+        if (seriesName.equals("Energy fit")) {
+            ty = (x, yin) -> Math.log(yin / Math.sqrt(x));
+            ity = (x, yout) -> Math.sqrt(x) * Math.exp(yout);
+        } else if (seriesName.equals("Flux fit")){
+            ty = (x, yin) -> Math.log(yin / x);
+            ity = (x, yout) -> x * Math.exp(yout);
+        } else {
+            return null;
+        }
+
+        SimpleRegression r = this.regression(ty);
 
         //System.out.println("");
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
         for (int i = 0; i < bins.length; i++) {
-            double x = (min + i / ((double) bins.length) * (max - min)) * Util.Physics.eV;
+            double x = (min + i / ((double) bins.length) * (max - min));// * Util.Physics.eV;
             if (this.log) {
                 x = Math.pow(10, x);
             }
             double yActual = bins[i];
-            double yPred = ity.transform(x, r.predict(tx.transform(x)));
-            String tick = String.format("%6.3e", x/ Util.Physics.eV);
-            data.add(new XYChart.Data(tick, yPred / count));
+            double tyActual = ty.transform(x, yActual);
+            double yPred = ity.transform(x, r.predict(x));
+            String tick = String.format("%6.3e", x/*/ Util.Physics.eV*/);
+            data.add(new XYChart.Data(tick, yPred/count));
             //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
         //System.out.println("");
         return series;
     }
-  
+
     public void mutateNormalizeBy(Histogram other) {
         for (int i = 0; i < this.bins.length; i++) {
             if (other.bins[i] != 0) {

@@ -68,6 +68,13 @@ public class Event {
         this.t = t;
     }
 
+   public Event(Vector3D position, Part p, double t, boolean goingOut) {
+        this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
+        this.part = p;
+        this.code = goingOut?Event.Code.Exit:Event.Code.Entry;
+        this.t = t;
+    }
+   
     @Override
     public String toString() {
         return "Event: " + this.hashCode() + ": " + this.code + ": "+this.position;

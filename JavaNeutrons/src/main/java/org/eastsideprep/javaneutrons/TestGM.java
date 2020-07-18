@@ -5,6 +5,7 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -14,11 +15,14 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.eastsideprep.javaneutrons.core.Assembly;
 import org.eastsideprep.javaneutrons.core.EnergyHistogram;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.MC0D;
 import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
 import org.eastsideprep.javaneutrons.core.Neutron;
@@ -38,117 +42,8 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
  */
 public class TestGM {
 
-    private static void histTest() {
-        EnergyHistogram test = new EnergyHistogram();
-        test.record(1000, 0.5e-4 * Util.Physics.eV);
-        test.record(2000, 1e-3 * Util.Physics.eV);
-        test.record(2100, 1.1e-3 * Util.Physics.eV);
-        test.record(2500, 1.5e-3 * Util.Physics.eV);
-
-        test.record(3333, 2.51e6 * Util.Physics.eV);
-
-        test.record(3000, 0.5e7 * Util.Physics.eV);
-        test.record(4000, 1e7 * Util.Physics.eV);
-        test.record(5000, 2e7 * Util.Physics.eV);
-
-        XYChart.Series<String, Number> xy = test.makeSeries("", 1, "Linear (thermal)");
-        for (XYChart.Data<String, Number> d : xy.getData()) {
-            System.out.println(d.getXValue() + "," + d.getYValue());
-        }
-        System.exit(0);
-    }
-
-    private static void rTest() {
-        int k = 100000;
-        int s = 50;
-
-        MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
-        //mcs.traceLevel = 2;
-
-        System.out.println("");
-        System.out.println("");
-
-        System.out.println("" + k + " neutrons");
-        System.out.println("" + s + " scatter events each");
-        EnergyHistogram h1 = new EnergyHistogram();
-        EnergyHistogram h2 = new EnergyHistogram();
-        Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
-        Isotope is = E1H.getInstance();
-        Material hw = HydrogenWax.getInstance();
-        Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
-        for (int i = 0; i < k; i++) {
-            n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.kB * Util.Physics.T/*Neutron.startingEnergyDD*/);
-            for (int j = 0; j < s; j++) {
-                //n.setDirectionAndEnergy(Util.Math.randomDir(), n.energy);
-
-                n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
-                n.processEvent(e);
-
-//                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / Util.Physics.protonMass);
-//                Vector3D particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
-//                double particleSpeedIn = particleVelocityIn.getNorm();
-//                double particleEnergyIn = Util.Physics.protonMass * particleSpeedIn * particleSpeedIn / 2;
-//                h.record(1, particleEnergyIn);
-//
-                //h.record(1, e.energyOut);
-                //h.record(1, e.energyOut);
-                //h.record(1, e.energyOut);
-            }
-            h1.record(1, e.energyOut);
-
-            h2.record(hw.getPathLength(n.energy, Util.Math.random()), e.energyOut);
-
-            if ((i + 1) % 100 == 0) {
-                System.out.print(".");
-            }
-
-        }
-        System.out.println("");
-        //mcs.trace= true;
-
-        h1.fitDistributions(k);
-        System.out.println("");
-        h2.fitDistributions(k);
-        //System.out.println(h.getStatsString("Linear (thermal)"));
-        System.exit(0);
-    }
-
-    public static MonteCarloSimulation simulationTest(Group visualizations) {
-        //histTest();
-//        Isotope i = E1H.getInstance();
-//        System.out.println("1H mass: " + i.mass);
-//        double sd = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / i.mass);
-//        System.out.println("SD for hydrogen: " + sd);
-//        double e = (3.0/2.0*Util.Physics.boltzmann * Util.Physics.roomTemp/Util.Physics.eV);
-//        System.out.println("Room temp avg energy in eV: " + e);
-//        System.exit(0);
-
-//        histTest(new Histogram(false));
-//        System.out.println("");
-//        histTest(new Histogram(true));
-//        System.exit(0);
-        //rTest();
-        return prison(visualizations);
-    }
-
-    public static MonteCarloSimulation prison(Group visualizations) {
-        double thickness = 200; //block thickness in cm
-        String m = "HydrogenWax";
-        //String m = "CarbonWax";
-        //String m = "Paraffin";
-
-        //Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
-        Part wall = new Part("Prison: " + m, new Cuboid(thickness), m);
-        wall.setColor("silver");
-
-        Assembly whitmer = new Assembly("Whitmer");
-        whitmer.addAll(wall);
-        whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
-
-        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, 2.53e-2 * Util.Physics.eV/*2.451e6 * Util.Physics.eV*/, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
-                "Vacuum", null, visualizations); // interstitial, initial
-        return mcs;
+    public static MonteCarloSimulation current(Group visualizations) {
+        return bigBlock(visualizations);
     }
 
     public static MonteCarloSimulation bigBlock(Group visualizations) {
@@ -175,54 +70,75 @@ public class TestGM {
         whitmer.addAll(wall, detector1, detector2);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Util.Math.randomDir(), Util.Physics.thermalEnergy/*2.451e6 * Util.Physics.eV*/, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                null, Vector3D.PLUS_I, Util.Physics.thermalEnergy,
+                "Vacuum", null, visualizations); // interstitial, initial
+        //mcs.prepareGrid(5.0, visualizations);
+        return mcs;
+    }
+
+    //
+    // 0-D Monte Carlo Simulations
+    //
+    public static MonteCarloSimulation MC0D(Group vis) {
+        vis.getChildren().clear();
+        ArrayList<Vector2D> pairs = new ArrayList<>();
+        return new MC0D(TestGM::runMC0D, TestGM::afterMC0D, "HydrogenWax", pairs);
+    }
+
+    private static void runMC0D(Part p, Object o) {
+        int s = 1000;
+        ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
+
+        Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, null);
+        Isotope is = E1H.getInstance();
+        Material hw = HydrogenWax.getInstance();
+        Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
+        n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.kB * Util.Physics.T/*Neutron.startingEnergyDD*/);
+        for (int j = 0; j < s; j++) {
+            //n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
+            double before = n.energy;
+            n.processEvent(e);
+            synchronized (pairs) {
+                pairs.add(new Vector2D(before, e.energyOut));
+            }
+            p.exitsOverEnergy.record(1, n.energy);
+            p.fluenceOverEnergy.record(hw.getPathLength(n.energy, Util.Math.random()), e.energyOut);
+        }
+    }
+
+    private static void afterMC0D(Part p, Object o) {
+        ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
+        PearsonsCorrelation pc = new PearsonsCorrelation();
+        double[] x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
+        double[] y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
+        double c = pc.correlation(x, y);
+        System.out.println("Correlation of energies before and after scatter: " + c);
+    }
+
+    //
+    // world simulations
+    //
+    public static MonteCarloSimulation prison(Group visualizations) {
+        double thickness = 200; //block thickness in cm
+        String m = "HydrogenWax";
+        //String m = "CarbonWax";
+        //String m = "Paraffin";
+
+        //Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
+        Part wall = new Part("Prison: " + m, new Cuboid(thickness), m);
+        wall.setColor("silver");
+
+        Assembly whitmer = new Assembly("Whitmer");
+        whitmer.addAll(wall);
+        whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
+
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
+                null, Vector3D.PLUS_I, 2.53e-2 * Util.Physics.eV/*2.451e6 * Util.Physics.eV*/, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
         return mcs;
     }
 
-    public static EnergyHistogram customTest(long count, String scale, boolean xOnly) {
-        int s = 50;
-
-        MonteCarloSimulation mcs = new MonteCarloSimulation(null, null, null);
-        //mcs.traceLevel = 2;
-
-        System.out.println("");
-        System.out.println("");
-
-        System.out.println("" + count + " neutrons");
-        System.out.println("" + s + " scatter events each");
-        //EnergyHistogram h1 = new EnergyHistogram();
-        EnergyHistogram h2 = new EnergyHistogram();
-        Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, mcs);
-        Isotope is = E1H.getInstance();
-        Material hw = HydrogenWax.getInstance();
-        Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
-        for (int i = 0; i < count; i++) {
-            n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.kB * Util.Physics.T/*Neutron.startingEnergyDD*/);
-            for (int j = 0; j < s; j++) {
-                //n.setDirectionAndEnergy(Util.Math.randomDir(), n.energy);
-
-                n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
-                n.processEvent(e);
-
-//                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / Util.Physics.protonMass);
-//                Vector3D particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
-//                double particleSpeedIn = particleVelocityIn.getNorm();
-//                double particleEnergyIn = Util.Physics.protonMass * particleSpeedIn * particleSpeedIn / 2;
-//                h.record(1, particleEnergyIn);
-//
-                //h.record(1, e.energyOut);
-                //h.record(1, e.energyOut);
-                //h.record(1, e.energyOut);
-            }
-            //h1.record(1, e.energyOut);
-
-            h2.record(hw.getPathLength(n.energy, Util.Math.random()), e.energyOut);
-        }
-        return h2;
-    }
-
-    public static MonteCarloSimulation simulationTestSmoosh(Group visualizations) {
+    public static MonteCarloSimulation smoosh0(Group visualizations) {
 
         double gap = 1;
 
@@ -258,7 +174,37 @@ public class TestGM {
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
 
-        return new MonteCarloSimulation(smoosh, null, visualizations);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(smoosh, null, visualizations);
+        return mcs;
+    }
+
+   public static MonteCarloSimulation smoosh1(Group visualizations) {
+        MonteCarloSimulation mcs = smoosh0(visualizations);
+        mcs.prepareGrid(1.0, visualizations);
+        return mcs;
+    }
+    public static MonteCarloSimulation smoosh2(Group visualizations) {
+        MonteCarloSimulation mcs = smoosh0(visualizations);
+        mcs.prepareGrid(2.0, visualizations);
+        return mcs;
+    }
+
+    public static MonteCarloSimulation smoosh5(Group visualizations) {
+        MonteCarloSimulation mcs = smoosh0(visualizations);
+        mcs.prepareGrid(5.0, visualizations);
+        return mcs;
+    }
+
+    public static MonteCarloSimulation smoosh10(Group visualizations) {
+        MonteCarloSimulation mcs = smoosh0(visualizations);
+        mcs.prepareGrid(10.0, visualizations);
+        return mcs;
+    }
+
+    public static MonteCarloSimulation smoosh20(Group visualizations) {
+        MonteCarloSimulation mcs = smoosh0(visualizations);
+        mcs.prepareGrid(20.0, visualizations);
+        return mcs;
     }
 
     public static MonteCarloSimulation spherical(Group visualizations) {
@@ -281,6 +227,7 @@ public class TestGM {
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
                 null, Vector3D.PLUS_I, 2.451e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
+        mcs.prepareGrid(5.0, visualizations);
         return mcs;
     }
 
@@ -533,5 +480,25 @@ public class TestGM {
         Group g = new Group(cube, cube2, cube3, body);
 
         return g;
+    }
+
+    private static void histTest() {
+        EnergyHistogram test = new EnergyHistogram();
+        test.record(1000, 0.5e-4 * Util.Physics.eV);
+        test.record(2000, 1e-3 * Util.Physics.eV);
+        test.record(2100, 1.1e-3 * Util.Physics.eV);
+        test.record(2500, 1.5e-3 * Util.Physics.eV);
+
+        test.record(3333, 2.51e6 * Util.Physics.eV);
+
+        test.record(3000, 0.5e7 * Util.Physics.eV);
+        test.record(4000, 1e7 * Util.Physics.eV);
+        test.record(5000, 2e7 * Util.Physics.eV);
+
+        XYChart.Series<String, Number> xy = test.makeSeries("", 1, "Linear (thermal)");
+        for (XYChart.Data<String, Number> d : xy.getData()) {
+            System.out.println(d.getXValue() + "," + d.getYValue());
+        }
+        System.exit(0);
     }
 }
