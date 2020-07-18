@@ -32,8 +32,10 @@ public class PJEulersMethod implements Solution {
         p.vel = velocity;
         p.pos = position;
         p.time += stepSize;
+
         return p;
     }
+
     //the Epoch Method should take in all of the parameters
     // and return an array of particles, the size of numberofSteps/batchsize
     // full of particles completed in batches of size batchSize
@@ -43,6 +45,29 @@ public class PJEulersMethod implements Solution {
     // that looks like an array of 10,000 particles
     @Override
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // throw new UnsupportedOperationException("Not supported yet.");//To change body of generated methods, choose Tools | Templates.
+
+        int batchesNeeded = (int) (numberOfSteps / batchSize);
+        int batchesCompleted = 0;
+        int steps = 0;
+        Particle[] j = new Particle[batchesNeeded];
+        long startTime = System.currentTimeMillis();
+
+        while (batchesCompleted != batchesNeeded) {
+
+            System.out.println("Progress:" + (batchesCompleted / batchesNeeded) + "%");
+            System.out.println("This code has taken: " + (System.currentTimeMillis() - startTime) + "seconds to process.");
+
+            if (steps < batchSize) {
+                step(p, stepSize);
+                steps++;
+            } else if (steps == batchSize) {
+                steps = 0;
+                j[batchesCompleted] = p.clone();
+                batchesCompleted++;
+            }
+
+        }
+        return j;
     }
 }
