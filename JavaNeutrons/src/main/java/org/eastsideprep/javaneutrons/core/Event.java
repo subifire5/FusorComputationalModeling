@@ -68,11 +68,12 @@ public class Event {
         this.t = t;
     }
 
-   public Event(Vector3D position, Part p, double t, boolean goingOut) {
+   public Event(Vector3D position, Part p, double t, boolean goingOut, int face) {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.part = p;
         this.code = goingOut?Event.Code.Exit:Event.Code.Entry;
         this.t = t;
+        this.face = face;
     }
    
     @Override

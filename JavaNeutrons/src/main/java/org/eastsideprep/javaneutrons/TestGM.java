@@ -231,9 +231,9 @@ public class TestGM {
         return mcs;
     }
 
-    public static MonteCarloSimulation simulationTestWhitmerParaffin(Group visualizations) {
+    public static MonteCarloSimulation whitmerParaffin(Group visualizations) {
         double thickness = 0.025; //block thickness in cm
-        Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
+        Shape blockShape = new Shape(new Cuboid(thickness, 100, 100));
         //Part wall = new Part("Wall", blockShape, "CarbonWax");
         Part wall = new Part("Block", blockShape, "Paraffin");
         wall.getTransforms().add(new Translate(50 + thickness / 2, 0, 0));
@@ -253,7 +253,7 @@ public class TestGM {
         return mcs;
     }
 
-    public static MonteCarloSimulation simulationTestSettle(Group visualizations) {
+    public static MonteCarloSimulation settle(Group visualizations) {
         double gap = 0.025; //block thickness in cm
 
         Part block1 = new Part("block", new Shape(TestGM.class.getResource("/meshes/baseparaffinblock.obj"), "cm"), "Paraffin");
@@ -290,7 +290,7 @@ public class TestGM {
         return mcs;
     }
 
-    public static MonteCarloSimulation simulationTestWhitmer(Group visualizations) {
+    public static MonteCarloSimulation whitmer1(Group visualizations) {
 
         Shape blockShape = new Shape(new CuboidMesh(25, 100, 100));
         Part wall = new Part("Block", blockShape, "Paraffin");
@@ -321,7 +321,7 @@ public class TestGM {
         return mcs;
     }
 
-    public static MonteCarloSimulation simulationTest2(Group visualizations) {
+    public static MonteCarloSimulation humanDetector(Group visualizations) {
         //
         // Wall1
         // this cube-shaped wall is loaded from an obj file in resources
@@ -334,23 +334,18 @@ public class TestGM {
         // igloo
         //
         Assembly igloo = new Assembly("igloo", TestGM.class.getResource("/meshes/igloo.obj"), "Paraffin");
-        //System.out.println("Macroscopic total cross-section for paraffin: "+Paraffin.getInstance().getSigma(1*Util.Physics.eV));
-        //
-        // The detector is made from a stock - FXyz CuboidMesh
-        //
+       
         double s = 20;
-        Shape detectorShape = new Shape(new CuboidMesh(s, 3 * s, 5 * s));
         // move detector behind cube wall
-        detectorShape.getTransforms().add(new Translate(200, 0, 0));
-        Part detector = new Part("Detector 1", detectorShape, "Vacuum");
+        Part detector = new Part("Detector 1", new Cuboid(s, 3 * s, 5 * s), "Vacuum");
+        detector.getTransforms().add(new Translate(200, 0, 0));
 
         //
         // body
         //
-        Shape bodyShape = new HumanBody();
         //bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
-        bodyShape.getTransforms().add(0, new Translate(0, 0, -200));
-        Part body = new Part("Body", bodyShape, "HumanBodyMaterial");
+        Part body = new Part("Body", new HumanBody(), "HumanBodyMaterial");
+        body.getTransforms().add(0, new Translate(0, 0, -200));
 
         // vac chamber
         Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class.getResource("/meshes/vac_chamber.obj")), "Steel");
@@ -363,7 +358,9 @@ public class TestGM {
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
 
-        return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations);
+        mcs.prepareGrid(2.0, visualizations);
+        return mcs;
     }
 
     public static Group testVisuals() {

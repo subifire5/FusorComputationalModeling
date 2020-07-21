@@ -26,7 +26,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.eastsideprep.javaneutrons.core.Assembly;
+import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
@@ -65,6 +68,11 @@ public class App extends Application {
         addItems(cb, TestET.class);
         cb.setPrefWidth(200);
         cb.setOnAction(e -> {
+            // clear out some old stuf
+            Part.namedParts.clear();
+            Assembly.namedParts.clear();
+            Material.materials.clear();
+            
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
         });

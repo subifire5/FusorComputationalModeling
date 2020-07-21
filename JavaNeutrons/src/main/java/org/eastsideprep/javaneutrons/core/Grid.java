@@ -1,6 +1,5 @@
 package org.eastsideprep.javaneutrons.core;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedTransferQueue;
@@ -210,7 +209,7 @@ public class Grid {
         while (inBoundingBox(cx, cy, cz)) {
             // exceeded client's tmax?
             if (ttotal > tmax) {
-                return new Event(Util.Math.rayPoint(origin, direction, ttotal), null, ttotal, goingOut);
+                return new Event(Util.Math.rayPoint(origin, direction, ttotal), null, ttotal, goingOut, -1);
             }
 
             if (vis != null) {
@@ -225,19 +224,21 @@ public class Grid {
                 //   intersect all triangles in cell
                 double tmin = -1;
                 Part p = null;
+                int face = -1;
                 for (Triangle tr : cell.triangles) {
                     double t = tr.part.shape.rayTriangleIntersect(ox, oy, oz, dx, dy, dz, goingOut, tr.face);
                     double tminNew = Util.Math.minIfValid(t, tmin);
                     if (tminNew < tmin || (tmin == -1.0 && tminNew != -1.0)) {
                         tmin = tminNew;
                         p = tr.part;
+                        face = tr.face;
                     }
 
                 }
                 if (tmin != -1) {
                     ttotal += tmin;
                     // found? Make event and return
-                    return new Event(origin.add(direction.scalarMultiply(ttotal)), p, ttotal, goingOut);
+                    return new Event(origin.add(direction.scalarMultiply(ttotal)), p, ttotal, goingOut, face);
                 }
             }
             // "how long" to exit in dimension?

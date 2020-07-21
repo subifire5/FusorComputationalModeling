@@ -106,6 +106,8 @@ public class MonteCarloSimulation {
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Vector3D direction, double initialEnergy,
             Object interstitialMaterial, Object initialMaterial, Group g) {
+
+        // convert String class names to real objects
         interstitialMaterial = Material.getRealMaterial(interstitialMaterial);
         initialMaterial = Material.getRealMaterial(initialMaterial);
 
@@ -294,12 +296,14 @@ public class MonteCarloSimulation {
                     e = f.format(p.getTotalDepositedEnergy() * 1e-4);
                     c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J"
                             + ", src = " + this.lastCount
-                            + " \nThermal energy stats:\n"
-                            + p.entriesOverEnergy.getStatsString(scale, this.lastCount)
+                            + p.entriesOverEnergy.getStatsString(scale, false, this.lastCount)
                     );
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count/src");
                     c.getData().add(p.entriesOverEnergy.makeSeries(series, this.lastCount, scale));
+                    if (scale.equals("Linear (thermal)")) {
+                        c.getData().add(p.exitsOverEnergy.makeSeries("Energy fit", this.lastCount, "Linear (thermal energy fit)"));
+                    }
                     chartData = "Energy, " + series;
                     break;
 
@@ -310,8 +314,7 @@ public class MonteCarloSimulation {
                     e = f.format(p.getTotalDepositedEnergy() * 1e-4);
                     c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J"
                             + ", src = " + this.lastCount
-                            + " \nThermal energy stats:\n"
-                            + p.exitsOverEnergy.getStatsString(scale, this.lastCount)
+                            + p.exitsOverEnergy.getStatsString(scale, false, this.lastCount)
                     );
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count/src");
@@ -331,8 +334,7 @@ public class MonteCarloSimulation {
                         c.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount
-                                + " \nThermal energy stats:\n"
-                                + p.fluenceOverEnergy.getStatsString(scale, this.lastCount)
+                                + p.fluenceOverEnergy.getStatsString(scale, true, this.lastCount)
                         );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
@@ -391,8 +393,7 @@ public class MonteCarloSimulation {
                         c.setTitle("Part \"" + p.name + "\""
                                 + ", src = " + this.lastCount
                                 + ", total events: " + p.getTotalEvents()
-                                + " \nThermal energy stats:\n"
-                                + p.capturesOverEnergy.getStatsString(scale, this.lastCount)
+                                + p.capturesOverEnergy.getStatsString(scale, false, this.lastCount)
                         );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
@@ -400,7 +401,10 @@ public class MonteCarloSimulation {
                         chartData = "Energy,Event Count";
                     } else {
                         m = Material.getByName(detector);
-                        c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
+                        c.setTitle("Material \"" + m.name + "\""
+                                + ", src = " + this.lastCount
+                                + ", total events: " + m.totalEvents
+                                + m.capturesOverEnergy.getStatsString(scale, false, this.lastCount));
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
                         c.getData().add(m.capturesOverEnergy.makeSeries("Capture", scale));
@@ -416,8 +420,6 @@ public class MonteCarloSimulation {
                     c.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount) / 100.0) + " cm, "
                             + "src = " + this.lastCount
-                            + " \nThermal energy stats:\n"
-                            + h.getStatsString(scale, this.lastCount)
                     );
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");

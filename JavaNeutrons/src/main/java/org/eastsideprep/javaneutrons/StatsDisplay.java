@@ -108,12 +108,14 @@ public class StatsDisplay extends Group {
                 a.setTickUnit(max * v / (100 * 10));
             }
         });
-        object.setPrefWidth(200);
+        this.object.setPrefWidth(200);
+        this.object.setOnAction(e -> {
+            setChart();
+        });
 
         selectScale.getItems().addAll("Log", "Linear (all)", "Linear (thermal)");
         selectScale.setValue("Linear (thermal)");
         selectScale.valueProperty().addListener((a, b, c) -> {
-            this.scale = (String) selectScale.getValue();
             this.setChart();
         });
         this.scale = "Linear (thermal)";
@@ -200,7 +202,6 @@ public class StatsDisplay extends Group {
         }
         this.object.getItems().addAll(s);
         this.object.setValue(this.object.getItems().get(0));
-        this.object.onActionProperty().addListener((ov, t, t1) -> setChart());
     }
 
     private void setComboBox() {
@@ -225,12 +226,12 @@ public class StatsDisplay extends Group {
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
                     break;
-                    
+
                 case "Exit counts":
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
                     break;
-                    
+
                 case "Capture counts":
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
@@ -265,6 +266,7 @@ public class StatsDisplay extends Group {
     }
 
     private void setChart() {
+        this.scale = (String) selectScale.getValue();
         Toggle t = tg.getSelectedToggle();
         if (t != null) {
             switch ((String) t.getUserData()) {
@@ -303,7 +305,7 @@ public class StatsDisplay extends Group {
                 case "Cross-sections":
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", scale));
                     break;
-                
+
                 default:
                     root.setCenter(null);
                     break;

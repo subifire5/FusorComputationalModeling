@@ -65,10 +65,6 @@ public class Assembly extends Part {
 
     @Override
     public Event evolveNeutronPath(Neutron n, LinkedTransferQueue visualizations, boolean outermost, Grid grid) {
-        return this.evolveNeutronPathNoVacuum(n, visualizations, outermost, grid);
-    }
-
-    public Event evolveNeutronPathNoVacuum(Neutron n, LinkedTransferQueue visualizations, boolean outermost, Grid grid) {
         Event partEvent;
         Event interactionEvent;
         Event event;
@@ -80,7 +76,7 @@ public class Assembly extends Part {
         do {
             // find the closest part we intersect with
             if (grid != null) {
-                partEvent = grid.rayIntersect(n.position, n.direction, false, n.mcs.traceLevel >= 1 ?visualizations:null, Double.POSITIVE_INFINITY);
+                partEvent = grid.rayIntersect(n.position, n.direction, false, n.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
                 // DEBUG
 //                if (partEvent == null){
 //                    // find it the slow way
@@ -103,7 +99,11 @@ public class Assembly extends Part {
             // did we not find a part, maybe we started inside a part?
             if (partEvent == null && outermost) {
                 // repeat search looking at triangle meshes from the inside
-                partEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+                if (grid != null) {
+                    partEvent = grid.rayIntersect(n.position, n.direction, true, n.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
+                } else {
+                    partEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+                }
                 if (partEvent != null) {
                     // we are alsready inside the part. 
                     partEvent.t = 0;

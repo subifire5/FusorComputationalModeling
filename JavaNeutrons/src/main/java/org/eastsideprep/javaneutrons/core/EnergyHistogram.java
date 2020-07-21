@@ -154,45 +154,46 @@ public class EnergyHistogram extends Histogram {
         return x;
     }
 
-    public String getStatsString(String scale, long count) {
-        String result = "Mean = " + String.format("%6.3e", getThermalEnergyMean(scale)) + " eV, "
-                + "Median = " + String.format("%6.3e", getThermalEnergyMedian(scale)) + " eV, "
-                + "Mode = " + String.format("%6.3e", getThermalEnergyMode(scale)) + " eV";
+    public String getStatsString(String scale, boolean flux, long count) {
+        String result = "";
+//        result += "Mean = " + String.format("%6.3e", getThermalEnergyMean(scale)) + " eV, "
+//                + "Median = " + String.format("%6.3e", getThermalEnergyMedian(scale)) + " eV, "
+//                + "Mode = " + String.format("%6.3e", getThermalEnergyMode(scale)) + " eV";
         if (scale.equals("Linear (thermal)")) {
-            result += "\n" + this.fitDistributions(count);
+            result += "\nThermal energy stats:\n" + this.fitDistributions(flux, count);
         }
         return result;
     }
 
-    public String fitDistributions(long count) {
+    public String fitDistributions(boolean flux, long count) {
         SimpleRegression r;
         double RMSE;
         String result = "";
 
-        r = hLow.regression((x, y) -> Math.log(y));
-        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.exp(y));
-        result += "Gaussian distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
-                + "*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
-                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
-
-        r = hLow.regression((x, y) -> (y * y));
-        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(y));
-        result += "Path length distribution fit: y = sqrt("
-                + String.format("%6.3e", r.getSlope())
-                + "*E), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
-
-        r = hLow.regression( (x, y) -> Math.log(y / x));
-        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> x * Math.exp(y));
-        result += "Flux distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
-                + "*E*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
-                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
-
-        r = hLow.regression( (x, y) -> Math.log((y * Util.Physics.kB * Util.Physics.T) / Math.sqrt(x)));
-        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(x) * Math.exp(y) / (Util.Physics.kB * Util.Physics.T));
-        result += "Energy distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
-                + "*sqrt(E)*exp(" + String.format("%6.3e", r.getSlope())
-                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "";
-
+//        r = hLow.regression((x, y) -> Math.log(y));
+//        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.exp(y));
+//        result += "Gaussian distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
+//                + "*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
+//                + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
+//
+//        r = hLow.regression((x, y) -> (y * y));
+//        RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(y));
+//        result += "Path length distribution fit: y = sqrt("
+//                + String.format("%6.3e", r.getSlope())
+//                + "*E), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
+        if (flux) {
+            r = hLow.regression((x, y) -> Math.log(y / x));
+            RMSE = hLow.RMSE(r, Identity::x, (x, y) -> x * Math.exp(y));
+            result += "Flux distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
+                    + "*E*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
+                    + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
+        } else {
+            r = hLow.regression((x, y) -> Math.log((y * Util.Physics.kB * Util.Physics.T) / Math.sqrt(x)));
+            RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(x) * Math.exp(y) / (Util.Physics.kB * Util.Physics.T));
+            result += "Energy distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
+                    + "*sqrt(E)*exp(" + String.format("%6.3e", r.getSlope())
+                    + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "";
+        }
         System.out.println(result);
 
         return result;
