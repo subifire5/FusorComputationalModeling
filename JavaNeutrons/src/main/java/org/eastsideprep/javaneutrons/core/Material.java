@@ -39,6 +39,7 @@ public class Material {
     public EnergyHistogram scattersOverEnergyAfter;
     public EnergyHistogram capturesOverEnergy;
     public EnergyHistogram lengthOverEnergy;
+    public EnergyHistogram pathCounts;
     public double totalEvents;
     public double totalFreePath;
     public long pathCount;
@@ -99,6 +100,7 @@ public class Material {
         this.scattersOverEnergyAfter = new EnergyHistogram();
         this.capturesOverEnergy = new EnergyHistogram();
         this.lengthOverEnergy = new EnergyHistogram();
+        this.pathCounts = new EnergyHistogram();
         this.lengths = new Histogram(-5, 7, 120, false);
         this.totalEvents = 0;
         this.totalFreePath = 0;
@@ -117,14 +119,15 @@ public class Material {
     }
 
     // input: SI(cm)
-    public double randomPathLength(double energy) {
-        double length = -Math.log(ThreadLocalRandom.current().nextDouble()) / getSigma(energy / Util.Physics.eV);
+    public double getPathLength(double energy, double rand) {
+        double length = -Math.log(rand) / getSigma(energy / Util.Physics.eV);
         return length;
     }
 
     public void recordLength(double length, double energy) {
         this.lengths.record(1, length);
         this.lengthOverEnergy.record(length, energy);
+        this.pathCounts.record(1, energy);
         synchronized (this) {
             this.totalFreePath += length;
         }
@@ -138,15 +141,17 @@ public class Material {
 
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
-        double t = randomPathLength(energy);
-        
+        double rand = Util.Math.random();
+
+        double t = getPathLength(energy, rand);
+
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
 
-        if (t > 2*Environment.limit) {
+        if (t > 2 * Environment.limit) {
             // we don't go that far
             return new Event(location, Event.Code.Gone, t);
         }
-        
+
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("");
             //System.out.println("Neutron at " + n.energy + " in " + this.name + ", t: " + t);
@@ -170,8 +175,8 @@ public class Material {
             sigmas[i + 1] = sum;
         }
 
-        // random draw from across the combined distribution
-        double rand = ThreadLocalRandom.current().nextDouble() * sum;
+        // random draw from earlier scaled up across the combined distribution
+        rand *= sum;
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("sum: " + sum + ", draw: " + rand);
         }
@@ -246,7 +251,7 @@ public class Material {
                     break;
                 case Capture:
                     this.capturesOverEnergy.record(1, event.neutron.energy);
-                    this.recordCollision();
+                    this.recordCollision(); // this needs to be here because it ends a path
                     // record more stats for material
                     synchronized (this) {
                         this.totalEvents++;
@@ -290,7 +295,7 @@ public class Material {
             DecimalFormat f = new DecimalFormat("0.##E0");
             String tick = f.format(energy);
 
-            data.add(new XYChart.Data(tick, getSigma(energy)));
+            data.add(new XYChart.Data(tick, Math.log(getSigma(energy))));
             //System.out.println(tick + " " + getSigma(energy));
         }
 

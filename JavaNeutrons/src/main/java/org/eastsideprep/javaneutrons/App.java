@@ -1,5 +1,6 @@
 package org.eastsideprep.javaneutrons;
 
+import java.lang.reflect.Method;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -11,6 +12,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
@@ -24,8 +26,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.eastsideprep.javaneutrons.core.Assembly;
+import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
-import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
@@ -38,10 +42,7 @@ public class App extends Application {
     MonteCarloSimulation sim;
     Group viewGroup;
     Group stats;
-
     Button bRun;
-    Button bRunSV;
-    Button bRunET;
 
     Label progress;
     boolean idleFlag = false;
@@ -56,23 +57,33 @@ public class App extends Application {
         CameraControl mainScene = new CameraControl(1000, 500);
         ImageView heatMap = new ImageView(Util.Graphics.createHeatMap(100, 500));
         heatMap.fitHeightProperty().bind(root.heightProperty());
-        heatMap.setVisible(false);
         mainScene.subScene.heightProperty().bind(root.heightProperty());
 
         // prepare sim for later
         this.viewGroup = new Group();
-        this.sim = TestGM.simulationTest(viewGroup);
+
+        ChoiceBox cb = new ChoiceBox();
+        addItems(cb, TestGM.class);
+        addItems(cb, TestSV.class);
+        addItems(cb, TestET.class);
+        cb.setPrefWidth(200);
+        cb.setOnAction(e -> {
+            // clear out some old stuf
+            Part.namedParts.clear();
+            Assembly.namedParts.clear();
+            Material.materials.clear();
+            
+            this.progress.setText("");
+            this.sim = fromString((String) cb.getValue(), viewGroup);
+        });
+        cb.setValue(cb.getItems().get(0));
 
         // control buttons and progress 
-        TextField tf = new TextField("10");
+        TextField tf = new TextField("1");
         tf.setPrefWidth(200);
 
-        bRun = new Button("Start simulation - GM");
-        bRunSV = new Button("Start simulation - SV");
-        bRunET = new Button("Start simulation - ET");
-
+        bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            sim = TestGM.simulationTest(viewGroup);
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
@@ -82,28 +93,6 @@ public class App extends Application {
 
         });
         bRun.setPrefWidth(200);
-
-        bRunSV.setOnAction((e) -> {
-            sim = TestSV.simulationTest(viewGroup);
-            this.runSim(Integer.parseInt(tf.getText()));
-            if (this.sim.lastCount <= 10) {
-                root.setRight(heatMap);
-            } else {
-                root.setRight(null);
-            }
-        });
-        bRunSV.setPrefWidth(200);
-
-        bRunET.setOnAction((e) -> {
-            sim = TestET.simulationTest(viewGroup);
-            this.runSim(Integer.parseInt(tf.getText()));
-            if (this.sim.lastCount <= 10) {
-                root.setRight(heatMap);
-            } else {
-                root.setRight(null);
-            }
-        });
-        bRunET.setPrefWidth(200);
 
         Button bStats = new Button("Show stats");
         bStats.setOnAction((e) -> {
@@ -146,7 +135,7 @@ public class App extends Application {
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(tf, bRun, bRunSV, bRunET, progress, new Separator(),
+        buttons.getChildren().addAll(cb, tf, bRun, progress, new Separator(),
                 bStats, bView, bCopy, bTest, new Separator(),
                 stats);
         root.setLeft(buttons);
@@ -155,7 +144,7 @@ public class App extends Application {
         view = mainScene.outer;
         mainScene.root.getChildren().add(viewGroup);
         root.setCenter(view);
-        root.setRight(heatMap);
+        root.setRight(null);
 
         Scene scene;
         Rectangle2D screenBounds = Screen.getPrimary().getBounds();
@@ -184,6 +173,35 @@ public class App extends Application {
         stage.setOnCloseRequest((e) -> noIdle());
     }
 
+    void addItems(ChoiceBox cb, Class c) {
+        Method[] methods = c.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getReturnType() == MonteCarloSimulation.class) {
+                String name = c.getName() + "::" + methods[i].getName();
+                // cut off fully qualified name parts
+                name = name.substring(name.lastIndexOf(".") + 1);
+                System.out.println("public method: " + name);
+                cb.getItems().add(name);
+            }
+        }
+    }
+
+    MonteCarloSimulation fromString(String m, Group g) {
+        String cname = App.class.getPackageName() + "." + m.substring(0, m.indexOf("::"));
+        String mname = m.substring(m.indexOf("::") + 2);
+        MonteCarloSimulation mcs = null;
+
+        try {
+            Class c = Class.forName(cname);
+            Method method = c.getMethod(mname, Group.class);
+            method.setAccessible(true);
+            mcs = (MonteCarloSimulation) method.invoke(null, g);
+        } catch (Exception e) {
+            System.err.println("Didn't work: " + e);
+        }
+        return mcs;
+    }
+
     public void runSim(int count) {
         if (this.sim == null) {
             return;
@@ -193,8 +211,6 @@ public class App extends Application {
         // here is where we run the actual simulation
         //
         bRun.setDisable(true);
-        bRunSV.setDisable(true);
-        bRunET.setDisable(true);
         progress.setText("Complete: 0 %");
 
         root.setCenter(view);
@@ -220,11 +236,9 @@ public class App extends Application {
                     }
                     if (completed >= count || (count == 0 && sim.scatter)) {
                         tl.stop();
+                        sim.postProcess();
                         bRun.setDisable(false);
-                        bRunET.setDisable(false);
-                        bRunSV.setDisable(false);
                         progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000) + " s");
-                        //sim.checkTallies();
                         idle();
                     }
                 }));
@@ -245,7 +259,7 @@ public class App extends Application {
 
     private void idle() {
         idleFlag = true;
-  //      idleLoop();
+        //      idleLoop();
     }
 
     private void idleLoop() {
@@ -256,7 +270,7 @@ public class App extends Application {
         sim.update();
 
         if (this.idleFlag) {
-            runWithDelay(() -> idleLoop(),1000);
+            runWithDelay(() -> idleLoop(), 1000);
         }
     }
 
