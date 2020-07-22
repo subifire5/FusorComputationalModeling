@@ -31,7 +31,6 @@ public class Vector {
         this.y = Double.valueOf(y);
         this.z = Double.valueOf(z);
     }
-    
 
     public Vector(Vector v) {
         this(v.x, v.y, v.z);
@@ -39,6 +38,18 @@ public class Vector {
 
     public Double norm() {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+    }
+
+    public Double xyNorm() {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    }
+
+    public Double xzNorm() {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(z, 2));
+    }
+    
+    public Double yzNorm(){
+        return Math.sqrt(Math.pow(z, 2) + Math.pow(y, 2));
     }
 
     public Double distanceTo(Vector v) {
@@ -150,7 +161,9 @@ public class Vector {
     }
 
     /**
-     * A function for getting a version of this vector that is pointing in the same direction, but with a length of 1
+     * A function for getting a version of this vector that is pointing in the
+     * same direction, but with a length of 1
+     *
      * @return the normalized version of this vector
      */
     public Vector normalized() {
@@ -226,8 +239,21 @@ public class Vector {
         z *= s;
         return this;
     }
-    
-    public Vector product(Double s){
-        return new Vector(x,y,z).scale(s);
+    /**
+     * Multiply each component with its corresponding component (x*x,y*y,z*z)
+     * @param v
+     * @return 
+     */
+    public Vector product(Vector v){
+        Vector v2 = new Vector(x,y,z);
+        v2.x*=v.x;
+        v2.y*=v.y;
+        v2.z*=v.z;
+        return v2;
     }
-}
+
+    public Vector product(Double s) {
+        return new Vector(x, y, z).scale(s);
+    }
+    
+ }

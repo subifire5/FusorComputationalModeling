@@ -68,6 +68,7 @@ public class InputHandler {
                 break;
             } else {
                 System.out.println(mainText);
+                filePath = s.nextLine();
                 fileExists = new File(filePath);
             }
 

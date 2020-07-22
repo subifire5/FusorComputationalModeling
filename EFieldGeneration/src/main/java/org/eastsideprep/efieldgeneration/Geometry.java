@@ -223,7 +223,6 @@ public class Geometry {
                 done = true;
                 return rightEdge;
             } else if (middle == leftEdge) {
-                //System.out.println("left edge");
                 if (first) {
                     first = false;
                     if (d[leftEdge] < target) {
@@ -254,7 +253,6 @@ public class Geometry {
 
             first = false;
         }
-        //System.out.println("ahoaho");
         return -1;
     }
 

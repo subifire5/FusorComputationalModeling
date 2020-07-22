@@ -12,6 +12,7 @@ package org.eastsideprep.fieldlinegeneration;
 public class Main {
     public static void main(String[] args){
     
-        System.out.println("hello world");
+        InputHandler ip = new InputHandler();
+        ip.getInput();
     }
 }
