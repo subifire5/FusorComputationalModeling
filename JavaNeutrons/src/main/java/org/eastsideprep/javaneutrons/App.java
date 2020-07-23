@@ -68,11 +68,6 @@ public class App extends Application {
         addItems(cb, TestET.class);
         cb.setPrefWidth(200);
         cb.setOnAction(e -> {
-            // clear out some old stuf
-            Part.namedParts.clear();
-            Assembly.namedParts.clear();
-            Material.materials.clear();
-
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
         });
@@ -84,7 +79,7 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            this.sim.stop= false;
+            this.sim.stop = false;
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
@@ -95,9 +90,9 @@ public class App extends Application {
         });
         bRun.setPrefWidth(200);
 
-        Button bStop= new Button("Stop");
+        Button bStop = new Button("Stop");
         bStop.setOnAction((e) -> {
-            this.sim.stop= true;
+            this.sim.stop = true;
         });
         bStop.setPrefWidth(200);
 
@@ -109,9 +104,9 @@ public class App extends Application {
 
         Button bStats = new Button("Show stats");
         bStats.setOnAction((e) -> {
-            Group stats = new StatsDisplay(sim, root);
+            Group newstats = new StatsDisplay(sim, root);
             this.stats.getChildren().clear();
-            this.stats.getChildren().add(stats);
+            this.stats.getChildren().add(newstats);
             progress.setText("");
             root.setRight(null);
         });

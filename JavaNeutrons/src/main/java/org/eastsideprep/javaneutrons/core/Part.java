@@ -13,7 +13,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Part {
 
-    public static HashMap<String, Part> namedParts = new HashMap<>();
     public Shape shape;
     public Material material;
     public String name;
@@ -37,7 +36,6 @@ public class Part {
         this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
-            namedParts.put(name, this);
         }
         if (material != null) {
             String mName = material.toString();
@@ -52,10 +50,7 @@ public class Part {
         resetDetector();
     }
 
-    public static Part getByName(String name) {
-        return namedParts.get(name);
-    }
-
+  
     public void resetDetectors() {
         resetDetector();
     }

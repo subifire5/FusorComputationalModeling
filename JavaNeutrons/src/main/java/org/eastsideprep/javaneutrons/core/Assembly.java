@@ -17,7 +17,8 @@ public class Assembly extends Part {
     // todo: acceleration structure
 
     private AssemblyGroup g;
-
+    public ArrayList<Part> parts = new ArrayList<>();
+    
     public Assembly(String name) {
         super(name, null, null);
         this.g = new AssemblyGroup(this);
@@ -196,6 +197,7 @@ public class Assembly extends Part {
     }
 
     public void add(Part part) {
+        this.parts.add(part);
         if (part instanceof Assembly) {
             Assembly a = (Assembly) part;
             g.getChildren().add(a.getGroup());

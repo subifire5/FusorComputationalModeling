@@ -17,8 +17,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class Material {
 
-    public static HashMap<String, Material> materials = new HashMap<>();
-
+    
     public class Component {
 
         Isotope e;
@@ -46,15 +45,11 @@ public class Material {
 
     //public int temp;
     public Material(String name) {
-        materials.put(name, this);
         components = new ArrayList<>();
         this.name = name;
         resetDetector();
     }
 
-    public static Material getByName(String name) {
-        return materials.get(name);
-    }
 
     public final void addComponent(Isotope element, double proportion) {
         components.add(new Component(element, proportion));
@@ -205,11 +200,7 @@ public class Material {
         // try named material instance
         if (material instanceof String) {
             String name = (String) material;
-            material = Material.getByName(name);
-            if (material != null) {
-                return (Material) material;
-            }
-
+            
             // if not named, try the class
             try {
                 material = Class.forName("org.eastsideprep.javaneutrons.materials." + name);

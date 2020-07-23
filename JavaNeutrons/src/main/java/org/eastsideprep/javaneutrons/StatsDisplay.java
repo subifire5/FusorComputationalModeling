@@ -163,12 +163,12 @@ public class StatsDisplay extends Group {
 
     private void populateComboBoxWithParts() {
         this.object.getItems().clear();
-        populateComboBox(Part.namedParts.keySet());
+        populateComboBox(this.sim.namedParts.keySet());
     }
 
     private void populateComboBoxWithMaterials() {
         this.object.getItems().clear();
-        populateComboBox(Material.materials.keySet());
+        populateComboBox(this.sim.materials.keySet());
     }
 
     private void populateComboBoxWithElements() {
@@ -182,7 +182,7 @@ public class StatsDisplay extends Group {
     private void populateComboBoxWithPartsAndMaterials() {
         this.object.getItems().clear();
         populateComboBoxWithParts();
-        ArrayList<String> ms = new ArrayList<>(Material.materials.keySet());
+        ArrayList<String> ms = new ArrayList<>(this.sim.materials.keySet());
         populateComboBox(ms);
     }
 

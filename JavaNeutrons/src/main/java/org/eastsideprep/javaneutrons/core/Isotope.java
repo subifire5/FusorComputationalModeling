@@ -241,26 +241,26 @@ public class Isotope {
         }
         return cos_theta;
     }
-
-    public Vector3D getRandomNucleus(double energy) {
-//        if (i.angles != null) {
-//            // get the scattering angle from a random lookup in the tables
-//            e.cos_theta = i.getScatterCosTheta(energyEV);
-//
-//            // construct vector and return
-//            Vector3D v = Util.Math.randomDir(e.cos_theta, neutronSpeed);
-//            // random vector was scattered around Z, rotate to match axis of incoming neutron
-//            Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
-//            v = r.applyTo(v);
-//
-//            //System.out.println("v: " + v);
-//            return v;
-//
-//        } else {
-//           return getIsotropicScatteredVelocity(e, neutronVelocity);
-//        }
-        return null;
+    
+    public double getRandomSpeed(double enery, double deltaV) {
+        return 0;
     }
+    
+
+//    public Vector3D getRandomVeclocity(double energy, Vector3D other) {
+//        do {
+//            // get correctly distributed speed
+//            getRandomSpeed(energy)
+//        }
+//        Vector3D v = Util.Math.randomDir(e.cos_theta, neutronSpeed);
+//        // random vector was scattered around Z, rotate to match axis of incoming neutron
+//        Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
+//        v = r.applyTo(v);
+//
+//        //System.out.println("v: " + v);
+//        return v;
+//
+//    }
 
     //
     // input: eV, output: barn

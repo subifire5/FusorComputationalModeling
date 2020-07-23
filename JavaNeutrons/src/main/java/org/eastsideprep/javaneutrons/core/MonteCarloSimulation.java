@@ -3,6 +3,7 @@ package org.eastsideprep.javaneutrons.core;
 import java.text.DecimalFormat;
 import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -75,6 +76,9 @@ public class MonteCarloSimulation {
         void reportProgress(int p);
     }
 
+    public HashMap<String, Part> namedParts = new HashMap<>();
+    public HashMap<String, Material> materials = new HashMap<>();
+
     public final Assembly assembly;
     private final Vector3D origin;
     private Vector3D direction;
@@ -140,6 +144,9 @@ public class MonteCarloSimulation {
         if (this.assembly == null) {
             return;
         }
+
+        // add all named parts and materials
+        this.addNamedPartsAndMaterials(this.assembly);
 
         if (this.initialMaterial == null) {
             // todo : find initial material from origin
@@ -210,7 +217,7 @@ public class MonteCarloSimulation {
         this.start = System.currentTimeMillis();
 
         assembly.resetDetectors();
-        Collection<Material> c = Material.materials.values();
+        Collection<Material> c = this.materials.values();
         c.stream().forEach(m -> m.resetDetector());
 
         // and enviroment (will count escaped neutrons)
@@ -264,6 +271,30 @@ public class MonteCarloSimulation {
         }
     }
 
+    private void addNamedPartsAndMaterials(Assembly a) {
+        for (Part p : this.assembly.parts) {
+            if (p instanceof Assembly) {
+                Assembly a2 = (Assembly) p;
+                addNamedPartsAndMaterials(a2);
+            } else {
+                if (p.name != null) {
+                    this.namedParts.put(p.name, p);
+                }
+                if (p.material.name != null) {
+                    this.materials.put(p.material.name, p.material);
+                }
+            }
+        }
+    }
+
+    public Material getMaterialByName(String name) {
+        return materials.get(name);
+    }
+
+    public Part getPartByName(String name) {
+        return namedParts.get(name);
+    }
+
     public void prepareGrid(double side, Group vis) {
         this.grid = new Grid(side, assembly, vis);
     }
@@ -300,7 +331,7 @@ public class MonteCarloSimulation {
             switch (series) {
                 case "Entry counts":
                     c = new LineChart<>(xAxis, yAxis);
-                    p = Part.getByName(detector);
+                    p = this.getPartByName(detector);
                     f = new DecimalFormat("0.###E0");
                     e = f.format(p.getTotalDepositedEnergy() * 1e-4);
                     c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J"
@@ -318,7 +349,7 @@ public class MonteCarloSimulation {
 
                 case "Exit counts":
                     c = new LineChart<>(xAxis, yAxis);
-                    p = Part.getByName(detector);
+                    p = this.getPartByName(detector);
                     f = new DecimalFormat("0.###E0");
                     e = f.format(p.getTotalDepositedEnergy() * 1e-4);
                     c.setTitle("Part \"" + p.name + "\", total deposited energy: " + e + " J"
@@ -336,7 +367,7 @@ public class MonteCarloSimulation {
 
                 case "Fluence":
                     c = new LineChart<>(xAxis, yAxis);
-                    p = Part.getByName(detector);
+                    p = this.getPartByName(detector);
                     if (p != null) {
                         f = new DecimalFormat("0.###E0");
                         e = f.format(p.getTotalFluence() / this.lastCount);
@@ -357,7 +388,7 @@ public class MonteCarloSimulation {
                     } else {
                         // this is only for the interstitial medium
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
-                        m = Material.getByName(detector);
+                        m = this.getMaterialByName(detector);
                         f = new DecimalFormat("0.###E0");
                         e = f.format(m.totalFreePath / (this.lastCount * factor));
                         c.setTitle("Interstitial medium"
@@ -374,7 +405,7 @@ public class MonteCarloSimulation {
 
                 case "Scatter counts":
                     c = new LineChart<>(xAxis, yAxis);
-                    p = Part.getByName(detector);
+                    p = this.getPartByName(detector);
                     if (p != null) {
                         c.setTitle("Part \"" + p.name + "\", "
                                 + ", src = " + this.lastCount);
@@ -384,7 +415,7 @@ public class MonteCarloSimulation {
                         c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", this.lastCount, scale));
                         chartData = "Energy,Event Count";
                     } else {
-                        m = Material.getByName(detector);
+                        m = this.getMaterialByName(detector);
                         c.setTitle("Material \"" + m.name + "\", src = " + this.lastCount);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
@@ -396,7 +427,7 @@ public class MonteCarloSimulation {
 
                 case "Capture counts":
                     c = new LineChart<>(xAxis, yAxis);
-                    p = Part.getByName(detector);
+                    p = this.getPartByName(detector);
                     if (p != null) {
                         c.setTitle("Part \"" + p.name + "\""
                                 + ", src = " + this.lastCount
@@ -408,7 +439,7 @@ public class MonteCarloSimulation {
                         c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, scale));
                         chartData = "Energy,Event Count";
                     } else {
-                        m = Material.getByName(detector);
+                        m = this.getMaterialByName(detector);
                         c.setTitle("Material \"" + m.name + "\""
                                 + ", src = " + this.lastCount
                                 + m.capturesOverEnergy.getStatsString(scale, false, this.lastCount));
@@ -422,7 +453,7 @@ public class MonteCarloSimulation {
                 case "Path lengths":
                     factor = detector.equals("Air") ? (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume()) : 1;
                     c = new LineChart<>(xAxis, yAxis);
-                    m = Material.getByName(detector);
+                    m = this.getMaterialByName(detector);
                     EnergyHistogram h = m.lengthOverEnergy.normalizeBy(m.pathCounts);
                     c.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount) / 100.0) + " cm, "
@@ -448,7 +479,7 @@ public class MonteCarloSimulation {
 
                 case "Sigmas":
                     c = new LineChart<>(xAxis, yAxis);
-                    m = Material.getByName(detector);
+                    m = this.getMaterialByName(detector);
                     c.setTitle("Macroscopic cross-sections for material " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("log(Sigma (cm^-1))");
