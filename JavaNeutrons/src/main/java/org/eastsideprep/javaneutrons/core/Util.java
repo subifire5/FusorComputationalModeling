@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
@@ -55,24 +56,29 @@ public class Util {
                     .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
                     .normalize();
         }
+        
+        public static double random() {
+            return ThreadLocalRandom.current().nextDouble();
+        }
 
         public static Vector3D randomDir() {
-            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
-            double z = ThreadLocalRandom.current().nextDouble() * 2 - 1;
-            double theta = java.lang.Math.asin(z);
-            return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+//            double phi = random() * 2 * java.lang.Math.PI;
+//            double z = random() * 2 - 1;
+//            double theta = java.lang.Math.asin(z);
+//            return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+            return randomDir(random() * 2 - 1, 1.0);
         }
 
         public static Vector3D randomDir(double cos_theta, double magnitude) {
-            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
+            double phi = random() * 2 * java.lang.Math.PI;
             double theta = java.lang.Math.acos(cos_theta);
             return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
-        public static Vector3D randomGaussianComponentVector(double sd) {
-            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * sd,
-                    ThreadLocalRandom.current().nextGaussian() * sd,
-                    ThreadLocalRandom.current().nextGaussian() * sd);
+        public static Vector3D randomGaussianComponentVector(double componentSD) {
+            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * componentSD,
+                    ThreadLocalRandom.current().nextGaussian() * componentSD,
+                    ThreadLocalRandom.current().nextGaussian() * componentSD);
         }
 
         public static boolean solveQuadratic(double a, double b, double c, double[] result) {
@@ -196,7 +202,8 @@ public class Util {
 
             // At this stage we can compute t to find out where the intersection point is on the line.
             double t = f * (edge2x * qx + edge2y * qy + edge2z * qz);
-            if (t > kEpsilon) {
+//            if (t > kEpsilon) {
+            if (t >= 0) {
                 return t;
             } else {
                 return -1;
@@ -212,8 +219,8 @@ public class Util {
     static public class Physics {
 
         //final public static double boltzmann = 8.61733333353e-5; //eV/K
-        final public static double boltzmann = 1.380649e-19; // SI with cm
-        final public static double roomTemp = 293.0; // K
+        final public static double kB = 1.380649e-19; // SI with cm
+        final public static double T = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
         final public static double barn = 1e-24; // 1 barn in SI cm
@@ -256,6 +263,7 @@ public class Util {
             pm.setSpecularColor(Color.web(webColor));
             pm.setDiffuseColor(Color.web(webColor));
             s.setMaterial(pm);
+            s.setDrawMode(DrawMode.LINE);
 
             g.add(s);
         }

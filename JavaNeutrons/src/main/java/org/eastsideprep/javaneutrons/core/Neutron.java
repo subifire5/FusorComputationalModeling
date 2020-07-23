@@ -38,33 +38,36 @@ public final class Neutron extends Particle {
     }
 
     public Vector3D getScatteredVelocity(Event e, Vector3D neutronVelocity) {
-        Isotope i = e.element;
+        Isotope i = e.particle;
         if (i.angles != null) {
             double neutronSpeed = neutronVelocity.getNorm();
             double energyEV = 0.5 * Neutron.mass * neutronSpeed * neutronSpeed / Util.Physics.eV;
 
             // get the scattering angle from a random lookup in the tables
-            double cos_theta = i.getScatterCosTheta(energyEV);
+            e.cos_theta = i.getScatterCosTheta(energyEV);
 
             // construct vector and return
-            Vector3D v = Util.Math.randomDir(cos_theta, neutronSpeed);
+            Vector3D v = Util.Math.randomDir(e.cos_theta, neutronSpeed);
+            // random vector was scattered around Z, rotate to match axis of incoming neutron
             Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
             v = r.applyTo(v);
-
-            e.cos_theta = cos_theta;
 
             //System.out.println("v: " + v);
             return v;
 
         } else {
-
-            Vector3D v = Util.Math.randomDir().scalarMultiply(neutronVelocity.getNorm());
-            double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(v.normalize())) / Math.PI * 180;
-            e.cos_theta = Math.cos(angleWithX);
-            return v;
+           return getIsotropicScatteredVelocity(e, neutronVelocity);
         }
     }
-
+   public Vector3D getIsotropicScatteredVelocity(Event e, Vector3D neutronVelocity) {
+        Isotope i = e.particle;
+        boolean mncpMethod = false;
+            double speed = neutronVelocity.getNorm();
+            Vector3D v = Util.Math.randomDir();
+            e.cos_theta = v.dotProduct(neutronVelocity.scalarMultiply(1/speed));
+            v = v.scalarMultiply(speed);
+            return v;
+    }
     @Override
     public void processEvent(Event event) {
         if (event.code == Event.Code.Scatter) {
@@ -76,58 +79,59 @@ public final class Neutron extends Particle {
             // => m*var(vx) = kB*T
             // => var(vx) = kB*t/m
             // => sd(vx) = sd(vy) = sd(vz) = sqrt(kB*T/m)
-            double particleSpeedComponentSD = Math.sqrt(Util.Physics.boltzmann * Util.Physics.roomTemp / event.element.mass);
-            Vector3D particleVelocity = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+            double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.particle.mass);
+            Vector3D particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+            double particleSpeedIn = particleVelocityIn.getNorm();
 
-            // making these for later debug out
-            double particleSpeed = particleVelocity.getNorm();
-            double particleEnergy = event.element.mass * particleSpeed * particleSpeed / 2;
-
-            synchronized (Neutron.class) {
-                Neutron.totalPE += particleEnergy;
-                Neutron.countPE++;
-                Neutron.totalNE += this.energy;
-                Neutron.countNE++;
-            }
-
-            double neutronSpeed = this.velocity.getNorm();
-            double neutronEnergyIn = this.energy;
+            // remembering these for later debug out
+            Vector3D velocityIn = this.velocity;
+            double energyIn = this.energy;
 
             //establish center of mass
             //add velocity vectors / total mass 
             Vector3D velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
-                    .add(particleVelocity.scalarMultiply(event.element.mass)))
-                    .scalarMultiply(1 / (Neutron.mass + event.element.mass));
-            double speedCM = velocityCM.getNorm();
+                    .add(particleVelocityIn.scalarMultiply(event.particle.mass)))
+                    .scalarMultiply(1 / (Neutron.mass + event.particle.mass));
 
             //convert neutron and particle --> center of mass frame
-            Vector3D velocityNCM = this.velocity.subtract(velocityCM);
+            Vector3D neutronVelocityCM = this.velocity.subtract(velocityCM);
             //calculate elastic collision: entry speed = exit speed, random direction
-            //velocityNCM = Util.Math.randomDir().scalarMultiply(velocityNCM.getNorm());
-            double speedNCM = velocityNCM.getNorm();
-            velocityNCM = this.getScatteredVelocity(event, velocityNCM);
-            //double neutronSpeedCM = velocityNCM.getNorm();
-            //convert back into lab frame
-            Vector3D velocityNLab = velocityNCM.add(velocityCM);
+            neutronVelocityCM = this.getScatteredVelocity(event, neutronVelocityCM);
 
-            // update myself (energy and direction)
-            double angle = Math.acos(this.velocity.normalize().dotProduct(velocityNLab.normalize())) / Math.PI * 180;
-            double angleWithX = Math.acos(Vector3D.PLUS_I.dotProduct(velocityNLab.normalize())) / Math.PI * 180;
-            this.setVelocity(velocityNLab);
+            // debug: process the scatter for the incident particle as well
+            // not needed IRL
+            
+            event.particleEnergyIn = event.particle.mass * particleSpeedIn * particleSpeedIn / 2;
+            Vector3D particleVelocityCM = particleVelocityIn.subtract(velocityCM);
+            particleVelocityCM = neutronVelocityCM.normalize().scalarMultiply(-particleVelocityCM.getNorm());
+            Vector3D particleVelocityOut = particleVelocityCM.add(velocityCM);
+            double particleSpeedOut = particleVelocityOut.getNorm();
+            event.particleEnergyOut = event.particle.mass * particleSpeedOut * particleSpeedOut / 2;
+
+            //convert neutron back into lab frame
+            Vector3D velocityOut = neutronVelocityCM.add(velocityCM);
+            // update neutron energy and direction
+            this.setVelocity(velocityOut);
             event.energyOut = this.energy;
-
-            synchronized (Neutron.class) {
-                Neutron.totalNE2 += this.energy;
-                Neutron.countNE2++;
-            }
+            
+            double aPercentloss = ((event.particleEnergyOut + this.energy) - (event.particleEnergyIn + energyIn))/
+                    (event.particleEnergyIn + energyIn)*100;
 
             if (this.mcs != null && this.mcs.traceLevel >= 2) {
                 this.mcs.scatter = true;
+                double particleSpeed = particleVelocityIn.getNorm();
+                double particleEnergy = event.particle.mass * particleSpeed * particleSpeed / 2;
+                double neutronSpeed = velocityIn.getNorm();
+                double speedCM = velocityCM.getNorm();
+                double speedNCM = neutronVelocityCM.getNorm();
+                double neutronSpeedCM = neutronVelocityCM.getNorm();
+                double angle = Math.acos(velocityOut.normalize().dotProduct(velocityIn.normalize())) / Math.PI * 180;
+                double angleWithX = Math.acos(velocityOut.dotProduct(Vector3D.PLUS_I.normalize())) / Math.PI * 180;
                 synchronized (Neutron.class) {
                     System.out.println("Neutron: " + this.hashCode());
-                    System.out.println(" Particle: " + event.element.name);
+                    System.out.println(" Particle: " + event.particle.name);
                     System.out.println(" Particle energy: " + String.format("%6.3e eV", particleEnergy / Util.Physics.eV));
-                    System.out.println(" Neutron energy in: " + String.format("%6.3e eV", neutronEnergyIn / Util.Physics.eV));
+                    System.out.println(" Neutron energy in: " + String.format("%6.3e eV", energyIn / Util.Physics.eV));
                     System.out.println(" Speed of Neutron: " + String.format("%6.3e cm/s", neutronSpeed));
                     System.out.println(" Speed of Particle: " + String.format("%6.3e cm/s", particleSpeed));
                     System.out.println(" Speed of CM: " + String.format("%6.3e cm/s", speedCM));
