@@ -22,19 +22,19 @@ public class Grid {
 
     private class CellID {
 
-        double minX;
-        double minY;
-        double minZ;
+        int minX;
+        int minY;
+        int minZ;
 
         CellID(double x, double y, double z) {
-            minX = x;
-            minY = y;
-            minZ = z;
+            minX = (int) Math.round(x);
+            minY = (int) Math.round(y);
+            minZ = (int) Math.round(z);
         }
 
         @Override
         public int hashCode() {
-            return Double.hashCode(minX) ^ Double.hashCode(minY) ^ Double.hashCode(minZ);
+            return Integer.hashCode(minX) ^ Integer.hashCode(minY) ^ Integer.hashCode(minZ);
         }
 
         @Override

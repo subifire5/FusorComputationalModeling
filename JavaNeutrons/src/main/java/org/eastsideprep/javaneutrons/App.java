@@ -72,7 +72,7 @@ public class App extends Application {
             Part.namedParts.clear();
             Assembly.namedParts.clear();
             Material.materials.clear();
-            
+
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
         });
@@ -84,6 +84,7 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
+            this.sim.stop= false;
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
@@ -93,6 +94,18 @@ public class App extends Application {
 
         });
         bRun.setPrefWidth(200);
+
+        Button bStop= new Button("Stop");
+        bStop.setOnAction((e) -> {
+            this.sim.stop= true;
+        });
+        bStop.setPrefWidth(200);
+
+        Button bLoad = new Button("Load assembly");
+        bLoad.setOnAction((e) -> {
+            // Egan's code goes here.
+        });
+        bLoad.setPrefWidth(200);
 
         Button bStats = new Button("Show stats");
         bStats.setOnAction((e) -> {
@@ -135,7 +148,7 @@ public class App extends Application {
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(cb, tf, bRun, progress, new Separator(),
+        buttons.getChildren().addAll(cb, bLoad, tf, bRun, bStop, progress, new Separator(),
                 bStats, bView, bCopy, bTest, new Separator(),
                 stats);
         root.setLeft(buttons);

@@ -93,6 +93,7 @@ public class MonteCarloSimulation {
     public boolean scatter;
     public String lastChartData = "";
     public Grid grid;
+    public boolean stop;
 
     public static boolean visualLimitReached = false;
 
@@ -219,13 +220,21 @@ public class MonteCarloSimulation {
         if (count > 0) {
             if (!MonteCarloSimulation.parallel || this.lastCount < 10) {
                 // simulate up to 10 in a single thread for visualization
-                neutrons.stream().forEach(n -> simulateNeutron(n));
+                neutrons.stream().forEach(
+                        n -> {
+                            if (!stop) {
+                                simulateNeutron(n);
+                            }
+                        }
+                );
             } else {
                 // simulate lots in parallel
                 for (int i = 1; i < Runtime.getRuntime().availableProcessors(); i++) {
                     new Thread(() -> {
                         for (Neutron n : neutrons) {
-                            simulateNeutron(n);
+                            if (!stop) {
+                                simulateNeutron(n);
+                            }
                         }
                     }).start();
                 }
@@ -235,7 +244,7 @@ public class MonteCarloSimulation {
             this.scatter = false;
             for (Neutron n : neutrons) {
                 simulateNeutron(n);
-                if (this.scatter) {
+                if (this.scatter || this.stop) {
                     break;
                 }
             }
@@ -368,8 +377,7 @@ public class MonteCarloSimulation {
                     p = Part.getByName(detector);
                     if (p != null) {
                         c.setTitle("Part \"" + p.name + "\", "
-                                + ", src = " + this.lastCount
-                                + ", total events: " + p.getTotalEvents());
+                                + ", src = " + this.lastCount);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
                         c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, scale));
@@ -377,7 +385,7 @@ public class MonteCarloSimulation {
                         chartData = "Energy,Event Count";
                     } else {
                         m = Material.getByName(detector);
-                        c.setTitle("Material \"" + m.name + "\", total events: " + m.totalEvents);
+                        c.setTitle("Material \"" + m.name + "\", src = " + this.lastCount);
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
                         c.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", scale));
@@ -403,7 +411,6 @@ public class MonteCarloSimulation {
                         m = Material.getByName(detector);
                         c.setTitle("Material \"" + m.name + "\""
                                 + ", src = " + this.lastCount
-                                + ", total events: " + m.totalEvents
                                 + m.capturesOverEnergy.getStatsString(scale, false, this.lastCount));
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");

@@ -162,6 +162,9 @@ public class EnergyHistogram extends Histogram {
         if (scale.equals("Linear (thermal)")) {
             result += "\nThermal energy stats:\n" + this.fitDistributions(flux, count);
         }
+        if (result.contains("NaN")){
+            result = "";
+        }
         return result;
     }
 
