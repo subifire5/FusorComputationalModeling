@@ -117,8 +117,10 @@ public final class Neutron extends Particle {
             do {
                 if (this.mcs.targetAdjusted) {
                     // choose particle speed 
+                    do {
                     vtarget = pickTargetSpeed(vneutron, event.particle);
                     particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
+                    } while (this.mcs.whitmer && !acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
                 } else {
                     // naive Maxwellian speed distribution
                     double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.particle.mass);
@@ -139,7 +141,9 @@ public final class Neutron extends Particle {
                 neutronVelocityCMout = this.getScatteredVelocity(event, neutronVelocityCMin);
                 //convert neutron back into lab frame
                 neutronVelocityOut = neutronVelocityCMout.add(velocityCM);
-            } while (this.mcs.targetAdjusted && !acceptCosTheta(vneutron, vtarget, neutronVelocityIn.normalize().dotProduct(neutronVelocityOut.normalize())));
+            } while (this.mcs.targetAdjusted 
+                    && (!this.mcs.whitmer)
+                    && !acceptCosTheta(vneutron, vtarget, neutronVelocityIn.normalize().dotProduct(neutronVelocityOut.normalize())));
 
             // update neutron energy and direction
             this.setVelocity(neutronVelocityOut);

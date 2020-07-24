@@ -26,10 +26,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.eastsideprep.javaneutrons.core.Assembly;
-import org.eastsideprep.javaneutrons.core.Material;
+import org.eastsideprep.javaneutrons.core.MC0D;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
-import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
@@ -62,6 +60,10 @@ public class App extends Application {
         // prepare sim for later
         this.viewGroup = new Group();
 
+        // control buttons and progress 
+        TextField tf = new TextField("1");
+        tf.setPrefWidth(200);
+
         ChoiceBox cb = new ChoiceBox();
         addItems(cb, TestGM.class);
         addItems(cb, TestSV.class);
@@ -70,12 +72,11 @@ public class App extends Application {
         cb.setOnAction(e -> {
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
+            if (this.sim.suggestedCount != -1) {
+                tf.setText(Long.toString(this.sim.suggestedCount));
+            }
         });
         cb.setValue(cb.getItems().get(0));
-
-        // control buttons and progress 
-        TextField tf = new TextField("1");
-        tf.setPrefWidth(200);
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
@@ -250,6 +251,13 @@ public class App extends Application {
                         bRun.setDisable(false);
                         progress.setText("Complete: 100 % , time: " + (sim.getElapsedTime() / 1000) + " s");
                         idle();
+                        if (sim instanceof MC0D) {
+                            Group newstats = new StatsDisplay(sim, root);
+                            this.stats.getChildren().clear();
+                            this.stats.getChildren().add(newstats);
+                            progress.setText("");
+                            root.setRight(null);
+                        }
                     }
                 }));
         tl.setCycleCount(Timeline.INDEFINITE);

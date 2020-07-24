@@ -98,7 +98,9 @@ public class MonteCarloSimulation {
     public String lastChartData = "";
     public Grid grid;
     public boolean stop;
-    public boolean targetAdjusted = true; // false: naive Maxwellian target speed distribution, true: speed selected according to OpenMC
+    public boolean targetAdjusted = false; // false: naive Maxwellian target speed distribution, true: speed selected according to OpenMC
+    public boolean whitmer = false;
+    public long suggestedCount = -1;
 
     public static boolean visualLimitReached = false;
 
@@ -343,7 +345,7 @@ public class MonteCarloSimulation {
                     yAxis.setLabel("Count/src");
                     c.getData().add(p.entriesOverEnergy.makeSeries(series, this.lastCount, scale));
                     if (scale.equals("Linear (thermal)")) {
-                        c.getData().add(p.exitsOverEnergy.makeSeries("Energy fit", this.lastCount, "Linear (thermal energy fit)"));
+                        c.getData().add(p.entriesOverEnergy.makeFittedSeries("Energy fit", this.lastCount));
                     }
                     chartData = "Energy, " + series;
                     break;
@@ -361,7 +363,7 @@ public class MonteCarloSimulation {
                     yAxis.setLabel("Count/src");
                     c.getData().add(p.exitsOverEnergy.makeSeries(series, this.lastCount, scale));
                     if (scale.equals("Linear (thermal)")) {
-                        c.getData().add(p.exitsOverEnergy.makeSeries("Energy fit", this.lastCount, "Linear (thermal energy fit)"));
+                        c.getData().add(p.exitsOverEnergy.makeFittedSeries("Energy fit", this.lastCount));
                     }
                     chartData = "Energy, " + series;
                     break;
@@ -382,7 +384,7 @@ public class MonteCarloSimulation {
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
                         if (scale.equals("Linear (thermal)")) {
-                            c.getData().add(p.fluenceOverEnergy.makeSeries("Flux fit", this.lastCount, "Linear (thermal fit)"));
+                            c.getData().add(p.fluenceOverEnergy.makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                         chartData = "Energy,Fluence and Captures";

@@ -43,7 +43,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return bigBlock(visualizations);
+        return MC0D_Maxwell(visualizations);
     }
 
     public static MonteCarloSimulation bigBlock(Group visualizations) {
@@ -119,13 +119,20 @@ public class TestGM {
                 System.out.println("Correlation of energies before and after scatter: " + c);
             }
         };
-        mcs.targetAdjusted = false;
+        mcs.suggestedCount = 10000;
         return mcs;
     }
 
        public static MonteCarloSimulation MC0D_Adjusted(Group vis) {
            MonteCarloSimulation mcs = MC0D_Maxwell(vis);
            mcs.targetAdjusted = true;
+           return mcs;
+       }
+  
+       public static MonteCarloSimulation MC0D_WhitmerAdjusted(Group vis) {
+           MonteCarloSimulation mcs = MC0D_Maxwell(vis);
+           mcs.targetAdjusted = true;
+           mcs.whitmer = true;
            return mcs;
        }
   
