@@ -79,7 +79,6 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            this.sim.stop = false;
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
@@ -93,6 +92,7 @@ public class App extends Application {
         Button bStop = new Button("Stop");
         bStop.setOnAction((e) -> {
             this.sim.stop = true;
+            this.bRun.setDisable(false);
         });
         bStop.setPrefWidth(200);
 
@@ -218,6 +218,8 @@ public class App extends Application {
         //
         // here is where we run the actual simulation
         //
+        this.sim.stop = false;
+
         bRun.setDisable(true);
         progress.setText("Complete: 0 %");
 

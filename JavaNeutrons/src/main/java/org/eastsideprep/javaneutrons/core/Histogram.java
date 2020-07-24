@@ -120,7 +120,7 @@ public class Histogram {
         }
     }
 
-    protected SimpleRegression regression( XYTransform ty) {
+    protected SimpleRegression regression(XYTransform ty) {
         SimpleRegression r = new SimpleRegression(true);
 
         // skip last bucket since it has the overflow
@@ -136,7 +136,7 @@ public class Histogram {
         return r;
     }
 
-    protected double RMSE(SimpleRegression r, DoubleTransform tx, XYTransform ity) {
+    protected double RMSE(SimpleRegression r, XYTransform ity) {
         double vr = 0;
         double total = 0;
         // skip last bucket since it has the overflow
@@ -146,7 +146,7 @@ public class Histogram {
             if (y == 0) {
                 continue;
             }
-            double yhat = ity.transform(x, r.predict(tx.transform(x)));
+            double yhat = ity.transform(x, r.predict(x));
             if (Double.isNaN(yhat)) {
                 System.out.println("");
             }
@@ -176,7 +176,7 @@ public class Histogram {
         if (seriesName.equals("Energy fit")) {
             ty = (x, yin) -> Math.log(yin / Math.sqrt(x));
             ity = (x, yout) -> Math.sqrt(x) * Math.exp(yout);
-        } else if (seriesName.equals("Flux fit")){
+        } else if (seriesName.equals("Flux fit")) {
             ty = (x, yin) -> Math.log(yin / x);
             ity = (x, yout) -> x * Math.exp(yout);
         } else {
@@ -196,7 +196,7 @@ public class Histogram {
             double tyActual = ty.transform(x, yActual);
             double yPred = ity.transform(x, r.predict(x));
             String tick = String.format("%6.3e", x/*/ Util.Physics.eV*/);
-            data.add(new XYChart.Data(tick, yPred/count));
+            data.add(new XYChart.Data(tick, yPred / count));
             //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
         //System.out.println("");

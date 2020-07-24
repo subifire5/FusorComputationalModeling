@@ -224,8 +224,12 @@ public class Material {
         if (material instanceof Part) {
             material = ((Part) material).material;
         }
-
-        return (Material) material;
+        
+        if (material instanceof Material) {
+            return (Material) material;
+        } else {
+            return null;
+        }
     }
 
     public void processEvent(Event event, boolean processNeutron) {

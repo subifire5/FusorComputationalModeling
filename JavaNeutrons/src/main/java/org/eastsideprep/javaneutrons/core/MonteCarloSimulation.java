@@ -39,7 +39,7 @@ public class MonteCarloSimulation {
 
             @Override
             synchronized public boolean hasNext() {
-                return produced < count || count == 0;
+                return (!mcs.stop) && (produced < count || count == 0);
             }
 
             @Override
@@ -98,6 +98,7 @@ public class MonteCarloSimulation {
     public String lastChartData = "";
     public Grid grid;
     public boolean stop;
+    public boolean targetAdjusted = true; // false: naive Maxwellian target speed distribution, true: speed selected according to OpenMC
 
     public static boolean visualLimitReached = false;
 

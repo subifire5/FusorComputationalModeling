@@ -56,7 +56,7 @@ public class Util {
                     .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
                     .normalize();
         }
-        
+
         public static double random() {
             return ThreadLocalRandom.current().nextDouble();
         }
@@ -227,6 +227,7 @@ public class Util {
         final public static double Da = 1.6605e-27; // Dalton amu in kg
         final public static double thermalEnergy = 4e-21 * 1e4; // room temp avg. energy in J (cm)
         // factor 1e4 is from using cm, not m here - 100^2
+
     }
 
     static public class Graphics {

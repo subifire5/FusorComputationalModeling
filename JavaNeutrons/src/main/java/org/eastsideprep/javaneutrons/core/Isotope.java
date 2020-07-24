@@ -241,10 +241,8 @@ public class Isotope {
         }
         return cos_theta;
     }
-    
-    public double getRandomSpeed(double enery, double deltaV) {
-        return 0;
-    }
+
+  
     
 
 //    public Vector3D getRandomVeclocity(double energy, Vector3D other) {
@@ -261,7 +259,6 @@ public class Isotope {
 //        return v;
 //
 //    }
-
     //
     // input: eV, output: barn
     //

@@ -79,41 +79,56 @@ public class TestGM {
     //
     // 0-D Monte Carlo Simulations
     //
-    public static MonteCarloSimulation MC0D(Group vis) {
+    public static MonteCarloSimulation MC0D_Maxwell(Group vis) {
         vis.getChildren().clear();
         ArrayList<Vector2D> pairs = new ArrayList<>();
-        return new MC0D(TestGM::runMC0D, TestGM::afterMC0D, "HydrogenWax", pairs);
-    }
+        MonteCarloSimulation mcs = new MC0D("HydrogenWax", pairs) {
+            @Override
+            public void run(Part p, Object o, Neutron n) {
+                int s = 1000;
+                ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
 
-    private static void runMC0D(Part p, Object o) {
-        int s = 1000;
-        ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
-
-        Neutron n = new Neutron(Vector3D.ZERO, Vector3D.PLUS_I, Neutron.startingEnergyDD, null);
-        Isotope is = E1H.getInstance();
-        Material hw = HydrogenWax.getInstance();
-        Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
-        n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.kB * Util.Physics.T/*Neutron.startingEnergyDD*/);
-        for (int j = 0; j < s; j++) {
-            //n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
-            double before = n.energy;
-            n.processEvent(e);
-            synchronized (pairs) {
-                pairs.add(new Vector2D(before, e.energyOut));
+                n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
+                Isotope is = E1H.getInstance();
+                Material hw = HydrogenWax.getInstance();
+                Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
+                for (int j = 0; j < s; j++) {
+                    //n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
+                    double before = n.energy;
+                    n.processEvent(e);
+                    synchronized (pairs) {
+                        pairs.add(new Vector2D(before, e.energyOut));
+                    }
+                    p.entriesOverEnergy.record(1, e.particleEnergyIn);
+                    p.exitsOverEnergy.record(1, e.energyOut);
+                    p.fluenceOverEnergy.record(hw.getPathLength(e.energyOut, Util.Math.random()), e.energyOut);
+                }
             }
-            p.exitsOverEnergy.record(1, n.energy);
-            p.fluenceOverEnergy.record(hw.getPathLength(n.energy, Util.Math.random()), e.energyOut);
-        }
+
+            @Override
+            public void after(Part p, Object o) {
+                ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
+                PearsonsCorrelation pc = new PearsonsCorrelation();
+                double[] x;
+                double[] y;
+                synchronized (pairs) {
+                    x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
+                    y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
+                }
+                double c = pc.correlation(x, y);
+                System.out.println("Correlation of energies before and after scatter: " + c);
+            }
+        };
+        mcs.targetAdjusted = false;
+        return mcs;
     }
 
-    private static void afterMC0D(Part p, Object o) {
-        ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
-        PearsonsCorrelation pc = new PearsonsCorrelation();
-        double[] x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
-        double[] y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
-        double c = pc.correlation(x, y);
-        System.out.println("Correlation of energies before and after scatter: " + c);
-    }
+       public static MonteCarloSimulation MC0D_Adjusted(Group vis) {
+           MonteCarloSimulation mcs = MC0D_Maxwell(vis);
+           mcs.targetAdjusted = true;
+           return mcs;
+       }
+  
 
     //
     // world simulations
@@ -178,11 +193,12 @@ public class TestGM {
         return mcs;
     }
 
-   public static MonteCarloSimulation smoosh1(Group visualizations) {
+    public static MonteCarloSimulation smoosh1(Group visualizations) {
         MonteCarloSimulation mcs = smoosh0(visualizations);
         mcs.prepareGrid(1.0, visualizations);
         return mcs;
     }
+
     public static MonteCarloSimulation smoosh2(Group visualizations) {
         MonteCarloSimulation mcs = smoosh0(visualizations);
         mcs.prepareGrid(2.0, visualizations);
@@ -334,7 +350,7 @@ public class TestGM {
         // igloo
         //
         Assembly igloo = new Assembly("igloo", TestGM.class.getResource("/meshes/igloo.obj"), "Paraffin");
-       
+
         double s = 20;
         // move detector behind cube wall
         Part detector = new Part("Detector 1", new Cuboid(s, 3 * s, 5 * s), "Vacuum");

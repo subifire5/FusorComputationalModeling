@@ -162,7 +162,7 @@ public class EnergyHistogram extends Histogram {
         if (scale.equals("Linear (thermal)")) {
             result += "\nThermal energy stats:\n" + this.fitDistributions(flux, count);
         }
-        if (result.contains("NaN")){
+        if (result.contains("NaN")) {
             result = "";
         }
         return result;
@@ -186,16 +186,16 @@ public class EnergyHistogram extends Histogram {
 //                + "*E), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
         if (flux) {
             r = hLow.regression((x, y) -> Math.log(y / x));
-            RMSE = hLow.RMSE(r, Identity::x, (x, y) -> x * Math.exp(y));
-            result += "Flux distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
-                    + "*E*exp(" + String.format("%6.3e", r.getSlope() * Util.Physics.kB * Util.Physics.T)
-                    + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "\n";
+            RMSE = hLow.RMSE(r, (x, y) -> x * Math.exp(y));
+            result += "Flux distribution fit: y ~ "   //String.format("%6.3e", Math.exp(r.getIntercept()))
+                    + "E*exp(" + String.format("%5.3f", r.getSlope() * Util.Physics.kB * Util.Physics.T / Util.Physics.eV)
+                    + "*E/(kb*t)), RMSE/src = " + String.format("%6.3e", RMSE / count);
         } else {
-            r = hLow.regression((x, y) -> Math.log((y * Util.Physics.kB * Util.Physics.T) / Math.sqrt(x)));
-            RMSE = hLow.RMSE(r, Identity::x, (x, y) -> Math.sqrt(x) * Math.exp(y) / (Util.Physics.kB * Util.Physics.T));
-            result += "Energy distribution fit: y = " + String.format("%6.3e", Math.exp(r.getIntercept()))
-                    + "*sqrt(E)*exp(" + String.format("%6.3e", r.getSlope())
-                    + "*E/(kb*t)), normalized RMSE = " + String.format("%6.3e", RMSE / count) + "";
+            r = hLow.regression((x, y) -> Math.log(y / Math.sqrt(x)));
+            RMSE = hLow.RMSE(r, (x, y) -> Math.sqrt(x) * Math.exp(y));
+            result += "Energy distribution fit: y ~ "  //String.format("%6.3e", Math.exp(r.getIntercept()))
+                    + "*sqrt(E)*exp(" + String.format("%5.3f", r.getSlope()* Util.Physics.kB * Util.Physics.T / Util.Physics.eV)
+                    + "*E/(kb*t)), RMSE/src = " + String.format("%6.3e", RMSE / count);
         }
         System.out.println(result);
 

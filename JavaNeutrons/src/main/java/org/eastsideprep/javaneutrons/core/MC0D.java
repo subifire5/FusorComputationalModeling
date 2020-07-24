@@ -2,40 +2,34 @@ package org.eastsideprep.javaneutrons.core;
 
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 
-public class MC0D extends MonteCarloSimulation {
+abstract public class MC0D extends MonteCarloSimulation {
 
-    public interface MC0DRunLambda {
+    abstract public void run(Part pseudoPart, Object o, Neutron n);
 
-        void run(Part pseudoPart, Object o);
-    }
+    abstract public void after(Part pseudoPart, Object o);
 
-    public interface MC0DAfterLambda {
-
-        void run(Part pseudoPart, Object o);
-    }
     private Part pseudoPart;
-    private MC0DRunLambda runLambda;
-    private MC0DAfterLambda afterLambda;
     private Object o;
 
-    public MC0D(MC0DRunLambda lambda, MC0DAfterLambda after, Object material, Object o) {
+    public MC0D(Object material, Object o) {
         super();
-        this.runLambda = lambda;
-        this.afterLambda = after;
         this.o = o;
-        pseudoPart = new Part("MC0D", new Cuboid(0.000001), material);
+        pseudoPart = new Part("MC0D", new Cuboid(1), material);
         this.assembly.add(pseudoPart);
+        this.namedParts.put("MC0D", pseudoPart);
+        if (pseudoPart.material.name != null) {
+            this.materials.put(this.pseudoPart.material.name, this.pseudoPart.material);
+        }
     }
 
     @Override
     public void postProcess() {
-        this.afterLambda.run(pseudoPart, o);
+        this.after(pseudoPart, o);
     }
 
     @Override
-
     public void simulateNeutron(Neutron n) {
-        this.runLambda.run(pseudoPart, o);
+        this.run(pseudoPart, o, n);
         completed.incrementAndGet();
     }
 
