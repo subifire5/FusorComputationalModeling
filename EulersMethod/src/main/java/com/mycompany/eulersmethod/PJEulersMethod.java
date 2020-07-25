@@ -22,6 +22,10 @@ public class PJEulersMethod implements Solution {
         this.eField = eField;
     }
 
+    PJEulersMethod() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public Particle step(Particle p, Double stepSize) {
 
         p.totalEnergy(eField);
@@ -47,16 +51,20 @@ public class PJEulersMethod implements Solution {
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
         // throw new UnsupportedOperationException("Not supported yet.");//To change body of generated methods, choose Tools | Templates.
 
-        int batchesNeeded = (int) (numberOfSteps / batchSize);
+        int batchesNeeded = (int) (numberOfSteps/batchSize);
         int batchesCompleted = 0;
         int steps = 0;
         Particle[] j = new Particle[batchesNeeded];
         long startTime = System.currentTimeMillis();
+        Double completed = (double)batchesCompleted;
+        Double needed = (double)batchesNeeded;
+        
 
         while (batchesCompleted != batchesNeeded) {
-
-            System.out.println("Progress:" + (batchesCompleted / batchesNeeded) + "%");
-            System.out.println("This code has taken: " + (System.currentTimeMillis() - startTime) + "seconds to process.");
+            System.out.println("Batches Completed: " + batchesCompleted);
+            System.out.println("Batches Needed: " + batchesNeeded);
+            System.out.println("Overall Progress: " + ((completed/needed)*100) + "%");
+            System.out.println("This code has taken: " + ((System.currentTimeMillis() - startTime)/1000) + " seconds to process.");
 
             if (steps < batchSize) {
                 step(p, stepSize);
@@ -65,6 +73,7 @@ public class PJEulersMethod implements Solution {
                 steps = 0;
                 j[batchesCompleted] = p.clone();
                 batchesCompleted++;
+                completed++;
             }
 
         }
