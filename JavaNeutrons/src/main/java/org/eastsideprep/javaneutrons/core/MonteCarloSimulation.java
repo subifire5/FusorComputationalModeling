@@ -101,6 +101,7 @@ public class MonteCarloSimulation {
     public boolean targetAdjusted = false; // false: naive Maxwellian target speed distribution, true: speed selected according to OpenMC
     public boolean whitmer = false;
     public long suggestedCount = -1;
+    public boolean fit = false;
 
     public static boolean visualLimitReached = false;
 
@@ -299,7 +300,7 @@ public class MonteCarloSimulation {
     }
 
     public void prepareGrid(double side, Group vis) {
-        this.grid = new Grid(side, assembly, vis);
+        this.grid = new Grid(side, assembly, origin, vis);
     }
 
     public void postProcess() {
@@ -344,7 +345,7 @@ public class MonteCarloSimulation {
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count/src");
                     c.getData().add(p.entriesOverEnergy.makeSeries(series, this.lastCount, scale));
-                    if (scale.equals("Linear (thermal)")) {
+                    if (fit && scale.equals("Linear (thermal)")) {
                         c.getData().add(p.entriesOverEnergy.makeFittedSeries("Energy fit", this.lastCount));
                     }
                     chartData = "Energy, " + series;
@@ -362,7 +363,7 @@ public class MonteCarloSimulation {
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count/src");
                     c.getData().add(p.exitsOverEnergy.makeSeries(series, this.lastCount, scale));
-                    if (scale.equals("Linear (thermal)")) {
+                    if (fit && scale.equals("Linear (thermal)")) {
                         c.getData().add(p.exitsOverEnergy.makeFittedSeries("Energy fit", this.lastCount));
                     }
                     chartData = "Energy, " + series;
@@ -383,7 +384,7 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
-                        if (scale.equals("Linear (thermal)")) {
+                        if (fit && scale.equals("Linear (thermal)")) {
                             c.getData().add(p.fluenceOverEnergy.makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));

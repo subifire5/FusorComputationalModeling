@@ -73,29 +73,29 @@ public final class Neutron extends Particle {
 
     private double pickTargetSpeed(double vneutron, Isotope i) {
         // according to OpenMC documentation chapter 5.10.1
-        double beta = java.lang.Math.sqrt(i.mass / (2 * Util.Physics.kB * Util.Physics.T));
+        double beta = Math.sqrt(i.mass / (2 * Util.Physics.kB * Util.Physics.T));
         double y = beta * vneutron;
         double u;
 
-        double eta1 = java.lang.Math.random();
-        if (eta1 < 2 / (java.lang.Math.sqrt(java.lang.Math.PI) * y + 2)) {
+        double eta1 = Math.random();
+        if (eta1 < 2 / (Math.sqrt(Math.PI) * y + 2)) {
             // sample by C49 with n=2
-            u = java.lang.Math.sqrt(-java.lang.Math.log(java.lang.Math.random() * java.lang.Math.random()));
+            u = Math.sqrt(-Math.log(Math.random() * Math.random()));
         } else {
             // sample by C61 with n = 3/2
             // first, sample tau by C51
-            double phi = java.lang.Math.PI / 2 * java.lang.Math.random();
-            double R = java.lang.Math.sqrt(-java.lang.Math.log(java.lang.Math.random()));
-            double tau = R * java.lang.Math.cos(phi);
+            double phi = Math.PI / 2 * Math.random();
+            double R = Math.sqrt(-Math.log(Math.random()));
+            double tau = R * Math.cos(phi);
             // now complete rule C61
-            u = java.lang.Math.sqrt(-java.lang.Math.log(java.lang.Math.random()) + tau * tau);
+            u = Math.sqrt(-Math.log(Math.random()) + tau * tau);
         }
 
         return u / beta;
     }
 
     public boolean acceptCosTheta(double vneutron, double vtarget, double ct) {
-        return Math.random() < java.lang.Math.sqrt(vneutron * vneutron + vtarget * vtarget - 2 * vneutron * vtarget * ct / (vneutron + vtarget));
+        return Math.random() < Math.sqrt(vneutron * vneutron + vtarget * vtarget - 2 * vneutron * vtarget * ct / (vneutron + vtarget));
     }
 
     @Override

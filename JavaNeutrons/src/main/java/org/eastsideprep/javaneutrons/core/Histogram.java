@@ -5,12 +5,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
 import org.apache.commons.math3.fitting.CurveFitter;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.vector.MultivariateVectorOptimizer;
 import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class Histogram {
 
@@ -138,9 +134,9 @@ public class Histogram {
             double yPred = f.value(x, params);
             String tick = String.format("%6.3e", x);
             data.add(new XYChart.Data(tick, yPred / count));
-            if (x > 2e-2 && x < 3e-2) {
-                System.out.println("predicted value x=" + x + " y=" + yPred);
-            }
+//            if (x > 2e-2 && x < 3e-2) {
+//                System.out.println("predicted value x=" + x + " y=" + yPred);
+//            }
             //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
         //System.out.println("");
@@ -163,9 +159,9 @@ public class Histogram {
             }
 
             cf.addObservedPoint(x, y);
-            if (x > 2e-2 && x < 3e-2) {
-                System.out.println("observed value x=" + x + " y=" + y);
-            }
+//            if (x > 2e-2 && x < 3e-2) {
+//                System.out.println("observed value x=" + x + " y=" + y);
+//            }
 
         }
 

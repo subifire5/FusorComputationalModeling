@@ -77,12 +77,20 @@ public class Grid {
     int totalTriangles = 0;
     int totalTrianglesTimesCells = 0;
 
-    public Grid(double side, Assembly a, Group g) {
+    public Grid(double side, Assembly a, Vector3D origin, Group g) {
         LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
         this.side = side;
         this.totalTriangles = 0;
         this.totalTrianglesTimesCells = 0;
         addAssembly(a, q);
+
+        gminx = Math.min(origin.getX(), gminx);
+        gminy = Math.min(origin.getY(), gminy);
+        gminz = Math.min(origin.getZ(), gminz);
+        gmaxx = Math.max(origin.getX(), gmaxx);
+        gmaxy = Math.max(origin.getY(), gmaxy);
+        gmaxz = Math.max(origin.getZ(), gmaxz);
+
         q.drainTo(g.getChildren());
         System.out.println("Grid: added " + this.totalTriangles + "  tringles, t*c: " + this.totalTrianglesTimesCells);
     }

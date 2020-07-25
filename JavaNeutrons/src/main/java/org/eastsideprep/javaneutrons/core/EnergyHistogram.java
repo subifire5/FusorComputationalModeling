@@ -1,15 +1,14 @@
 package org.eastsideprep.javaneutrons.core;
 
-import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
-import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class EnergyHistogram extends Histogram {
 
-    static double LOW_VISUAL_LIMIT = 0.2;
-    static double LOW_TRACKING_LIMIT = 1.0;
+    static double LOW_VISUAL_LIMIT = 0.15;
+    static double LOW_TRACKING_LIMIT = 0.15;
+    static double LOW_BIN_SIZE = 1e-3;
 
     Histogram hFlat;
     Histogram hLow;
@@ -19,7 +18,7 @@ public class EnergyHistogram extends Histogram {
     public EnergyHistogram() {
         super(-3, 7, 100, true);
         hFlat = new Histogram(15000, 3e6, 199, false);
-        hLow = new Histogram(1e-3, LOW_TRACKING_LIMIT, (int) (LOW_TRACKING_LIMIT * 1000) - 1, false);
+        hLow = new Histogram(LOW_BIN_SIZE, LOW_TRACKING_LIMIT, (int) (LOW_TRACKING_LIMIT / LOW_BIN_SIZE) - 1, false);
     }
 
     @Override
@@ -162,9 +161,10 @@ public class EnergyHistogram extends Histogram {
 //        result += "Mean = " + String.format("%6.3e", getThermalEnergyMean(scale)) + " eV, "
 //                + "Median = " + String.format("%6.3e", getThermalEnergyMedian(scale)) + " eV, "
 //                + "Mode = " + String.format("%6.3e", getThermalEnergyMode(scale)) + " eV";
-        if (scale.equals("Linear (thermal)")) {
-            result += this.fitDistributions(flux, count);
-        }
+
+//        if (scale.equals("Linear (thermal)")) {
+//            result += this.fitDistributions(flux, count);
+//        }
         if (result.contains("NaN")) {
             result = "";
         }
@@ -178,12 +178,12 @@ public class EnergyHistogram extends Histogram {
 
         if (flux) {
             double[] beta = fitFlux(count);
-            result += "\nFlux distribution fit: y = "+String.format("%6.3e", beta[0])
+            result += "\nFlux distribution fit: y ~ " //+String.format("%6.3e", beta[0])
                     + "E*exp(" + String.format("%5.3f", beta[1] * Util.Physics.kB * Util.Physics.T / Util.Physics.eV)
                     + "*E/(kb*t))";
         } else {
             double[] beta = fitEnergy(count);
-            result += "\nEnergy distribution fit: y = " + String.format("%6.3e", beta[0]) + "*"
+            result += "\nEnergy distribution fit: y ~ " //+ String.format("%6.3e", beta[0]) + "*"
                     + "sqrt(E)"
                     + "*exp(" + String.format("%5.3f", beta[1] * Util.Physics.kB * Util.Physics.T / Util.Physics.eV)
                     + "*E/(kb*t))";
