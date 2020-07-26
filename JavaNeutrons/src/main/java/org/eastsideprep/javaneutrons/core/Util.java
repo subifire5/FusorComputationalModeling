@@ -1,17 +1,10 @@
 package org.eastsideprep.javaneutrons.core;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.ThreadLocalRandom;
-import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.chart.XYChart;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -63,6 +56,10 @@ public class Util {
                     .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
                     .normalize();
         }
+        
+        public static double randomGaussian() {
+           return ThreadLocalRandom.current().nextGaussian();
+        }
 
         public static double random() {
             return ThreadLocalRandom.current().nextDouble();
@@ -78,8 +75,8 @@ public class Util {
 
         public static Vector3D randomDir(double cos_theta, double magnitude) {
             double phi = random() * 2 * java.lang.Math.PI;
-            double theta = java.lang.Math.acos(cos_theta);
-            return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
+            double sin_theta = java.lang.Math.sqrt(1-cos_theta*cos_theta);
+            return new Vector3D(magnitude * sin_theta * java.lang.Math.cos(phi), magnitude * sin_theta * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
         public static Vector3D randomGaussianComponentVector(double componentSD) {

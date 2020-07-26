@@ -82,20 +82,17 @@ public final class Neutron extends Particle {
             // sample by C49 with n=2
             u = Math.sqrt(-Math.log(Util.Math.random() *Util.Math.random()));
         } else {
-            // sample by C61 with n = 3/2
-            // first, sample tau by C51
-            double phi = Math.PI / 2 * Util.Math.random();
-            double R = Math.sqrt(-Math.log(Util.Math.random()));
-            double tau = R * Math.cos(phi);
+            // by WhitmerMath(tm)
+            double tau = Util.Math.randomGaussian();
             // now complete rule C61
-            u = Math.sqrt(-Math.log(Util.Math.random()) + tau * tau);
+            u = Math.sqrt(-Math.log(Util.Math.random()) + 0.5 * tau * tau);
         }
 
         return u / beta;
     }
 
     public boolean acceptCosTheta(double vneutron, double vtarget, double ct) {
-        return Util.Math.random() < Math.sqrt(vneutron * vneutron + vtarget * vtarget - 2 * vneutron * vtarget * ct / (vneutron + vtarget));
+        return Util.Math.random() < Math.sqrt(vneutron * vneutron + vtarget * vtarget - 2 * vneutron * vtarget * ct) / (vneutron + vtarget);
     }
 
     @Override

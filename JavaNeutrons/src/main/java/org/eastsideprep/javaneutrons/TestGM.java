@@ -104,14 +104,14 @@ public class TestGM {
                     // record energy for pair correlation
                     double before = n.energy;
 
-                    // actually scatter
-                    this.targetAdjusted = false;
-                    n.processEvent(e);
-                    // score maxwell fluence
-                    maxwell.record(1.0 / vol, n.energy);
-
-                    // scatter again, adjusted
-                    n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
+//                    // actually scatter
+//                    this.targetAdjusted = false;
+//                    n.processEvent(e);
+//                    // score maxwell fluence
+//                    maxwell.record(1.0 / vol, n.energy);
+//
+//                    // scatter again, adjusted
+//                    n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
                     this.targetAdjusted = true;
                     n.processEvent(e);
                     // score adjusted fluence
@@ -152,10 +152,10 @@ public class TestGM {
                 xAxis.setLabel("Energy (eV)");
                 yAxis.setLabel("Fluence (n/cm^2)/src");
                 yAxis.setTickLabelFormatter(new Formatter());
-                c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
+                //c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
                 c.getData().add(adjusted.makeSeries("Adjusted", this.lastCount, scale));
-                c.getData().add(makeThermalSeriesFromCSV("MCNP 10m", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
-                c.getData().add(makeThermalSeriesFromCSV("MC0D 10m", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
+                c.getData().add(makeThermalSeriesFromCSV("MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
                 copyChartCSV(c);
                 return c;
             }
