@@ -136,9 +136,9 @@ public class Material {
 
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
-        double rand = Util.Math.random();
+       
 
-        double t = getPathLength(energy, rand);
+        double t = getPathLength(energy, Util.Math.random());
 
         Vector3D location = n.position.add(n.direction.scalarMultiply(t));
 
@@ -171,7 +171,7 @@ public class Material {
         }
 
         // random draw from earlier scaled up across the combined distribution
-        rand *= sum;
+        double rand = sum*Util.Math.random();
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("sum: " + sum + ", draw: " + rand);
         }

@@ -6,7 +6,7 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class EnergyHistogram extends Histogram {
 
-    static double LOW_VISUAL_LIMIT = 0.15;
+    public static double LOW_VISUAL_LIMIT = 0.15;
     static double LOW_TRACKING_LIMIT = 0.15;
     static double LOW_BIN_SIZE = 1e-3;
 

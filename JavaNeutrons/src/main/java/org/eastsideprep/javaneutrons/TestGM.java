@@ -5,10 +5,20 @@
  */
 package org.eastsideprep.javaneutrons;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Scanner;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.Chart;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
@@ -43,9 +53,121 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return MC0D_Scatter1Maxwell(visualizations);
+        return MC0D_Scatter1(visualizations);
     }
 
+    public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
+        vis.getChildren().clear();
+
+        MonteCarloSimulation mcs = new MC0D() {
+
+            ArrayList<Vector2D> pairs = new ArrayList<>();
+            Isotope is = E1H.getInstance();
+            Material hw = HydrogenWax.getInstance();
+            Shape spherical = new Shape(TestGM.class.getResource("/meshes/spherical_detector.stl"));
+            double vol = spherical.getVolume();
+            EnergyHistogram maxwell;
+            EnergyHistogram adjusted;
+
+            @Override
+            public void init() {
+                System.out.println("Shell volume: " + vol);
+                System.out.println("Util.Physics.thermalEnergy: " + Util.Physics.thermalEnergy / Util.Physics.eV + " eV");
+                this.materials.put("Hydrogen Wax", hw);
+                before();
+            }
+
+            @Override
+            public void before() {
+                maxwell = new EnergyHistogram();
+                adjusted = new EnergyHistogram();
+                pairs = new ArrayList<>();
+            }
+
+            @Override
+            public void run(Neutron n) {
+                // n is a fresh neutron
+
+                // neutron comes from origin, shell is to the +x,
+                // does not contain origin.
+                // score fluence on the way into the shell
+                n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
+                maxwell.record(1.0 / vol, n.energy);
+                adjusted.record(1.0 / vol, n.energy);
+
+                // scatter test - will we scatter in the block?
+                // technically, this includes captures, might need to differentiate
+                Event e = hw.nextPoint(n);
+                //e.code = Event.Code.Scatter;
+                //if (hw.getPathLength(Util.Physics.thermalEnergy, Math.random()) < 0.025) {
+                if (e.t < 0.025 && e.code == Event.Code.Scatter) {
+                    // record energy for pair correlation
+                    double before = n.energy;
+
+                    // actually scatter
+                    this.targetAdjusted = false;
+                    n.processEvent(e);
+                    // score maxwell fluence
+                    maxwell.record(1.0 / vol, n.energy);
+
+                    // scatter again, adjusted
+                    n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
+                    this.targetAdjusted = true;
+                    n.processEvent(e);
+                    // score adjusted fluence
+                    adjusted.record(1.0 / vol, n.energy);
+
+                    // get second part of pair, record it
+                    synchronized (pairs) {
+                        pairs.add(new Vector2D(before, n.energy));
+                    }
+                } else {
+
+                    // score the unscattered fluence
+                    maxwell.record(1.0 / vol, n.energy);
+                    adjusted.record(1.0 / vol, n.energy);
+                }
+            }
+
+            @Override
+            public void after() {
+                PearsonsCorrelation pc = new PearsonsCorrelation();
+                double[] x;
+                double[] y;
+                synchronized (pairs) {
+                    x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
+                    y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
+                }
+                double c = pc.correlation(x, y);
+                System.out.println("Correlation of energies before and after scatter: " + c);
+            }
+
+            @Override
+            public Chart makeCustomChart(String series, String scale) {
+                final CategoryAxis xAxis = new CategoryAxis();
+                final NumberAxis yAxis = new NumberAxis();
+                XYChart<String, Number> c = new LineChart<>(xAxis, yAxis);
+                c.setTitle("MC0D tiny HydrogenWax cube in spherical shell"
+                        + ", src = " + this.lastCount);
+                xAxis.setLabel("Energy (eV)");
+                yAxis.setLabel("Fluence (n/cm^2)/src");
+                yAxis.setTickLabelFormatter(new Formatter());
+                c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
+                c.getData().add(adjusted.makeSeries("Adjusted", this.lastCount, scale));
+                c.getData().add(makeThermalSeriesFromCSV("MCNP 10m", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
+                c.getData().add(makeThermalSeriesFromCSV("MC0D 10m", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                copyChartCSV(c);
+                return c;
+            }
+
+        };
+        mcs.suggestedCount = 10000000;
+        return mcs;
+    }
+
+    //
+    // world simulations
+    //
     public static MonteCarloSimulation bigBlock(Group visualizations) {
         double thickness = 25; //block thickness in cm
         Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
@@ -76,154 +198,6 @@ public class TestGM {
         return mcs;
     }
 
-    //
-    // 0-D Monte Carlo Simulations
-    //
-    public static MonteCarloSimulation MC0D_Maxwell(Group vis) {
-        vis.getChildren().clear();
-        ArrayList<Vector2D> pairs = new ArrayList<>();
-        MonteCarloSimulation mcs = new MC0D("HydrogenWax", pairs) {
-            @Override
-            public void run(Part p, Object o, Neutron n) {
-                int s = 1000;
-                ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
-
-                n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
-                Isotope is = E1H.getInstance();
-                Material hw = HydrogenWax.getInstance();
-                Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
-                for (int j = 0; j < s; j++) {
-                    //n.setDirectionAndEnergy(Vector3D.PLUS_I, n.energy);
-                    double before = n.energy;
-                    n.processEvent(e);
-                    synchronized (pairs) {
-                        pairs.add(new Vector2D(before, e.energyOut));
-                    }
-                    p.entriesOverEnergy.record(1, e.particleEnergyIn);
-                    p.exitsOverEnergy.record(1, e.energyOut);
-                    p.fluenceOverEnergy.record(hw.getPathLength(e.energyOut, Util.Math.random()), e.energyOut);
-                }
-            }
-
-            @Override
-            public void after(Part p, Object o) {
-                ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
-                PearsonsCorrelation pc = new PearsonsCorrelation();
-                double[] x;
-                double[] y;
-                synchronized (pairs) {
-                    x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
-                    y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
-                }
-                double c = pc.correlation(x, y);
-                System.out.println("Correlation of energies before and after scatter: " + c);
-            }
-        };
-        mcs.suggestedCount = 10000;
-        return mcs;
-    }
-
-    public static MonteCarloSimulation MC0D_Adjusted(Group vis) {
-        MonteCarloSimulation mcs = MC0D_Maxwell(vis);
-        mcs.targetAdjusted = true;
-        return mcs;
-    }
-
-    public static MonteCarloSimulation MC0D_WhitmerAdjusted(Group vis) {
-        MonteCarloSimulation mcs = MC0D_Maxwell(vis);
-        mcs.targetAdjusted = true;
-        mcs.whitmer = true;
-        return mcs;
-    }
-
-    public static MonteCarloSimulation MC0D_Scatter1Maxwell(Group vis) {
-        vis.getChildren().clear();
-        ArrayList<Vector2D> pairs = new ArrayList<>();
-        Isotope is = E1H.getInstance();
-        Material hw = HydrogenWax.getInstance();
-        Shape spherical = new Shape(TestGM.class.getResource("/meshes/spherical_detector.stl"));
-        double vol = spherical.getVolume();
-        System.out.println("Shell volume: "+vol);
-        System.out.println("phys.thermal:"+Util.Physics.thermalEnergy);
-        System.out.println("actual thermal:"+0.0253*Util.Physics.eV);
-
-        MonteCarloSimulation mcs = new MC0D("HydrogenWax", pairs) {
-            @Override
-            public void run(Part p, Object o, Neutron n) {
-                // part p is just a part of volume 1cm^3 where I can tally things
-                // n is a fresh neutron
-                // o is just a custom object that gets passed through,
-                //   in this case a list of "energy pairs" for later
-                ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
-                // neutron on x-axis, with thermal energy
-                n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
-                
-                // this just sets up the scatter
-                // I could also make this scatter AND capture with a few tweaks
-                Event e = new Event(Vector3D.ZERO, Event.Code.Scatter, 0, is, n);
-
-                // neutron comes from origin, shell is to the +x,
-                // does not contain origin.
-                // score fluence on the way into the shell
-                p.fluenceOverEnergy.record(1.0 / vol, n.energy);
-
-                // scatter test - will we scatter in the block?
-                // technically, this includes captures, might need to differentiate
-                if (hw.getPathLength(Util.Physics.thermalEnergy, Math.random()) < 0.025) {
-                    // record energy for pair correlation
-                    double before = n.energy;
-                    // actually scatter
-                    n.processEvent(e);
-                    // get second part of pair, record it
-                    synchronized (pairs) {
-                        pairs.add(new Vector2D(before, n.energy));
-                    }
-                    // score proton incoming energy in "entries"
-                    p.entriesOverEnergy.record(1, e.particleEnergyIn);
-                    // score scattered neutron energies in "exits"
-                    p.exitsOverEnergy.record(1, e.energyOut);
-                }
-
-                // score the outgoing fluence through the shell
-                p.fluenceOverEnergy.record(1.0 / vol, n.energy);
-
-            }
-
-            @Override
-
-            public void after(Part p, Object o) {
-                ArrayList<Vector2D> pairs = (ArrayList<Vector2D>) o;
-                PearsonsCorrelation pc = new PearsonsCorrelation();
-                double[] x;
-                double[] y;
-                synchronized (pairs) {
-                    x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
-                    y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
-                }
-                double c = pc.correlation(x, y);
-                System.out.println("Correlation of energies before and after scatter: " + c);
-            }
-        };
-        mcs.suggestedCount = 10000000;
-        return mcs;
-    }
-
-    public static MonteCarloSimulation MC0D_Scatter1Adjusted(Group vis) {
-        MonteCarloSimulation mcs = MC0D_Scatter1Maxwell(vis);
-        mcs.targetAdjusted = true;
-        return mcs;
-    }
-
-    public static MonteCarloSimulation MC0D_Scatter1Whitmer(Group vis) {
-        MonteCarloSimulation mcs = MC0D_Scatter1Maxwell(vis);
-        mcs.targetAdjusted = true;
-        mcs.whitmer = true;
-        return mcs;
-    }
-
-    //
-    // world simulations
-    //
     public static MonteCarloSimulation prison(Group visualizations) {
         double thickness = 200; //block thickness in cm
         String m = "HydrogenWax";

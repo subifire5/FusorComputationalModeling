@@ -77,25 +77,25 @@ public final class Neutron extends Particle {
         double y = beta * vneutron;
         double u;
 
-        double eta1 = Math.random();
+        double eta1 = Util.Math.random();
         if (eta1 < 2 / (Math.sqrt(Math.PI) * y + 2)) {
             // sample by C49 with n=2
-            u = Math.sqrt(-Math.log(Math.random() * Math.random()));
+            u = Math.sqrt(-Math.log(Util.Math.random() *Util.Math.random()));
         } else {
             // sample by C61 with n = 3/2
             // first, sample tau by C51
-            double phi = Math.PI / 2 * Math.random();
-            double R = Math.sqrt(-Math.log(Math.random()));
+            double phi = Math.PI / 2 * Util.Math.random();
+            double R = Math.sqrt(-Math.log(Util.Math.random()));
             double tau = R * Math.cos(phi);
             // now complete rule C61
-            u = Math.sqrt(-Math.log(Math.random()) + tau * tau);
+            u = Math.sqrt(-Math.log(Util.Math.random()) + tau * tau);
         }
 
         return u / beta;
     }
 
     public boolean acceptCosTheta(double vneutron, double vtarget, double ct) {
-        return Math.random() < Math.sqrt(vneutron * vneutron + vtarget * vtarget - 2 * vneutron * vtarget * ct / (vneutron + vtarget));
+        return Util.Math.random() < Math.sqrt(vneutron * vneutron + vtarget * vtarget - 2 * vneutron * vtarget * ct / (vneutron + vtarget));
     }
 
     @Override
@@ -114,36 +114,32 @@ public final class Neutron extends Particle {
             Vector3D neutronVelocityOut;
             double vtarget;
 
-            do {
-                if (this.mcs.targetAdjusted) {
-                    // choose particle speed 
-                    do {
+            if (this.mcs.targetAdjusted) {
+                // choose particle speed 
+                do {
                     vtarget = pickTargetSpeed(vneutron, event.particle);
                     particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
-                    } while (this.mcs.whitmer && !acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
-                } else {
-                    // naive Maxwellian speed distribution
-                    double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.particle.mass);
-                    particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
-                    vtarget = particleVelocityIn.getNorm();
-                }
+                } while (!acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
+            } else {
+                // naive Maxwellian speed distribution
+                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.particle.mass);
+                particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
+                vtarget = particleVelocityIn.getNorm();
+            }
 
-                event.particleEnergyIn = event.particle.mass * vtarget * vtarget / 2;
-                //establish center of mass
-                //add velocity vectors / total mass 
-                velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
-                        .add(particleVelocityIn.scalarMultiply(event.particle.mass)))
-                        .scalarMultiply(1 / (Neutron.mass + event.particle.mass));
+            event.particleEnergyIn = event.particle.mass * vtarget * vtarget / 2;
+            //establish center of mass
+            //add velocity vectors / total mass 
+            velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
+                    .add(particleVelocityIn.scalarMultiply(event.particle.mass)))
+                    .scalarMultiply(1 / (Neutron.mass + event.particle.mass));
 
-                //convert neutron and particle --> center of mass frame
-                neutronVelocityCMin = this.velocity.subtract(velocityCM);
-                //calculate elastic collision: entry speed = exit speed, random direction
-                neutronVelocityCMout = this.getScatteredVelocity(event, neutronVelocityCMin);
-                //convert neutron back into lab frame
-                neutronVelocityOut = neutronVelocityCMout.add(velocityCM);
-            } while (this.mcs.targetAdjusted 
-                    && (!this.mcs.whitmer)
-                    && !acceptCosTheta(vneutron, vtarget, neutronVelocityIn.normalize().dotProduct(neutronVelocityOut.normalize())));
+            //convert neutron and particle --> center of mass frame
+            neutronVelocityCMin = this.velocity.subtract(velocityCM);
+            //calculate elastic collision: entry speed = exit speed, random direction
+            neutronVelocityCMout = this.getScatteredVelocity(event, neutronVelocityCMin);
+            //convert neutron back into lab frame
+            neutronVelocityOut = neutronVelocityCMout.add(velocityCM);
 
             // update neutron energy and direction
             this.setVelocity(neutronVelocityOut);

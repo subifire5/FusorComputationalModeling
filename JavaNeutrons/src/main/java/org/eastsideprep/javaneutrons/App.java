@@ -72,6 +72,9 @@ public class App extends Application {
         cb.setOnAction(e -> {
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
+            if (this.sim instanceof MC0D) {
+                 ((MC0D)sim).init();
+            }
             if (this.sim.suggestedCount != -1) {
                 tf.setText(Long.toString(this.sim.suggestedCount));
             }
@@ -227,6 +230,7 @@ public class App extends Application {
         // here is where we run the actual simulation
         //
         this.sim.stop = false;
+        this.sim.lastCount = count;
 
         bRun.setDisable(true);
         progress.setText("Complete: 0 %");
@@ -237,22 +241,22 @@ public class App extends Application {
         Group p = new Group();
 
         noIdle();
-        this.progressTimeline(count);
+        this.progressTimeline();
         sim.simulateNeutrons(count, 100000, true);
         root.setCenter(view);
     }
 
-    private Timeline progressTimeline(int count) {
+    private Timeline progressTimeline() {
         root.setCenter(view);
         final Timeline tl = new Timeline();
         tl.getKeyFrames().add(new KeyFrame(Duration.seconds(0.1),
                 (e) -> {
                     long completed;
                     completed = sim.update();
-                    if (count > 0) {
-                        progress.setText("Complete: " + Math.round(100 * completed / count) + " %");
+                    if (this.sim.lastCount > 0) {
+                        progress.setText("Complete: " + Math.round(100 * completed / this.sim.lastCount) + " %");
                     }
-                    if (completed >= count || (count == 0 && sim.scatter)) {
+                    if (completed >= this.sim.lastCount || (this.sim.lastCount == 0 && sim.scatter)) {
                         tl.stop();
                         sim.postProcess();
                         bRun.setDisable(false);
@@ -264,6 +268,7 @@ public class App extends Application {
                             this.stats.getChildren().add(newstats);
                             progress.setText("");
                             root.setRight(null);
+                           
                         }
                     }
                 }));

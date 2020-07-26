@@ -1,12 +1,18 @@
 package org.eastsideprep.javaneutrons.core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.CategoryAxis;
@@ -38,14 +44,32 @@ public class MonteCarloSimulation {
         private class NeutronIterator implements Iterator<Neutron> {
 
             @Override
-            synchronized public boolean hasNext() {
-                return (!mcs.stop) && (produced < count || count == 0);
+            public boolean hasNext() {
+                synchronized (mcs) {
+                    if (mcs.stop) {
+                        produced = count;
+                        mcs.lastCount = count;
+                        return false;
+                    }
+                    return (produced < count || count == 0);
+                }
             }
 
             @Override
-            synchronized public Neutron next() {
-                produced++;
-                return new Neutron(position, direction == null ? Util.Math.randomDir() : direction, energy, mcs);
+            public Neutron next() {
+                synchronized (mcs) {
+                    if (mcs.stop) {
+                        produced = count;
+                        mcs.lastCount = count;
+                        return null;
+                    }
+
+                    if (produced < count) {
+                        produced++;
+                        return new Neutron(position, direction == null ? Util.Math.randomDir() : direction, energy, mcs);
+                    }
+                }
+                return null;
             }
 
         }
@@ -66,7 +90,7 @@ public class MonteCarloSimulation {
 
         @Override
         public int size() {
-            return count;
+            return (int) count;
         }
 
     }
@@ -106,7 +130,7 @@ public class MonteCarloSimulation {
     public static boolean visualLimitReached = false;
 
     protected MonteCarloSimulation() {
-        this(new Assembly("pseudo"), null, null);
+        this(null/*new Assembly("pseudo")*/, null, null);
     }
 
     public MonteCarloSimulation(Assembly assembly, Vector3D origin, Group g) {
@@ -141,12 +165,12 @@ public class MonteCarloSimulation {
         this.initialEnergy = initialEnergy == 0 ? Neutron.startingEnergyDD : initialEnergy;
         this.direction = direction;
 
-        if (this.interstitialMaterial == null) {
-            this.interstitialMaterial = Air.getInstance("Interstitial air");
-        }
-
         if (this.assembly == null) {
             return;
+        }
+
+        if (this.interstitialMaterial == null) {
+            this.interstitialMaterial = Air.getInstance("Interstitial air");
         }
 
         // add all named parts and materials
@@ -203,10 +227,12 @@ public class MonteCarloSimulation {
     }
 
     public void simulateNeutrons(int count, int visualObjectLimit, boolean textTrace) {
+        preProcess();
         this.lastCount = count;
         this.traceLevel = count <= 10 ? (1 + (textTrace ? 1 : 0)) : 0;
         this.visualObjectLimit = visualObjectLimit;
         MonteCarloSimulation.visualLimitReached = false;
+        this.completed.set(0);
 
         if (this.viewGroup != null) {
             this.viewGroup.getChildren().remove(this.dynamicGroup);
@@ -220,7 +246,9 @@ public class MonteCarloSimulation {
 
         this.start = System.currentTimeMillis();
 
-        assembly.resetDetectors();
+        if (assembly != null) {
+            assembly.resetDetectors();
+        }
         Collection<Material> c = this.materials.values();
         c.stream().forEach(m -> m.resetDetector());
 
@@ -267,6 +295,10 @@ public class MonteCarloSimulation {
     }
 
     public void simulateNeutron(Neutron n) {
+        if (n == null) {
+            completed.incrementAndGet();
+            return;
+        }
         this.assembly.evolveNeutronPath(n, this.visualizations, true, this.grid);
         completed.incrementAndGet();
         if (traceLevel >= 2) {
@@ -303,10 +335,14 @@ public class MonteCarloSimulation {
         this.grid = new Grid(side, assembly, origin, vis);
     }
 
+    public void preProcess() {
+
+    }
+
     public void postProcess() {
     }
 
-    private class Formatter extends StringConverter<Number> {
+    public class Formatter extends StringConverter<Number> {
 
         @Override
         public String toString(Number n) {
@@ -388,7 +424,7 @@ public class MonteCarloSimulation {
                             c.getData().add(p.fluenceOverEnergy.makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
-                        chartData = "Energy,Fluence and Captures";
+                        chartData = "Energy,Fluence";
                     } else {
                         // this is only for the interstitial medium
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
@@ -472,7 +508,7 @@ public class MonteCarloSimulation {
                 case "Cross-sections":
                     c = new LineChart<>(xAxis, yAxis);
                     Isotope element = Isotope.getByName(detector);
-                    c.setTitle("Microscopic ross-sections for element " + detector);
+                    c.setTitle("Microscopic cross-sections for element " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("log10(cross-section/barn)");
                     c.getData().add(element.makeCSSeries("Scatter"));
@@ -513,6 +549,7 @@ public class MonteCarloSimulation {
         chartData += "\n";
         for (Series<String, Number> s : c.getData()) {
             chartData += "Series: " + s.getName() + "\n";
+            chartData += "0,0\n";
             for (Data<String, Number> d : s.getData()) {
                 chartData += d.getXValue() + "," + d.getYValue() + "\n";
             }
@@ -523,6 +560,68 @@ public class MonteCarloSimulation {
         content.putString(chartData);
         clipboard.setContent(content);
         return c;
+    }
+
+    public static XYChart.Series makeThermalSeriesFromCSV(String name, URL url) {
+        XYChart.Series s = new XYChart.Series();
+        ObservableList data = s.getData();
+        s.setName(name);
+
+        try {
+            InputStream ist = new FileInputStream(new File(url.toURI()));
+            Scanner sc = new Scanner(ist);
+            while (sc.hasNextLine()) {
+                String[] numbers = sc.nextLine().split(",");
+                double x = Double.parseDouble(numbers[0]);
+                String tick = String.format("%6.3e", x);
+                if (x > EnergyHistogram.LOW_VISUAL_LIMIT) {
+                    break;
+                }
+                data.add(new XYChart.Data(tick, Double.parseDouble(numbers[1])));
+            }
+        } catch (Exception e) {
+            System.out.println("CSV not found for series: " + url);
+            return null;
+        }
+        return s;
+    }
+
+    public static String makeChartCSV(XYChart<String, Number> c) {
+        String chartData = "Energy";
+        // make header
+
+        for (Series<String, Number> s : c.getData()) {
+            chartData += "," + s.getName();
+        }
+        chartData += "\n";
+
+        // make row for 0s
+        chartData += "0";
+        for (Series<String, Number> s : c.getData()) {
+            chartData += ",0";
+        }
+        chartData += "\n";
+
+        // go through x-values
+        Series<String, Number> s0 = c.getData().get(0);
+        for (int i = 0; i < s0.getData().size(); i++) {
+            chartData += s0.getData().get(i).getXValue();
+            // go through the y-values
+            for (Series<String, Number> s : c.getData()) {
+                Data<String, Number> d2 = s.getData().get(i);
+                chartData += "," + d2.getYValue();
+            }
+            chartData += "\n";
+        }
+        return chartData;
+    }
+
+    public static void copyChartCSV(XYChart<String, Number> c) {
+        String chartData = makeChartCSV(c);
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(chartData);
+        clipboard.setContent(content);
     }
 
 }

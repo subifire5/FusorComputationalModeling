@@ -189,9 +189,11 @@ public class StatsDisplay extends Group {
     private void populateComboBoxWithPartsAndInterstitial() {
         this.object.getItems().clear();
         populateComboBoxWithParts();
-        Set<Material> sm = this.sim.assembly.getContainedMaterials();
-        sm.add(this.sim.interstitialMaterial);
-        populateComboBox(sm.stream().map(m -> m.name).collect(Collectors.toList()));
+        if (this.sim.assembly != null) {
+            Set<Material> sm = this.sim.assembly.getContainedMaterials();
+            sm.add(this.sim.interstitialMaterial);
+            populateComboBox(sm.stream().map(m -> m.name).collect(Collectors.toList()));
+        }
     }
 
     private void populateComboBox(Collection<String> s) {
