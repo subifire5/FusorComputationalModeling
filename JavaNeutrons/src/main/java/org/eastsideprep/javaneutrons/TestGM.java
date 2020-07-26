@@ -43,7 +43,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return spherical(visualizations);
+        return MC0D_Scatter1Maxwell(visualizations);
     }
 
     public static MonteCarloSimulation bigBlock(Group visualizations) {
@@ -143,6 +143,9 @@ public class TestGM {
         Material hw = HydrogenWax.getInstance();
         Shape spherical = new Shape(TestGM.class.getResource("/meshes/spherical_detector.stl"));
         double vol = spherical.getVolume();
+        System.out.println("Shell volume: "+vol);
+        System.out.println("phys.thermal:"+Util.Physics.thermalEnergy);
+        System.out.println("actual thermal:"+0.0253*Util.Physics.eV);
 
         MonteCarloSimulation mcs = new MC0D("HydrogenWax", pairs) {
             @Override
@@ -177,7 +180,7 @@ public class TestGM {
                     }
                     // score proton incoming energy in "entries"
                     p.entriesOverEnergy.record(1, e.particleEnergyIn);
-                    // score scttered neutron energies in "exits"
+                    // score scattered neutron energies in "exits"
                     p.exitsOverEnergy.record(1, e.energyOut);
                 }
 

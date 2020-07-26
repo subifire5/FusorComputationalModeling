@@ -75,6 +75,13 @@ public class App extends Application {
             if (this.sim.suggestedCount != -1) {
                 tf.setText(Long.toString(this.sim.suggestedCount));
             }
+            root.setCenter(view);
+            this.stats.getChildren().clear();
+            if (this.sim.lastCount <= 10) {
+                root.setRight(heatMap);
+            } else {
+                root.setRight(null);
+            }
         });
         cb.setValue(cb.getItems().get(0));
 
