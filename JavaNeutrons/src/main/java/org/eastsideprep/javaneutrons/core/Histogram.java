@@ -19,7 +19,7 @@ public class Histogram {
     public Histogram(double min, double max, int bins, boolean log) {
         this.min = min;
         this.max = max;
-        this.bins = new double[bins];
+        this.bins = new double[bins + 2];
         this.log = log;
         //this.bins = new double[logMax - logMin + 1];
     }
@@ -53,16 +53,22 @@ public class Histogram {
             // take log in chosen base
             x = Math.log10(x);
         }
-        x -= min;
 
-        // find bin
-        bin = (int) Math.ceil(x / (max - min) * (this.bins.length));
+        if (x < min) {
+            bin = 0;
+        } else if (x > max) {
+            bin = bins.length - 1;
+        } else {
+            x -= min;
 
-        // cut of stuff that is too small
-        bin = Math.max(bin, 0);
-        // cut off stuff that is too big
-        bin = Math.min(bin, this.bins.length - 1);
+            // find bin
+            bin = (int) Math.ceil(x / (max - min) * (this.bins.length - 2));
+        }
 
+//        // cut of stuff that is too small
+//        bin = Math.max(bin, 0);
+//        // cut off stuff that is too big
+//        bin = Math.min(bin, this.bins.length - 1);
         //System.out.println(""+this.hashCode()+": recording "+(x+min)+":"+value);
         synchronized (this) {
             this.bins[bin] += value;
@@ -94,8 +100,12 @@ public class Histogram {
 
         //System.out.println("");
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
-        for (int i = 0; i < bins.length; i++) {
-            double x = min + i / ((double) bins.length) * (max - min);
+        if (counts[0] > 0) {
+            data.add(new XYChart.Data("<", counts[0] / count));
+        }
+
+        for (int i = 1; i < bins.length - 1; i++) {
+            double x = min + i / ((double) bins.length - 2) * (max - min);
             if (this.log) {
                 x = Math.pow(10, x);
             }
@@ -105,6 +115,9 @@ public class Histogram {
             String tick = String.format("%6.3e", x);
             data.add(new XYChart.Data(tick, counts[i] / count));
             //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
+        }
+        if (counts[bins.length - 1] > 0) {
+            data.add(new XYChart.Data(">", counts[bins.length - 1] / count));
         }
         //System.out.println("");
 

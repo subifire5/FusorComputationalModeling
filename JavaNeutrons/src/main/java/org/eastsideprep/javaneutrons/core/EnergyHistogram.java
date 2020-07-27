@@ -17,8 +17,8 @@ public class EnergyHistogram extends Histogram {
 
     public EnergyHistogram() {
         super(-3, 7, 100, true);
-        hFlat = new Histogram(15000, 3e6, 199, false);
-        hLow = new Histogram(LOW_BIN_SIZE, LOW_TRACKING_LIMIT, (int) (LOW_TRACKING_LIMIT / LOW_BIN_SIZE) - 1, false);
+        hFlat = new Histogram(0, 3e6, 200, false);
+        hLow = new Histogram(0, LOW_TRACKING_LIMIT, (int) (LOW_TRACKING_LIMIT / LOW_BIN_SIZE), false);
     }
 
     @Override

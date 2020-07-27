@@ -5,14 +5,8 @@
  */
 package org.eastsideprep.javaneutrons;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Scanner;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.chart.CategoryAxis;
@@ -30,6 +24,7 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.eastsideprep.javaneutrons.core.Assembly;
 import org.eastsideprep.javaneutrons.core.EnergyHistogram;
 import org.eastsideprep.javaneutrons.core.Event;
+import org.eastsideprep.javaneutrons.core.Histogram;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.MC0D;
@@ -53,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return MC0D_Scatter1(visualizations);
+        return MC0D_Prison(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -68,6 +63,7 @@ public class TestGM {
             double vol = spherical.getVolume();
             EnergyHistogram maxwell;
             EnergyHistogram adjusted;
+            Histogram angles;
 
             @Override
             public void init() {
@@ -81,6 +77,7 @@ public class TestGM {
             public void before() {
                 maxwell = new EnergyHistogram();
                 adjusted = new EnergyHistogram();
+                angles = new Histogram(-1.0, 1.0, 100, false);
                 pairs = new ArrayList<>();
             }
 
@@ -94,6 +91,8 @@ public class TestGM {
                 n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
                 maxwell.record(1.0 / vol, n.energy);
                 adjusted.record(1.0 / vol, n.energy);
+                // score angle
+                angles.record(1, 1);
 
                 // scatter test - will we scatter in the block?
                 // technically, this includes captures, might need to differentiate
@@ -104,16 +103,11 @@ public class TestGM {
                     // record energy for pair correlation
                     double before = n.energy;
 
-//                    // actually scatter
-//                    this.targetAdjusted = false;
-//                    n.processEvent(e);
-//                    // score maxwell fluence
-//                    maxwell.record(1.0 / vol, n.energy);
-//
-//                    // scatter again, adjusted
-//                    n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
                     this.targetAdjusted = true;
                     n.processEvent(e);
+                    double angle = n.direction.getX();
+                    // score angle
+                    angles.record(1, angle);
                     // score adjusted fluence
                     adjusted.record(1.0 / vol, n.energy);
 
@@ -126,6 +120,8 @@ public class TestGM {
                     // score the unscattered fluence
                     maxwell.record(1.0 / vol, n.energy);
                     adjusted.record(1.0 / vol, n.energy);
+                    // score angle
+                    angles.record(1, 1);
                 }
             }
 
@@ -149,19 +145,126 @@ public class TestGM {
                 XYChart<String, Number> c = new LineChart<>(xAxis, yAxis);
                 c.setTitle("MC0D tiny HydrogenWax cube in spherical shell"
                         + ", src = " + this.lastCount);
-                xAxis.setLabel("Energy (eV)");
-                yAxis.setLabel("Fluence (n/cm^2)/src");
-                yAxis.setTickLabelFormatter(new Formatter());
-                //c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
-                c.getData().add(adjusted.makeSeries("Adjusted", this.lastCount, scale));
-                c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
-                c.getData().add(makeThermalSeriesFromCSV("MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                if (false) {
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Fluence (n/cm^2)/src");
+                    yAxis.setTickLabelFormatter(new Formatter());
+                    //c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
+                    c.getData().add(adjusted.makeSeries("Adjusted", this.lastCount, scale));
+                    c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
+                    c.getData().add(makeThermalSeriesFromCSV("MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                } else {
+                    xAxis.setLabel("cos(angle)");
+                    yAxis.setLabel("count/src");
+                    c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
+                }
                 copyChartCSV(c);
                 return c;
             }
 
         };
         mcs.suggestedCount = 10000000;
+        return mcs;
+    }
+
+    public static MonteCarloSimulation MC0D_Prison(Group vis) {
+        vis.getChildren().clear();
+
+        MonteCarloSimulation mcs = new MC0D() {
+
+            ArrayList<Vector2D> pairs = new ArrayList<>();
+            Isotope is = E1H.getInstance();
+            Material hw = HydrogenWax.getInstance();
+            Shape prison = new Cuboid(100);
+            double vol = prison.getVolume();
+            EnergyHistogram adjusted;
+            Histogram angles;
+
+            @Override
+            public void init() {
+                System.out.println("Shell volume: " + vol);
+                System.out.println("Util.Physics.thermalEnergy: " + Util.Physics.thermalEnergy / Util.Physics.eV + " eV");
+                this.materials.put("Hydrogen Wax", hw);
+                before();
+            }
+
+            @Override
+            public void before() {
+                adjusted = new EnergyHistogram();
+                angles = new Histogram(-1.0, 1.0, 100, false);
+                pairs = new ArrayList<>();
+            }
+
+            @Override
+            public void run(Neutron n) {
+                Event e;
+                // n is a fresh neutron
+
+                n.setDirectionAndEnergy(Vector3D.PLUS_I, Util.Physics.thermalEnergy);
+
+                // scatter test - will we scatter in the block?
+                // technically, this includes captures, might need to differentiate
+                //e.code = Event.Code.Scatter;
+                //if (hw.getPathLength(Util.Physics.thermalEnergy, Math.random()) < 0.025) {
+                do {
+                    e = hw.nextPoint(n);
+                    // record energy for pair correlation
+                    double before = n.energy;
+                    // score adjusted fluence
+                    adjusted.record(e.t / vol, n.energy);
+
+                    n.processEvent(e);
+                    if (e.code == Event.Code.Scatter) {
+                        // score angle
+                        angles.record(1, e.cos_theta);
+                        // get second part of pair, record it
+                        synchronized (pairs) {
+                            pairs.add(new Vector2D(before, n.energy));
+                        }
+                    }
+
+                } while (e.code == Event.Code.Scatter);
+            }
+
+            @Override
+            public void after() {
+                PearsonsCorrelation pc = new PearsonsCorrelation();
+                double[] x;
+                double[] y;
+                synchronized (pairs) {
+                    x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
+                    y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
+                }
+                double c = pc.correlation(x, y);
+                System.out.println("Correlation of energies before and after scatter: " + c);
+            }
+
+            @Override
+            public Chart makeCustomChart(String series, String scale) {
+                final CategoryAxis xAxis = new CategoryAxis();
+                final NumberAxis yAxis = new NumberAxis();
+                XYChart<String, Number> c = new LineChart<>(xAxis, yAxis);
+                c.setTitle("MC0D prison, src = " + this.lastCount);
+                if (series.equals("Fluence")) {
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Fluence (n/cm^2)/src");
+                    yAxis.setTickLabelFormatter(new Formatter());
+                    //c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
+                    c.getData().add(adjusted.makeSeries("Fluence (n/cm^2)/src", this.lastCount, scale));
+//                    c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
+//                    c.getData().add(makeThermalSeriesFromCSV("MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                } else if (series.equals("Scatter angles")) {
+                    xAxis.setLabel("cos(angle)");
+                    yAxis.setLabel("count/src");
+                    c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
+                }
+                copyChartCSV(c);
+                return c;
+            }
+
+        };
+        mcs.targetAdjusted = true;
+        mcs.suggestedCount = 100000;
         return mcs;
     }
 
@@ -199,7 +302,7 @@ public class TestGM {
     }
 
     public static MonteCarloSimulation prison(Group visualizations) {
-        double thickness = 200; //block thickness in cm
+        double thickness = 100; //block thickness in cm
         String m = "HydrogenWax";
         //String m = "CarbonWax";
         //String m = "Paraffin";

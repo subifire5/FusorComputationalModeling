@@ -139,15 +139,16 @@ public class StatsDisplay extends Group {
         RadioButton rb3 = new RadioButton("Entry counts");
         RadioButton rb3b = new RadioButton("Exit counts");
         RadioButton rb4 = new RadioButton("Scatter counts");
+        RadioButton rb4b = new RadioButton("Scatter angles");
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");
         RadioButton rb8 = new RadioButton("0-D Monte Carlo");
-        RadioButton rb4b = new RadioButton("Capture counts");
+        RadioButton rb4c = new RadioButton("Capture counts");
 
         rb2.setSelected(true);
 
-        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb3b, rb4, rb4b, rb1, rb5, rb6, rb7, rb8};
+        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb3b, rb4, rb4b, rb4c, rb1, rb5, rb6, rb7, rb8};
 
         this.tg = new ToggleGroup();
         for (RadioButton rb : rbs) {
@@ -224,6 +225,11 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
+                case "Scatter angles":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+
                 case "Entry counts":
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
@@ -290,6 +296,10 @@ public class StatsDisplay extends Group {
 
                 case "Scatter counts":
                     root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter counts", scale));
+                    break;
+
+               case "Scatter angles":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter angles", scale));
                     break;
 
                 case "Capture counts":

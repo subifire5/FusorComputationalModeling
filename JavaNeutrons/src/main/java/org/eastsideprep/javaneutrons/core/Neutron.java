@@ -39,15 +39,16 @@ public final class Neutron extends Particle {
 
     public Vector3D getScatteredVelocity(Event e, Vector3D neutronVelocity) {
         Isotope i = e.particle;
+        double cos_theta;
         if (i.angles != null) {
             double neutronSpeed = neutronVelocity.getNorm();
             double energyEV = 0.5 * Neutron.mass * neutronSpeed * neutronSpeed / Util.Physics.eV;
 
             // get the scattering angle from a random lookup in the tables
-            e.cos_theta = i.getScatterCosTheta(energyEV);
+            cos_theta = i.getScatterCosTheta(energyEV);
 
             // construct vector and return
-            Vector3D v = Util.Math.randomDir(e.cos_theta, neutronSpeed);
+            Vector3D v = Util.Math.randomDir(cos_theta, neutronSpeed);
             // random vector was scattered around Z, rotate to match axis of incoming neutron
             Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
             v = r.applyTo(v);
@@ -140,6 +141,8 @@ public final class Neutron extends Particle {
 
             // update neutron energy and direction
             this.setVelocity(neutronVelocityOut);
+
+            event.cos_theta = neutronVelocityIn.normalize().dotProduct(this.direction);
             event.energyOut = this.energy;
 
             if (this.mcs != null && this.mcs.traceLevel >= 2) {

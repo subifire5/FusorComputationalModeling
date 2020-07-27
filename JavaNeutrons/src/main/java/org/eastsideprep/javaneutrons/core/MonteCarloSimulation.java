@@ -2,6 +2,7 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -9,6 +10,7 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -384,7 +386,6 @@ public class MonteCarloSimulation {
                     if (fit && scale.equals("Linear (thermal)")) {
                         c.getData().add(p.entriesOverEnergy.makeFittedSeries("Energy fit", this.lastCount));
                     }
-                    chartData = "Energy, " + series;
                     break;
 
                 case "Exit counts":
@@ -402,7 +403,6 @@ public class MonteCarloSimulation {
                     if (fit && scale.equals("Linear (thermal)")) {
                         c.getData().add(p.exitsOverEnergy.makeFittedSeries("Energy fit", this.lastCount));
                     }
-                    chartData = "Energy, " + series;
                     break;
 
                 case "Fluence":
@@ -424,7 +424,6 @@ public class MonteCarloSimulation {
                             c.getData().add(p.fluenceOverEnergy.makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
-                        chartData = "Energy,Fluence";
                     } else {
                         // this is only for the interstitial medium
                         factor = (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume());
@@ -439,7 +438,6 @@ public class MonteCarloSimulation {
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, scale));
                         //c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
-                        chartData = "Energy,Fluence";
                     }
                     break;
 
@@ -453,7 +451,6 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Count/src");
                         c.getData().add(p.scattersOverEnergyBefore.makeSeries("Scatter (before)", this.lastCount, scale));
                         c.getData().add(p.scattersOverEnergyAfter.makeSeries("Scatter (after)", this.lastCount, scale));
-                        chartData = "Energy,Event Count";
                     } else {
                         m = this.getMaterialByName(detector);
                         c.setTitle("Material \"" + m.name + "\", src = " + this.lastCount);
@@ -461,7 +458,6 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Count");
                         c.getData().add(m.scattersOverEnergyBefore.makeSeries("Scatter (before)", scale));
                         c.getData().add(m.scattersOverEnergyAfter.makeSeries("Scatter (after)", scale));
-                        chartData = "Energy,Event Count";
                     }
                     break;
 
@@ -477,7 +473,6 @@ public class MonteCarloSimulation {
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count/src");
                         c.getData().add(p.capturesOverEnergy.makeSeries("Capture", this.lastCount, scale));
-                        chartData = "Energy,Event Count";
                     } else {
                         m = this.getMaterialByName(detector);
                         c.setTitle("Material \"" + m.name + "\""
@@ -486,7 +481,6 @@ public class MonteCarloSimulation {
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Count");
                         c.getData().add(m.capturesOverEnergy.makeSeries("Capture", scale));
-                        chartData = "Energy,Event Count";
                     }
                     break;
 
@@ -502,7 +496,17 @@ public class MonteCarloSimulation {
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Count");
                     c.getData().add(h.makeSeries("Length", scale));
-                    chartData = "Energy, avg. length";
+                    break;
+
+                case "Scatter angles":
+                    c = new LineChart<>(xAxis, yAxis);
+                    p = this.getPartByName(detector);
+                    c.setTitle("Part \"" + p.name + "\""
+                            + "src = " + this.lastCount
+                    );
+                    xAxis.setLabel("cos(angle)");
+                    yAxis.setLabel("Count");
+                    c.getData().add(p.angles.makeSeries("Length", this.lastCount, 1.0));
                     break;
 
                 case "Cross-sections":
@@ -514,7 +518,6 @@ public class MonteCarloSimulation {
                     c.getData().add(element.makeCSSeries("Scatter"));
                     c.getData().add(element.makeCSSeries("Capture"));
                     c.getData().add(element.makeCSSeries("Total"));
-                    chartData = "Energy,Total Crosssection";
                     break;
 
                 case "Sigmas":
@@ -524,7 +527,6 @@ public class MonteCarloSimulation {
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("log(Sigma (cm^-1))");
                     c.getData().add(m.makeSigmaSeries("Sigma (" + detector + ")"));
-                    chartData = "Energy,Sigma";
                     break;
 
                 default:
@@ -543,22 +545,8 @@ public class MonteCarloSimulation {
             yAxis.setLabel("Count");
 
             c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", scale));
-            chartData = "Energy,Count";
         }
-        // place all series into clipboard
-        chartData += "\n";
-        for (Series<String, Number> s : c.getData()) {
-            chartData += "Series: " + s.getName() + "\n";
-            chartData += "0,0\n";
-            for (Data<String, Number> d : s.getData()) {
-                chartData += d.getXValue() + "," + d.getYValue() + "\n";
-            }
-            chartData += "\n";
-        }
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(chartData);
-        clipboard.setContent(content);
+        copyChartCSV(c);
         return c;
     }
 
@@ -587,7 +575,7 @@ public class MonteCarloSimulation {
     }
 
     public static String makeChartCSV(XYChart<String, Number> c) {
-        String chartData = "Energy";
+        String chartData = c.getXAxis().getLabel();
         // make header
 
         for (Series<String, Number> s : c.getData()) {
@@ -595,15 +583,22 @@ public class MonteCarloSimulation {
         }
         chartData += "\n";
 
-        // make row for 0s
-        chartData += "0";
-        for (Series<String, Number> s : c.getData()) {
-            chartData += ",0";
+        // check if we need to insert a 0 row
+        Series<String, Number> s0 = c.getData().get(0);
+        String firstBin = s0.getData().get(0).getXValue();
+        if (firstBin.equals("<")) {
+            firstBin = s0.getData().get(1).getXValue();
         }
-        chartData += "\n";
+        if (Double.parseDouble(firstBin) > 0) {
+            // make row for 0s
+            chartData += "0";
+            for (Series<String, Number> s : c.getData()) {
+                chartData += ",0";
+            }
+            chartData += "\n";
+        }
 
         // go through x-values
-        Series<String, Number> s0 = c.getData().get(0);
         for (int i = 0; i < s0.getData().size(); i++) {
             chartData += s0.getData().get(i).getXValue();
             // go through the y-values
@@ -618,6 +613,7 @@ public class MonteCarloSimulation {
 
     public static void copyChartCSV(XYChart<String, Number> c) {
         String chartData = makeChartCSV(c);
+
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
         content.putString(chartData);
