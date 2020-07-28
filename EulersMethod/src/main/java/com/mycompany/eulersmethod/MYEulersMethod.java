@@ -55,15 +55,15 @@ public class MYEulersMethod implements Solution {
                 p = step(p, stepSize);
                 i++; 
                 System.out.println("Number of steps complete: " + i + "/" + batchSize); 
-                System.out.println("Time: " + System.currentTimeMillis());
+                //System.out.println("Time: " + System.currentTimeMillis());
                               
             } else if (i == batchSize) {
                 i = 0;
                 particles[batchCount] = p.clone();
-                System.out.println("Particle: " + particles[batchCount]);
+                //System.out.println("Particle: " + particles[batchCount]);
                 batchCount++;
                 System.out.println("Number of Batches complete: " + batchCount + "/" + totalBatches);
-                System.out.println("Time: " + System.currentTimeMillis());
+                //System.out.println("Time: " + System.currentTimeMillis());
                 
                 
             }
