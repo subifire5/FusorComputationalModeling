@@ -57,24 +57,31 @@ public class InputHandler {
      * @param outputFilePath
      * @return
      */
-    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize) {
+    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
         Particle[] particles = new Particle[1];
         initial.setScaleDistance(scaleDistance);
         initial.totalEnergy(eField);
         if (batch) {
-            if (PJ) {
+            if (PJ && eu) {
                 PJEulersMethod pj = new PJEulersMethod(eField);
-
                 particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
-            } else if (MY) {
+            } else if (MY && eu) {
                 MYEulersMethod my = new MYEulersMethod(eField);
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
 
+            } else if (PJ && rk) {
+                System.out.println("Praveer, your runge kutta wasn't available at the time this was written");
+                System.out.println("to get your method to run, go to orbit stuff, inputHandler, and uncomment your code");
+                //PJRungeKutta pj = new PJRungeKutta(eField);
+                //particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (MY && rk) {
+                MYRungeKutta my = new MYRungeKutta(eField);
+                particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
             }
 
         } else {
             particles = new Particle[numberOfSteps.intValue()];
-            if (PJ) {
+            if (PJ && eu) {
 
                 PJEulersMethod pj = new PJEulersMethod(eField);
                 particles[0] = initial;
@@ -84,7 +91,7 @@ public class InputHandler {
                     p = particles[i];
                 }
 
-            } else if (MY) {
+            } else if (MY && eu) {
 
                 MYEulersMethod my = new MYEulersMethod(eField);
                 particles[0] = initial;
@@ -94,6 +101,25 @@ public class InputHandler {
                     p = particles[i];
                 }
 
+            } else if (PJ && rk) {
+                System.out.println("Praveer, your runge kutta wasn't available at the time this was written");
+                System.out.println("to get your method to run, go to orbit stuff, inputHandler, and uncomment your code");
+                /*PJRungeKutta pj = new PJRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = pj.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+                 */
+            } else if (MY && rk) {
+                MYRungeKutta my = new MYRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
             }
         }
 
@@ -190,6 +216,8 @@ public class InputHandler {
     public void readFromFile() {
         Boolean PJ = false;
         Boolean MY = false;
+        Boolean eu = false; // eulers
+        Boolean rk = false; // runge kutta
         Boolean batch = true; // true by default
         int batchSize = 0;
         Particle initial = null;
@@ -269,6 +297,22 @@ public class InputHandler {
 
             input = "";
             inputRecieved = false;
+            while (!inputRecieved) {
+                System.out.println("Which method do you want? Eulers (EU) Runge Kutta (RK)");
+                input = s.nextLine();
+                if (input.equals("EU") || input.equals("Eu") || input.equals("eU") || input.equals("eu")) {
+                    inputRecieved = true;
+                    eu = true;
+                } else if (input.equals("RK") || input.equals("Rk") || input.equals("rK") || input.equals("rk")) {
+                    inputRecieved = true;
+                    rk = true;
+                } else {
+                    System.out.println("Please respond with (EU) or (RK)");
+                }
+            }
+
+            input = "";
+            inputRecieved = false;
             while (!inputRecieved && numberOfSteps < 100000) {
                 System.out.println("Do want to split them into batches? (Y/N)");
 
@@ -293,7 +337,7 @@ public class InputHandler {
                 batchSize = Integer.valueOf(s.nextLine());
             }
 
-            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize);
+            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
         }
 
         inputRecieved = false;

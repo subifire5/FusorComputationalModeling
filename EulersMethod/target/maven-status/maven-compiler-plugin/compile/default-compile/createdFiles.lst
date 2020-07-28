@@ -9,5 +9,6 @@ com\mycompany\EulersMethod\EulersMethod.class
 com\mycompany\EulersMethod\Vector.class
 com\mycompany\EulersMethod\EFieldFileParser.class
 com\mycompany\EulersMethod\Solution.class
+com\mycompany\EulersMethod\MYRungeKutta.class
 com\mycompany\EulersMethod\Charge.class
 com\mycompany\EulersMethod\ParticleFileParser.class

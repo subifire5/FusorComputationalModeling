@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.eulersmethod;
+package com.mycompany.EulersMethod;
 
 /**
  *
@@ -25,8 +25,8 @@ public class MYRungeKutta implements Solution{
         p1.vel = last3;
         return p1;
     }
-    
-    public Particle step2(Particle p, Double stepSize) {
+    @Override
+    public Particle step(Particle p, Double stepSize) {
         Particle k1 = f(p.clone());
         Particle p1 = p.clone();
         p1.pos.plusEquals(k1.clone().pos.scale(stepSize/2));
@@ -42,10 +42,15 @@ public class MYRungeKutta implements Solution{
         Particle k4 = f(p3);
         
         Particle p4 = p.clone();
-        p4.vel.plusEquals((((k1.vel.sum(k2.vel.scale(2))).sum(k3.vel.scale(2))).sum(k4.vel)).scale(1/6*stepSize));
-        p4.pos.plusEquals((((k1.pos.sum(k2.pos.scale(2))).sum(k3.pos.scale(2))).sum(k4.pos)).scale(1/6*stepSize));
+        p4.vel.plusEquals((((k1.vel.sum(k2.vel.scale(2.0))).sum(k3.vel.scale(2.0))).sum(k4.vel)).scale(1/6*stepSize));
+        p4.pos.plusEquals((((k1.pos.sum(k2.pos.scale(2.0))).sum(k3.pos.scale(2.0))).sum(k4.pos)).scale(1/6*stepSize));
         p4.time += stepSize;
         
         return p4;        
+    }
+
+    @Override
+    public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
