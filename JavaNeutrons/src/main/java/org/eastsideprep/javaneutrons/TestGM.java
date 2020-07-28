@@ -145,18 +145,21 @@ public class TestGM {
                 XYChart<String, Number> c = new LineChart<>(xAxis, yAxis);
                 c.setTitle("MC0D tiny HydrogenWax cube in spherical shell"
                         + ", src = " + this.lastCount);
-                if (false) {
+                if (series.equals("Fluence")) {
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("Fluence (n/cm^2)/src");
                     yAxis.setTickLabelFormatter(new Formatter());
                     //c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
-                    c.getData().add(adjusted.makeSeries("Adjusted", this.lastCount, scale));
+                    c.getData().add(adjusted.makeSeries("MC0D", this.lastCount, scale));
                     c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
-                    c.getData().add(makeThermalSeriesFromCSV("MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
-                } else {
+                    c.getData().add(makeThermalSeriesFromCSV("Whitmer MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                    c.getData().add(makeThermalSeriesFromCSV("MC3D 10m neutrons", TestGM.class.getResource("/whitmer/spherical_mc3d.csv")));
+                } else if (series.equals("Scatter angles"))  {
                     xAxis.setLabel("cos(angle)");
                     yAxis.setLabel("count/src");
                     c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
+                } else {
+                    return null;
                 }
                 copyChartCSV(c);
                 return c;
@@ -175,7 +178,7 @@ public class TestGM {
             ArrayList<Vector2D> pairs = new ArrayList<>();
             Isotope is = E1H.getInstance();
             Material hw = HydrogenWax.getInstance();
-            Shape prison = new Cuboid(100);
+            Shape prison = new Cuboid(200);
             double vol = prison.getVolume();
             EnergyHistogram adjusted;
             Histogram angles;
@@ -295,17 +298,18 @@ public class TestGM {
         whitmer.addAll(wall, detector1, detector2);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, Util.Physics.thermalEnergy,
+                null, null, Neutron.startingEnergyDD,
                 "Vacuum", null, visualizations); // interstitial, initial
         //mcs.prepareGrid(5.0, visualizations);
+        mcs.targetAdjusted = true;
         return mcs;
     }
 
     public static MonteCarloSimulation prison(Group visualizations) {
-        double thickness = 100; //block thickness in cm
-        String m = "HydrogenWax";
+        double thickness = 200; //block thickness in cm
+        //String m = "HydrogenWax";
         //String m = "CarbonWax";
-        //String m = "Paraffin";
+        String m = "Paraffin";
 
         //Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
         Part wall = new Part("Prison: " + m, new Cuboid(thickness), m);
@@ -316,8 +320,9 @@ public class TestGM {
         whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, 2.53e-2 * Util.Physics.eV/*2.451e6 * Util.Physics.eV*/, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                null, Vector3D.PLUS_I, Util.Physics.thermalEnergy, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
+        mcs.targetAdjusted = true;
         return mcs;
     }
 

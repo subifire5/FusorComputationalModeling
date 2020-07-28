@@ -334,7 +334,9 @@ public class MonteCarloSimulation {
     }
 
     public void prepareGrid(double side, Group vis) {
-        this.grid = new Grid(side, assembly, origin, vis);
+        if (!(this instanceof MC0D)) {
+            this.grid = new Grid(side, assembly, origin, vis);
+        }
     }
 
     public void preProcess() {
@@ -560,12 +562,16 @@ public class MonteCarloSimulation {
             Scanner sc = new Scanner(ist);
             while (sc.hasNextLine()) {
                 String[] numbers = sc.nextLine().split(",");
-                double x = Double.parseDouble(numbers[0]);
-                String tick = String.format("%6.3e", x);
-                if (x > EnergyHistogram.LOW_VISUAL_LIMIT) {
-                    break;
+                try {
+                    double x = Double.parseDouble(numbers[0]);
+                    String tick = String.format("%6.3e", x);
+                    if (x > EnergyHistogram.LOW_VISUAL_LIMIT) {
+                        break;
+                    }
+                    data.add(new XYChart.Data(tick, Double.parseDouble(numbers[1])));
+                } catch (Exception e) {
+                    // skip headers, underflow, overflow
                 }
-                data.add(new XYChart.Data(tick, Double.parseDouble(numbers[1])));
             }
         } catch (Exception e) {
             System.out.println("CSV not found for series: " + url);
@@ -603,8 +609,12 @@ public class MonteCarloSimulation {
             chartData += s0.getData().get(i).getXValue();
             // go through the y-values
             for (Series<String, Number> s : c.getData()) {
-                Data<String, Number> d2 = s.getData().get(i);
-                chartData += "," + d2.getYValue();
+                if (s.getData().size() > i) {
+                    Data<String, Number> d2 = s.getData().get(i);
+                    chartData += "," + d2.getYValue();
+                } else {
+                    chartData += ",NA";
+                }
             }
             chartData += "\n";
         }
