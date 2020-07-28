@@ -1,8 +1,12 @@
 package org.eastsideprep.javaneutrons.core;
 
+import java.util.ArrayList;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
+import org.apache.commons.math3.fitting.CurveFitter;
+import org.apache.commons.math3.optim.nonlinear.vector.MultivariateVectorOptimizer;
+import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 
 public class Histogram {
 
@@ -15,7 +19,7 @@ public class Histogram {
     public Histogram(double min, double max, int bins, boolean log) {
         this.min = min;
         this.max = max;
-        this.bins = new double[bins];
+        this.bins = new double[bins + 2];
         this.log = log;
         //this.bins = new double[logMax - logMin + 1];
     }
@@ -49,16 +53,22 @@ public class Histogram {
             // take log in chosen base
             x = Math.log10(x);
         }
-        x -= min;
 
-        // find bin
-        bin = (int) Math.ceil(x / (max - min) * (this.bins.length));
+        if (x < min) {
+            bin = 0;
+        } else if (x > max) {
+            bin = bins.length - 1;
+        } else {
+            x -= min;
 
-        // cut of stuff that is too small
-        bin = Math.max(bin, 0);
-        // cut off stuff that is too big
-        bin = Math.min(bin, this.bins.length - 1);
+            // find bin
+            bin = (int) Math.ceil(x / (max - min) * (this.bins.length - 2));
+        }
 
+//        // cut of stuff that is too small
+//        bin = Math.max(bin, 0);
+//        // cut off stuff that is too big
+//        bin = Math.min(bin, this.bins.length - 1);
         //System.out.println(""+this.hashCode()+": recording "+(x+min)+":"+value);
         synchronized (this) {
             this.bins[bin] += value;
@@ -71,6 +81,11 @@ public class Histogram {
     }
 
     public XYChart.Series makeSeries(String seriesName, double count) {
+
+        return this.makeSeries(seriesName, count, 10e10);
+    }
+
+    public XYChart.Series makeSeries(String seriesName, double count, double limit) {
         //System.out.println("Retrieving series "+seriesName+":");
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
@@ -85,79 +100,31 @@ public class Histogram {
 
         //System.out.println("");
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
-        for (int i = 0; i < bins.length; i++) {
-            double x = min + i / ((double) bins.length) * (max - min);
+        if (counts[0] > 0) {
+            data.add(new XYChart.Data("<", counts[0] / count));
+        }
+
+        for (int i = 1; i < bins.length - 1; i++) {
+            double x = min + i / ((double) bins.length - 2) * (max - min);
             if (this.log) {
                 x = Math.pow(10, x);
+            }
+            if (x > limit) {
+                break;
             }
             String tick = String.format("%6.3e", x);
             data.add(new XYChart.Data(tick, counts[i] / count));
             //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
+        if (counts[bins.length - 1] > 0) {
+            data.add(new XYChart.Data(">", counts[bins.length - 1] / count));
+        }
         //System.out.println("");
 
         return series;
     }
 
-    protected interface DoubleTransform {
-
-        double transform(double x);
-    }
-
-    protected interface XYTransform {
-
-        double transform(double x, double y);
-    }
-
-    protected static class Identity {
-
-        public static double x(double x) {
-            return x;
-        }
-
-        public static double y(double x, double y) {
-            return x;
-        }
-    }
-
-    protected SimpleRegression regression( XYTransform ty) {
-        SimpleRegression r = new SimpleRegression(true);
-
-        // skip last bucket since it has the overflow
-        for (int i = 0; i < bins.length - 1; i++) {
-            double x = (min + i / ((double) bins.length) * (max - min));// * Util.Physics.eV;
-            double y = bins[i];
-            if (y == 0 || x == 0) {
-                continue;
-            }
-
-            r.addData(x, ty.transform(x, y));
-        }
-        return r;
-    }
-
-    protected double RMSE(SimpleRegression r, DoubleTransform tx, XYTransform ity) {
-        double vr = 0;
-        double total = 0;
-        // skip last bucket since it has the overflow
-        for (int i = 0; i < bins.length - 1; i++) {
-            double x = (min + i / ((double) bins.length) * (max - min));// * Util.Physics.eV;
-            double y = bins[i];
-            if (y == 0) {
-                continue;
-            }
-            double yhat = ity.transform(x, r.predict(tx.transform(x)));
-            if (Double.isNaN(yhat)) {
-                System.out.println("");
-            }
-            double residual = y - yhat;
-            vr += (residual * residual) / (bins.length - 1);
-            total += y;
-        }
-        return Math.sqrt(vr / total);
-    }
-
-    public XYChart.Series makeFittedSeries(String seriesName, double count) {
+    public XYChart.Series makeFittedSeries(String seriesName, ParametricUnivariateFunction f, double[] params, double count, double limit) {
         //System.out.println("Retrieving series "+seriesName+":");
         XYChart.Series series = new XYChart.Series();
         ObservableList data = series.getData();
@@ -170,37 +137,49 @@ public class Histogram {
             System.arraycopy(this.bins, 0, counts, 0, counts.length);
         }
 
-        XYTransform ty = null;
-        XYTransform ity = null;
-
-        if (seriesName.equals("Energy fit")) {
-            ty = (x, yin) -> Math.log(yin / Math.sqrt(x));
-            ity = (x, yout) -> Math.sqrt(x) * Math.exp(yout);
-        } else if (seriesName.equals("Flux fit")){
-            ty = (x, yin) -> Math.log(yin / x);
-            ity = (x, yout) -> x * Math.exp(yout);
-        } else {
-            return null;
-        }
-
-        SimpleRegression r = this.regression(ty);
-
         //System.out.println("");
         //System.out.println(""+this.hashCode()+Arrays.toString(bins));
         for (int i = 0; i < bins.length; i++) {
-            double x = (min + i / ((double) bins.length) * (max - min));// * Util.Physics.eV;
-            if (this.log) {
-                x = Math.pow(10, x);
+            double x = (min + i / ((double) bins.length) * (max - min));
+            if (x > limit) {
+                break;
             }
-            double yActual = bins[i];
-            double tyActual = ty.transform(x, yActual);
-            double yPred = ity.transform(x, r.predict(x));
-            String tick = String.format("%6.3e", x/*/ Util.Physics.eV*/);
-            data.add(new XYChart.Data(tick, yPred/count));
+            double yPred = f.value(x, params);
+            String tick = String.format("%6.3e", x);
+            data.add(new XYChart.Data(tick, yPred / count));
+//            if (x > 2e-2 && x < 3e-2) {
+//                System.out.println("predicted value x=" + x + " y=" + yPred);
+//            }
             //System.out.println(tick + " " + String.format("%6.3e", counts[i] / count));
         }
         //System.out.println("");
         return series;
+    }
+
+    public double[] fitCurve(ParametricUnivariateFunction f, double[] guesses, double count) {
+
+        MultivariateVectorOptimizer opt = new LevenbergMarquardtOptimizer();
+        CurveFitter<ParametricUnivariateFunction> cf = new CurveFitter<>(opt);
+
+        ArrayList<Double> values = new ArrayList<>();
+
+        // skip last bucket since it has the overflow
+        for (int i = 0; i < bins.length - 1; i++) {
+            double x = (min + i / ((double) bins.length) * (max - min));
+            double y = bins[i];
+            if (y == 0 || x == 0) {
+                continue;
+            }
+
+            cf.addObservedPoint(x, y);
+//            if (x > 2e-2 && x < 3e-2) {
+//                System.out.println("observed value x=" + x + " y=" + y);
+//            }
+
+        }
+
+        double[] beta = cf.fit(f, guesses);
+        return beta;
     }
 
     public void mutateNormalizeBy(Histogram other) {

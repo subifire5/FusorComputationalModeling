@@ -13,7 +13,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Part {
 
-    public static HashMap<String, Part> namedParts = new HashMap<>();
     public Shape shape;
     public Material material;
     public String name;
@@ -25,6 +24,7 @@ public class Part {
     public EnergyHistogram scattersOverEnergyBefore;
     public EnergyHistogram scattersOverEnergyAfter;
     public EnergyHistogram capturesOverEnergy;
+    public Histogram angles;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
     private double totalFluence = 0;
@@ -37,7 +37,6 @@ public class Part {
         this.name = name;
         if (this.shape != null) {
             this.shape.part = this;
-            namedParts.put(name, this);
         }
         if (material != null) {
             String mName = material.toString();
@@ -50,10 +49,6 @@ public class Part {
             this.volume = this.shape.getVolume();
         }
         resetDetector();
-    }
-
-    public static Part getByName(String name) {
-        return namedParts.get(name);
     }
 
     public void resetDetectors() {
@@ -70,6 +65,7 @@ public class Part {
         this.scattersOverEnergyBefore = new EnergyHistogram();
         this.capturesOverEnergy = new EnergyHistogram();
         this.scattersOverEnergyAfter = new EnergyHistogram();
+        this.angles = new Histogram(-1, 1, 100, false);
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
@@ -173,7 +169,7 @@ public class Part {
                 }
                 // call for Detector parts to record
                 this.material.processEvent(event, false);
-                this.processPathLength(event.t, n);
+                this.processPathLength(event.t, currentEnergy);
             }
 
             // also record event for the individual neutron
@@ -202,8 +198,8 @@ public class Part {
     //
     // detector functionality
     //
-    void processPathLength(double length, Neutron n) {
-        this.fluenceOverEnergy.record(length / volume, n.energy);
+    void processPathLength(double length, double energy) {
+        this.fluenceOverEnergy.record(length / volume, energy);
         synchronized (this) {
             this.totalFluence += length / volume;
         }
@@ -240,6 +236,7 @@ public class Part {
 
         if (event.code == Event.Code.Scatter) {
             this.scattersOverEnergyAfter.record(1, event.neutron.energy);
+            this.angles.record(1, event.cos_theta);
         }
     }
 

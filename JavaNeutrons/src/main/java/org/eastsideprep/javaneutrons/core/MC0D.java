@@ -1,42 +1,59 @@
 package org.eastsideprep.javaneutrons.core;
 
+import javafx.scene.chart.Chart;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 
-public class MC0D extends MonteCarloSimulation {
+abstract public class MC0D extends MonteCarloSimulation {
 
-    public interface MC0DRunLambda {
+    abstract public void init();
 
-        void run(Part pseudoPart, Object o);
-    }
+    abstract public void before();
 
-    public interface MC0DAfterLambda {
+    abstract public void run(Neutron n);
 
-        void run(Part pseudoPart, Object o);
-    }
-    private Part pseudoPart;
-    private MC0DRunLambda runLambda;
-    private MC0DAfterLambda afterLambda;
-    private Object o;
+    abstract public void after();
 
-    public MC0D(MC0DRunLambda lambda, MC0DAfterLambda after, Object material, Object o) {
+    public MC0D() {
         super();
-        this.runLambda = lambda;
-        this.afterLambda = after;
-        this.o = o;
-        pseudoPart = new Part("MC0D", new Cuboid(0.000001), material);
-        this.assembly.add(pseudoPart);
+        Part pseudoPart = new Part("Custom", new Cuboid(1), "HighVacuum");
+//        this.assembly.add(pseudoPart);
+        this.namedParts.put("Custom", pseudoPart);
+//        if (pseudoPart.material.name != null) {
+//            this.materials.put(pseudoPart.material.name, pseudoPart.material);
+//        }
+    }
+
+    @Override
+    public void preProcess() {
+        this.before();
     }
 
     @Override
     public void postProcess() {
-        this.afterLambda.run(pseudoPart, o);
+        this.after();
     }
 
     @Override
-
     public void simulateNeutron(Neutron n) {
-        this.runLambda.run(pseudoPart, o);
+        if (n == null) {
+            return;
+        }
+        
+        this.run(n);
         completed.incrementAndGet();
+    }
+
+    public Chart makeCustomChart(String series, String scale) {
+        return null;
+    }
+
+    @Override
+    public Chart makeChart(String detector, String series, String scale) {
+        if (detector != null && detector.equals("Custom")) {
+            return makeCustomChart(series, scale);
+        }
+        return super.makeChart(detector, series, scale);
+
     }
 
 }

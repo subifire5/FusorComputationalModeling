@@ -57,6 +57,10 @@ public class Util {
                     .normalize();
         }
         
+        public static double randomGaussian() {
+           return ThreadLocalRandom.current().nextGaussian();
+        }
+
         public static double random() {
             return ThreadLocalRandom.current().nextDouble();
         }
@@ -71,8 +75,8 @@ public class Util {
 
         public static Vector3D randomDir(double cos_theta, double magnitude) {
             double phi = random() * 2 * java.lang.Math.PI;
-            double theta = java.lang.Math.acos(cos_theta);
-            return new Vector3D(magnitude * java.lang.Math.sin(theta) * java.lang.Math.cos(phi), magnitude * java.lang.Math.sin(theta) * java.lang.Math.sin(phi), magnitude * cos_theta);
+            double sin_theta = java.lang.Math.sqrt(1-cos_theta*cos_theta);
+            return new Vector3D(magnitude * sin_theta * java.lang.Math.cos(phi), magnitude * sin_theta * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
         public static Vector3D randomGaussianComponentVector(double componentSD) {
@@ -225,8 +229,9 @@ public class Util {
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
         final public static double barn = 1e-24; // 1 barn in SI cm
         final public static double Da = 1.6605e-27; // Dalton amu in kg
-        final public static double thermalEnergy = 4e-21 * 1e4; // room temp avg. energy in J (cm)
+        final public static double thermalEnergy = 4.0535154e-21 * 1e4; // room temp avg. energy in J (cm) eqv to 0.0253eV
         // factor 1e4 is from using cm, not m here - 100^2
+
     }
 
     static public class Graphics {
@@ -393,4 +398,6 @@ public class Util {
         }
 
     }
+    
+   
 }

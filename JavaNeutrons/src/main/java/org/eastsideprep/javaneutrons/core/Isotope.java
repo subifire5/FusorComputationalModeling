@@ -10,6 +10,8 @@ import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Isotope {
 
@@ -55,15 +57,15 @@ public class Isotope {
             bin = bin < 0 ? -bin - 1 : bin;
             //System.out.println("rand "+rand+": bin is " + bin + " array " + Arrays.toString(this.cdf));
             //System.out.println("");
-            
+
             // how far are we into the bucket, in terms of 0-1:
             double t = (rand - this.cdf[bin - 1]) / (this.cdf[bin] - this.cdf[bin - 1]);
             //System.out.println("rand "+rand+": t is "+t);
-            
+
             // let's go that far into the cos bucket
             double cos = this.cos[bin - 1] + t * (this.cos[bin] - this.cos[bin - 1]);
             //System.out.println("rand "+rand+": cos is " + cos + " array " + Arrays.toString(this.cos));
-            
+
             return cos;
         }
     }
@@ -81,7 +83,7 @@ public class Isotope {
     private double[] total;
     private double[] angEnergies;
 
-    public  ArrayList<AngEntry> angles;
+    public ArrayList<AngEntry> angles;
 
     // for when you are too lazy to look up the correct mass
     public Isotope(String name, int atomicNumber, int neutrons) {
@@ -216,32 +218,47 @@ public class Isotope {
         this.angEnergies = newAngles.stream().mapToDouble(e -> e.energy).toArray();
 
     }
-    
-    public double getScatterCosTheta(double energy) {
-            double cos_theta;
-            double rand = ThreadLocalRandom.current().nextDouble();
-            // locate energy bin
-            int bin = Arrays.binarySearch(this.angEnergies, energy);
-            if (bin < 0) {
-                bin = -bin - 1;
-                int binBelow = bin - 1;
-                // compute how far we are into the energy bin
-                double t = (energy - this.angEnergies[binBelow]) / (this.angEnergies[bin] - this.angEnergies[binBelow]);
 
-                // get cos values for low and high bin, then interpolate
-                double cos_theta_low = this.angles.get(binBelow).lookupCos(rand);
-                double cos_theta_high = this.angles.get(bin).lookupCos(rand);
-                // then interpolate
-                cos_theta = cos_theta_high * t + cos_theta_low * (1 - t);
-            } else {
-                // found it exactly
-                cos_theta = this.angles.get(bin).lookupCos(rand);
-            }
-            return cos_theta;
+    public double getScatterCosTheta(double energy) {
+        double cos_theta;
+        double rand = ThreadLocalRandom.current().nextDouble();
+        // locate energy bin
+        int bin = Arrays.binarySearch(this.angEnergies, energy);
+        if (bin < 0) {
+            bin = -bin - 1;
+            int binBelow = bin - 1;
+            // compute how far we are into the energy bin
+            double t = (energy - this.angEnergies[binBelow]) / (this.angEnergies[bin] - this.angEnergies[binBelow]);
+
+            // get cos values for low and high bin, then interpolate
+            double cos_theta_low = this.angles.get(binBelow).lookupCos(rand);
+            double cos_theta_high = this.angles.get(bin).lookupCos(rand);
+            // then interpolate
+            cos_theta = cos_theta_high * t + cos_theta_low * (1 - t);
+        } else {
+            // found it exactly
+            cos_theta = this.angles.get(bin).lookupCos(rand);
+        }
+        return cos_theta;
     }
 
-   
+  
+    
 
+//    public Vector3D getRandomVeclocity(double energy, Vector3D other) {
+//        do {
+//            // get correctly distributed speed
+//            getRandomSpeed(energy)
+//        }
+//        Vector3D v = Util.Math.randomDir(e.cos_theta, neutronSpeed);
+//        // random vector was scattered around Z, rotate to match axis of incoming neutron
+//        Rotation r = new Rotation(Vector3D.PLUS_K, neutronVelocity);
+//        v = r.applyTo(v);
+//
+//        //System.out.println("v: " + v);
+//        return v;
+//
+//    }
     //
     // input: eV, output: barn
     //
