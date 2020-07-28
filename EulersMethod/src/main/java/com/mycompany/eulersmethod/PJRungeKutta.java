@@ -3,18 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-//package com.mycompany.EulersMethod;
+package com.mycompany.EulersMethod;
 
 /**
  *
  * @author pjain
  */
 
-//import com.mycompany.EulersMethod.EField;
-//import com.mycompany.EulersMethod.InputHandler;
-//import com.mycompany.EulersMethod.PJEulersMethod;
+import com.mycompany.EulersMethod.EField;
+import com.mycompany.EulersMethod.InputHandler;
+import com.mycompany.EulersMethod.PJEulersMethod;
 
-/*public class PJRungeKutta implements Solution {
+public class PJRungeKutta implements Solution {
 
     EField eField;
 
@@ -22,7 +22,7 @@
         this.eField = eField;
     }
 
-    public Particle f(Particle p){
+    public Particle f(Particle p, Double stepSize){
         
         Vector first3 = p.vel;
         Vector last3 = eField.forceOnCharge(p).scale(1/p.mass);
@@ -33,51 +33,43 @@
         return j;
 
     }
-    public Particle j(Particle p, double stepSize) {
+    public Particle step(Particle p, double stepSize) {
         
-        Vector k1 = j.pos.sum(j.vel);
-      
-        Vector k1_first3 = p.vel;
-        Vector k1_last3 = eField.forceOnCharge(p).scale(1/p.mass);
-        Particle j = p.clone();
-        j.pos = k1_first3;
-        j.vel = k1_last3;
-        Vector k1 = j.pos.sum(j.vel);
+        int x = 2;
+        double two = (double) x;
         
-
-        Vector k2_first3 = j.pos.sum(stepSize*(k1.scale(0.5)));
-        Vector k2_last3 = (eField.forceOnCharge(j).scale(1/j.mass)).sum(stepSize*(k1.scale(0.5)));
-        Vector k2 = k2_first3.sum(k2_last3); 
+        Particle k1 = f(p,stepSize);
+        Particle k1_2 = p.clone();
+        k1_2.pos.scale(stepSize/2);
+        k1_2.vel.scale(stepSize/2);
+        k1_2.pos.sum(p.pos);
+        k1_2.vel.sum(p.vel);
+        Particle k2 = f(k1_2,stepSize);
         
-        Vector k3_first3 = j.pos.sum(stepSize*(k2.scale(0.5)));
-        Vector k3_last3 = 
-        double time = p.time += stepSize;
-        p.time = time; 
+        Particle k2_3= p.clone();
+        k2_3.pos.scale(stepSize/2);
+        k2_3.vel.scale(stepSize/2);
+        k2_3.pos.sum(p.pos);
+        k2_3.vel.sum(p.vel);
+        Particle k3 = f(k2_3,stepSize);
         
-        
-       // PJEulersMethod pj = new PJEulersMethod(eField);
-        
-       /* Particle kp1 = pj.step(p.clone(),stepSize);
-        Vector k1 = new Vector(kp1.pos);
-        Double k2_t =  p.time + (stepSize/2);
-        Double k2_x = p.pos.x + (stepSize*(kp1.pos.x/2)); 
-        Double k2_y = p.pos.y + (stepSize*(kp1.pos.y/2)); 
-        Double k2_z = p.pos.z + (stepSize*(kp1.pos.z/2));
-        Vector k2 = new Vector(k2_x, k2_y, k2_z);
-        Double k3_t = p.time + (stepSize/2);
-        Double k3_x = p.pos.x + (stepSize*(k2_x/2));
-        Double k3_y = p.pos.y + (stepSize*(k2_y/2));
-        Double k3_z = p.pos.z + (stepSize*(k2_z/2));
-        Vector k3 = new Vector(k3_x, k3_y,k3_z);
-        Double k4_t = p.time + stepSize;
-        Double k4_x = p.pos.x + (stepSize*k3_x);
-        Double k4_y = p.pos.y + (stepSize*k3_y);
-        Double k4_z = p.pos.z + (stepSize*k3_z);
-        Vector k4 = new Vector(k4_x, k4_y, k4_z);
-        //Vector newpos = new Vector (k4_x + stepSize, k4_y + stepSize*(k1.sum(2.scale(k2).sum(2.scale(k3.sum(k4)))),k4_z);*/
+        Particle k3_4 = p.clone();
+        k3_4.pos.scale(stepSize);
+        k3_4.vel.scale(stepSize);
+        k3_4.pos.sum(p.pos);
+        k3_4.pos.sum(p.vel);
+        Particle k4 = f(k3_4,stepSize);
                 
-
-    /*}
+        Particle p2 = p.clone();
+        
+        p2.pos.plusEquals(k1.pos.sum(k2.pos.scale(two)).sum(k3.pos.scale(two).sum(k4.pos).scale(1/6*stepSize)));
+        p2.vel.plusEquals(k1.vel.sum(k2.vel.scale(two)).sum(k3.vel.scale(two).sum(k4.vel).scale(1/6*stepSize)));
+        
+        p2.time += stepSize;
+        
+        return p2;
+    }
+        
 
     @Override
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
@@ -89,5 +81,3 @@
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
-    */
-
