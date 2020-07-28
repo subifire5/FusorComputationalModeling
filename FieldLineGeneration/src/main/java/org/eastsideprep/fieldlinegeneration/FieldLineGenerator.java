@@ -34,7 +34,7 @@ public class FieldLineGenerator {
     int minimumSteps = 5; // the minimum steps a field line gets before it is included
     // in the queue of most recent points
     int numberOfRecentPoints = 10000; // number of vectors stored in mostRecentPoints at a time
-    Double maximumCloseness = 0.001; // The closest a streamline can get to other points
+    Double maximumCloseness = 0.000001; // The closest a streamline can get to other points
     // on the most recent points list when crossing into a new grid box
     GridBox bounds;
     Double[] xRanges;// gives the lower bound of every grid box
@@ -421,7 +421,7 @@ public class FieldLineGenerator {
         Vector fPoint = eField.fieldAtPoint(start);
         Double dx = stepSize * (fPoint.x / fPoint.xzNorm());
         point.z += (fPoint.z / fPoint.x) * dx;
-        point.x += stepSize;
+        point.x += dx;
         return point;
 
     }

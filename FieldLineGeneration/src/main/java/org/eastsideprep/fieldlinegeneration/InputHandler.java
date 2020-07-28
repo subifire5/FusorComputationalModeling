@@ -109,8 +109,8 @@ public class InputHandler {
         GridBox bounds;
         Double stepSize = 0.001;
         Double threshold = 0.001;
-        int numberOfGaps = 10;
-        int checkerBoard = 4;
+        int numberOfGaps = 12;
+        int checkerBoard = 2;
         Double vAnnode = 1.0;
         Double vCathode = -40000.0;
         Boolean skipInput = false;
