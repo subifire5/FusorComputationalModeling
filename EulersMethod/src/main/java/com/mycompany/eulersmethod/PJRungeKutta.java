@@ -22,7 +22,7 @@ public class PJRungeKutta implements Solution {
         this.eField = eField;
     }
 
-    public Particle f(Particle p, Double stepSize){
+    public Particle f(Particle p){
         
         Vector first3 = p.vel;
         Vector last3 = eField.forceOnCharge(p).scale(1/p.mass);
@@ -38,27 +38,21 @@ public class PJRungeKutta implements Solution {
         int x = 2;
         double two = (double) x;
         
-        Particle k1 = f(p,stepSize);
+        Particle k1 = f(p);
         Particle k1_2 = p.clone();
-        k1_2.pos.scale(stepSize/2);
-        k1_2.vel.scale(stepSize/2);
-        k1_2.pos.sum(p.pos);
-        k1_2.vel.sum(p.vel);
-        Particle k2 = f(k1_2,stepSize);
+        k1_2.pos.plusEquals(k1.clone().pos.scale(stepSize/2));
+        k1_2.vel.plusEquals(k1.clone().vel.scale(stepSize/2));
+        Particle k2 = f(k1_2);
         
-        Particle k2_3= p.clone();
-        k2_3.pos.scale(stepSize/2);
-        k2_3.vel.scale(stepSize/2);
-        k2_3.pos.sum(p.pos);
-        k2_3.vel.sum(p.vel);
-        Particle k3 = f(k2_3,stepSize);
+        Particle k2_3 = p.clone();
+        k2_3.pos.plusEquals(k2.clone().pos.scale(stepSize/2));
+        k2_3.vel.plusEquals(k2.clone().vel.scale(stepSize/2));
+        Particle k3 = f(k2_3);
         
         Particle k3_4 = p.clone();
-        k3_4.pos.scale(stepSize);
-        k3_4.vel.scale(stepSize);
-        k3_4.pos.sum(p.pos);
-        k3_4.pos.sum(p.vel);
-        Particle k4 = f(k3_4,stepSize);
+        k3_4.pos.plusEquals(k3.clone().pos.scale(stepSize));
+        k3_4.vel.plusEquals(k3.clone().vel.scale(stepSize));
+        Particle k4 = f(k3_4);
                 
         Particle p2 = p.clone();
         
