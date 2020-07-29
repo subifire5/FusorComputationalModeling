@@ -28,25 +28,31 @@ public class MYRungeKutta implements Solution{
     @Override
     public Particle step(Particle p, Double stepSize) {
         Particle k1 = f(p.clone());
+        System.out.println(k1);
         Particle p1 = p.clone();
         p1.pos.plusEquals(k1.clone().pos.scale(stepSize/2));
         p1.vel.plusEquals(k1.clone().vel.scale(stepSize/2));
+        System.out.println("P1: " + p1);
         Particle k2 = f(p1);
+        //System.out.println(k2);
         Particle p2 = p.clone();
         p2.pos.plusEquals(k2.clone().pos.scale(stepSize/2));
         p2.vel.plusEquals(k2.clone().vel.scale(stepSize/2));
         Particle k3 = f(p2);
+        //System.out.println(k3);
         Particle p3 = p.clone();
         p3.pos.plusEquals(k3.clone().pos.scale(stepSize));
-        p3.vel.plusEquals(k3.clone().pos.scale(stepSize));
+        p3.vel.plusEquals(k3.clone().vel.scale(stepSize));
         Particle k4 = f(p3);
+        //System.out.println(k4);
         
+        Particle p4 = p.clone();
+        p4.pos.plusEquals(k1.pos.sum(k2.pos.scale(2.0)).sum(k3.pos.scale(2.0).sum(k4.pos).scale(1/6*stepSize)));
+        p4.vel.plusEquals(k1.vel.sum(k2.vel.scale(2.0)).sum(k3.vel.scale(2.0).sum(k4.vel).scale(1/6*stepSize)));
+        p4.time += stepSize;
+        System.out.println(p4);
         
-        p.vel.plusEquals((((k1.vel.sum(k2.vel.scale(2.0))).sum(k3.vel.scale(2.0))).sum(k4.vel)).scale(1/6*stepSize));
-        p.pos.plusEquals((((k1.pos.sum(k2.pos.scale(2.0))).sum(k3.pos.scale(2.0))).sum(k4.pos)).scale(1/6*stepSize));
-        p.time += stepSize;
-        
-        return p;        
+        return p4;        
     }
 
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
