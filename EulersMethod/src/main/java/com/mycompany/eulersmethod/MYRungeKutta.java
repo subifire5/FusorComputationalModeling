@@ -41,12 +41,12 @@ public class MYRungeKutta implements Solution{
         p3.vel.plusEquals(k3.clone().pos.scale(stepSize));
         Particle k4 = f(p3);
         
-        Particle p4 = p.clone();
-        p4.vel.plusEquals((((k1.vel.sum(k2.vel.scale(2.0))).sum(k3.vel.scale(2.0))).sum(k4.vel)).scale(1/6*stepSize));
-        p4.pos.plusEquals((((k1.pos.sum(k2.pos.scale(2.0))).sum(k3.pos.scale(2.0))).sum(k4.pos)).scale(1/6*stepSize));
-        p4.time += stepSize;
         
-        return p4;        
+        p.vel.plusEquals((((k1.vel.sum(k2.vel.scale(2.0))).sum(k3.vel.scale(2.0))).sum(k4.vel)).scale(1/6*stepSize));
+        p.pos.plusEquals((((k1.pos.sum(k2.pos.scale(2.0))).sum(k3.pos.scale(2.0))).sum(k4.pos)).scale(1/6*stepSize));
+        p.time += stepSize;
+        
+        return p;        
     }
 
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
