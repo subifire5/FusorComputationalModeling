@@ -49,7 +49,7 @@ public class Air extends Gas {
     public static synchronized Air getInstance(String name) {
         // find or make the named one
         if (name != null) {
-            Material m = Material.getByName(name);
+            Material m = Material.getRealMaterial(name);
             if (m == null) {
                 return new Air(name, 100);
             }
