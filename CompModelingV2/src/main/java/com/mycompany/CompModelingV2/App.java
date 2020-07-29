@@ -109,12 +109,7 @@ public class App extends Application {
     // left click drag circles the camera
     // right click drag zooms camera
     // q and e move camera up and down
-    // Slice controls:
-    // u left (+ ctrl, right)
-    // i up (+ ctrl, down)
-    // o forward (+ctrl, backward)
-    //
-    // v scale
+
 
     Group root = new Group();
     final Xform world = new Xform();
@@ -154,7 +149,7 @@ public class App extends Application {
 
         InputHandler input = new InputHandler();
         input.getInput();
-
+        input.eField.deScale();
         
         //Don't Read from Output file
         buildCharges(input.charges);

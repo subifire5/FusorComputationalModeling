@@ -31,7 +31,6 @@ public class Vector {
         this.y = Double.valueOf(y);
         this.z = Double.valueOf(z);
     }
-    
 
     public Vector(Vector v) {
         this(v.x, v.y, v.z);
@@ -39,6 +38,18 @@ public class Vector {
 
     public Double norm() {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+    }
+
+    public Double xyNorm() {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    }
+
+    public Double xzNorm() {
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(z, 2));
+    }
+
+    public Double yzNorm() {
+        return Math.sqrt(Math.pow(z, 2) + Math.pow(y, 2));
     }
 
     public Double distanceTo(Vector v) {

@@ -57,33 +57,75 @@ public class InputHandler {
      * @param outputFilePath
      * @return
      */
-    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, int numberOfSteps, Double stepSize, String outputFilePath) {
-        Particle[] particles = new Particle[numberOfSteps];
-        if (PJ) {
-            
-            PJEulersMethod pj = new PJEulersMethod(eField);
-            particles[0] = pj.step(initial, stepSize).clone();
-            Particle p = particles[0];
-            for (int i = 1; i < numberOfSteps; i++) {
-                particles[i] = pj.step(p, stepSize).clone();
-                p = particles[i];
-            }
-             
-        } else if (MY) {
+    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
+        Particle[] particles = new Particle[1];
+        initial.setScaleDistance(scaleDistance);
+        initial.totalEnergy(eField);
+        if (batch) {
+            if (PJ && eu) {
+                PJEulersMethod pj = new PJEulersMethod(eField);
+                particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (MY && eu) {
+                MYEulersMethod my = new MYEulersMethod(eField);
+                particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
 
-            MYEulersMethod my = new MYEulersMethod(eField);
-            particles[0] = my.step(initial, stepSize).clone();
-            Particle p = particles[0].clone();
-            for (int i = 1; i < numberOfSteps; i++) {
-                particles[i] = my.step(p, stepSize).clone();
-                p = particles[i];
+            } else if (PJ && rk) {
+
+                PJRungeKutta pj = new PJRungeKutta(eField);
+                particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (MY && rk) {
+                MYRungeKutta my = new MYRungeKutta(eField);
+                particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
             }
 
+        } else {
+            particles = new Particle[numberOfSteps.intValue()];
+            if (PJ && eu) {
+
+                PJEulersMethod pj = new PJEulersMethod(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = pj.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+
+            } else if (MY && eu) {
+
+                MYEulersMethod my = new MYEulersMethod(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+
+            } else if (PJ && rk) {
+
+                PJRungeKutta pj = new PJRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = pj.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+                 
+            } else if (MY && rk) {
+                MYRungeKutta my = new MYRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+            }
         }
 
-        String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Time", "Mass"};
+        String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Charge", "Time",
+            "Mass", "Electric Potential Energy", "Kinetic Energy", "Total Energy"};
 
         TableGraphWriter tgw = new TableGraphWriter();
+
         tgw.writeCSV(particles, headers, outputFilePath);
 
     }
@@ -124,6 +166,7 @@ public class InputHandler {
                 break;
             } else {
                 System.out.println(mainText);
+                filePath = s.nextLine();
                 fileExists = new File(filePath);
             }
 
@@ -152,6 +195,10 @@ public class InputHandler {
 
         System.out.println("Polarity: ");
         int polarity = Integer.valueOf(s.nextLine());
+
+        System.out.println("Charge (measured in elementary charge [charge of an electron or proton]): ");
+        Double charge = Double.valueOf(s.nextLine()) * 1.602E-19;
+
         System.out.println("To denote a number several decimals below the ones position,"
                 + "\n use the following 2.014E-27, where -27 is the number of,"
                 + "\n digits behind the ones position that the number starts");
@@ -161,15 +208,19 @@ public class InputHandler {
         System.out.println("Mass (in Atomic Mass Units, for Deuterium this is 2.0141)");
         Double mass = Double.valueOf(s.nextLine()) * 1.66E-27;
 
-        return new Particle(x, y, z, Vx, Vy, Vz, polarity, time, mass);
+        return new Particle(x, y, z, Vx, Vy, Vz, polarity, charge, time, mass);
     }
 
     public void readFromFile() {
         Boolean PJ = false;
         Boolean MY = false;
+        Boolean eu = false; // eulers
+        Boolean rk = false; // runge kutta
+        Boolean batch = true; // true by default
+        int batchSize = 0;
         Particle initial = null;
         boolean inputRecieved = false;
-        int numberOfSteps = 0;
+        Double numberOfSteps = 0.0;
         Double stepSize = 1.0;
         String outputFilePath = "";
 
@@ -224,7 +275,7 @@ public class InputHandler {
             stepSize = Double.valueOf(s.nextLine());
 
             System.out.println("Number of Steps:");
-            numberOfSteps = Integer.valueOf(s.nextLine());
+            numberOfSteps = Double.valueOf(s.nextLine());
 
             inputRecieved = false;
 
@@ -242,7 +293,49 @@ public class InputHandler {
                 }
             }
 
-            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath);
+            input = "";
+            inputRecieved = false;
+            while (!inputRecieved) {
+                System.out.println("Which method do you want? Eulers (EU) Runge Kutta (RK)");
+                input = s.nextLine();
+                if (input.equals("EU") || input.equals("Eu") || input.equals("eU") || input.equals("eu")) {
+                    inputRecieved = true;
+                    eu = true;
+                } else if (input.equals("RK") || input.equals("Rk") || input.equals("rK") || input.equals("rk")) {
+                    inputRecieved = true;
+                    rk = true;
+                } else {
+                    System.out.println("Please respond with (EU) or (RK)");
+                }
+            }
+
+            input = "";
+            inputRecieved = false;
+            while (!inputRecieved && numberOfSteps < 100000) {
+                System.out.println("Do want to split them into batches? (Y/N)");
+
+                input = s.nextLine();
+                if (input.equals("Y") || input.equals("y")) {
+                    inputRecieved = true;
+                    batch = true;
+                } else if (input.equals("N") || input.equals("n")) {
+                    inputRecieved = true;
+                    batch = false;
+                } else {
+                    System.out.println("Please respond with (Y) or (N)");
+                }
+
+            }
+
+            if (batch) {
+                if (numberOfSteps > 100000) {
+                    System.out.println("Your number of steps is too large without batching");
+                }
+                System.out.println("Please enter the size of a batch");
+                batchSize = Integer.valueOf(s.nextLine());
+            }
+
+            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
         }
 
         inputRecieved = false;

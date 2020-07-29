@@ -16,15 +16,11 @@ public class Main {
     public static void main(String[] args) {
         InputHandler ih = new InputHandler();
         ih.getInput();
-        //EulersMethod em = new EulersMethod(ih.eField);
-        //Particle p = new Particle();
-        //List<Vector> particleList = new ArrayList<Vector>();
-        //for (int i = 0; i < 100; i++) {
-        //System.out.println("position: " +p);
-        //em.step(p, 1E-20); 
-        //System.out.println("position of p:" + p);
-        //particleList.add(p.pos);
         
+        Vector test1 = new Vector (0.0, 0.0, 0.0);
+        Vector test2 = new Vector (1000.0, 1000.0, 1000.0);
+        System.out.println("Grid vector: " + ih.eField.electricPotential(test1));
+        System.out.println("Vector outside the chamber: " + ih.eField.electricPotential(test2));
     }        
 
     public static void times2(Double d){
