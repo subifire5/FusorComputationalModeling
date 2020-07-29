@@ -70,10 +70,9 @@ public class InputHandler {
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
 
             } else if (PJ && rk) {
-                System.out.println("Praveer, your runge kutta wasn't available at the time this was written");
-                System.out.println("to get your method to run, go to orbit stuff, inputHandler, and uncomment your code");
-                //PJRungeKutta pj = new PJRungeKutta(eField);
-                //particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
+
+                PJRungeKutta pj = new PJRungeKutta(eField);
+                particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
@@ -102,16 +101,15 @@ public class InputHandler {
                 }
 
             } else if (PJ && rk) {
-                System.out.println("Praveer, your runge kutta wasn't available at the time this was written");
-                System.out.println("to get your method to run, go to orbit stuff, inputHandler, and uncomment your code");
-                /*PJRungeKutta pj = new PJRungeKutta(eField);
+
+                PJRungeKutta pj = new PJRungeKutta(eField);
                 particles[0] = initial;
                 Particle p = particles[0].clone();
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
                 }
-                 */
+                 
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles[0] = initial;

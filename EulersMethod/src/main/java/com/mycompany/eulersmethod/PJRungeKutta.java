@@ -33,7 +33,8 @@ public class PJRungeKutta implements Solution {
         return j;
 
     }
-    public Particle step(Particle p, double stepSize) {
+    @Override
+    public Particle step(Particle p, Double stepSize) {
         
         int x = 2;
         double two = (double) x;
@@ -70,8 +71,5 @@ public class PJRungeKutta implements Solution {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public Particle step(Particle p, Double stepSize) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+
 }
