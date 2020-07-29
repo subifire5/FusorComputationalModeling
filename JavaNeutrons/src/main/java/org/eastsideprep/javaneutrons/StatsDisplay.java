@@ -18,9 +18,7 @@ import javafx.scene.chart.Chart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Slider;
@@ -36,6 +34,8 @@ import org.eastsideprep.javaneutrons.core.Isotope;
 import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Neutron;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
@@ -48,8 +48,8 @@ public class StatsDisplay extends Group {
     VBox chartType = new VBox();
     ChoiceBox object = new ChoiceBox();
     Pane chartPane = new Pane();
-    CheckBox selectLog = new CheckBox("Log x-axis");
-    Boolean log = true;
+    ChoiceBox selectScale = new ChoiceBox();
+    String scale;
 
     Slider slider = new Slider();
 
@@ -91,7 +91,7 @@ public class StatsDisplay extends Group {
                 XYChart c = (XYChart) n;
                 double v = new_val.doubleValue();
                 int scale = 5;
-                v = Math.pow(v,scale) / Math.pow(100, scale-1);
+                v = Math.pow(v, scale) / Math.pow(100, scale - 1);
                 NumberAxis a = (NumberAxis) c.getYAxis();
                 a.setAutoRanging(false);
                 a.setTickLabelFormatter(new TickConverter());
@@ -108,15 +108,20 @@ public class StatsDisplay extends Group {
                 a.setTickUnit(max * v / (100 * 10));
             }
         });
-        object.setPrefWidth(200);
-
-        selectLog.setSelected(true);
-        selectLog.selectedProperty().addListener((a, b, c) -> {
-            this.log = selectLog.isSelected();
-            this.setChart();
+        this.object.setPrefWidth(200);
+        this.object.setOnAction(e -> {
+            setChart();
         });
 
-        controls.getChildren().addAll(chartType, new Separator(), selectLog, new Separator(),
+        selectScale.getItems().addAll("Log", "Linear (all)", "Linear (thermal)");
+        selectScale.setValue("Linear (thermal)");
+        selectScale.valueProperty().addListener((a, b, c) -> {
+            this.setChart();
+        });
+        this.scale = "Linear (thermal)";
+        selectScale.setPrefWidth(200);
+
+        controls.getChildren().addAll(chartType, new Separator(), selectScale, new Separator(),
                 new Text("Zoom"), slider, new Separator(), object);
         controls.setPadding(new Insets(10, 0, 10, 0));
         hb.getChildren().addAll(controls, chartPane);
@@ -132,15 +137,18 @@ public class StatsDisplay extends Group {
         RadioButton rb1 = new RadioButton("Escape counts");
         RadioButton rb2 = new RadioButton("Fluence");
         RadioButton rb3 = new RadioButton("Entry counts");
-        RadioButton rb4 = new RadioButton("Event counts");
+        RadioButton rb3b = new RadioButton("Exit counts");
+        RadioButton rb4 = new RadioButton("Scatter counts");
+        RadioButton rb4b = new RadioButton("Scatter angles");
         RadioButton rb5 = new RadioButton("Path lengths");
         RadioButton rb6 = new RadioButton("Sigmas");
         RadioButton rb7 = new RadioButton("Cross-sections");
-        RadioButton rb8 = new RadioButton("Custom test");
+        RadioButton rb8 = new RadioButton("0-D Monte Carlo");
+        RadioButton rb4c = new RadioButton("Capture counts");
 
         rb2.setSelected(true);
 
-        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb4, rb1, rb5, rb6, rb7, rb8};
+        RadioButton[] rbs = new RadioButton[]{rb2, rb3, rb3b, rb4, rb4b, rb4c, rb1, rb5, rb6, rb7, rb8};
 
         this.tg = new ToggleGroup();
         for (RadioButton rb : rbs) {
@@ -156,12 +164,12 @@ public class StatsDisplay extends Group {
 
     private void populateComboBoxWithParts() {
         this.object.getItems().clear();
-        populateComboBox(Part.namedParts.keySet());
+        populateComboBox(this.sim.namedParts.keySet());
     }
 
     private void populateComboBoxWithMaterials() {
         this.object.getItems().clear();
-        populateComboBox(Material.materials.keySet());
+        populateComboBox(this.sim.materials.keySet());
     }
 
     private void populateComboBoxWithElements() {
@@ -175,16 +183,18 @@ public class StatsDisplay extends Group {
     private void populateComboBoxWithPartsAndMaterials() {
         this.object.getItems().clear();
         populateComboBoxWithParts();
-        ArrayList<String> ms = new ArrayList<>(Material.materials.keySet());
+        ArrayList<String> ms = new ArrayList<>(this.sim.materials.keySet());
         populateComboBox(ms);
     }
 
-    private void populateComboBoxWithPartsAndAir() {
+    private void populateComboBoxWithPartsAndInterstitial() {
         this.object.getItems().clear();
         populateComboBoxWithParts();
-        Set<Material> sm = this.sim.assembly.getContainedMaterials();
-        sm.add(this.sim.interstitialMaterial);
-        populateComboBox(sm.stream().map(m->m.name).collect(Collectors.toList()));
+        if (this.sim.assembly != null) {
+            Set<Material> sm = this.sim.assembly.getContainedMaterials();
+            sm.add(this.sim.interstitialMaterial);
+            populateComboBox(sm.stream().map(m -> m.name).collect(Collectors.toList()));
+        }
     }
 
     private void populateComboBox(Collection<String> s) {
@@ -195,7 +205,6 @@ public class StatsDisplay extends Group {
         }
         this.object.getItems().addAll(s);
         this.object.setValue(this.object.getItems().get(0));
-        this.object.valueProperty().addListener((ov, t, t1) -> setChart());
     }
 
     private void setComboBox() {
@@ -207,11 +216,31 @@ public class StatsDisplay extends Group {
                     break;
 
                 case "Fluence":
-                    this.populateComboBoxWithPartsAndAir();
+                    this.populateComboBoxWithPartsAndInterstitial();
+                    this.object.setVisible(true);
+                    break;
+
+                case "Scatter counts":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+
+                case "Scatter angles":
+                    this.populateComboBoxWithParts();
                     this.object.setVisible(true);
                     break;
 
                 case "Entry counts":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+
+                case "Exit counts":
+                    this.populateComboBoxWithParts();
+                    this.object.setVisible(true);
+                    break;
+
+                case "Capture counts":
                     this.populateComboBoxWithParts();
                     this.object.setVisible(true);
                     break;
@@ -236,15 +265,6 @@ public class StatsDisplay extends Group {
                     this.object.setVisible(true);
                     break;
 
-                case "Custom test":
-                    ArrayList<String> as = new ArrayList<>();
-                    as.add("Random direction");
-                    as.add("X-axis only");
-                    this.object.getItems().clear();
-                    this.populateComboBox(as);
-                    this.object.setVisible(true);
-                    break;
-
                 default:
                     this.object.setVisible(false);
                     break;
@@ -254,38 +274,48 @@ public class StatsDisplay extends Group {
     }
 
     private void setChart() {
+        this.scale = (String) selectScale.getValue();
         Toggle t = tg.getSelectedToggle();
         if (t != null) {
             switch ((String) t.getUserData()) {
                 case "Escape counts":
-                    root.setCenter(this.sim.makeChart(null, null, log));
+                    root.setCenter(this.sim.makeChart(null, null, scale));
                     break;
 
                 case "Fluence":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Fluence", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Fluence", scale));
                     break;
 
                 case "Entry counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Entry counts", scale));
                     break;
 
-                case "Event counts":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Event counts", log));
+                case "Exit counts":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Exit counts", scale));
+                    break;
+
+                case "Scatter counts":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter counts", scale));
+                    break;
+
+               case "Scatter angles":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Scatter angles", scale));
+                    break;
+
+                case "Capture counts":
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Capture counts", scale));
                     break;
 
                 case "Path lengths":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Path lengths", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Path lengths", scale));
                     break;
 
                 case "Sigmas":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Sigmas", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Sigmas", scale));
                     break;
 
                 case "Cross-sections":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", log));
-                    break;
-                case "Custom test":
-                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Custom test", log));
+                    root.setCenter(this.sim.makeChart((String) this.object.getValue(), "Cross-sections", scale));
                     break;
 
                 default:
@@ -294,6 +324,7 @@ public class StatsDisplay extends Group {
             }
         }
         slider.setValue(100);
+
     }
 
 }

@@ -111,4 +111,21 @@ public class InputHandler {
         writer.writeCSV(charges, outputFilePath);
 
     }
+
+    public void scaleOver() {
+
+        String inputFilePath = fileNameGet("Please enter your input file location");
+        outputFilePath = fileCreate("Please enter your output file location");
+        System.out.println("Scale by what factor?");
+        Double scale = Double.valueOf(s.nextLine());
+        EFieldFileParser efp = new EFieldFileParser();
+        Charge[][] chargeArrayArray = efp.parseFile(inputFilePath);
+        Charge[] charges = chargeArrayArray[0];
+
+        for (Charge c : charges) {
+            c.scale(scale);
+        }
+        TableGraphWriter writer = new TableGraphWriter();
+        writer.writeCSV(charges, outputFilePath);
+    }
 }

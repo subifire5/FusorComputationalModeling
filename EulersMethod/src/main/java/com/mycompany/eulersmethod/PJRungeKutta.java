@@ -59,7 +59,6 @@ public class PJRungeKutta implements Solution {
         
         p2.pos.plusEquals(k1.pos.sum(k2.pos.scale(two)).sum(k3.pos.scale(two).sum(k4.pos).scale(1/6*stepSize)));
         p2.vel.plusEquals(k1.vel.sum(k2.vel.scale(two)).sum(k3.vel.scale(two).sum(k4.vel).scale(1/6*stepSize)));
-        
         p2.time += stepSize;
         
         System.out.println(p2.pos);
