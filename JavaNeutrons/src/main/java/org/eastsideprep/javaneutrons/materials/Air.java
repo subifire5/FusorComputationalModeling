@@ -6,7 +6,6 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Gas;
-import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Material;
 
 // material 4 - Air near sea-level
@@ -38,10 +37,19 @@ public class Air extends Gas {
     }
 
     // we only need one of these objects
+    public static synchronized Air getInstance() {
+        // or dish out the shared anonymous instance
+        if (instance == null) {
+            Air.instance = new Air(100);
+        }
+        return instance;
+    }
+
+    // we only need one of these objects
     public static synchronized Air getInstance(String name) {
         // find or make the named one
         if (name != null) {
-            Material m = Material.getByName(name);
+            Material m = Material.getRealMaterial(name);
             if (m == null) {
                 return new Air(name, 100);
             }

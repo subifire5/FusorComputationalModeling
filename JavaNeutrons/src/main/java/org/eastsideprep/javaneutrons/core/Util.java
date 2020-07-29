@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
@@ -22,17 +23,66 @@ public class Util {
 
     static public class Math {
 
-        public static Vector3D randomDir() {
-            double phi = ThreadLocalRandom.current().nextDouble() * 2 * java.lang.Math.PI;
-            double z = ThreadLocalRandom.current().nextDouble() * 2 - 1;
-            double theta = java.lang.Math.asin(z);
-            return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+        //
+        // helping to keep a counter tmin valid through comparison with many t values
+        // just hides a little ugliness
+        //
+        public static double minIfValid(double t, double tmin) {
+            if (t != -1) {
+                if (tmin != -1) {
+                    tmin = java.lang.Math.min(t, tmin);
+                } else {
+                    tmin = t;
+                }
+            }
+            return tmin;
         }
 
-        public static Vector3D randomGaussianComponentVector(double sd) {
-            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * sd,
-                    ThreadLocalRandom.current().nextGaussian() * sd,
-                    ThreadLocalRandom.current().nextGaussian() * sd);
+        //
+        // jiggle vector
+        //
+        public static Vector3D jiggle(Vector3D v, double sd) {
+            double epsilon = 1e-12;
+            // pick a couple of normals to the vector
+            Vector3D n1 = v.crossProduct(Vector3D.PLUS_I);
+            if (n1.getNorm() < epsilon) {
+                n1 = v.crossProduct(Vector3D.PLUS_J);
+            }
+
+            n1 = n1.normalize();
+            Vector3D n2 = v.crossProduct(n1).normalize();
+
+            return v.add(n1.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
+                    .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
+                    .normalize();
+        }
+        
+        public static double randomGaussian() {
+           return ThreadLocalRandom.current().nextGaussian();
+        }
+
+        public static double random() {
+            return ThreadLocalRandom.current().nextDouble();
+        }
+
+        public static Vector3D randomDir() {
+//            double phi = random() * 2 * java.lang.Math.PI;
+//            double z = random() * 2 - 1;
+//            double theta = java.lang.Math.asin(z);
+//            return new Vector3D(java.lang.Math.cos(theta) * java.lang.Math.cos(phi), java.lang.Math.cos(theta) * java.lang.Math.sin(phi), z);
+            return randomDir(random() * 2 - 1, 1.0);
+        }
+
+        public static Vector3D randomDir(double cos_theta, double magnitude) {
+            double phi = random() * 2 * java.lang.Math.PI;
+            double sin_theta = java.lang.Math.sqrt(1-cos_theta*cos_theta);
+            return new Vector3D(magnitude * sin_theta * java.lang.Math.cos(phi), magnitude * sin_theta * java.lang.Math.sin(phi), magnitude * cos_theta);
+        }
+
+        public static Vector3D randomGaussianComponentVector(double componentSD) {
+            return new Vector3D(ThreadLocalRandom.current().nextGaussian() * componentSD,
+                    ThreadLocalRandom.current().nextGaussian() * componentSD,
+                    ThreadLocalRandom.current().nextGaussian() * componentSD);
         }
 
         public static boolean solveQuadratic(double a, double b, double c, double[] result) {
@@ -156,7 +206,8 @@ public class Util {
 
             // At this stage we can compute t to find out where the intersection point is on the line.
             double t = f * (edge2x * qx + edge2y * qy + edge2z * qz);
-            if (t > kEpsilon) {
+//            if (t > kEpsilon) {
+            if (t >= 0) {
                 return t;
             } else {
                 return -1;
@@ -172,14 +223,15 @@ public class Util {
     static public class Physics {
 
         //final public static double boltzmann = 8.61733333353e-5; //eV/K
-        final public static double boltzmann = 1.380649e-19; // SI with cm
-        final public static double roomTemp = 293.0; // K
+        final public static double kB = 1.380649e-19; // SI with cm
+        final public static double T = 293.0; // K
         final public static double protonMass = 1.67262192369e-27; // SI
         final public static double eV = 1.60218e-19 * 1e4; // 1 eV in SI with cm
         final public static double barn = 1e-24; // 1 barn in SI cm
         final public static double Da = 1.6605e-27; // Dalton amu in kg
-        final public static double thermalEnergy = 4e-21 * 1e4; // room temp avg. energy in J (cm)
+        final public static double thermalEnergy = 4.0535154e-21 * 1e4; // room temp avg. energy in J (cm) eqv to 0.0253eV
         // factor 1e4 is from using cm, not m here - 100^2
+
     }
 
     static public class Graphics {
@@ -216,6 +268,7 @@ public class Util {
             pm.setSpecularColor(Color.web(webColor));
             pm.setDiffuseColor(Color.web(webColor));
             s.setMaterial(pm);
+            s.setDrawMode(DrawMode.LINE);
 
             g.add(s);
         }
@@ -338,11 +391,13 @@ public class Util {
         public static void drawCoordSystem(Group g) {
             LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
             Util.Graphics.drawSphere(q, Vector3D.ZERO, 1, "red");
-            Util.Graphics.drawLine(q, new Vector3D(-1000, 0, 0), new Vector3D(1000, 0, 0), 0.1, Color.CYAN);
-            Util.Graphics.drawLine(q, new Vector3D(0, -1000, 0), new Vector3D(0, 1000, 0), 0.1, Color.YELLOW);
-            Util.Graphics.drawLine(q, new Vector3D(0, 0, -1000), new Vector3D(0, 0, 1000), 0.1, Color.RED);
+            Util.Graphics.drawLine(q, new Vector3D(-2000, 0, 0), new Vector3D(2000, 0, 0), 0.1, Color.CYAN);
+            Util.Graphics.drawLine(q, new Vector3D(0, -2000, 0), new Vector3D(0, 2000, 0), 0.1, Color.YELLOW);
+            Util.Graphics.drawLine(q, new Vector3D(0, 0, -2000), new Vector3D(0, 0, 2000), 0.1, Color.RED);
             q.drainTo(g.getChildren());
         }
 
     }
+    
+   
 }
