@@ -122,7 +122,7 @@ public class InputHandler {
         }
 
         String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Charge", "Time",
-            "Mass", "Electric Potential Energy", "Kinetic Energy"};
+            "Mass", "Electric Potential Energy", "Kinetic Energy", "Total Energy"};
 
         TableGraphWriter tgw = new TableGraphWriter();
 
