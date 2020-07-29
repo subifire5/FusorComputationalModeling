@@ -214,4 +214,38 @@ public class Particle extends Charge {
         this.totalEnergy = kineticEnergy() + electricPotentialEnergy(e);
         return this.totalEnergy;
     }
+    
+    public void plusEquals(Particle p){
+        this.pos.plusEquals(p.pos);
+        this.vel.plusEquals(p.vel);
+    }
+    
+    public void plusEquals(Particle[] ps){
+        for(Particle p: ps){
+            plusEquals(p);
+        }
+    
+    }
+    
+    public Particle sum(Particle p){
+        Particle s = this.clone();
+        s.plusEquals(p);
+        return s;
+    }
+    
+    public Particle sum(Particle[] ps){
+        Particle s = this.clone();
+        for(Particle p: ps){
+            s.plusEquals(p);
+        }
+        return s;
+    }
+    
+    public Particle multiply(Double s){
+        this.pos.scale(s);
+        this.vel.scale(s);
+        return this;
+        
+    }
+    
 }

@@ -29,21 +29,22 @@ public class MYRungeKutta implements Solution{
     public Particle step(Particle p, Double stepSize) {
         Particle k1 = f(p.clone());
         Particle p1 = p.clone();
-        p1.pos.plusEquals(k1.clone().pos.scale(stepSize/2));
-        p1.vel.plusEquals(k1.clone().vel.scale(stepSize/2));
+        p1.plusEquals(k1.clone().multiply(stepSize/2));
         Particle k2 = f(p1);
         Particle p2 = p.clone();
-        p2.pos.plusEquals(k2.clone().pos.scale(stepSize/2));
-        p2.vel.plusEquals(k2.clone().vel.scale(stepSize/2));
+        p2.plusEquals(k2.clone().multiply(stepSize/2));
         Particle k3 = f(p2);
         Particle p3 = p.clone();
-        p3.pos.plusEquals(k3.clone().pos.scale(stepSize));
-        p3.vel.plusEquals(k3.clone().pos.scale(stepSize));
+        p3.plusEquals(k3.clone().multiply(stepSize));
         Particle k4 = f(p3);
         
         Particle p4 = p.clone();
-        p4.vel.plusEquals((((k1.vel.sum(k2.vel.scale(2.0))).sum(k3.vel.scale(2.0))).sum(k4.vel)).scale(1/6*stepSize));
-        p4.pos.plusEquals((((k1.pos.sum(k2.pos.scale(2.0))).sum(k3.pos.scale(2.0))).sum(k4.pos)).scale(1/6*stepSize));
+        k2.multiply(2.0);
+        k3.multiply(2.0);
+        
+        Particle[] k = {k1, k2, k3, k4};
+        p4.plusEquals(k);
+        p4.multiply(stepSize/6);
         p4.time += stepSize;
         
         return p4;        

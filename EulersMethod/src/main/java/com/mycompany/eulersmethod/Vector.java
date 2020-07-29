@@ -211,6 +211,27 @@ public class Vector {
         return s;
     }
 
+    public Vector sum(Vector[] vectors) {
+        Vector s = new Vector();
+        s.x = this.x;
+        s.y = this.y;
+        s.z = this.z;
+        for (Vector v : vectors) {
+            s.x += v.x;
+            s.y += v.y;
+            s.z += v.z;
+        }
+        return s;
+    }
+
+    public void plusEquals(Vector[] vectors) {
+        for (Vector v : vectors) {
+            this.x += v.x;
+            this.y += v.y;
+            this.z += v.z;
+        }
+    }
+
     public String toString() {
         String vector = "";
         vector += "x: " + x;
