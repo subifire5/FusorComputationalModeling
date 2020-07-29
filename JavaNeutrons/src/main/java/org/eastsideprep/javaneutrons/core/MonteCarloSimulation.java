@@ -2,7 +2,6 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -10,7 +9,6 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -301,7 +299,7 @@ public class MonteCarloSimulation {
             completed.incrementAndGet();
             return;
         }
-        this.assembly.evolveNeutronPath(n, this.visualizations, true, this.grid);
+        this.assembly.evolveParticlePath(n, this.visualizations, true, this.grid);
         completed.incrementAndGet();
         if (traceLevel >= 2) {
             System.out.println("");
