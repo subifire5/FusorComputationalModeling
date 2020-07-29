@@ -62,14 +62,45 @@ public class PJRungeKutta implements Solution {
         
         p2.time += stepSize;
         
+        System.out.println(p2.pos);
+        
         return p2;
     }
         
 
     @Override
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+   
+        int batchesNeeded = (int) (numberOfSteps/batchSize);
+        int batchesCompleted = 0;
+        int steps = 0;
+        Particle[] j = new Particle[batchesNeeded];
+        long startTime = System.currentTimeMillis();
+        Double completed = (double)batchesCompleted;
+        Double needed = (double)batchesNeeded;
+        
+
+        while (batchesCompleted != batchesNeeded) {
+            System.out.println("Batches Completed: " + batchesCompleted);
+            System.out.println("Batches Needed: " + batchesNeeded);
+            System.out.println("Overall Progress: " + ((completed/needed)*100) + "%");
+            System.out.println("This code has taken: " + ((System.currentTimeMillis() - startTime)/1000) + " seconds to process.");
+
+            if (steps < batchSize) {
+                step(p, stepSize);
+                steps++;
+            } else if (steps == batchSize) {
+                steps = 0;
+                j[batchesCompleted] = p.clone();
+                batchesCompleted++;
+                completed++;
+            }
+
+        }
+        return j;
+    }
     }
 
 
-}
