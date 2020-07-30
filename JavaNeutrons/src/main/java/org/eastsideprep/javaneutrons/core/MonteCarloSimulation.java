@@ -177,7 +177,6 @@ public class MonteCarloSimulation {
         this.addNamedPartsAndMaterials(this.assembly);
 
         if (this.initialMaterial == null) {
-            // todo : find initial material from origin
             Event e = this.assembly.rayIntersect(this.origin, Vector3D.PLUS_I, false, visualizations);
             if (e != null && e.code == Event.Code.Entry) {
                 this.initialMaterial = e.part.shape.getContactMaterial(e.face);
@@ -299,11 +298,16 @@ public class MonteCarloSimulation {
             completed.incrementAndGet();
             return;
         }
-        this.assembly.evolveParticlePath(n, this.visualizations, true, this.grid);
+        Event e = this.assembly.evolveParticlePath(n, this.visualizations, true, this.grid);
+        if (e.code == Event.Code.Capture) {
+            double energyGamma = 0; // todo: What is it? N eed to look up during capture event, from ACE tables
+            Gamma g = new Gamma(e.position, Util.Math.randomDir(), energyGamma, this);
+        }
+        
+        
         completed.incrementAndGet();
         if (traceLevel >= 2) {
             System.out.println("");
-
         }
     }
 

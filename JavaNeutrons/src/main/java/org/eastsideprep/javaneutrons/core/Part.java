@@ -247,11 +247,7 @@ public class Part {
     }
 
     public double getTotalFluence(String kind) {
-        double fluence = 0;
-        synchronized(this) {
-            // todo: integrate appropriate histogram
-        }
-        return fluence;
+        return fluenceMap.get(kind).getTotal();
     }
 
     public double getTotalPath(String kind) {

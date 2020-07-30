@@ -1,6 +1,8 @@
 package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
@@ -199,5 +201,11 @@ public class Histogram {
         h.mutateClone(this);
         h.mutateNormalizeBy(other);
         return h;
+    }
+
+    public double getTotal() {
+        synchronized (this) {
+            return Arrays.stream(bins).sum();
+        }
     }
 }
