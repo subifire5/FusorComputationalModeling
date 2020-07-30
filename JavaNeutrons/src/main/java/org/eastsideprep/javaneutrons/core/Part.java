@@ -1,7 +1,9 @@
 package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -19,14 +21,13 @@ public class Part {
     // universal detector functionality
     public EnergyHistogram entriesOverEnergy;
     public EnergyHistogram exitsOverEnergy;
-    public EnergyHistogram fluenceOverEnergy;
+    public Map<String,EnergyHistogram>  fluenceMap; 
     public EnergyHistogram scattersOverEnergyBefore;
     public EnergyHistogram scattersOverEnergyAfter;
     public EnergyHistogram capturesOverEnergy;
     public Histogram angles;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
-    private double totalFluence = 0;
     private int totalEvents = 0;
 
     public Part(String name, Shape s, Object material) {
@@ -56,11 +57,16 @@ public class Part {
 
     public final void resetDetector() {
         this.totalDepositedEnergy = 0;
-        this.totalFluence = 0;
         this.totalEvents = 0;
         this.exitsOverEnergy = new EnergyHistogram();
         this.entriesOverEnergy = new EnergyHistogram();
-        this.fluenceOverEnergy = new EnergyHistogram();
+        
+        EnergyHistogram neutronFluence = new EnergyHistogram();
+        EnergyHistogram gammaFluence = new EnergyHistogram();
+        this.fluenceMap = new HashMap<>();
+        this.fluenceMap.put("neutron", neutronFluence);
+        this.fluenceMap.put("gamma", gammaFluence);
+        
         this.scattersOverEnergyBefore = new EnergyHistogram();
         this.capturesOverEnergy = new EnergyHistogram();
         this.scattersOverEnergyAfter = new EnergyHistogram();
@@ -198,15 +204,7 @@ public class Part {
     // detector functionality
     //
     void processPathLength(Particle particle, double length, double energy) {
-        this.fluenceOverEnergy.record(length / volume, energy);
-        synchronized (this) {
-            this.totalFluence += length / volume;
-        }
-//        if (name.equals("Detector opposite block")) {
-//            System.out.println("Entry into detector path length log: " + length / volume
-//                    + ", new total: " + this.totalFluence
-//            );
-//        }
+        this.fluenceMap.get(particle.type).record(length / volume, energy);
     }
 
     void processEntry(Particle  p) {
@@ -248,12 +246,16 @@ public class Part {
         return this.totalDepositedEnergy;
     }
 
-    public double getTotalFluence() {
-        return this.totalFluence;
+    public double getTotalFluence(String kind) {
+        double fluence = 0;
+        synchronized(this) {
+            // todo: integrate appropriate histogram
+        }
+        return fluence;
     }
 
-    public double getTotalPath() {
-        return this.totalFluence * this.volume;
+    public double getTotalPath(String kind) {
+        return this.getTotalFluence(kind) * this.volume;
     }
 
     public int getTotalEvents() {
