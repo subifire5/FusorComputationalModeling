@@ -48,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return MC0D_Prison(visualizations);
+        return bigBlock(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -161,7 +161,7 @@ public class TestGM {
                 } else {
                     return null;
                 }
-                copyChartCSV(c);
+                copyChartCSV(c, null);
                 return c;
             }
 
@@ -261,7 +261,7 @@ public class TestGM {
                     yAxis.setLabel("count/src");
                     c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
                 }
-                copyChartCSV(c);
+                copyChartCSV(c,null);
                 return c;
             }
 

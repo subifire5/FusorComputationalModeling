@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
@@ -21,14 +22,14 @@ public class Part {
     // universal detector functionality
     public EnergyHistogram entriesOverEnergy;
     public EnergyHistogram exitsOverEnergy;
-    public Map<String,EnergyHistogram>  fluenceMap; 
+    public Map<String, CorrelatedEnergyHistogram> fluenceMap;
     public EnergyHistogram scattersOverEnergyBefore;
     public EnergyHistogram scattersOverEnergyAfter;
     public EnergyHistogram capturesOverEnergy;
     public Histogram angles;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
-    private int totalEvents = 0;
+    private AtomicLong totalEvents;
 
     public Part(String name, Shape s, Object material) {
         if (s != null) {
@@ -57,16 +58,16 @@ public class Part {
 
     public final void resetDetector() {
         this.totalDepositedEnergy = 0;
-        this.totalEvents = 0;
+        this.totalEvents = new AtomicLong(0);
         this.exitsOverEnergy = new EnergyHistogram();
         this.entriesOverEnergy = new EnergyHistogram();
-        
-        EnergyHistogram neutronFluence = new EnergyHistogram();
-        EnergyHistogram gammaFluence = new EnergyHistogram();
+
+        CorrelatedEnergyHistogram neutronFluence = new CorrelatedEnergyHistogram();
+        CorrelatedEnergyHistogram gammaFluence = new CorrelatedEnergyHistogram();
         this.fluenceMap = new HashMap<>();
         this.fluenceMap.put("neutron", neutronFluence);
         this.fluenceMap.put("gamma", gammaFluence);
-        
+
         this.scattersOverEnergyBefore = new EnergyHistogram();
         this.capturesOverEnergy = new EnergyHistogram();
         this.scattersOverEnergyAfter = new EnergyHistogram();
@@ -204,10 +205,10 @@ public class Part {
     // detector functionality
     //
     void processPathLength(Particle particle, double length, double energy) {
-        this.fluenceMap.get(particle.type).record(length / volume, energy);
+        this.fluenceMap.get(particle.type).record(particle, length / volume, energy);
     }
 
-    void processEntry(Particle  p) {
+    void processEntry(Particle p) {
         this.entriesOverEnergy.record(1, p.energy);
         p.entryEnergy = p.energy;
 
@@ -226,9 +227,7 @@ public class Part {
 
         // record more stats for part
         if (event.code == Event.Code.Scatter || event.code == Event.Code.Capture) {
-            synchronized (this) {
-                this.totalEvents++;
-            }
+            this.totalEvents.incrementAndGet();
         }
 
         if (event.code == Event.Code.Scatter) {
@@ -237,9 +236,11 @@ public class Part {
         }
     }
 
-    synchronized void processExit(Particle p) {
+    void processExit(Particle p) {
         this.exitsOverEnergy.record(1, p.energy);
-        this.totalDepositedEnergy += (p.entryEnergy - p.energy);
+        synchronized (this) {
+            this.totalDepositedEnergy += (p.entryEnergy - p.energy);
+        }
     }
 
     public double getTotalDepositedEnergy() {
@@ -254,8 +255,8 @@ public class Part {
         return this.getTotalFluence(kind) * this.volume;
     }
 
-    public int getTotalEvents() {
-        return this.totalEvents;
+    public long getTotalEvents() {
+        return this.totalEvents.get();
     }
 
     public ObservableList<Transform> getTransforms() {

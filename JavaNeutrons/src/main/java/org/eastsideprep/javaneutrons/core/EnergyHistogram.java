@@ -6,8 +6,8 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class EnergyHistogram extends Histogram {
 
-    public static double LOW_VISUAL_LIMIT = 0.15;
-    static double LOW_TRACKING_LIMIT = 0.15;
+    public static double LOW_VISUAL_LIMIT = 0.25;
+    static double LOW_TRACKING_LIMIT = 0.25;
     static double LOW_BIN_SIZE = 1e-3;
 
     Histogram hFlat;
@@ -56,104 +56,6 @@ public class EnergyHistogram extends Histogram {
                 //return hFlat.makeSeries(seriesName, count);
                 return hLow;
         }
-    }
-
-    public double getThermalEnergyMean(String scale) {
-        double total = 0;
-        double totalCount = 0;
-        boolean log = scale.equals("Log");
-        Histogram h = getHistogram(scale);
-
-        // put in all the data
-        double[] counts = new double[h.bins.length];
-        synchronized (this) {
-            System.arraycopy(h.bins, 0, counts, 0, counts.length);
-        }
-
-        // go through bins
-        for (int i = 0; i < h.bins.length - 1; i++) {
-            double x = h.min + i / ((double) h.bins.length) * (h.max - h.min);
-            if (log) {
-                x = Math.pow(10, x);
-            }
-            if (x >= 1) {
-                break;
-            }
-            total += x * counts[i];
-            totalCount += counts[i];
-        }
-        return total / totalCount;
-    }
-
-    public double getThermalEnergyMode(String scale) {
-        Histogram h = getHistogram(scale);
-        boolean log = scale.equals("Log");
-        double maxCount = 0;
-        double maxAt = 0;
-
-        // put in all the data
-        double[] counts = new double[h.bins.length];
-        synchronized (this) {
-            System.arraycopy(h.bins, 0, counts, 0, counts.length);
-        }
-
-        // go through bins
-        for (int i = 0; i < h.bins.length - 1; i++) {
-            double x = h.min + i / ((double) h.bins.length) * (h.max - h.min);
-            if (log) {
-                x = Math.pow(10, x);
-            }
-            if (x >= 1) {
-                break;
-            }
-            if (counts[i] > maxCount) {
-                maxCount = counts[i];
-                maxAt = x;
-            }
-        }
-        return maxAt;
-    }
-
-    public double getThermalEnergyMedian(String scale) {
-        boolean log = scale.equals("Log");
-        Histogram h = getHistogram(scale);
-        double x = 0;
-
-        // put in all the data
-        double[] counts = new double[h.bins.length];
-        synchronized (this) {
-            System.arraycopy(h.bins, 0, counts, 0, counts.length);
-        }
-
-        // total
-        double total = 0;
-        for (int i = 0; i < h.bins.length - 1; i++) {
-            x = h.min + i / ((double) h.bins.length) * (h.max - h.min);
-            if (log) {
-                x = Math.pow(10, x);
-            }
-            if (x >= 1) {
-                break;
-            }
-            total += counts[i];
-        }
-
-        // go through bins to find half of total counts
-        double running = 0;
-        for (int i = 0; i < h.bins.length - 1; i++) {
-            x = h.min + i / ((double) h.bins.length) * (h.max - h.min);
-            if (log) {
-                x = Math.pow(10, x);
-            }
-            if (x >= 1) {
-                break;
-            }
-            running += counts[i];
-            if (running + counts[i] > total / 2) {
-                return x;
-            }
-        }
-        return x;
     }
 
     public String getStatsString(String scale, boolean flux, long count) {

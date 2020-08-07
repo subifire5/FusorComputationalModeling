@@ -1,6 +1,8 @@
 package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
@@ -14,6 +16,7 @@ abstract public class Particle {
     public double entryEnergy = 0;
     public double totalPath = 0;
     public MonteCarloSimulation mcs;
+    public Set<CorrelatedEnergyHistogram> fluences;
 
     ArrayList<Event> history = new ArrayList<>();
 
@@ -22,6 +25,7 @@ abstract public class Particle {
         this.direction = direction;
         this.energy = energy;
         this.mcs = mcs;
+        this.fluences = new HashSet<>();
     }
 
     public void setPosition(LinkedTransferQueue<Node> q, Vector3D position) {
@@ -70,6 +74,12 @@ abstract public class Particle {
             //history.stream().forEach(event -> System.out.println(event));
             System.out.println("-- done");
             System.out.println("");
+        }
+    }
+    
+    public void tally() {
+        for (CorrelatedEnergyHistogram h:fluences) {
+            h.tally(this);
         }
     }
 }

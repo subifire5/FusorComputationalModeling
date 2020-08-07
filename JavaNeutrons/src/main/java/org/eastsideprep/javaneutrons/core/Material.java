@@ -5,8 +5,7 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -17,7 +16,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class Material {
 
-    
     public class Component {
 
         Isotope e;
@@ -39,9 +37,9 @@ public class Material {
     public EnergyHistogram capturesOverEnergy;
     public EnergyHistogram lengthOverEnergy;
     public EnergyHistogram pathCounts;
-    public double totalEvents;
+    public AtomicLong totalEvents;
     public double totalFreePath;
-    public long pathCount;
+    public AtomicLong pathCount;
 
     //public int temp;
     public Material(String name) {
@@ -49,7 +47,6 @@ public class Material {
         this.name = name;
         resetDetector();
     }
-
 
     public final void addComponent(Isotope element, double proportion) {
         components.add(new Component(element, proportion));
@@ -90,16 +87,16 @@ public class Material {
     }
 
     public final void resetDetector() {
-        this.totalEvents = 0;
         this.scattersOverEnergyBefore = new EnergyHistogram();
         this.scattersOverEnergyAfter = new EnergyHistogram();
         this.capturesOverEnergy = new EnergyHistogram();
         this.lengthOverEnergy = new EnergyHistogram();
         this.pathCounts = new EnergyHistogram();
         this.lengths = new Histogram(-5, 7, 120, false);
-        this.totalEvents = 0;
+        this.totalEvents = new AtomicLong(0);
+        this.totalEvents = new AtomicLong(0);
+        this.pathCount = new AtomicLong(0);
         this.totalFreePath = 0;
-        this.pathCount = 0;
 
     }
 
@@ -129,14 +126,11 @@ public class Material {
     }
 
     public void recordCollision() {
-        synchronized (this) {
-            this.pathCount++;
-        }
+        this.pathCount.incrementAndGet();
     }
 
     public Event nextPoint(Neutron n) {
         double energy = n.energy;
-       
 
         double t = getPathLength(energy, Util.Math.random());
 
@@ -171,7 +165,7 @@ public class Material {
         }
 
         // random draw from earlier scaled up across the combined distribution
-        double rand = sum*Util.Math.random();
+        double rand = sum * Util.Math.random();
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("sum: " + sum + ", draw: " + rand);
         }
@@ -200,7 +194,7 @@ public class Material {
         // try named material instance
         if (material instanceof String) {
             String name = (String) material;
-            
+
             // if not named, try the class
             try {
                 material = Class.forName("org.eastsideprep.javaneutrons.materials." + name);
@@ -224,7 +218,7 @@ public class Material {
         if (material instanceof Part) {
             material = ((Part) material).material;
         }
-        
+
         if (material instanceof Material) {
             return (Material) material;
         } else {
@@ -240,17 +234,13 @@ public class Material {
                     this.scattersOverEnergyBefore.record(1, event.particle.energy);
                     this.recordCollision();
                     // record more stats for material
-                    synchronized (this) {
-                        this.totalEvents++;
-                    }
+                    this.totalEvents.incrementAndGet();
                     break;
                 case Capture:
                     this.capturesOverEnergy.record(1, event.particle.energy);
                     this.recordCollision(); // this needs to be here because it ends a path
                     // record more stats for material
-                    synchronized (this) {
-                        this.totalEvents++;
-                    }
+                    this.totalEvents.incrementAndGet();
                     break;
                 case Gone:
                     Environment.recordEscape(event.particle.energy);

@@ -208,4 +208,20 @@ public class Histogram {
             return Arrays.stream(bins).sum();
         }
     }
+
+    public void add(Histogram hSource) {
+        synchronized (this) {
+            for (int i = 0; i < this.bins.length; i++) {
+                this.bins[i] += hSource.bins[i];
+            }
+        }
+    }
+
+    public void addSquares(Histogram hSource) {
+        synchronized (this) {
+            for (int i = 0; i < this.bins.length; i++) {
+                this.bins[i] += hSource.bins[i] * hSource.bins[i];
+            }
+        }
+    }
 }

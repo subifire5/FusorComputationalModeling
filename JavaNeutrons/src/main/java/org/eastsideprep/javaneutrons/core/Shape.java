@@ -402,6 +402,9 @@ public class Shape extends MeshView {
     }
 
     void cacheVerticesAndFaces() {
+        if (vertices != null && faces != null) {
+            return;
+        }
         synchronized (this) {
             if (vertices == null) {
                 //System.out.println("Original vertices for " + this.part.name);
