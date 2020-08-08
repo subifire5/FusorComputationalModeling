@@ -57,10 +57,21 @@ public class InputHandler {
      * @param outputFilePath
      * @return
      */
-    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
+    public void orbitStuff(Boolean PJ, Boolean MY, Boolean SL, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
         Particle[] particles = new Particle[1];
+        System.out.println("pre scaling: " + initial);
+
         initial.setScaleDistance(scaleDistance);
-        initial.totalEnergy(eField);
+        System.out.println("first: " + initial.totalEnergy(eField));
+        Vector origin = new Vector(0.0, 0.0, 0.0);
+        Vector incorrectPosition = new Vector(0.024, 0.072, 0.0);
+        Vector offPosition = new Vector(-0.02, 0.02, 0.0);
+        Particle centered = new Particle(origin, origin, 1, 1.0);
+        Particle offCenter = new Particle(offPosition, origin, 1, 1.0);
+        System.out.println("Centered: " + centered.electricPotentialEnergy(eField));
+        System.out.println("origin: " + eField.electricPotential(origin));
+        System.out.println("OffCenter: " + offCenter.electricPotentialEnergy(eField));
+        System.out.println("offPosition: " + eField.electricPotential(offPosition));
         if (batch) {
             if (PJ && eu) {
                 PJEulersMethod pj = new PJEulersMethod(eField);
@@ -70,12 +81,14 @@ public class InputHandler {
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
 
             } else if (PJ && rk) {
-
                 PJRungeKutta pj = new PJRungeKutta(eField);
                 particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (SL && rk) {
+                SLRungeKutta sl = new SLRungeKutta(eField);
+                particles = sl.epoch(initial, stepSize, numberOfSteps, batchSize);
             }
 
         } else {
@@ -109,13 +122,21 @@ public class InputHandler {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
                 }
-                 
+
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles[0] = initial;
                 Particle p = particles[0].clone();
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+            } else if (SL && rk) {
+                SLRungeKutta sl = new SLRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = sl.step(p, stepSize).clone();
                     p = particles[i];
                 }
             }
@@ -197,7 +218,7 @@ public class InputHandler {
         int polarity = Integer.valueOf(s.nextLine());
 
         System.out.println("Charge (measured in elementary charge [charge of an electron or proton]): ");
-        Double charge = Double.valueOf(s.nextLine()) * 1.602E-19;
+        Double charge = Double.valueOf(s.nextLine());
 
         System.out.println("To denote a number several decimals below the ones position,"
                 + "\n use the following 2.014E-27, where -27 is the number of,"
@@ -214,6 +235,7 @@ public class InputHandler {
     public void readFromFile() {
         Boolean PJ = false;
         Boolean MY = false;
+        Boolean SL = false;
         Boolean eu = false; // eulers
         Boolean rk = false; // runge kutta
         Boolean batch = true; // true by default
@@ -246,6 +268,7 @@ public class InputHandler {
         negativeCharges = chargeArrayArray[2];
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
+
         Boolean calculateOrbit = false;
         input = "";
         inputRecieved = false;
@@ -280,7 +303,7 @@ public class InputHandler {
             inputRecieved = false;
 
             while (!inputRecieved) {
-                System.out.println("Who's Orbit do you want? Praveer (PJ) Maggie (MY)");
+                System.out.println("Who's Orbit do you want? Praveer (PJ) Maggie (MY) or (SL)");
                 input = s.nextLine();
                 if (input.equals("PJ") || input.equals("Pj") || input.equals("pJ") || input.equals("pj")) {
                     inputRecieved = true;
@@ -288,8 +311,11 @@ public class InputHandler {
                 } else if (input.equals("MY") || input.equals("My") || input.equals("mY") || input.equals("my")) {
                     inputRecieved = true;
                     MY = true;
+                } else if (input.equals("SL") || input.equals("Sl") || input.equals("sL") || input.equals("sl")) {
+                    inputRecieved = true;
+                    SL = true;
                 } else {
-                    System.out.println("Please respond with (PJ) or (MY)");
+                    System.out.println("Please respond with (PJ), (MY) or (SL)");
                 }
             }
 
@@ -335,7 +361,7 @@ public class InputHandler {
                 batchSize = Integer.valueOf(s.nextLine());
             }
 
-            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
+            orbitStuff(PJ, MY, SL, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
         }
 
         inputRecieved = false;

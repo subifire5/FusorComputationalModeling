@@ -54,7 +54,11 @@ public class EField {
         if (centerOfGrid == null) {
             centerOfGrid = new Vector(0.0, 0.0, 0.0);
         }
-        chargeFactor = (vAnnode - vCathode) / electricPotential(centerOfGrid);
+        double ep = electricPotential(centerOfGrid);
+        System.out.println("ep: " + ep);
+        chargeFactor = Math.abs((vAnnode - vCathode) / ep);
+        System.out.println("charge Factor: " + chargeFactor);
+
 
     }
 
@@ -355,14 +359,12 @@ public class EField {
 
         for (Charge t : charges) {
             voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -voltage;
-            } else {
-                vol = t.polarity * voltage;
-            }
+
+            vol = t.polarity * voltage;
+
             distanceSquared = t.distanceSquared(v);
             Vector effectOnPoint;
-            effectOnPoint = v.thisToThat(t).normalized();
+            effectOnPoint = t.thisToThat(v).normalized();
             //effectOnPoint.scale(-1.0);
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
@@ -384,19 +386,12 @@ public class EField {
         double voltage;
         double vol;
         double distanceSquared;
-
+        voltage = vAnnode - vCathode;
         for (Charge t : charges) {
-            voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -c.polarity * voltage;
-            } else {
-                vol = c.polarity * t.polarity * voltage;
-            }
-            //vol = c.polarity * t.polarity * voltage;
+            vol = c.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(c);
             Vector effectOnPoint;
-            effectOnPoint = c.thisToThat(t).normalized();
-            //effectOnPoint.scale(-1.0);
+            effectOnPoint = t.thisToThat(c).normalized();
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
             effectOnPoint.z *= vol / distanceSquared;
@@ -417,19 +412,12 @@ public class EField {
         double voltage;
         double vol;
         double distanceSquared;
-
+        voltage = vAnnode - vCathode;
         for (Charge t : charges) {
-            voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -p.charge * voltage;
-            } else {
-                vol = p.charge * t.polarity * voltage;
-            }
-            //vol = c.polarity * t.polarity * voltage;
+            vol = p.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(p);
             Vector effectOnPoint;
-            effectOnPoint = p.thisToThat(t).normalized();
-            //effectOnPoint.scale(-1.0);
+            effectOnPoint = t.thisToThat(p).normalized();
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
             effectOnPoint.z *= vol / distanceSquared;

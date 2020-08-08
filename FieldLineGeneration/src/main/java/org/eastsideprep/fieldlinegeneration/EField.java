@@ -11,19 +11,16 @@ package org.eastsideprep.fieldlinegeneration;
  *
  * @author subif
  */
-
-
 public class EField {
-
+    final Double e = 1.602e-19; // elementary charge
     double chargeFactor = 1.0;
     double vAnnode;
     double vCathode;
     double scaleDistance;
     Charge[] charges;
-    final Double k;  // Coulombs Constant
+    final Double k = 8.9875517923E9;  // Coulombs Constant
 
     public EField() {
-        this.k = 8.9875517923E9;
 
     }
 
@@ -40,7 +37,6 @@ public class EField {
         this.vAnnode = vAnnode;
         this.vCathode = vCathode;
         this.charges = charges;
-        this.k = 8.9875517923E9;
         this.scaleDistance = scaleDistance;
         for (Charge c : charges) {
             c.scale(scaleDistance);
@@ -48,11 +44,12 @@ public class EField {
         if (centerOfGrid == null) {
             centerOfGrid = new Vector(0.0, 0.0, 0.0);
         }
-        chargeFactor = (vAnnode - vCathode) / electricPotential(centerOfGrid);
+        double ep = electricPotential(centerOfGrid);
+        System.out.println("ep: " + ep);
+        chargeFactor = Math.abs((vAnnode - vCathode) / ep);
+        System.out.println("charge Factor: " + chargeFactor);
 
     }
-
-
 
     /**
      * This is the electric field at a given point assuming a positive charge of
@@ -69,14 +66,12 @@ public class EField {
 
         for (Charge t : charges) {
             voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -voltage;
-            } else {
-                vol = t.polarity * voltage;
-            }
+
+            vol = t.polarity * voltage;
+
             distanceSquared = t.distanceSquared(v);
             Vector effectOnPoint;
-            effectOnPoint = v.thisToThat(t).normalized();
+            effectOnPoint = t.thisToThat(v).normalized();
             //effectOnPoint.scale(-1.0);
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
@@ -86,40 +81,6 @@ public class EField {
         sumOfField.scale(chargeFactor);
         return sumOfField;
     }
-
-    /**
-     * This is the electric field on a charge.
-     *
-     * @param c is the charge
-     * @return A force vector
-     */
-    public Vector forceOnCharge(Charge c) {
-        Vector sumOfField = new Vector(0.0, 0.0, 0.0);
-        double voltage;
-        double vol;
-        double distanceSquared;
-
-        for (Charge t : charges) {
-            voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -c.polarity * voltage;
-            } else {
-                vol = c.polarity * t.polarity * voltage;
-            }
-            //vol = c.polarity * t.polarity * voltage;
-            distanceSquared = t.distanceSquared(c);
-            Vector effectOnPoint;
-            effectOnPoint = c.thisToThat(t).normalized();
-            //effectOnPoint.scale(-1.0);
-            effectOnPoint.x *= vol / distanceSquared;
-            effectOnPoint.y *= vol / distanceSquared;
-            effectOnPoint.z *= vol / distanceSquared;
-            sumOfField.plusEquals(effectOnPoint);
-        }
-        sumOfField.scale(chargeFactor);
-        return sumOfField;
-    }
-
 
     /**
      * The electric potential of a specific charge this is NOT the electric
@@ -131,7 +92,7 @@ public class EField {
     public double electricPotential(Charge c) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity * k / (c.distanceTo(t)));
+            ePotential += (t.polarity * k / (c.distanceTo(t)))*e;
         }
         return ePotential * chargeFactor;
     }
@@ -145,7 +106,7 @@ public class EField {
     public double electricPotential(Vector v) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity * k) / (v.distanceTo(t));
+            ePotential += (t.polarity * k) / (v.distanceTo(t))*e;
         }
         return ePotential * chargeFactor;
     }
@@ -162,7 +123,7 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity * k) / (c.distanceTo(t));
+                ePotential += (t.polarity * k) / (c.distanceTo(t))*e;
             }
         }
         return ePotential * chargeFactor;
@@ -180,13 +141,12 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity * k) / (v.distanceTo(t));
+                ePotential += (t.polarity * k) / (v.distanceTo(t))*e;
             }
         }
         return ePotential * chargeFactor;
 
     }
-
 
     /**
      * The electric potential ENERGY of a given charge Recommended for use with
@@ -198,7 +158,7 @@ public class EField {
     public double electricPotentialEnergy(Charge c) {
         double ePotential = 0;
         for (Charge t : charges) {
-            ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity;
+            ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity*e;
         }
         return ePotential * chargeFactor;
     }
@@ -215,7 +175,7 @@ public class EField {
         double ePotential = 0;
         for (Charge t : charges) {
             if (t != ignore) {
-                ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity;
+                ePotential += (t.polarity * k / (c.distanceTo(t))) * c.polarity*e;
             }
         }
         return ePotential * chargeFactor;
@@ -223,7 +183,7 @@ public class EField {
 
     public void deScale() {
         for (Charge c : charges) {
-            c.scale(1/scaleDistance);
+            c.scale(1 / scaleDistance);
         }
     }
 }

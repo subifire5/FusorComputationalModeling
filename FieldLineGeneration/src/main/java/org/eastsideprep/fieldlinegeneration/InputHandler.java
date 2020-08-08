@@ -116,9 +116,9 @@ public class InputHandler {
         Boolean skipInput = false;
         inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
         String outputFilePath = "testFieldLine1.csv";
-        
+        /*
         outputFilePath = fileCreate("please enter the output file location: ");
-
+        
         System.out.println("skip input? (Y/N)");
         String input = "";
         inputRecieved = false;
@@ -161,9 +161,9 @@ public class InputHandler {
             checkerBoard = Integer.valueOf(s.nextLine());
 
         }
-
+        
         inputRecieved = false;
-
+         */
         EFieldFileParser parser = new EFieldFileParser();
 
         Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
@@ -172,7 +172,23 @@ public class InputHandler {
         negativeCharges = chargeArrayArray[2];
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
-        bounds = makeBoundingBox(scaleDistance);
+        Vector origin = new Vector(0.0, 0.0, 0.0);
+        Vector incorrectPosition = new Vector(0.024, 0.072, 0.0);
+        Vector offPosition = new Vector(-0.00972, -0.01954, -4.67e-4);
+        Particle centered = new Particle(origin, origin, 1, 1.0);
+        Particle offCenter = new Particle(offPosition, origin, 1, 1.0);
+        System.out.println("Centered: "+ centered.electricPotentialEnergy(eField));
+        System.out.println("origin: " + eField.electricPotential(origin));
+        System.out.println("OffCenter: " + offCenter.electricPotentialEnergy(eField));
+        System.out.println("offPosition: " + eField.electricPotential(offPosition));
+        /*
+        Vector testPosition = new Vector(0.032, 0.072, 0.0);
+        Vector testPosition2 = new Vector(0.025, 0.072, 0.0);
+        System.out.println("incorrect position force: " + eField.fieldAtPoint(incorrectPosition));
+        System.out.println("testPosition force: " + eField.fieldAtPoint(testPosition));
+        System.out.println("testPosition2 force: " + eField.fieldAtPoint(testPosition2));
+        */
+        /*bounds = makeBoundingBox(scaleDistance);
         System.out.println("bounds: " + bounds);
         FieldLineGenerator flGenerator = new FieldLineGenerator(eField, bounds,
                 stepSize, threshold, numberOfGaps, checkerBoard);
@@ -182,7 +198,7 @@ public class InputHandler {
         tgw.writeCSV(fieldLines, headers, outputFilePath);
         inputRecieved = false;
         input = "";
-
+         */
     }
 
 }

@@ -237,7 +237,6 @@ public class InputHandler {
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
 
-        //EDITS TO BE ADDED HERE
         if (makeForceVectors && makeLine) {
             graphAxis = tableSettings[0];
             gaps = Integer.valueOf(tableSettings[1]);
