@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.EulersMethod;
+package org.eastsideprep.fieldlinegeneration;
 
 /**
  *
@@ -12,11 +12,9 @@ package com.mycompany.EulersMethod;
 public class Particle extends Charge {
 
     public Vector vel = new Vector(0.0, 0.0, 0.0);
-    public Double charge = 1.0;
+    public Double charge = 1.602E-19;
     public Double time = 0.0;
-    public Double mass = 2.014102 * 1.66053906660E-27;
-    final Double e = 1.602176634e-19; // elementary charge 
-    // also the conversion between 1 electron volt and Joules
+    public Double mass = 2.014 * 1.66E-27;
     public Double ePotentialEnergy = 0.0;
     public Double kineticEnergy = 0.0;
     public Double totalEnergy = 0.0;
@@ -42,7 +40,7 @@ public class Particle extends Charge {
     public Particle(Double x, Double y, Double z, int polarity, Double charge) {
         this.pos = new Vector(x, y, z);
         this.polarity = polarity;
-        this.charge = charge * e;
+        this.charge = charge;
     }
 
     public Particle(Vector p, int polarity, Double charge) {
@@ -65,7 +63,7 @@ public class Particle extends Charge {
         this.pos = new Vector(x, y, z);
         this.vel = new Vector(vx, vy, vz);
         this.polarity = polarity;
-        this.charge = charge * e;
+        this.charge = charge;
     }
 
     /**
@@ -96,7 +94,7 @@ public class Particle extends Charge {
         this.pos = new Vector(x, y, z);
         this.vel = new Vector(vx, vy, vz);
         this.polarity = polarity;
-        this.charge = charge * e;
+        this.charge = charge;
         this.time = time;
     }
 
@@ -128,7 +126,7 @@ public class Particle extends Charge {
         this.pos = new Vector(x, y, z);
         this.vel = new Vector(vx, vy, vz);
         this.polarity = polarity;
-        this.charge = charge * e;
+        this.charge = charge;
         this.time = time;
         this.mass = mass;
     }
@@ -144,13 +142,6 @@ public class Particle extends Charge {
     public Particle(Vector p, Vector v, int polarity, Double charge, Double time,
             Double mass) {
         this(p.x, p.y, p.z, v.x, v.y, v.z, polarity, charge, time, mass);
-    }
-
-    Particle(int polarity, Double charge, Double time, Double mass) {
-        this.polarity = polarity;
-        this.charge = charge;
-        this.time = time;
-        this.mass = mass;
     }
 
     public Particle(String[] s) {
@@ -195,27 +186,24 @@ public class Particle extends Charge {
     }
 
     public Particle clone() {
-        Particle clone = new Particle(polarity, charge, time, mass);
-        clone.pos = this.pos.clone();
-        clone.vel = this.vel.clone();
+        Particle clone = new Particle(pos, vel, polarity, charge, time, mass);
         clone.ePotentialEnergy = this.ePotentialEnergy;
         clone.kineticEnergy = this.kineticEnergy;
         clone.totalEnergy = this.totalEnergy;
         clone.scaleDistance = this.scaleDistance;
-        clone.charge = this.charge;
         return clone;
     }
 
     public double kineticEnergy() {
         Vector zero = new Vector(0.0, 0.0, 0.0);
-        this.kineticEnergy = 0.5 * this.mass * this.vel.distanceSquared(zero) / this.e;
+        this.kineticEnergy = 0.5 * this.mass * this.vel.distanceSquared(zero);
         return this.kineticEnergy;
     }
 
     public double electricPotentialEnergy(EField e) {
         double ePotential = 0;
         for (Charge t : e.charges) {
-            ePotential += (t.polarity / (this.distanceTo(t))) * this.charge / this.e;
+            ePotential += (t.polarity * e.k / (this.distanceTo(t))) * this.charge;
         }
 
         this.ePotentialEnergy = ePotential * e.chargeFactor;
@@ -226,44 +214,38 @@ public class Particle extends Charge {
         this.totalEnergy = kineticEnergy() + electricPotentialEnergy(e);
         return this.totalEnergy;
     }
-
-    public void plusEquals(Particle p) {
+    
+    public void plusEquals(Particle p){
         this.pos.plusEquals(p.pos);
         this.vel.plusEquals(p.vel);
     }
-
-    public void plusEquals(Particle[] ps) {
-        for (Particle p : ps) {
+    
+    public void plusEquals(Particle[] ps){
+        for(Particle p: ps){
             plusEquals(p);
         }
-
+    
     }
-
-    public Particle sum(Particle p) {
+    
+    public Particle sum(Particle p){
         Particle s = this.clone();
         s.plusEquals(p);
         return s;
     }
-
-    public Particle sum(Particle[] ps) {
+    
+    public Particle sum(Particle[] ps){
         Particle s = this.clone();
-        for (Particle p : ps) {
+        for(Particle p: ps){
             s.plusEquals(p);
         }
         return s;
     }
-
-    public Particle multiply(Double s) {
+    
+    public Particle multiply(Double s){
         this.pos.scale(s);
         this.vel.scale(s);
         return this;
-
+        
     }
-
-    public Particle multiply(int s) {
-        this.pos.scale(s);
-        this.vel.scale(s);
-        return this;
-
-    }
+    
 }
