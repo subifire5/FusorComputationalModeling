@@ -258,7 +258,7 @@ public class PJInputHandler {
             Particle Partikel = new Particle (70.0, 70.0, 70.0, 0.0, 0.0, 0.0, 1, 1.0, 0.0); //you can decide the values of the velocity, position, etc. of the particle here
             //Particle(Double x, Double y, Double z, Double vx, Double vy,Double vz, int polarity, Double charge, Double time)
             
-            orbitStuff(true,false, Partikel, 1000.0, 1E-4, outputFilePath,true, 100, false, true); 
+            orbitStuff(true,false, Partikel, 100000.0, 1.0, outputFilePath,true, 100, true, false); 
             //orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
             // you can also decide what values to put in 
         
