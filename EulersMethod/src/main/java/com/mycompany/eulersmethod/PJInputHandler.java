@@ -224,9 +224,10 @@ public class PJInputHandler {
         boolean inputRecieved;
         Double vAnnode = null;
         Double vCathode = null;
-
-        String outputFilePath = "";
-        String inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
+        
+        
+        inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
+        outputFilePath = "pjrktestPJinput.csv";
         System.out.println("Do you want to skip the input process?");
         String input;
         input = s.nextLine();
@@ -236,33 +237,34 @@ public class PJInputHandler {
             skipInput = true;
         } else if (input.equals("N") || input.equals("n")) {
             inputRecieved = true;
+            skipInput = false;
         } else{
             System.out.println("Please respond with a (Y) or (N)");
         }
         
-        if (skipInput = true) {
-            EFieldFileParser parser = new EFieldFileParser();
+        if (skipInput) {
+            
 
-            Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
+            EFieldFileParser parser = new EFieldFileParser();
+            Charge[][] chargeArrayArray = parser.parseFile("outputChamberGrid20kCharges1kShakes.csv");
             charges = chargeArrayArray[0];
             positiveCharges = chargeArrayArray[1];
             negativeCharges = chargeArrayArray[2];
 
-            eField = new EField(charges, 1.0, -40000.0, scaleDistance, new Vector(0.0, 0.0, 0.0));
+            eField = new EField(charges, 1.0, -40000.0, 0.001, new Vector(0.0, 0.0, 0.0));
             
             //put variables up above w/values instead of directly in particle and orbitStuff
                    
             Particle Partikel = new Particle (70.0, 70.0, 70.0, 0.0, 0.0, 0.0, 1, 1.0, 0.0); //you can decide the values of the velocity, position, etc. of the particle here
+            //Particle(Double x, Double y, Double z, Double vx, Double vy,Double vz, int polarity, Double charge, Double time)
             
-            
-            orbitStuff(true,false, Partikel, 1000.0, 1E-4, "outputChamberGrid20kCharges1kShakes.csv",true, 100, false, true); 
-            //also you can change these values to fit the necessary values for your test
-            
+            orbitStuff(true,false, Partikel, 1000.0, 1E-4, outputFilePath,true, 100, false, true); 
+            //orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
+            // you can also decide what values to put in 
         
             
             
         } else{
-
             inputFilePath = fileNameGet("Please enter your input (including the .csv): ");
 
             System.out.println("Please enter the anode (positive) voltage");
