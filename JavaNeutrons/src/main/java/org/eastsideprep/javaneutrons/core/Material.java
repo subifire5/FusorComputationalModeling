@@ -18,11 +18,11 @@ public class Material {
 
     public class Component {
 
-        Isotope e;
+        Nuclide e;
         double density; // atoms/(barn*cm)
         double proportion;
 
-        Component(Isotope e, double proportion) {
+        Component(Nuclide e, double proportion) {
             this.e = e;
             this.density = 0;
             this.proportion = proportion;
@@ -31,12 +31,12 @@ public class Material {
 
     public String name;
     ArrayList<Component> components;
-    public Histogram lengths;
-    public EnergyHistogram scattersOverEnergyBefore;
-    public EnergyHistogram scattersOverEnergyAfter;
-    public EnergyHistogram capturesOverEnergy;
-    public EnergyHistogram lengthOverEnergy;
-    public EnergyHistogram pathCounts;
+    public Tally lengths;
+    public TallyOverEV scattersOverEnergyBefore;
+    public TallyOverEV scattersOverEnergyAfter;
+    public TallyOverEV capturesOverEnergy;
+    public TallyOverEV lengthOverEnergy;
+    public TallyOverEV pathCounts;
     public AtomicLong totalEvents;
     public double totalFreePath;
     public AtomicLong pathCount;
@@ -48,7 +48,7 @@ public class Material {
         resetDetector();
     }
 
-    public final void addComponent(Isotope element, double proportion) {
+    public final void addComponent(Nuclide element, double proportion) {
         components.add(new Component(element, proportion));
     }
 
@@ -87,12 +87,12 @@ public class Material {
     }
 
     public final void resetDetector() {
-        this.scattersOverEnergyBefore = new EnergyHistogram();
-        this.scattersOverEnergyAfter = new EnergyHistogram();
-        this.capturesOverEnergy = new EnergyHistogram();
-        this.lengthOverEnergy = new EnergyHistogram();
-        this.pathCounts = new EnergyHistogram();
-        this.lengths = new Histogram(-5, 7, 120, false);
+        this.scattersOverEnergyBefore = new TallyOverEV();
+        this.scattersOverEnergyAfter = new TallyOverEV();
+        this.capturesOverEnergy = new TallyOverEV();
+        this.lengthOverEnergy = new TallyOverEV();
+        this.pathCounts = new TallyOverEV();
+        this.lengths = new Tally(-5, 7, 120, false);
         this.totalEvents = new AtomicLong(0);
         this.totalEvents = new AtomicLong(0);
         this.pathCount = new AtomicLong(0);
@@ -180,7 +180,7 @@ public class Material {
             //System.out.println("Slot " + slot);
         }
 
-        Isotope e = components.get(slot / 2).e;
+        Nuclide e = components.get(slot / 2).e;
         Event.Code code = (slot % 2 == 0) ? Event.Code.Scatter : Event.Code.Capture;
         if (n.mcs.traceLevel >= 2) {
             //System.out.println("Component: " + e.name + ", code: " + code);

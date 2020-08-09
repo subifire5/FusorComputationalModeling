@@ -20,13 +20,13 @@ public class Part {
     public String name;
 
     // universal detector functionality
-    public EnergyHistogram entriesOverEnergy;
-    public EnergyHistogram exitsOverEnergy;
-    public Map<String, CorrelatedEnergyHistogram> fluenceMap;
-    public EnergyHistogram scattersOverEnergyBefore;
-    public EnergyHistogram scattersOverEnergyAfter;
-    public EnergyHistogram capturesOverEnergy;
-    public Histogram angles;
+    public TallyOverEV entriesOverEnergy;
+    public TallyOverEV exitsOverEnergy;
+    public Map<String, CorrelatedTallyOverEV> fluenceMap;
+    public TallyOverEV scattersOverEnergyBefore;
+    public TallyOverEV scattersOverEnergyAfter;
+    public TallyOverEV capturesOverEnergy;
+    public Tally angles;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
     private AtomicLong totalEvents;
@@ -59,19 +59,19 @@ public class Part {
     public final void resetDetector() {
         this.totalDepositedEnergy = 0;
         this.totalEvents = new AtomicLong(0);
-        this.exitsOverEnergy = new EnergyHistogram();
-        this.entriesOverEnergy = new EnergyHistogram();
+        this.exitsOverEnergy = new TallyOverEV();
+        this.entriesOverEnergy = new TallyOverEV();
 
-        CorrelatedEnergyHistogram neutronFluence = new CorrelatedEnergyHistogram();
-        CorrelatedEnergyHistogram gammaFluence = new CorrelatedEnergyHistogram();
+        CorrelatedTallyOverEV neutronFluence = new CorrelatedTallyOverEV();
+        CorrelatedTallyOverEV gammaFluence = new CorrelatedTallyOverEV();
         this.fluenceMap = new HashMap<>();
         this.fluenceMap.put("neutron", neutronFluence);
         this.fluenceMap.put("gamma", gammaFluence);
 
-        this.scattersOverEnergyBefore = new EnergyHistogram();
-        this.capturesOverEnergy = new EnergyHistogram();
-        this.scattersOverEnergyAfter = new EnergyHistogram();
-        this.angles = new Histogram(-1, 1, 100, false);
+        this.scattersOverEnergyBefore = new TallyOverEV();
+        this.capturesOverEnergy = new TallyOverEV();
+        this.scattersOverEnergyAfter = new TallyOverEV();
+        this.angles = new Tally(-1, 1, 100, false);
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {

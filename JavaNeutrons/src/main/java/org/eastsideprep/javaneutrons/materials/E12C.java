@@ -5,13 +5,13 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Nuclide;
 
 /**
  *
  * @author gunnar
  */
-public class E12C extends Isotope {
+public class E12C extends Nuclide {
 
     private static E12C instance;
 

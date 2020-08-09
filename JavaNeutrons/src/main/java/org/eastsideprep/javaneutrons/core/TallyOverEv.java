@@ -4,21 +4,21 @@ import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-public class EnergyHistogram extends Histogram {
+public class TallyOverEV extends Tally {
 
     public static double LOW_VISUAL_LIMIT = 0.25;
     static double LOW_TRACKING_LIMIT = 0.25;
     static double LOW_BIN_SIZE = 1e-3;
 
-    Histogram hFlat;
-    Histogram hLow;
+    Tally hFlat;
+    Tally hLow;
     double [] energyFitParams = new double[] {0,0};
     double [] fluxFitParams = new double[] {0,0};
 
-    public EnergyHistogram() {
+    public TallyOverEV() {
         super(-3, 7, 100, true);
-        hFlat = new Histogram(0, 3e6, 200, false);
-        hLow = new Histogram(0, LOW_TRACKING_LIMIT, (int) (LOW_TRACKING_LIMIT / LOW_BIN_SIZE), false);
+        hFlat = new Tally(0, 3e6, 200, false);
+        hLow = new Tally(0, LOW_TRACKING_LIMIT, (int) (LOW_TRACKING_LIMIT / LOW_BIN_SIZE), false);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class EnergyHistogram extends Histogram {
         }
     }
 
-    public Histogram getHistogram(String scale) {
+    public Tally getHistogram(String scale) {
         switch (scale) {
             case "Log":
                 return this;
@@ -154,17 +154,17 @@ public class EnergyHistogram extends Histogram {
     
       public XYChart.Series makeFittedSeries(String seriesName, double count) {
           if (seriesName.equals("Energy fit")) {
-              return hLow.makeFittedSeries(seriesName, new MaxwellianEnergyDistribution(), this.energyFitParams, count, EnergyHistogram.LOW_VISUAL_LIMIT);
+              return hLow.makeFittedSeries(seriesName, new MaxwellianEnergyDistribution(), this.energyFitParams, count, TallyOverEV.LOW_VISUAL_LIMIT);
           } else  if (seriesName.equals("Flux fit")) {
-              return hLow.makeFittedSeries(seriesName, new FluxDistribution(), this.fluxFitParams, count, EnergyHistogram.LOW_VISUAL_LIMIT);
+              return hLow.makeFittedSeries(seriesName, new FluxDistribution(), this.fluxFitParams, count, TallyOverEV.LOW_VISUAL_LIMIT);
           } else {
               return null;
           }
       }
 
 
-    public EnergyHistogram normalizeBy(EnergyHistogram other) {
-        EnergyHistogram h = new EnergyHistogram();
+    public TallyOverEV normalizeBy(TallyOverEV other) {
+        TallyOverEV h = new TallyOverEV();
         h.mutateClone(this);
         h.mutateNormalizeBy(other);
         h.hFlat.mutateClone(this.hFlat);

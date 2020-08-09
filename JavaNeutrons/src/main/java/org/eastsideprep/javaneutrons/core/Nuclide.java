@@ -10,10 +10,8 @@ import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-public class Isotope {
+public class Nuclide {
 
     private class CSEntry {
 
@@ -70,7 +68,7 @@ public class Isotope {
         }
     }
 
-    public static HashMap<String, Isotope> elements = new HashMap<>();
+    public static HashMap<String, Nuclide> elements = new HashMap<>();
 
     public String name;
     public double mass; // g
@@ -86,13 +84,13 @@ public class Isotope {
     public ArrayList<AngEntry> angles;
 
     // for when you are too lazy to look up the correct mass
-    public Isotope(String name, int atomicNumber, int neutrons) {
+    public Nuclide(String name, int atomicNumber, int neutrons) {
         this(name, atomicNumber, neutrons, atomicNumber * Util.Physics.protonMass + neutrons * Neutron.mass);
     }
 
     // use this when you know the mass in kg
-    public Isotope(String name, int atomicNumber, int neutrons, double mass) {
-        Isotope.elements.put(name, this);
+    public Nuclide(String name, int atomicNumber, int neutrons, double mass) {
+        Nuclide.elements.put(name, this);
 
         this.atomicNumber = atomicNumber;
         this.neutrons = neutrons;
@@ -108,8 +106,8 @@ public class Isotope {
         return this.name;
     }
 
-    public static Isotope getByName(String name) {
-        return Isotope.elements.get(name);
+    public static Nuclide getByName(String name) {
+        return Nuclide.elements.get(name);
     }
 
     public double getScatterCrossSection(double energy) {
@@ -137,7 +135,7 @@ public class Isotope {
         double epsilon = 0.1;
 
         // read xyz.csv from resources/data
-        InputStream is = Isotope.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace.csv");
+        InputStream is = Nuclide.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace.csv");
         if (is == null) {
             System.err.println("Data file " + fileName + " not found for element " + this.name);
             return;
@@ -187,7 +185,7 @@ public class Isotope {
         double epsilon = 0.1;
 
         // read xyz.csv from resources/data
-        InputStream is = Isotope.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace_angle.csv");
+        InputStream is = Nuclide.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace_angle.csv");
         if (is == null) {
             System.out.println("angle Data file " + fileName + " not found for element " + this.name);
             System.out.println("Using isotropic scattering instead");

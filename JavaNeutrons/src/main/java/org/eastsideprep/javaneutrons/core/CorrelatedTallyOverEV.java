@@ -10,20 +10,20 @@ import java.util.Map;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 
-public class CorrelatedEnergyHistogram extends EnergyHistogram {
+public class CorrelatedTallyOverEV extends TallyOverEV {
 
-    final Map<Particle, EnergyHistogram> hMap = new HashMap<>();
-    final EnergyHistogram sumSquares = new EnergyHistogram();
+    final Map<Particle, TallyOverEV> hMap = new HashMap<>();
+    final TallyOverEV sumSquares = new TallyOverEV();
 
     public void record(Particle p, double value, double energy) {
-        EnergyHistogram h;
+        TallyOverEV h;
         synchronized (hMap) {
             h = hMap.get(p);
         }
 
         if (h == null) {
             synchronized (hMap) {
-                h = new EnergyHistogram();
+                h = new TallyOverEV();
                 hMap.put(p, h);
             }
         }
@@ -33,7 +33,7 @@ public class CorrelatedEnergyHistogram extends EnergyHistogram {
     }
 
     public void tally(Particle p) {
-        EnergyHistogram h;
+        TallyOverEV h;
         synchronized (hMap) {
             h = hMap.get(p);
         }

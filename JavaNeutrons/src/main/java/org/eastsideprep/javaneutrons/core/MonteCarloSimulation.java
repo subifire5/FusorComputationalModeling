@@ -427,7 +427,7 @@ public class MonteCarloSimulation {
                         yAxis.setTickLabelFormatter(new Formatter());
                         for (String kind : p.fluenceMap.keySet()) {
                             if (kind.equals("neutron")) {
-                                CorrelatedEnergyHistogram h = p.fluenceMap.get(kind);
+                                CorrelatedTallyOverEV h = p.fluenceMap.get(kind);
                                 c.getData().add(h.makeSeries("Fluence", this.lastCount, scale));
                                 sErrors = h.makeErrorSeries("Relative Error", this.lastCount, scale);
                             }
@@ -499,7 +499,7 @@ public class MonteCarloSimulation {
                     factor = detector.equals("Air") ? (4.0 / 3.0 * Math.PI * Math.pow(1000, 3) - this.assembly.getVolume()) : 1;
                     c = new LineChart<>(xAxis, yAxis);
                     m = this.getMaterialByName(detector);
-                    EnergyHistogram h = m.lengthOverEnergy.normalizeBy(m.pathCounts);
+                    TallyOverEV h = m.lengthOverEnergy.normalizeBy(m.pathCounts);
                     c.setTitle("Material \"" + m.name + "\"\nMean free path: "
                             + (Math.round(100 * m.totalFreePath / m.pathCount.get()) / 100.0) + " cm, "
                             + "src = " + this.lastCount
@@ -522,7 +522,7 @@ public class MonteCarloSimulation {
 
                 case "Cross-sections":
                     c = new LineChart<>(xAxis, yAxis);
-                    Isotope element = Isotope.getByName(detector);
+                    Nuclide element = Nuclide.getByName(detector);
                     c.setTitle("Microscopic cross-sections for element " + detector);
                     xAxis.setLabel("Energy (eV)");
                     yAxis.setLabel("log10(cross-section/barn)");
@@ -574,7 +574,7 @@ public class MonteCarloSimulation {
                 try {
                     double x = Double.parseDouble(numbers[0]);
                     String tick = String.format("%6.3e", x);
-                    if (x > EnergyHistogram.LOW_VISUAL_LIMIT) {
+                    if (x > TallyOverEV.LOW_VISUAL_LIMIT) {
                         break;
                     }
                     data.add(new XYChart.Data(tick, Double.parseDouble(numbers[1])));

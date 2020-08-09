@@ -5,14 +5,14 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Nuclide;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E40Ar extends Isotope {
+public class E40Ar extends Nuclide {
 
     private static E40Ar instance;
 

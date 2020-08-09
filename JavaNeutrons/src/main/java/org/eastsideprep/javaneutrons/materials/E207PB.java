@@ -5,25 +5,25 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Nuclide;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E207PB extends Isotope {
+public class E207Pb extends Nuclide {
 
-    private static E207PB instance;
+    private static E207Pb instance;
 
-    E207PB() {
-        super("207 Pb", 82, 207-82, -1);
+    E207Pb() {
+        super("207 Pb", 82, 207-82, 206.9758969*Util.Physics.Da);
     }
 
     // we only need one of these objects
-    public static synchronized E207PB getInstance() {
+    public static synchronized E207Pb getInstance() {
         if (instance == null) {
-            E207PB.instance = new E207PB();
+            E207Pb.instance = new E207Pb();
         }
         return instance;
     }

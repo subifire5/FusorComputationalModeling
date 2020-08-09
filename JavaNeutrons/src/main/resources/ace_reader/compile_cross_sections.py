@@ -2,19 +2,21 @@ import os.path
 import glob
 
 from pyne import ace
-print glob.glob('../data/ace/6012.*')
-libFile = ace.Library('../data/ace/6012.800nc.ace')
+
+print glob.glob('../data/ace/1001.*')
+libFile = ace.Library('../data/ace/1001.800nc.ace')
 libFile.read()
 print libFile.tables
-table = libFile.tables['6012.800nc']
+table = libFile.tables['1001.800nc']
 # print table.energy
 # print table.sigma_a
 # print table.sigma_t
 
-print table.reactions
-print table.reactions[102]
-print vars(table.reactions[102]).keys()
-print table.reactions[102].table
+print table.__dict__.keys()
+#print table.photon_reactions
+#print table.reactions[102]
+#print vars(table.reactions[102]).keys()
+#print table.reactions[102].sigma
 
 x= 1/0
 print table.reactions[2]

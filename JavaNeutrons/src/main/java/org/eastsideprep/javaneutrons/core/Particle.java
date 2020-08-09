@@ -16,7 +16,7 @@ abstract public class Particle {
     public double entryEnergy = 0;
     public double totalPath = 0;
     public MonteCarloSimulation mcs;
-    public Set<CorrelatedEnergyHistogram> fluences;
+    public Set<CorrelatedTallyOverEV> fluences;
 
     ArrayList<Event> history = new ArrayList<>();
 
@@ -78,7 +78,7 @@ abstract public class Particle {
     }
     
     public void tally() {
-        for (CorrelatedEnergyHistogram h:fluences) {
+        for (CorrelatedTallyOverEV h:fluences) {
             h.tally(this);
         }
     }
