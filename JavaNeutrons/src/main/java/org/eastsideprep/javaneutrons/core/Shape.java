@@ -402,6 +402,9 @@ public class Shape extends MeshView {
     }
 
     void cacheVerticesAndFaces() {
+        if (vertices != null && faces != null) {
+            return;
+        }
         synchronized (this) {
             if (vertices == null) {
                 //System.out.println("Original vertices for " + this.part.name);
@@ -424,7 +427,6 @@ public class Shape extends MeshView {
     //
     // goes through all the triangles in the shape to find the intersection
     // returns t-parameter for the ray, or 0 if not intersecting
-    // todo: acceleration structure like hierarchy of volumes
     //
     public double rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, int[] faceIndex, LinkedTransferQueue simVis) {
         double tmin = -1;
@@ -519,7 +521,8 @@ public class Shape extends MeshView {
     // getVolume
     //
     // calculates the volume of a mesh in O(N)
-    // todo: since the math is so simple, this could be done without creating objects
+    // since the math is so simple, this could be done without creating objects
+    // but we don't call it very often, so no need
     //
     public double getVolume() {
 

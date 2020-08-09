@@ -8,28 +8,27 @@ package org.eastsideprep.javaneutrons.materials;
 import org.eastsideprep.javaneutrons.core.Material;
 
 //
-// Carbon Steel material # 294
+// "Lead" material #171
 //
 //
-public class Steel extends Material {
+public class Lead extends Material {
 
-    static Steel instance;
+    static Lead instance;
 
-    public Steel() {
-        super("Steel");
-        this.addComponent(E12C.getInstance(), 0.022831);
-        this.addComponent(E56Fe.getInstance(), 0.977169);
-        this.calculateAtomicDensities(7820);
+    public Lead() {
+        super("Lead");
+        this.addComponent(E207Pb.getInstance(), 1.0);
+        this.calculateAtomicDensities(11350);
     }
 
-    public Steel(String name) {
+    public Lead(String name) {
         super(name);
     }
 
     // we only need one of these objects
-    public static synchronized Steel getInstance() {
+    public static synchronized Lead getInstance() {
         if (instance == null) {
-            Steel.instance = new Steel();
+            Lead.instance = new Lead();
         }
         return instance;
     }

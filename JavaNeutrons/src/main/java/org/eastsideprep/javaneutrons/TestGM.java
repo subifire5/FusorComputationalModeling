@@ -22,11 +22,11 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.eastsideprep.javaneutrons.core.Assembly;
-import org.eastsideprep.javaneutrons.core.EnergyHistogram;
+import org.eastsideprep.javaneutrons.core.TallyOverEV;
 import org.eastsideprep.javaneutrons.core.Event;
-import org.eastsideprep.javaneutrons.core.Histogram;
+import org.eastsideprep.javaneutrons.core.Tally;
 import org.eastsideprep.javaneutrons.core.Part;
-import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Nuclide;
 import org.eastsideprep.javaneutrons.core.MC0D;
 import org.eastsideprep.javaneutrons.core.Material;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
@@ -48,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return MC0D_Prison(visualizations);
+        return bigBlock(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -57,13 +57,13 @@ public class TestGM {
         MonteCarloSimulation mcs = new MC0D() {
 
             ArrayList<Vector2D> pairs = new ArrayList<>();
-            Isotope is = E1H.getInstance();
+            Nuclide is = E1H.getInstance();
             Material hw = HydrogenWax.getInstance();
             Shape spherical = new Shape(TestGM.class.getResource("/meshes/spherical_detector.stl"));
             double vol = spherical.getVolume();
-            EnergyHistogram maxwell;
-            EnergyHistogram adjusted;
-            Histogram angles;
+            TallyOverEV maxwell;
+            TallyOverEV adjusted;
+            Tally angles;
 
             @Override
             public void init() {
@@ -75,9 +75,9 @@ public class TestGM {
 
             @Override
             public void before() {
-                maxwell = new EnergyHistogram();
-                adjusted = new EnergyHistogram();
-                angles = new Histogram(-1.0, 1.0, 100, false);
+                maxwell = new TallyOverEV();
+                adjusted = new TallyOverEV();
+                angles = new Tally(-1.0, 1.0, 100, false);
                 pairs = new ArrayList<>();
             }
 
@@ -161,7 +161,7 @@ public class TestGM {
                 } else {
                     return null;
                 }
-                copyChartCSV(c);
+                copyChartCSV(c, null);
                 return c;
             }
 
@@ -176,12 +176,12 @@ public class TestGM {
         MonteCarloSimulation mcs = new MC0D() {
 
             ArrayList<Vector2D> pairs = new ArrayList<>();
-            Isotope is = E1H.getInstance();
+            Nuclide is = E1H.getInstance();
             Material hw = HydrogenWax.getInstance();
             Shape prison = new Cuboid(200);
             double vol = prison.getVolume();
-            EnergyHistogram adjusted;
-            Histogram angles;
+            TallyOverEV adjusted;
+            Tally angles;
 
             @Override
             public void init() {
@@ -193,8 +193,8 @@ public class TestGM {
 
             @Override
             public void before() {
-                adjusted = new EnergyHistogram();
-                angles = new Histogram(-1.0, 1.0, 100, false);
+                adjusted = new TallyOverEV();
+                angles = new Tally(-1.0, 1.0, 100, false);
                 pairs = new ArrayList<>();
             }
 
@@ -261,7 +261,7 @@ public class TestGM {
                     yAxis.setLabel("count/src");
                     c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
                 }
-                copyChartCSV(c);
+                copyChartCSV(c,null);
                 return c;
             }
 
@@ -277,8 +277,8 @@ public class TestGM {
     public static MonteCarloSimulation bigBlock(Group visualizations) {
         double thickness = 25; //block thickness in cm
         Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
-        String m = "HydrogenWax";
-        //String m = "CarbonWax";
+        //String m = "HydrogenWax";
+        String m = "CarbonWax";
         //String m = "Paraffin";
 
         Part wall = new Part("Wall: " + m, blockShape, m);
@@ -302,14 +302,15 @@ public class TestGM {
                 "Vacuum", null, visualizations); // interstitial, initial
         //mcs.prepareGrid(5.0, visualizations);
         mcs.targetAdjusted = true;
+        mcs.suggestedCount = 1000000;
         return mcs;
     }
 
     public static MonteCarloSimulation prison(Group visualizations) {
         double thickness = 200; //block thickness in cm
         //String m = "HydrogenWax";
-        //String m = "CarbonWax";
-        String m = "Paraffin";
+        String m = "CarbonWax";
+        //String m = "Paraffin";
 
         //Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
         Part wall = new Part("Prison: " + m, new Cuboid(thickness), m);
@@ -323,6 +324,7 @@ public class TestGM {
                 null, Vector3D.PLUS_I, Util.Physics.thermalEnergy, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
         mcs.targetAdjusted = true;
+        mcs.suggestedCount = 10000000;
         return mcs;
     }
 
@@ -332,7 +334,7 @@ public class TestGM {
 
         // vac chamber
         Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class
-                .getResource("/meshes/vac_chamber.obj")), "Steel");
+                .getResource("/meshes/vac_chamber.obj")), "Lead");
         vacChamber.setColor(
                 "lightgreen");
 
@@ -647,7 +649,7 @@ public class TestGM {
         //s.setDrawMode(DrawMode.LINE);
         Vector3D orig = new Vector3D(0, 0, 0);
 
-        Isotope is = E12C.getInstance();
+        Nuclide is = E12C.getInstance();
 
         for (int i = 0; i < 5000; i++) {
             // Vector3D v = Util.Math.randomDir().scalarMultiply(100);
@@ -766,7 +768,7 @@ public class TestGM {
     }
 
     private static void histTest() {
-        EnergyHistogram test = new EnergyHistogram();
+        TallyOverEV test = new TallyOverEV();
         test.record(1000, 0.5e-4 * Util.Physics.eV);
         test.record(2000, 1e-3 * Util.Physics.eV);
         test.record(2100, 1.1e-3 * Util.Physics.eV);

@@ -13,7 +13,7 @@ public class Event {
     public Particle particle;
 
     // additional info - presence depends on event
-    public Isotope scatterParticle;
+    public Nuclide scatterParticle;
     public double energyOut;
     public double t; // how far along was this on the vector we took to get here
     public Part part;
@@ -53,7 +53,7 @@ public class Event {
         this.face = face;
     }
 
-    public Event(Vector3D position, Event.Code c, double t, Isotope e, Neutron n) {
+    public Event(Vector3D position, Event.Code c, double t, Nuclide e, Neutron n) {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.code = c;
         this.t = t;

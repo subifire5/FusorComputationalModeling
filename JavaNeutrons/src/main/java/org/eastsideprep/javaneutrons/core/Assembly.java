@@ -14,8 +14,6 @@ import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Assembly extends Part {
-    // todo: acceleration structure
-
     private AssemblyGroup g;
     public ArrayList<Part> parts = new ArrayList<>();
     

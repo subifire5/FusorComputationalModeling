@@ -5,13 +5,13 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Nuclide;
 
 /**
  *
  * @author gunnar
  */
-public class E14N extends Isotope {
+public class E14N extends Nuclide {
 
     private static E14N instance;
 

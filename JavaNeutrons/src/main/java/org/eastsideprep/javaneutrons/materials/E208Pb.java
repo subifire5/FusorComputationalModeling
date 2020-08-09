@@ -5,19 +5,19 @@
  */
 package org.eastsideprep.javaneutrons.materials;
 
-import org.eastsideprep.javaneutrons.core.Isotope;
+import org.eastsideprep.javaneutrons.core.Nuclide;
 import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E208Pb extends Isotope {
+public class E208Pb extends Nuclide {
 
     private static E208Pb instance;
 
     E208Pb() {
-        super("208 Pb", 82, 208-82, -1);
+        super("208 Pb", 82, 208-82, 207.9766521*Util.Physics.Da);
     }
 
     // we only need one of these objects

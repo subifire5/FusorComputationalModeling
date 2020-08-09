@@ -1,6 +1,7 @@
 package org.eastsideprep.javaneutrons.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
@@ -8,7 +9,7 @@ import org.apache.commons.math3.fitting.CurveFitter;
 import org.apache.commons.math3.optim.nonlinear.vector.MultivariateVectorOptimizer;
 import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 
-public class Histogram {
+public class Tally {
 
     int binsPerDecade = 10;
     double min;
@@ -16,7 +17,7 @@ public class Histogram {
     double[] bins;
     boolean log;
 
-    public Histogram(double min, double max, int bins, boolean log) {
+    public Tally(double min, double max, int bins, boolean log) {
         this.min = min;
         this.max = max;
         this.bins = new double[bins + 2];
@@ -24,7 +25,7 @@ public class Histogram {
         //this.bins = new double[logMax - logMin + 1];
     }
 
-    public Histogram() {
+    public Tally() {
         this.min = -3;
         this.max = 7;
         this.bins = new double[(int) Math.ceil((max - min) * this.binsPerDecade)];
@@ -182,7 +183,7 @@ public class Histogram {
         return beta;
     }
 
-    public void mutateNormalizeBy(Histogram other) {
+    public void mutateNormalizeBy(Tally other) {
         for (int i = 0; i < this.bins.length; i++) {
             if (other.bins[i] != 0) {
                 bins[i] /= other.bins[i];
@@ -190,14 +191,36 @@ public class Histogram {
         }
     }
 
-    public void mutateClone(Histogram other) {
+    public void mutateClone(Tally other) {
         System.arraycopy(other.bins, 0, bins, 0, bins.length);
     }
 
-    public Histogram normalizeBy(Histogram other) {
-        Histogram h = new Histogram(this.min, this.max, this.bins.length, false);
+    public Tally normalizeBy(Tally other) {
+        Tally h = new Tally(this.min, this.max, this.bins.length, false);
         h.mutateClone(this);
         h.mutateNormalizeBy(other);
         return h;
+    }
+
+    public double getTotal() {
+        synchronized (this) {
+            return Arrays.stream(bins).sum();
+        }
+    }
+
+    public void add(Tally hSource) {
+        synchronized (this) {
+            for (int i = 0; i < this.bins.length; i++) {
+                this.bins[i] += hSource.bins[i];
+            }
+        }
+    }
+
+    public void addSquares(Tally hSource) {
+        synchronized (this) {
+            for (int i = 0; i < this.bins.length; i++) {
+                this.bins[i] += hSource.bins[i] * hSource.bins[i];
+            }
+        }
     }
 }
