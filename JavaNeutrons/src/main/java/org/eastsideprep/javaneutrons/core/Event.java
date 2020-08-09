@@ -10,10 +10,10 @@ public class Event {
 
     public Code code; // what kind of interesting thing happened here
     public Vector3D position;
-    public Neutron neutron;
+    public Particle particle;
 
     // additional info - presence depends on event
-    public Isotope particle;
+    public Isotope scatterParticle;
     public double energyOut;
     public double t; // how far along was this on the vector we took to get here
     public Part part;
@@ -57,8 +57,8 @@ public class Event {
         this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
         this.code = c;
         this.t = t;
-        this.particle = e;
-        this.neutron = n;
+        this.scatterParticle = e;
+        this.particle = n;
     }
 
     public Event(Vector3D position, Part p, double t) {

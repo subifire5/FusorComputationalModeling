@@ -5,8 +5,9 @@ import java.util.concurrent.LinkedTransferQueue;
 import javafx.scene.Node;
 import org.apache.commons.math3.geometry.euclidean.threed.*;
 
-public class Particle {
+abstract public class Particle {
 
+    public String type;
     public double energy; // unit: SI for cm
     public Vector3D direction; // no units
     public Vector3D position; // unit: (cm,cm,cm)
@@ -18,7 +19,8 @@ public class Particle {
 
     public Particle(Vector3D position, Vector3D direction, double energy, MonteCarloSimulation mcs) {
         this.position = position;
-        setDirectionAndEnergy(direction, energy);
+        this.direction = direction;
+        this.energy = energy;
         this.mcs = mcs;
     }
 
@@ -45,12 +47,9 @@ public class Particle {
     }
 
     public void processEvent(Event event) {
-        if (event.code == Event.Code.Scatter) {
-        } else if (event.code == Event.Code.Capture) {
-            // capture
-            Environment.recordCapture();
-        }
     }
+    
+    abstract Event nextPoint(Material m);
 
     //replace parameters with 1 Neutron object??
     public boolean record(Event e) {

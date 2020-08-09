@@ -67,7 +67,7 @@ public class Grid {
 
     // member variables for Grid
     HashMap<CellID, Cell> cells = new HashMap<>();
-    double side;
+    public double side;
     double gminx = Double.POSITIVE_INFINITY;
     double gminy = Double.POSITIVE_INFINITY;
     double gminz = Double.POSITIVE_INFINITY;

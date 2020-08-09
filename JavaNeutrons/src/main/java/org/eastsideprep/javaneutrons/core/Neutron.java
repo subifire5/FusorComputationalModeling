@@ -19,6 +19,8 @@ public final class Neutron extends Particle {
 
     public Neutron(Vector3D position, Vector3D direction, double energy, MonteCarloSimulation mcs) {
         super(position, direction, energy, mcs);
+        setDirectionAndEnergy(direction, energy);
+        type = "neutron";
     }
 
     public final void setVelocity(Vector3D velocity) {
@@ -31,14 +33,19 @@ public final class Neutron extends Particle {
     }
 
     @Override
-    public void setDirectionAndEnergy(Vector3D direction, double energy) {
+    final public void setDirectionAndEnergy(Vector3D direction, double energy) {
         this.direction = direction.normalize();
         this.energy = energy;
         this.velocity = this.direction.scalarMultiply(Math.sqrt(energy * 2 / Neutron.mass));
     }
 
+    @Override
+    Event nextPoint(Material m) {
+        return m.nextPoint(this);
+    }
+
     public Vector3D getScatteredVelocity(Event e, Vector3D neutronVelocity) {
-        Isotope i = e.particle;
+        Isotope i = e.scatterParticle;
         double cos_theta;
         if (i.angles != null) {
             double neutronSpeed = neutronVelocity.getNorm();
@@ -63,7 +70,7 @@ public final class Neutron extends Particle {
 
     public Vector3D getIsotropicScatteredVelocity(Event e, Vector3D neutronVelocity) {
         Vector3D v;
-        Isotope i = e.particle;
+        Isotope i = e.scatterParticle;
         double vneutron = neutronVelocity.getNorm();
 
         v = Util.Math.randomDir();
@@ -81,7 +88,7 @@ public final class Neutron extends Particle {
         double eta1 = Util.Math.random();
         if (eta1 < 2 / (Math.sqrt(Math.PI) * y + 2)) {
             // sample by C49 with n=2
-            u = Math.sqrt(-Math.log(Util.Math.random() *Util.Math.random()));
+            u = Math.sqrt(-Math.log(Util.Math.random() * Util.Math.random()));
         } else {
             // by WhitmerMath(tm)
             double tau = Util.Math.randomGaussian();
@@ -115,22 +122,22 @@ public final class Neutron extends Particle {
             if (this.mcs.targetAdjusted) {
                 // choose particle speed 
                 do {
-                    vtarget = pickTargetSpeed(vneutron, event.particle);
+                    vtarget = pickTargetSpeed(vneutron, event.scatterParticle);
                     particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
                 } while (!acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
             } else {
                 // naive Maxwellian speed distribution
-                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.particle.mass);
+                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.scatterParticle.mass);
                 particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
                 vtarget = particleVelocityIn.getNorm();
             }
 
-            event.particleEnergyIn = event.particle.mass * vtarget * vtarget / 2;
+            event.particleEnergyIn = event.scatterParticle.mass * vtarget * vtarget / 2;
             //establish center of mass
             //add velocity vectors / total mass 
             velocityCM = (this.velocity.scalarMultiply(Neutron.mass)
-                    .add(particleVelocityIn.scalarMultiply(event.particle.mass)))
-                    .scalarMultiply(1 / (Neutron.mass + event.particle.mass));
+                    .add(particleVelocityIn.scalarMultiply(event.scatterParticle.mass)))
+                    .scalarMultiply(1 / (Neutron.mass + event.scatterParticle.mass));
 
             //convert neutron and particle --> center of mass frame
             neutronVelocityCMin = this.velocity.subtract(velocityCM);
@@ -155,7 +162,7 @@ public final class Neutron extends Particle {
                 double angleWithX = Math.acos(neutronVelocityOut.dotProduct(Vector3D.PLUS_I.normalize())) / Math.PI * 180;
                 synchronized (Neutron.class) {
                     System.out.println("Neutron: " + this.hashCode());
-                    System.out.println(" Particle: " + event.particle.name);
+                    System.out.println(" Particle: " + event.scatterParticle.name);
                     System.out.println(" Particle energy: " + String.format("%6.3e eV", event.particleEnergyIn / Util.Physics.eV));
                     System.out.println(" Neutron energy in: " + String.format("%6.3e eV", energyIn / Util.Physics.eV));
                     System.out.println(" Speed of Neutron: " + String.format("%6.3e cm/s", vneutron));

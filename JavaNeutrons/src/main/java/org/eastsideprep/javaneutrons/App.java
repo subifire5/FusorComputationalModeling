@@ -6,12 +6,14 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -21,7 +23,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -62,7 +66,15 @@ public class App extends Application {
 
         // control buttons and progress 
         TextField tf = new TextField("1");
-        tf.setPrefWidth(200);
+        tf.setPrefWidth(100);
+        CheckBox grid = new CheckBox("Grid:");
+        grid.setPrefWidth(50);
+        TextField gridSize = new TextField("2.0");
+        gridSize.setPrefWidth(40);
+        HBox settings = new HBox();
+        settings.getChildren().addAll(tf, grid, gridSize);
+        settings.setAlignment(Pos.CENTER);
+        settings.setSpacing(5);
 
         ChoiceBox cb = new ChoiceBox();
         addItems(cb, TestGM.class);
@@ -72,8 +84,10 @@ public class App extends Application {
         cb.setOnAction(e -> {
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
+            grid.setSelected(this.sim.grid != null);
+            gridSize.setText(this.sim.grid != null ? "" + this.sim.grid.side : "");
             if (this.sim instanceof MC0D) {
-                 ((MC0D)sim).init();
+                ((MC0D) sim).init();
             }
             if (this.sim.suggestedCount != -1) {
                 tf.setText(Long.toString(this.sim.suggestedCount));
@@ -90,6 +104,11 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
+            if (grid.isSelected() && sim.grid == null) {
+                this.sim.prepareGrid(Double.parseDouble(gridSize.getText()), view);
+            } else if (!grid.isSelected() && sim.grid != null) {
+                this.sim.grid = null;
+            }
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
                 root.setRight(heatMap);
@@ -154,7 +173,7 @@ public class App extends Application {
         bTest.setPrefWidth(200);
 
         VBox buttons = new VBox();
-        buttons.getChildren().addAll(cb, bLoad, tf, bRun, bStop, progress, new Separator(),
+        buttons.getChildren().addAll(cb, bLoad, settings, new Separator(), bRun, bStop, progress, new Separator(),
                 bStats, bView, bCopy, bTest, new Separator(),
                 stats);
         root.setLeft(buttons);
@@ -268,7 +287,7 @@ public class App extends Application {
                             this.stats.getChildren().add(newstats);
                             progress.setText("");
                             root.setRight(null);
-                           
+
                         }
                     }
                 }));

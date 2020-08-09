@@ -2,7 +2,6 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -10,7 +9,6 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -301,7 +299,7 @@ public class MonteCarloSimulation {
             completed.incrementAndGet();
             return;
         }
-        this.assembly.evolveNeutronPath(n, this.visualizations, true, this.grid);
+        this.assembly.evolveParticlePath(n, this.visualizations, true, this.grid);
         completed.incrementAndGet();
         if (traceLevel >= 2) {
             System.out.println("");
@@ -334,7 +332,9 @@ public class MonteCarloSimulation {
     }
 
     public void prepareGrid(double side, Group vis) {
-        this.grid = new Grid(side, assembly, origin, vis);
+        if (!(this instanceof MC0D)) {
+            this.grid = new Grid(side, assembly, origin, vis);
+        }
     }
 
     public void preProcess() {
@@ -410,18 +410,20 @@ public class MonteCarloSimulation {
                     p = this.getPartByName(detector);
                     if (p != null) {
                         f = new DecimalFormat("0.###E0");
-                        e = f.format(p.getTotalFluence() / this.lastCount);
+                        e = f.format(p.getTotalFluence("neutron") / this.lastCount);
                         c.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount
-                                + p.fluenceOverEnergy.getStatsString(scale, true, this.lastCount)
                         );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
+                        for (String kind : p.fluenceMap.keySet()) {
+                            EnergyHistogram h = p.fluenceMap.get(kind);
+                            c.getData().add(h.makeSeries("Fluence", this.lastCount, scale));
+                        }
                         if (fit && scale.equals("Linear (thermal)")) {
-                            c.getData().add(p.fluenceOverEnergy.makeFittedSeries("Flux fit", this.lastCount));
+                            c.getData().add(p.fluenceMap.get("neutron").makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                     } else {
@@ -437,7 +439,6 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, scale));
-                        //c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
                     }
                     break;
 
@@ -560,12 +561,16 @@ public class MonteCarloSimulation {
             Scanner sc = new Scanner(ist);
             while (sc.hasNextLine()) {
                 String[] numbers = sc.nextLine().split(",");
-                double x = Double.parseDouble(numbers[0]);
-                String tick = String.format("%6.3e", x);
-                if (x > EnergyHistogram.LOW_VISUAL_LIMIT) {
-                    break;
+                try {
+                    double x = Double.parseDouble(numbers[0]);
+                    String tick = String.format("%6.3e", x);
+                    if (x > EnergyHistogram.LOW_VISUAL_LIMIT) {
+                        break;
+                    }
+                    data.add(new XYChart.Data(tick, Double.parseDouble(numbers[1])));
+                } catch (Exception e) {
+                    // skip headers, underflow, overflow
                 }
-                data.add(new XYChart.Data(tick, Double.parseDouble(numbers[1])));
             }
         } catch (Exception e) {
             System.out.println("CSV not found for series: " + url);
@@ -603,8 +608,12 @@ public class MonteCarloSimulation {
             chartData += s0.getData().get(i).getXValue();
             // go through the y-values
             for (Series<String, Number> s : c.getData()) {
-                Data<String, Number> d2 = s.getData().get(i);
-                chartData += "," + d2.getYValue();
+                if (s.getData().size() > i) {
+                    Data<String, Number> d2 = s.getData().get(i);
+                    chartData += "," + d2.getYValue();
+                } else {
+                    chartData += ",NA";
+                }
             }
             chartData += "\n";
         }
