@@ -48,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return humanDetector(visualizations);
+        return smoosh20(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
