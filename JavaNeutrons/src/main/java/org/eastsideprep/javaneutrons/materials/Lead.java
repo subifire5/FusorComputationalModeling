@@ -17,14 +17,10 @@ public class Lead extends Material {
 
     public Lead() {
         super("Lead");
-        this.addComponent(E207Pb.getInstance(), 1.0);
+        this.addComponent(N207Pb.getInstance(), 1.0);
         this.calculateAtomicDensities(11350);
     }
-
-    public Lead(String name) {
-        super(name);
-    }
-
+    
     // we only need one of these objects
     public static synchronized Lead getInstance() {
         if (instance == null) {

@@ -12,18 +12,18 @@ import org.eastsideprep.javaneutrons.core.Util;
  *
  * @author gunnar
  */
-public class E40Ar extends Nuclide {
+public class N207Pb extends Nuclide {
 
-    private static E40Ar instance;
+    private static N207Pb instance;
 
-    E40Ar() {
-        super("40 Argon", 18, 22, 39.948*Util.Physics.Da);
+    N207Pb() {
+        super("207 Pb", 82, 207-82, 206.9758969*Util.Physics.Da);
     }
 
     // we only need one of these objects
-    public static synchronized E40Ar getInstance() {
+    public static synchronized N207Pb getInstance() {
         if (instance == null) {
-            E40Ar.instance = new E40Ar();
+            N207Pb.instance = new N207Pb();
         }
         return instance;
     }

@@ -6,24 +6,24 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Nuclide;
+import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E12C extends Nuclide {
+public class N206Pb extends Nuclide {
 
-    private static E12C instance;
+    private static N206Pb instance;
 
-    E12C() {
-        super("12C", 6, 6, 1.9944235e-26);
+    N206Pb() {
+        super("206 Pb", 82, 206-82, 205.9744653*Util.Physics.Da);
     }
 
-
     // we only need one of these objects
-    public static synchronized E12C getInstance() {
+    public static synchronized N206Pb getInstance() {
         if (instance == null) {
-            E12C.instance = new E12C();
+            N206Pb.instance = new N206Pb();
         }
         return instance;
     }

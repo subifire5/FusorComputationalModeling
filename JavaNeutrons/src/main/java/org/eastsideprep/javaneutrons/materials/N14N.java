@@ -6,24 +6,23 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Nuclide;
-import org.eastsideprep.javaneutrons.core.Util;
 
 /**
  *
  * @author gunnar
  */
-public class E16O extends Nuclide {
+public class N14N extends Nuclide {
 
-    private static E16O instance;
+    private static N14N instance;
 
-    E16O() {
-        super("16O", 8, 8, 2.6566962e-26);
+    N14N() {
+        super("14N", 7, 7, 2.3258671e-26);
     }
 
     // we only need one of these objects
-    public static synchronized E16O getInstance() {
+    public static synchronized N14N getInstance() {
         if (instance == null) {
-            E16O.instance = new E16O();
+            N14N.instance = new N14N();
         }
         return instance;
     }

@@ -6,24 +6,24 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Nuclide;
-import org.eastsideprep.javaneutrons.core.Util;
 
-/**
- *
- * @author gunnar
- */
-public class E207Pb extends Nuclide {
+//
+// 
+//
+public class N1H extends Nuclide {
 
-    private static E207Pb instance;
+    private static N1H instance;
 
-    E207Pb() {
-        super("207 Pb", 82, 207-82, 206.9758969*Util.Physics.Da);
+    public N1H() {
+        super("1H", 1, 0);
+        //System.out.println("in h constructor");
     }
 
     // we only need one of these objects
-    public static synchronized E207Pb getInstance() {
+    public static synchronized N1H getInstance() {
+        //System.out.println("in h getinstance");
         if (instance == null) {
-            E207Pb.instance = new E207Pb();
+            N1H.instance = new N1H();
         }
         return instance;
     }
