@@ -73,7 +73,7 @@ public class InputHandler {
         System.out.println("OffCenter: " + offCenter.electricPotentialEnergy(eField));
         System.out.println("offPosition: " + eField.electricPotential(offPosition));
         if (batch) {
-            if (PJ && eu) {
+            if (PJ && eu) {               
                 PJEulersMethod pj = new PJEulersMethod(eField);
                 particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
             } else if (MY && eu) {
@@ -101,6 +101,10 @@ public class InputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
+                    double percentage = i/numberOfSteps;
+                    double difference = numberOfSteps - i;
+                    System.out.println("Progress: " + (percentage*100)+ "%");
+                    System.out.println("Steps Left:" + difference);        
                 }
 
             } else if (MY && eu) {
@@ -121,6 +125,10 @@ public class InputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
+                    double percentage2 = i/numberOfSteps;
+                    double difference2 = numberOfSteps - i;
+                    System.out.println("Progress: " + (percentage2*100)+"%");
+                    System.out.println("Steps Left:" + difference2);        
                 }
 
             } else if (MY && rk) {
