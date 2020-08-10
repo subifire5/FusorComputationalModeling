@@ -133,9 +133,9 @@ public class Nuclide {
 
     private void fillEntries(String fileName) {
         double epsilon = 0.1;
-
+        fileName = "/data/ace/" + fileName + ".800nc.ace.csv";
         // read xyz.csv from resources/data
-        InputStream is = Nuclide.class.getResourceAsStream("/data/ace/" + fileName + ".800nc.ace.csv");
+        InputStream is = Nuclide.class.getResourceAsStream(fileName);
         if (is == null) {
             System.err.println("Data file " + fileName + " not found for element " + this.name);
             return;

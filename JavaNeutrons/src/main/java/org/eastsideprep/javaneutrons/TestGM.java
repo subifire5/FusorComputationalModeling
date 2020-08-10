@@ -48,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return smoosh20(visualizations);
+        return humanDetector(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -334,7 +334,7 @@ public class TestGM {
 
         // vac chamber
         Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class
-                .getResource("/meshes/vac_chamber.obj")), "Steel");
+                .getResource("/meshes/vac_chamber.obj")), "Lead");
         vacChamber.setColor(
                 "lightgreen");
 
@@ -610,8 +610,7 @@ public class TestGM {
         //bodyShape.getTransforms().add(0,new Rotate(90, new Point3D(1,0,0)));
         Part body = new Part("Body", new HumanBody(), "HumanBodyMaterial");
 
-        body.getTransforms()
-                .add(0, new Translate(0, 0, -200));
+        body.getTransforms().add(0, new Translate(0, 0, -200));
 
         // vac chamber
         Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class.getResource("/meshes/vac_chamber.obj")), "Steel");
