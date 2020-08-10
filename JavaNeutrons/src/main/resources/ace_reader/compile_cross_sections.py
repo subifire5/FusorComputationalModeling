@@ -49,7 +49,7 @@ def write_reaction_csv(directory, t, mat):
         f.write(make_csv(t))
 
 def make_angle_csv(t):
-    return '\n'.join([(str(e*1e6)+','+str(count)+','+str(cdf).replace("\n"," ")+','+str(cos).replace("\n"," ")) for (e, count, cdf, cos) \
+    return '\n'.join([(str(e*1e6)+','+str(count)+','+str(pdf).replace("\n"," ")+str(cdf).replace("\n"," ")+','+str(cos).replace("\n"," ")) for (e, count, pdf, cdf, cos) \
         in zip(t.reactions[2].ang_energy_in, 
         [len(c) for c in t.reactions[2].ang_cos.values()],
         t.reactions[2].ang_pdf.values(),

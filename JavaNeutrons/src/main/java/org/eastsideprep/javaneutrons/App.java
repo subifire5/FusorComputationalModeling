@@ -104,8 +104,10 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            if (grid.isSelected() && sim.grid == null) {
-                this.sim.prepareGrid(Double.parseDouble(gridSize.getText()), view);
+            double side = Double.parseDouble(gridSize.getText());
+            if (grid.isSelected() && (sim.grid == null || sim.grid.side != side)) {
+                this.sim.grid = null;
+                this.sim.prepareGrid(side, view);
             } else if (!grid.isSelected() && sim.grid != null) {
                 this.sim.grid = null;
             }

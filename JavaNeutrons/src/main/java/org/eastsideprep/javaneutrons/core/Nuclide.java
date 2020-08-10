@@ -28,13 +28,16 @@ public class Nuclide {
 
         double energy;
         int count;
+        double[] pdf;
         double[] cdf;
         double[] cos;
 
-        private AngEntry(double e, int c, String cdf, String cos) {
+        private AngEntry(double e, int c, String pdf, String cdf, String cos) {
             this.energy = e;
             this.count = c;
             try {
+                this.pdf = Arrays.stream(pdf.substring(1, pdf.length() - 2).trim().split(" +"))
+                        .mapToDouble(s -> Double.parseDouble(s + (s.endsWith(".") ? "0" : ""))).toArray();
                 this.cdf = Arrays.stream(cdf.substring(1, cdf.length() - 2).trim().split(" +"))
                         .mapToDouble(s -> Double.parseDouble(s + (s.endsWith(".") ? "0" : ""))).toArray();
                 this.cos = Arrays.stream(cos.substring(1, cos.length() - 2).split(" +"))
@@ -65,6 +68,11 @@ public class Nuclide {
             //System.out.println("rand "+rand+": cos is " + cos + " array " + Arrays.toString(this.cos));
 
             return cos;
+        }
+          private int findBin(double rand) {
+            int bin = Arrays.binarySearch(cdf, rand);
+            bin = bin < 0 ? -bin - 1 : bin;
+            return bin-1;
         }
     }
 
@@ -203,9 +211,10 @@ public class Nuclide {
                 String[] split = line.split(",");
                 double energy = Double.parseDouble(split[0]);
                 int count = Integer.parseInt(split[1]);
-                String cdf = split[2];
-                String cos = split[3];
-                newAngles.add(new AngEntry(energy, count, cdf, cos));
+                String pdf = split[2];
+                String cdf = split[3];
+                String cos = split[4];
+                newAngles.add(new AngEntry(energy, count, pdf, cdf, cos));
             }
         } catch (Exception ex) {
             System.out.println("ex " + ex);
@@ -218,26 +227,37 @@ public class Nuclide {
     }
 
     public double getScatterCosTheta(double energy) {
-        double cos_theta;
-        double rand = ThreadLocalRandom.current().nextDouble();
+        double mu;
         // locate energy bin
-        int bin = Arrays.binarySearch(this.angEnergies, energy);
-        if (bin < 0) {
-            bin = -bin - 1;
-            int binBelow = bin - 1;
+        int binAbove = Arrays.binarySearch(this.angEnergies, energy);
+        if (binAbove < 0) {
+            binAbove = -binAbove - 1;
+            int bin = binAbove - 1;
             // compute how far we are into the energy bin
-            double t = (energy - this.angEnergies[binBelow]) / (this.angEnergies[bin] - this.angEnergies[binBelow]);
+            double f = (energy - this.angEnergies[bin]) / (this.angEnergies[binAbove] - this.angEnergies[bin]);
+            double eta1 = Util.Math.random();
+            int l = eta1>f?bin:binAbove;
 
+            double eta2 = Util.Math.random();
+            int j = this.angles.get(bin).findBin(eta2);
+            
+            // l = energy bin
+            // j = cos bin
+            
+            // todo : mu = mu(l,j)+ (eta2-cdf(l,j))/p(l,j)
+            //or the more complicated linear-linear scheme
+            
+            // the rest here is old
             // get cos values for low and high bin, then interpolate
-            double cos_theta_low = this.angles.get(binBelow).lookupCos(rand);
-            double cos_theta_high = this.angles.get(bin).lookupCos(rand);
+            double cos_theta_low = this.angles.get(bin).lookupCos(eta1);
+            double cos_theta_high = this.angles.get(binAbove).lookupCos(eta2);
             // then interpolate
-            cos_theta = cos_theta_high * t + cos_theta_low * (1 - t);
+            mu = cos_theta_high * f + cos_theta_low * (1 - f);
         } else {
             // found it exactly
-            cos_theta = this.angles.get(bin).lookupCos(rand);
+            mu = this.angles.get(binAbove).lookupCos(Util.Math.random());
         }
-        return cos_theta;
+        return mu;
     }
 
   
