@@ -22,10 +22,6 @@ public class Steel extends Material {
         this.calculateAtomicDensities(7820);
     }
 
-    public Steel(String name) {
-        super(name);
-    }
-
     // we only need one of these objects
     public static synchronized Steel getInstance() {
         if (instance == null) {

@@ -334,7 +334,7 @@ public class TestGM {
 
         // vac chamber
         Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class
-                .getResource("/meshes/vac_chamber.obj")), "Lead");
+                .getResource("/meshes/vac_chamber.obj")), "Steel");
         vacChamber.setColor(
                 "lightgreen");
 
