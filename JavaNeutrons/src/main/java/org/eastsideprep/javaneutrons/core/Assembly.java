@@ -14,9 +14,10 @@ import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Assembly extends Part {
+
     private AssemblyGroup g;
     public ArrayList<Part> parts = new ArrayList<>();
-    
+
     public Assembly(String name) {
         super(name, null, null);
         this.g = new AssemblyGroup(this);
@@ -194,11 +195,12 @@ public class Assembly extends Part {
     }
 
     public void add(Part part) {
-        this.parts.add(part);
         if (part instanceof Assembly) {
             Assembly a = (Assembly) part;
+            this.addAll(a.parts);
             g.getChildren().add(a.getGroup());
         } else {
+            this.parts.add(part);
             g.getChildren().add(part.shape);
         }
 //        if (part.shape != null) {
