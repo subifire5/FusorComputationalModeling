@@ -35,8 +35,8 @@ import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.shapes.Cuboid;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
 import org.eastsideprep.javaneutrons.core.Shape;
-import org.eastsideprep.javaneutrons.materials.E12C;
-import org.eastsideprep.javaneutrons.materials.E1H;
+import org.eastsideprep.javaneutrons.materials.N12C;
+import org.eastsideprep.javaneutrons.materials.N1H;
 import org.eastsideprep.javaneutrons.materials.HydrogenWax;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
@@ -48,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return bigBlock(visualizations);
+        return smoosh20(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -57,7 +57,7 @@ public class TestGM {
         MonteCarloSimulation mcs = new MC0D() {
 
             ArrayList<Vector2D> pairs = new ArrayList<>();
-            Nuclide is = E1H.getInstance();
+            Nuclide is = N1H.getInstance();
             Material hw = HydrogenWax.getInstance();
             Shape spherical = new Shape(TestGM.class.getResource("/meshes/spherical_detector.stl"));
             double vol = spherical.getVolume();
@@ -176,7 +176,7 @@ public class TestGM {
         MonteCarloSimulation mcs = new MC0D() {
 
             ArrayList<Vector2D> pairs = new ArrayList<>();
-            Nuclide is = E1H.getInstance();
+            Nuclide is = N1H.getInstance();
             Material hw = HydrogenWax.getInstance();
             Shape prison = new Cuboid(200);
             double vol = prison.getVolume();
@@ -596,15 +596,13 @@ public class TestGM {
         //
         // igloo
         //
-        Assembly igloo = new Assembly("igloo", TestGM.class
-                .getResource("/meshes/igloo.obj"), "Paraffin");
+        Assembly igloo = new Assembly("igloo", TestGM.class.getResource("/meshes/igloo.obj"), "Paraffin");
 
         double s = 20;
         // move detector behind cube wall
         Part detector = new Part("Detector 1", new Cuboid(s, 3 * s, 5 * s), "Vacuum");
 
-        detector.getTransforms()
-                .add(new Translate(200, 0, 0));
+        detector.getTransforms().add(new Translate(200, 0, 0));
 
         //
         // body
@@ -649,7 +647,7 @@ public class TestGM {
         //s.setDrawMode(DrawMode.LINE);
         Vector3D orig = new Vector3D(0, 0, 0);
 
-        Nuclide is = E12C.getInstance();
+        Nuclide is = N12C.getInstance();
 
         for (int i = 0; i < 5000; i++) {
             // Vector3D v = Util.Math.randomDir().scalarMultiply(100);

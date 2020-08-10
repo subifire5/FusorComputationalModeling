@@ -12,18 +12,18 @@ import org.eastsideprep.javaneutrons.core.Util;
  *
  * @author gunnar
  */
-public class E56Fe extends Nuclide {
+public class N16O extends Nuclide {
 
-    private static E56Fe instance;
+    private static N16O instance;
 
-    E56Fe() {
-        super("56 Iron", 26, 30, 9.2732796e-26);
+    N16O() {
+        super("16O", 8, 8, 2.6566962e-26);
     }
 
     // we only need one of these objects
-    public static synchronized E56Fe getInstance() {
+    public static synchronized N16O getInstance() {
         if (instance == null) {
-            E56Fe.instance = new E56Fe();
+            N16O.instance = new N16O();
         }
         return instance;
     }

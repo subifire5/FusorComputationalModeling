@@ -6,24 +6,24 @@
 package org.eastsideprep.javaneutrons.materials;
 
 import org.eastsideprep.javaneutrons.core.Nuclide;
+import org.eastsideprep.javaneutrons.core.Util;
 
-//
-// 
-//
-public class E1H extends Nuclide {
+/**
+ *
+ * @author gunnar
+ */
+public class N40Ar extends Nuclide {
 
-    private static E1H instance;
+    private static N40Ar instance;
 
-    public E1H() {
-        super("1H", 1, 0);
-        //System.out.println("in h constructor");
+    N40Ar() {
+        super("40 Argon", 18, 22, 39.948*Util.Physics.Da);
     }
 
     // we only need one of these objects
-    public static synchronized E1H getInstance() {
-        //System.out.println("in h getinstance");
+    public static synchronized N40Ar getInstance() {
         if (instance == null) {
-            E1H.instance = new E1H();
+            N40Ar.instance = new N40Ar();
         }
         return instance;
     }
