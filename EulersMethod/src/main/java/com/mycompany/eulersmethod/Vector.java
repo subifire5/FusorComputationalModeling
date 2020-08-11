@@ -261,7 +261,23 @@ public class Vector {
         return this;
     }
 
+    public Vector scale(int s) {
+        x *= s;
+        y *= s;
+        z *= s;
+        return this;
+    }
+
     public Vector product(Double s) {
         return new Vector(x, y, z).scale(s);
+    }
+
+    public Vector clone() {
+        Vector v = new Vector();
+        v.x = this.x + 0.0;
+        v.y = this.y + 0.0;
+        v.z = this.z + 0.0;
+        return v;
+
     }
 }

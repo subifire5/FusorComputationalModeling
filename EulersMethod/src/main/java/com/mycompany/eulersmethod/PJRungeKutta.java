@@ -35,33 +35,30 @@ public class PJRungeKutta implements Solution {
     }
     @Override
     public Particle step(Particle p, Double stepSize) {
-        
-        int x = 2;
-        double two = (double) x;
-        
-        Particle k1 = f(p);
+           
+        p.totalEnergy(eField);
+        Particle k1 = f(p.clone());
         Particle k1_2 = p.clone();
-        k1_2.pos.plusEquals(k1.clone().pos.scale(stepSize/2));
-        k1_2.vel.plusEquals(k1.clone().vel.scale(stepSize/2));
+        k1_2.plusEquals(k1.clone().multiply(stepSize/2));
         Particle k2 = f(k1_2);
-        
+
         Particle k2_3 = p.clone();
-        k2_3.pos.plusEquals(k2.clone().pos.scale(stepSize/2));
-        k2_3.vel.plusEquals(k2.clone().vel.scale(stepSize/2));
+        k2_3.plusEquals(k2.clone().multiply(stepSize/2));
         Particle k3 = f(k2_3);
         
         Particle k3_4 = p.clone();
-        k3_4.pos.plusEquals(k3.clone().pos.scale(stepSize));
-        k3_4.vel.plusEquals(k3.clone().vel.scale(stepSize));
+        k3_4.plusEquals(k3.clone().multiply(stepSize));
         Particle k4 = f(k3_4);
                 
         Particle p2 = p.clone();
         
-        p2.pos.plusEquals(k1.pos.sum(k2.pos.scale(two)).sum(k3.pos.scale(two).sum(k4.pos).scale(1/6*stepSize)));
-        p2.vel.plusEquals(k1.vel.sum(k2.vel.scale(two)).sum(k3.vel.scale(two).sum(k4.vel).scale(1/6*stepSize)));
-        p2.time += stepSize;
+        k2_3.multiply(2.0);
+        k3_4.multiply(2.0);
         
-        System.out.println(p2.pos);
+        Particle[] k5 = {k1,k2,k3,k4};
+        p2.plusEquals(k5);
+        p2.multiply(stepSize/6);     
+        p2.time += stepSize;
         
         return p2;
     }
