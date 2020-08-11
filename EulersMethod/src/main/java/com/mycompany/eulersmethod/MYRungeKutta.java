@@ -27,11 +27,15 @@ public class MYRungeKutta implements Solution{
     }
     @Override
     public Particle step(Particle p, Double stepSize) {
+        
+        p.totalEnergy(eField);
+        
         Particle k1 = f(p.clone());
-        System.out.println(k1);
+        System.out.println("K1: " + k1);
         Particle p1 = p.clone();
         p1.plusEquals(k1.clone().multiply(stepSize/2));
-
+        System.out.println("P1: " + p1);
+        
         Particle k2 = f(p1);
         //System.out.println(k2);
         Particle p2 = p.clone();
@@ -52,7 +56,7 @@ public class MYRungeKutta implements Solution{
         p4.multiply(stepSize/6);
 
         p4.time += stepSize;
-        System.out.println(p4);
+        System.out.println("P4: " + p4);
         
         return p4;        
     }

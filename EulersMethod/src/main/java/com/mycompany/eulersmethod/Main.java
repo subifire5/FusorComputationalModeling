@@ -17,10 +17,12 @@ public class Main {
         InputHandler ih = new InputHandler();
         ih.getInput();
         
-        Vector test1 = new Vector (0.0, 0.0, 0.0);
-        Vector test2 = new Vector (1000.0, 1000.0, 1000.0);
-        System.out.println("Grid vector: " + ih.eField.electricPotential(test1));
-        System.out.println("Vector outside the chamber: " + ih.eField.electricPotential(test2));
+        //Vector test1 = new Vector (-2E11, 0.0, 0.0);
+        //Vector test2 = new Vector (1000.0, 1000.0, 1000.0);
+        //test1.scale(1E-5);
+        //System.out.println("Test1: " + test1);
+        //System.out.println("Grid vector: " + ih.eField.electricPotential(test1));
+        //System.out.println("Vector outside the chamber: " + ih.eField.electricPotential(test2));
     }        
 
     public static void times2(Double d){
