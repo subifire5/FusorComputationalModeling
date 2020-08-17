@@ -75,23 +75,23 @@ public class InputHandler {
 
     String[] makeLineTable() {
         String graphAxis = "";
-        Boolean inputRecieved = false;
-        while (!inputRecieved) {
+        Boolean inputReceived = false;
+        while (!inputReceived) {
             System.out.println("Along which axis do you want your graph? (X/Y/Z)");
 
             graphAxis = s.nextLine();
             if (graphAxis.equals("Y") || graphAxis.equals("y")) {
-                inputRecieved = true;
+                inputReceived = true;
             } else if (graphAxis.equals("X") || graphAxis.equals("x")) {
-                inputRecieved = true;
+                inputReceived = true;
             } else if (graphAxis.equals("Z") || graphAxis.equals("z")) {
-                inputRecieved = true;
+                inputReceived = true;
             } else {
                 System.out.println("Please respond with (X), (Y) or (Z)");
             }
 
         }
-        inputRecieved = false;
+        inputReceived = false;
         System.out.println("How many points do you want plotted?");
         String gaps = s.nextLine();
 
