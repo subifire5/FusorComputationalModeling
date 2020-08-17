@@ -65,19 +65,19 @@ public class Assembly extends Part {
     }
 
     @Override
-    public Event evolveNeutronPath(Neutron n, LinkedTransferQueue visualizations, boolean outermost, Grid grid) {
+    public Event evolveParticlePath(Particle p, LinkedTransferQueue visualizations, boolean outermost, Grid grid) {
         Event partEvent;
         Event interactionEvent;
         Event event;
         double t;
 
         // we start in a certain medium.
-        Material medium = n.mcs.initialMaterial;
+        Material medium = p.mcs.initialMaterial;
 
         do {
             // find the closest part we intersect with
             if (grid != null) {
-                partEvent = grid.rayIntersect(n.position, n.direction, false, n.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
+                partEvent = grid.rayIntersect(p.position, p.direction, false, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
                 // DEBUG
 //                if (partEvent == null){
 //                    // find it the slow way
@@ -87,23 +87,23 @@ public class Assembly extends Part {
 //                    }
 //                }
             } else {
-                partEvent = this.rayIntersect(n.position, n.direction, false, visualizations);
+                partEvent = this.rayIntersect(p.position, p.direction, false, visualizations);
             }
             if (partEvent == null && !outermost) {
                 // we found nothing and we are not in the outermost assembly,
                 // return to the containing assembly
-                return new Event(n.position, Event.Code.Exit);
+                return new Event(p.position, Event.Code.Exit);
             }
             // find possible interactions along the way
-            interactionEvent = medium.nextPoint(n);
+            interactionEvent = p.nextPoint(medium);
 
             // did we not find a part, maybe we started inside a part?
             if (partEvent == null && outermost) {
                 // repeat search looking at triangle meshes from the inside
                 if (grid != null) {
-                    partEvent = grid.rayIntersect(n.position, n.direction, true, n.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
+                    partEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
                 } else {
-                    partEvent = this.rayIntersect(n.position, n.direction, true, visualizations);
+                    partEvent = this.rayIntersect(p.position, p.direction, true, visualizations);
                 }
                 if (partEvent != null) {
                     // we are alsready inside the part. 
@@ -116,38 +116,38 @@ public class Assembly extends Part {
                 event = interactionEvent;
                 if (event.position.getNorm() <= Environment.limit) {
                     // scattering / absorption in medium did really happen, process it
-                    n.setPosition(visualizations, event.position);
+                    p.setPosition(visualizations, event.position);
                     medium.processEvent(event, true);
                     Util.Graphics.visualizeEvent(event, visualizations);
                 }
             } else {
                 // no interaction, we will just enter a new part
-                Part p = partEvent.part;
+                Part part = partEvent.part;
                 if (partEvent.t != 0) {
                     // we entered the part from the outside, visualize it
-                    Util.Graphics.visualizeEvent(partEvent, n.direction, visualizations);
-                    n.setPosition(visualizations, partEvent.position);
+                    Util.Graphics.visualizeEvent(partEvent, p.direction, visualizations);
+                    p.setPosition(visualizations, partEvent.position);
                 }
-                if (!n.record(partEvent)) {
+                if (!p.record(partEvent)) {
                     // to many events, get out
                     return partEvent;
                 }
-                partEvent.neutron = n;
+                partEvent.particle = p;
                 medium.processEvent(partEvent, true);
                 //System.out.println("Entering part " + p.name);
-                event = p.evolveNeutronPath(n, visualizations, false, grid);
+                event = part.evolveParticlePath(p, visualizations, false, grid);
                 // coming out, we might be in a new material
                 medium = event.exitMaterial != null ? event.exitMaterial : medium;
                 //System.out.println("Exit to material: "+medium.name);
             }
             // if things happened far enough from the origin, call it gone
             if (event.position.getNorm() > Environment.limit) {
-                t = Util.Math.raySphereIntersect(n.position, n.direction, Vector3D.ZERO, Environment.limit);
-                event.position = n.position.add(n.direction.scalarMultiply(t));
+                t = Util.Math.raySphereIntersect(p.position, p.direction, Vector3D.ZERO, Environment.limit);
+                event.position = p.position.add(p.direction.scalarMultiply(t));
                 event.t = t;
                 event.code = Event.Code.Gone;
-                event.neutron = n;
-                n.setPosition(visualizations, event.position);
+                event.particle = p;
+                p.setPosition(visualizations, event.position);
                 medium.processEvent(event, true);
                 //n.setPosition(visualizations, event.position);
             }
@@ -166,7 +166,6 @@ public class Assembly extends Part {
     @Override
     Event rayIntersect(Vector3D rayOrigin, Vector3D rayDirection, boolean goingOut, LinkedTransferQueue vis) {
         double tmin = -1;
-        Part closestPart = null;
         Event closestEvent = null;
         Part p = null;
 
