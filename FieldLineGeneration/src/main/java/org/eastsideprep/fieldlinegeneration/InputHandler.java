@@ -79,7 +79,7 @@ public class InputHandler {
 
     GridBox makeBoundingBox(Double scaleDistance) {
         GridBox bounds;
-        Boolean inputRecieved = false;
+        Boolean inputReceived = false;
         System.out.println("Give the Bottom lower Corner Coordinates");
         System.out.println("x:");
         Double blcx = Double.valueOf(s.nextLine());
@@ -116,21 +116,21 @@ public class InputHandler {
         Boolean skipInput = false;
         inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
         String outputFilePath = "testFieldLine1.csv";
-        
+        /*
         outputFilePath = fileCreate("please enter the output file location: ");
-
+        
         System.out.println("skip input? (Y/N)");
         String input = "";
-        inputRecieved = false;
-        while (!inputRecieved) {
+        inputReceived = false;
+        while (!inputReceived) {
             input = s.nextLine();
             if (input.equals("Y") || input.equals("y")) {
                 skipInput = true;
-                inputRecieved = true;
+                inputReceived = true;
                 break;
             } else if (input.equals("N") || input.equals("n")) {
                 skipInput = false;
-                inputRecieved = true;
+                inputReceived = true;
                 break;
             } else {
                 System.out.println("Please enter (Y) or (N)");
@@ -161,9 +161,9 @@ public class InputHandler {
             checkerBoard = Integer.valueOf(s.nextLine());
 
         }
-
-        inputRecieved = false;
-
+        
+        inputReceived = false;
+         */
         EFieldFileParser parser = new EFieldFileParser();
 
         Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
@@ -172,7 +172,23 @@ public class InputHandler {
         negativeCharges = chargeArrayArray[2];
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
-        bounds = makeBoundingBox(scaleDistance);
+        Vector origin = new Vector(0.0, 0.0, 0.0);
+        Vector incorrectPosition = new Vector(0.024, 0.072, 0.0);
+        Vector offPosition = new Vector(-0.00972, -0.01954, -4.67e-4);
+        Particle centered = new Particle(origin, origin, 1, 1.0);
+        Particle offCenter = new Particle(offPosition, origin, 1, 1.0);
+        System.out.println("Centered: "+ centered.electricPotentialEnergy(eField));
+        System.out.println("origin: " + eField.electricPotential(origin));
+        System.out.println("OffCenter: " + offCenter.electricPotentialEnergy(eField));
+        System.out.println("offPosition: " + eField.electricPotential(offPosition));
+        /*
+        Vector testPosition = new Vector(0.032, 0.072, 0.0);
+        Vector testPosition2 = new Vector(0.025, 0.072, 0.0);
+        System.out.println("incorrect position force: " + eField.fieldAtPoint(incorrectPosition));
+        System.out.println("testPosition force: " + eField.fieldAtPoint(testPosition));
+        System.out.println("testPosition2 force: " + eField.fieldAtPoint(testPosition2));
+        */
+        /*bounds = makeBoundingBox(scaleDistance);
         System.out.println("bounds: " + bounds);
         FieldLineGenerator flGenerator = new FieldLineGenerator(eField, bounds,
                 stepSize, threshold, numberOfGaps, checkerBoard);
@@ -180,9 +196,9 @@ public class InputHandler {
         LinkedList<LinkedList<Vector>> fieldLines = flGenerator.drawFieldLines();
         String[] headers = {"Line", "X", "Y", "Z"};
         tgw.writeCSV(fieldLines, headers, outputFilePath);
-        inputRecieved = false;
+        inputReceived = false;
         input = "";
-
+         */
     }
 
 }

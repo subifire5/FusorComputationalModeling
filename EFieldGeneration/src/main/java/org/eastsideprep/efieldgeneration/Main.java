@@ -15,6 +15,7 @@ public class Main {
 
         InputHandler input = new InputHandler();
         input.getInput();
+        //input.scaleOver(); 
     }
 
 }

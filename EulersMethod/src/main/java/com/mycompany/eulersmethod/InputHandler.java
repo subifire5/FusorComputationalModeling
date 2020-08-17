@@ -57,12 +57,23 @@ public class InputHandler {
      * @param outputFilePath
      * @return
      */
-    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
+    public void orbitStuff(Boolean PJ, Boolean MY, Boolean SL, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
         Particle[] particles = new Particle[1];
+        System.out.println("pre scaling: " + initial);
+
         initial.setScaleDistance(scaleDistance);
-        initial.totalEnergy(eField);
+        System.out.println("first: " + initial.totalEnergy(eField));
+        Vector origin = new Vector(0.0, 0.0, 0.0);
+        Vector incorrectPosition = new Vector(0.024, 0.072, 0.0);
+        Vector offPosition = new Vector(-0.02, 0.02, 0.0);
+        Particle centered = new Particle(origin, origin, 1, 1.0);
+        Particle offCenter = new Particle(offPosition, origin, 1, 1.0);
+        System.out.println("Centered: " + centered.electricPotentialEnergy(eField));
+        System.out.println("origin: " + eField.electricPotential(origin));
+        System.out.println("OffCenter: " + offCenter.electricPotentialEnergy(eField));
+        System.out.println("offPosition: " + eField.electricPotential(offPosition));
         if (batch) {
-            if (PJ && eu) {
+            if (PJ && eu) {               
                 PJEulersMethod pj = new PJEulersMethod(eField);
                 particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
             } else if (MY && eu) {
@@ -70,12 +81,14 @@ public class InputHandler {
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
 
             } else if (PJ && rk) {
-
                 PJRungeKutta pj = new PJRungeKutta(eField);
                 particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (SL && rk) {
+                SLRungeKutta sl = new SLRungeKutta(eField);
+                particles = sl.epoch(initial, stepSize, numberOfSteps, batchSize);
             }
 
         } else {
@@ -88,6 +101,10 @@ public class InputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
+                    double percentage = i/numberOfSteps;
+                    double difference = numberOfSteps - i;
+                    System.out.println("Progress: " + (percentage*100)+ "%");
+                    System.out.println("Steps Left:" + difference);        
                 }
 
             } else if (MY && eu) {
@@ -108,14 +125,26 @@ public class InputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
+                    double percentage2 = i/numberOfSteps;
+                    double difference2 = numberOfSteps - i;
+                    System.out.println("Progress: " + (percentage2*100)+"%");
+                    System.out.println("Steps Left:" + difference2);        
                 }
-                 
+
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles[0] = initial;
                 Particle p = particles[0].clone();
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+            } else if (SL && rk) {
+                SLRungeKutta sl = new SLRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = sl.step(p, stepSize).clone();
                     p = particles[i];
                 }
             }
@@ -197,29 +226,33 @@ public class InputHandler {
         int polarity = Integer.valueOf(s.nextLine());
 
         System.out.println("Charge (measured in elementary charge [charge of an electron or proton]): ");
-        Double charge = Double.valueOf(s.nextLine()) * 1.602E-19;
-
+        Double charge = Double.valueOf(s.nextLine());
+        
         System.out.println("To denote a number several decimals below the ones position,"
                 + "\n use the following 2.014E-27, where -27 is the number of,"
                 + "\n digits behind the ones position that the number starts");
+        /*
         System.out.println("Intital Time (seconds): ");
         Double time = Double.valueOf(s.nextLine());
-
-        System.out.println("Mass (in Atomic Mass Units, for Deuterium this is 2.0141)");
+        */
+        Double time = 0.0;
+        /*System.out.println("Mass (in Atomic Mass Units, for Deuterium this is 2.0141)");
         Double mass = Double.valueOf(s.nextLine()) * 1.66E-27;
-
+        */
+        Double mass = 2.014102 * 1.66053906660E-27;
         return new Particle(x, y, z, Vx, Vy, Vz, polarity, charge, time, mass);
     }
 
     public void readFromFile() {
         Boolean PJ = false;
         Boolean MY = false;
+        Boolean SL = false;
         Boolean eu = false; // eulers
         Boolean rk = false; // runge kutta
         Boolean batch = true; // true by default
         int batchSize = 0;
         Particle initial = null;
-        boolean inputRecieved = false;
+        boolean inputReceived = false;
         Double numberOfSteps = 0.0;
         Double stepSize = 1.0;
         String outputFilePath = "";
@@ -236,7 +269,7 @@ public class InputHandler {
         scaleDistance = Double.valueOf(s.nextLine());
 
         String input = "";
-        inputRecieved = false;
+        inputReceived = false;
 
         EFieldFileParser parser = new EFieldFileParser();
 
@@ -246,25 +279,26 @@ public class InputHandler {
         negativeCharges = chargeArrayArray[2];
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
+
         Boolean calculateOrbit = false;
         input = "";
-        inputRecieved = false;
-        while (!inputRecieved) {
+        inputReceived = false;
+        while (!inputReceived) {
             System.out.println("Do you want to calculate an orbit?(Y/N)");
 
             input = s.nextLine();
             if (input.equals("Y") || input.equals("y")) {
-                inputRecieved = true;
+                inputReceived = true;
                 calculateOrbit = true;
             } else if (input.equals("N") || input.equals("n")) {
-                inputRecieved = true;
+                inputReceived = true;
                 calculateOrbit = false;
             } else {
                 System.out.println("Please respond with (Y) or (N)");
             }
 
         }
-        inputRecieved = false;
+        inputReceived = false;
         input = "";
         if (calculateOrbit) {
             initial = getInitialParticle();
@@ -277,32 +311,35 @@ public class InputHandler {
             System.out.println("Number of Steps:");
             numberOfSteps = Double.valueOf(s.nextLine());
 
-            inputRecieved = false;
+            inputReceived = false;
 
-            while (!inputRecieved) {
-                System.out.println("Who's Orbit do you want? Praveer (PJ) Maggie (MY)");
+            while (!inputReceived) {
+                System.out.println("Who's Orbit do you want? Praveer (PJ) Maggie (MY) or (SL)");
                 input = s.nextLine();
                 if (input.equals("PJ") || input.equals("Pj") || input.equals("pJ") || input.equals("pj")) {
-                    inputRecieved = true;
+                    inputReceived = true;
                     PJ = true;
                 } else if (input.equals("MY") || input.equals("My") || input.equals("mY") || input.equals("my")) {
-                    inputRecieved = true;
+                    inputReceived = true;
                     MY = true;
+                } else if (input.equals("SL") || input.equals("Sl") || input.equals("sL") || input.equals("sl")) {
+                    inputReceived = true;
+                    SL = true;
                 } else {
-                    System.out.println("Please respond with (PJ) or (MY)");
+                    System.out.println("Please respond with (PJ), (MY) or (SL)");
                 }
             }
 
             input = "";
-            inputRecieved = false;
-            while (!inputRecieved) {
+            inputReceived = false;
+            while (!inputReceived) {
                 System.out.println("Which method do you want? Eulers (EU) Runge Kutta (RK)");
                 input = s.nextLine();
                 if (input.equals("EU") || input.equals("Eu") || input.equals("eU") || input.equals("eu")) {
-                    inputRecieved = true;
+                    inputReceived = true;
                     eu = true;
                 } else if (input.equals("RK") || input.equals("Rk") || input.equals("rK") || input.equals("rk")) {
-                    inputRecieved = true;
+                    inputReceived = true;
                     rk = true;
                 } else {
                     System.out.println("Please respond with (EU) or (RK)");
@@ -310,16 +347,16 @@ public class InputHandler {
             }
 
             input = "";
-            inputRecieved = false;
-            while (!inputRecieved && numberOfSteps < 100000) {
+            inputReceived = false;
+            while (!inputReceived && numberOfSteps < 100000) {
                 System.out.println("Do want to split them into batches? (Y/N)");
 
                 input = s.nextLine();
                 if (input.equals("Y") || input.equals("y")) {
-                    inputRecieved = true;
+                    inputReceived = true;
                     batch = true;
                 } else if (input.equals("N") || input.equals("n")) {
-                    inputRecieved = true;
+                    inputReceived = true;
                     batch = false;
                 } else {
                     System.out.println("Please respond with (Y) or (N)");
@@ -335,10 +372,10 @@ public class InputHandler {
                 batchSize = Integer.valueOf(s.nextLine());
             }
 
-            orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
+            orbitStuff(PJ, MY, SL, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
         }
 
-        inputRecieved = false;
+        inputReceived = false;
         input = "";
 
     }

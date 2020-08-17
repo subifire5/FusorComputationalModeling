@@ -56,14 +56,14 @@ public class PJEulersMethod implements Solution {
         int steps = 0;
         Particle[] j = new Particle[batchesNeeded];
         long startTime = System.currentTimeMillis();
-        Double completed = (double)batchesCompleted;
-        Double needed = (double)batchesNeeded;
+        Double bcompleted = (double)batchesCompleted;
+        Double bneeded = (double)batchesNeeded;
         
 
         while (batchesCompleted != batchesNeeded) {
             System.out.println("Batches Completed: " + batchesCompleted);
             System.out.println("Batches Needed: " + batchesNeeded);
-            System.out.println("Overall Progress: " + ((completed/needed)*100) + "%");
+            System.out.println("Overall Progress: " + ((bcompleted/bneeded)*100) + "%");
             System.out.println("This code has taken: " + ((System.currentTimeMillis() - startTime)/1000) + " seconds to process.");
 
             if (steps < batchSize) {
@@ -73,7 +73,7 @@ public class PJEulersMethod implements Solution {
                 steps = 0;
                 j[batchesCompleted] = p.clone();
                 batchesCompleted++;
-                completed++;
+                bcompleted++;
             }
 
         }

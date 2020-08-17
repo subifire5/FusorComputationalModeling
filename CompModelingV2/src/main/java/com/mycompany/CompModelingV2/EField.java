@@ -54,7 +54,11 @@ public class EField {
         if (centerOfGrid == null) {
             centerOfGrid = new Vector(0.0, 0.0, 0.0);
         }
-        chargeFactor = (vAnnode - vCathode) / electricPotential(centerOfGrid);
+        double ep = electricPotential(centerOfGrid);
+        System.out.println("ep: " + ep);
+        chargeFactor = Math.abs((vAnnode - vCathode) / ep);
+        System.out.println("charge Factor: " + chargeFactor);
+
 
     }
 
@@ -80,8 +84,8 @@ public class EField {
      * @return
      */
     public Double[][] potentialTable(String axis, double lowerBound, double upperBound, int numberOfPotentials) {
-        lowerBound*=scaleDistance;
-        upperBound*=scaleDistance;
+        lowerBound *= scaleDistance;
+        upperBound *= scaleDistance;
         Double[][] potentials = new Double[numberOfPotentials][2];
         Double gap = (upperBound - lowerBound) / numberOfPotentials;
         if (axis.equals("X") || axis.equals("x")) {
@@ -147,7 +151,7 @@ public class EField {
             }
             System.out.println("returning potentials");
             return potentials;
-        } else {
+        } else if (graphPlane.equals("XY") || graphPlane.equals("xy") || graphPlane.equals("xY") || graphPlane.equals("Xy")) {
 
             Double[][] potentials = new Double[numberOfPotentials * numberOfPotentials][3];
             Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfPotentials;
@@ -168,12 +172,33 @@ public class EField {
                 y += yGap;
             }
             return potentials;
+        } else {
+            Double[][] potentials = new Double[numberOfPotentials * numberOfPotentials][3];
+            Double zGap = (upperRightCorner.z - bottomLeftCorner.z) / numberOfPotentials;
+            Double yGap = (upperRightCorner.y - bottomLeftCorner.y) / numberOfPotentials;
+            Double z = bottomLeftCorner.z;
+            Double y = bottomLeftCorner.y;
+            for (int i = 0; i < numberOfPotentials; i++) {
+                z = bottomLeftCorner.z;
+                for (int j = 0; j < numberOfPotentials; j++) {
+                    Vector point = new Vector(bottomLeftCorner.z, y, zGap);
+                    potentials[(i * numberOfPotentials) + j][0] = z;
+                    potentials[(i * numberOfPotentials) + j][1] = y;
+                    potentials[(i * numberOfPotentials) + j][2] = electricPotential(point);
+                    z += zGap;
+                }
+                System.out.println(i + "/" + numberOfPotentials + " completed");
+
+                y += yGap;
+            }
+            return potentials;
+
         }
     }
 
     public Vector[][] forceVectorLine(String axis, double lowerBound, double upperBound, int numberOfVectors) {
-        lowerBound*=scaleDistance;
-        upperBound*=scaleDistance;
+        lowerBound *= scaleDistance;
+        upperBound *= scaleDistance;
         Vector[][] fVectors = new Vector[numberOfVectors][2];
         Double gap = (upperBound - lowerBound) / numberOfVectors;
         if (axis.equals("X") || axis.equals("x")) {
@@ -231,7 +256,7 @@ public class EField {
             }
             System.out.println("returning force vectors");
             return fVectors;
-        } else {
+        } else if (graphPlane.equals("XY") || graphPlane.equals("xy") || graphPlane.equals("xY") || graphPlane.equals("Xy")) {
 
             Vector[][] fVectors = new Vector[numberOfVectors * numberOfVectors][2];
             Double xGap = (upperRightCorner.x - bottomLeftCorner.x) / numberOfVectors;
@@ -252,6 +277,27 @@ public class EField {
             }
             System.out.println("returning force vectors");
             return fVectors;
+        } else {
+            Vector[][] fVectors = new Vector[numberOfVectors * numberOfVectors][2];
+            Double zGap = (upperRightCorner.z - bottomLeftCorner.z) / numberOfVectors;
+            Double yGap = (upperRightCorner.y - bottomLeftCorner.y) / numberOfVectors;
+            Double z = bottomLeftCorner.z;
+            Double y = bottomLeftCorner.y;
+
+            for (int i = 0; i < numberOfVectors; i++) {
+                z = bottomLeftCorner.z;
+                for (int j = 0; j < numberOfVectors; j++) {
+                    Vector point = new Vector(bottomLeftCorner.x, y, z);
+                    fVectors[(i * numberOfVectors) + j][0] = point;
+                    fVectors[(i * numberOfVectors) + j][1] = fieldAtPoint(point);
+                    z += zGap;
+                }
+                System.out.println(i + "/" + numberOfVectors + " completed");
+                y += yGap;
+            }
+            System.out.println("returning force vectors");
+            return fVectors;
+
         }
     }
 
@@ -313,14 +359,12 @@ public class EField {
 
         for (Charge t : charges) {
             voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -voltage;
-            } else {
-                vol = t.polarity * voltage;
-            }
+
+            vol = t.polarity * voltage;
+
             distanceSquared = t.distanceSquared(v);
             Vector effectOnPoint;
-            effectOnPoint = v.thisToThat(t).normalized();
+            effectOnPoint = t.thisToThat(v).normalized();
             //effectOnPoint.scale(-1.0);
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
@@ -342,19 +386,12 @@ public class EField {
         double voltage;
         double vol;
         double distanceSquared;
-
+        voltage = vAnnode - vCathode;
         for (Charge t : charges) {
-            voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -c.polarity * voltage;
-            } else {
-                vol = c.polarity * t.polarity * voltage;
-            }
-            //vol = c.polarity * t.polarity * voltage;
+            vol = c.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(c);
             Vector effectOnPoint;
-            effectOnPoint = c.thisToThat(t).normalized();
-            //effectOnPoint.scale(-1.0);
+            effectOnPoint = t.thisToThat(c).normalized();
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
             effectOnPoint.z *= vol / distanceSquared;
@@ -375,19 +412,12 @@ public class EField {
         double voltage;
         double vol;
         double distanceSquared;
-
+        voltage = vAnnode - vCathode;
         for (Charge t : charges) {
-            voltage = vAnnode - vCathode;
-            if (t.polarity > 0) {
-                vol = -p.charge * voltage;
-            } else {
-                vol = p.charge * t.polarity * voltage;
-            }
-            //vol = c.polarity * t.polarity * voltage;
+            vol = p.polarity * t.polarity * voltage;
             distanceSquared = t.distanceSquared(p);
             Vector effectOnPoint;
-            effectOnPoint = p.thisToThat(t).normalized();
-            //effectOnPoint.scale(-1.0);
+            effectOnPoint = t.thisToThat(p).normalized();
             effectOnPoint.x *= vol / distanceSquared;
             effectOnPoint.y *= vol / distanceSquared;
             effectOnPoint.z *= vol / distanceSquared;
@@ -523,7 +553,7 @@ public class EField {
 
     public void deScale() {
         for (Charge c : charges) {
-            c.scale(1/scaleDistance);
+            c.scale(1 / scaleDistance);
         }
     }
 }

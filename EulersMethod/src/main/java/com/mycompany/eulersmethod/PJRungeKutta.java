@@ -12,20 +12,19 @@ package com.mycompany.EulersMethod;
 
 import com.mycompany.EulersMethod.EField;
 import com.mycompany.EulersMethod.InputHandler;
-import com.mycompany.EulersMethod.PJEulersMethod;
 
 public class PJRungeKutta implements Solution {
 
-    EField eField;
+    EField e;
 
-    PJRungeKutta(EField eField) {
-        this.eField = eField;
+    PJRungeKutta(EField e) {
+        this.e = e;
     }
 
     public Particle f(Particle p){
         
-        Vector first3 = p.vel;
-        Vector last3 = eField.forceOnCharge(p).scale(1/p.mass);
+        Vector first3 = p.vel.clone();
+        Vector last3 = e.forceOnCharge(p).scale(1/p.mass);
         Particle j = p.clone();
         j.pos = first3;
         j.vel = last3;
@@ -33,43 +32,85 @@ public class PJRungeKutta implements Solution {
         return j;
 
     }
+    public Particle multiplyAndAdd(Particle a, Particle b, Double c){
+        Particle bc = b.clone();
+        bc.multiply(c);
+        bc.plusEquals(a.clone());
+        return bc;
+    }
     @Override
     public Particle step(Particle p, Double stepSize) {
+                           
+        p.totalEnergy(e);
+        Particle k1 = f(p.clone());
+        Particle k1_2 = multiplyAndAdd(p.clone(), k1.clone(), stepSize/2);
+        /*Particle k1_2 = p.clone();
+        Particle x = k1.clone();
+        x.multiply(stepSize/2);
+        k1_2.plusEquals(x);*/
+        Particle k2 = f(k1_2.clone());
         
-        int x = 2;
-        double two = (double) x;
+        Particle k2_3 = multiplyAndAdd(p.clone(), k2.clone(), stepSize/2);
+        /*Particle y = k2.clone();
+        y.multiply(stepSize/2);
+        k2_3.plusEquals(y);*/
+        Particle k3 = f(k2_3.clone());
         
-        Particle k1 = f(p);
-        Particle k1_2 = p.clone();
-        k1_2.pos.plusEquals(k1.clone().pos.scale(stepSize/2));
-        k1_2.vel.plusEquals(k1.clone().vel.scale(stepSize/2));
-        Particle k2 = f(k1_2);
-        
-        Particle k2_3 = p.clone();
-        k2_3.pos.plusEquals(k2.clone().pos.scale(stepSize/2));
-        k2_3.vel.plusEquals(k2.clone().vel.scale(stepSize/2));
-        Particle k3 = f(k2_3);
-        
-        Particle k3_4 = p.clone();
-        k3_4.pos.plusEquals(k3.clone().pos.scale(stepSize));
-        k3_4.vel.plusEquals(k3.clone().vel.scale(stepSize));
-        Particle k4 = f(k3_4);
+        Particle k3_4 = multiplyAndAdd(p.clone(), k3.clone(), stepSize);
+        /*Particle z = k3.clone();
+        z.multiply(stepSize);
+        k3_4.plusEquals(z);*/
+        Particle k4 = f(k3_4.clone());
                 
         Particle p2 = p.clone();
         
-        p2.pos.plusEquals(k1.pos.sum(k2.pos.scale(two)).sum(k3.pos.scale(two).sum(k4.pos).scale(1/6*stepSize)));
-        p2.vel.plusEquals(k1.vel.sum(k2.vel.scale(two)).sum(k3.vel.scale(two).sum(k4.vel).scale(1/6*stepSize)));
-        System.out.println("p2: " + p2);
-        p2.time += stepSize;
+       /* k2_3.multiply(2.0);
+        k3_4.multiply(2.0);*/
         
+        Particle[] k5 = {k2.multiply(2),k3.multiply(2),k4};
+        k1.plusEquals(k5);
+        Particle pFinal = k1.multiply(stepSize/6);
+        p2.plusEquals(pFinal);
+        p2.time += stepSize;
+        p2.totalEnergy(e);
+
         return p2;
     }
         
 
     @Override
     public Particle[] epoch(Particle p, Double stepSize, Double numberOfSteps, int batchSize) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+   
+        int batchesNeeded = (int) (numberOfSteps/batchSize);
+        int batchesCompleted = 0;
+        int steps = 0;
+        Particle[] j = new Particle[batchesNeeded];
+        long startTime = System.currentTimeMillis();
+        Double bcompleted = (double)batchesCompleted;
+        Double bneeded = (double)batchesNeeded;
+        
+
+        while (batchesCompleted != batchesNeeded) {
+            System.out.println("Batches Completed: " + batchesCompleted);
+            System.out.println("Batches Needed: " + batchesNeeded);
+            System.out.println("Overall Progress: " + ((bcompleted/bneeded)*100) + "%");
+            System.out.println("This code has taken: " + ((System.currentTimeMillis() - startTime)/1000) + " seconds to process.");
+
+            if (steps < batchSize) {
+                step(p, stepSize);
+                steps++;
+            } else if (steps == batchSize) {
+                steps = 0;
+                j[batchesCompleted] = p.clone();
+                batchesCompleted++;                
+                bcompleted++;
+            }
+
+        }
+        return j;
+    }
     }
 
 
-}

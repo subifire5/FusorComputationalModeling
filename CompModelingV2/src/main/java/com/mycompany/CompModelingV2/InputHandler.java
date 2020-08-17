@@ -75,23 +75,23 @@ public class InputHandler {
 
     String[] makeLineTable() {
         String graphAxis = "";
-        Boolean inputRecieved = false;
-        while (!inputRecieved) {
+        Boolean inputReceived = false;
+        while (!inputReceived) {
             System.out.println("Along which axis do you want your graph? (X/Y/Z)");
 
             graphAxis = s.nextLine();
             if (graphAxis.equals("Y") || graphAxis.equals("y")) {
-                inputRecieved = true;
+                inputReceived = true;
             } else if (graphAxis.equals("X") || graphAxis.equals("x")) {
-                inputRecieved = true;
+                inputReceived = true;
             } else if (graphAxis.equals("Z") || graphAxis.equals("z")) {
-                inputRecieved = true;
+                inputReceived = true;
             } else {
                 System.out.println("Please respond with (X), (Y) or (Z)");
             }
 
         }
-        inputRecieved = false;
+        inputReceived = false;
         System.out.println("How many points do you want plotted?");
         String gaps = s.nextLine();
 
@@ -110,15 +110,17 @@ public class InputHandler {
         Boolean inputRecieved = false;
         String graphPlane = "";
         while (!inputRecieved) {
-            System.out.println("Do you want an XY slice or an XZ slice? (XY/XZ)");
+            System.out.println("Do you want an XY slice, a YZ slice, or an XZ slice? (XY/YZ/XZ)");
 
             graphPlane = s.nextLine();
             if (graphPlane.equals("XZ") || graphPlane.equals("xz") || graphPlane.equals("xZ") || graphPlane.equals("Xz")) {
                 inputRecieved = true;
+            } else if (graphPlane.equals("YZ") || graphPlane.equals("yz") || graphPlane.equals("Yz") || graphPlane.equals("yZ")) {
+                inputRecieved = true;
             } else if (graphPlane.equals("XY") || graphPlane.equals("xy") || graphPlane.equals("xY") || graphPlane.equals("Xy")) {
                 inputRecieved = true;
             } else {
-                System.out.println("Please respond with (XY) or (XZ)");
+                System.out.println("Please respond with (XY), (YZ), or (XZ)");
             }
 
         }
@@ -235,7 +237,6 @@ public class InputHandler {
 
         eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
 
-        //EDITS TO BE ADDED HERE
         if (makeForceVectors && makeLine) {
             graphAxis = tableSettings[0];
             gaps = Integer.valueOf(tableSettings[1]);
