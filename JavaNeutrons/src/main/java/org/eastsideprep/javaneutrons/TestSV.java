@@ -13,6 +13,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.eastsideprep.javaneutrons.core.Assembly;
 import org.eastsideprep.javaneutrons.core.Part;
 import org.eastsideprep.javaneutrons.core.MonteCarloSimulation;
+import org.eastsideprep.javaneutrons.core.Neutron;
 import org.eastsideprep.javaneutrons.core.Util;
 import org.eastsideprep.javaneutrons.core.Shape;
 import org.eastsideprep.javaneutrons.shapes.HumanBody;
@@ -25,11 +26,11 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestSV {
     
     public static MonteCarloSimulation simulationTest(Group visualizations){
-            //return simpleTest(visualizations);
+            return simpleTest(visualizations);
             //return simpleWaxBlockTest(visualizations);
             //return iglooTest(visualizations);
             //return peopleTest(visualizations);
-            return roomTest(visualizations);
+            //return roomTest(visualizations);
         }
     
     
@@ -155,60 +156,200 @@ public class TestSV {
     }
     
     //some of the dimensions don't make sense, need to fix
-    public static MonteCarloSimulation roomTest(Group visualizations){
-        //Part paraffin = new Part("smoosh", new Shape(TestSV.class.getResource("/meshes/smooshsmaller.obj"), "cm"), "Paraffin");
-        
-        Part paraffin = new Part("1mmcubes", new Shape(TestSV.class.getResource("/meshes/1mmcubes.obj"), "cm"), "Paraffin");
+//    public static MonteCarloSimulation roomTest(Group visualizations){
+//        Part paraffin = new Part("5mmblank", new Shape(TestSV.class.getResource("/meshes/smoosh.obj"), "cm"), "Paraffin");
+//        
+//        paraffin.setColor("lightgray");
+//        double h = 250; //floor to ceiling height of room
+//        double roomwidth = 200;
+//        
+//        double wallwidth = 20;
+//        double floorwidth = 20;
+//        double ceilingwidth = 20;
+//        
+//        double floortoparaffin = 80;
+//        double sourcetoparaffinbase = 25;
+//        double sourcetoback = 70.5;
+//        
+//        Assembly walls = new Assembly("Walls");
+//            Part front = new Part("Wall.front", new Shape(new CuboidMesh(roomwidth+2*wallwidth,h,wallwidth)), "Vacuum");
+//                front.getTransforms().add(0, new Translate(0,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299-0.5*wallwidth));
+//                front.setColor("lightblue");
+//            Part left = new Part("Wall.left", new Shape(new CuboidMesh(wallwidth, h, 299+sourcetoback)), "Vacuum");
+//                left.getTransforms().add(0, new Translate(-0.5*roomwidth-0.5*wallwidth,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299/2+0.5*sourcetoback));
+//                left.setColor("lightblue");
+//            Part right = new Part("Wall.right", new Shape(new CuboidMesh(wallwidth, h, 299+sourcetoback)), "Vacuum");
+//                right.getTransforms().add(0, new Translate(0.5*roomwidth+0.5*wallwidth,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299/2+0.5*sourcetoback));
+//                right.setColor("lightblue");
+//            Part back = new Part("Wall.back", new Shape(new CuboidMesh(roomwidth+2*wallwidth,h,wallwidth)), "Vacuum");
+//                back.getTransforms().add(0, new Translate(0,-0.5*h+sourcetoparaffinbase+floortoparaffin,sourcetoback+0.5*wallwidth));
+//                back.setColor("lightblue");
+//            Part floor = new Part("Wall.floor", new Shape(new CuboidMesh(roomwidth+2*wallwidth,floorwidth,299+sourcetoback+2*wallwidth)), "Vacuum");
+//                floor.getTransforms().add(0, new Translate(0,floortoparaffin+sourcetoparaffinbase+0.5*floorwidth,-299/2+0.5*sourcetoback));
+//                floor.setColor("lightblue");
+//            Part ceiling = new Part("Wall.ceiling", new Shape(new CuboidMesh(roomwidth+2*wallwidth,ceilingwidth,299+sourcetoback+2*wallwidth)), "Vacuum");
+//                ceiling.getTransforms().add(0, new Translate(0,-h+sourcetoparaffinbase+floortoparaffin-0.5*ceilingwidth,-299/2+0.5*sourcetoback));
+//                ceiling.setColor("lightblue");
+//        walls.addAll(front, left, right, back, floor, ceiling);
+//        
+//        Assembly fusor = new Assembly("Fusor");
+//        fusor.addAll(paraffin,walls);
+//        
+//        // make some axes
+//        Util.Graphics.drawCoordSystem(visualizations);
+//
+//        System.out.println("fusor object: "+fusor);
+//        System.out.println("what we will return: "+new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations));
+//        return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations);
+//
+//    }
+    
+    public static MonteCarloSimulation ROOM5mm(Group visualizations) {
 
+        // vac chamber
+        Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class
+                .getResource("/meshes/vac_chamber.obj")), "Lead");
+        vacChamber.setColor(
+                "black");
+        vacChamber.getTransforms().add(0, new Rotate(90, new Point3D(1,0,0)));
         
-        paraffin.setColor("lightgray");
-        double h = 250; //floor to ceiling height of room
-        double roomwidth = 200;
-        
-        double wallwidth = 20;
-        double floorwidth = 20;
-        double ceilingwidth = 20;
-        
-        double floortoparaffin = 80;
-        double sourcetoparaffinbase = 25;
-        double sourcetoback = 70.5;
-        
-        //probably should have imported files for this, looks gross :(
-        //todo make this make sense in terms of floortoorigin and floortoparaffin
-        Assembly walls = new Assembly("Walls");
-            Part front = new Part("Wall.front", new Shape(new CuboidMesh(roomwidth+2*wallwidth,h,wallwidth)), "Vacuum");
-                front.getTransforms().add(0, new Translate(0,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299-0.5*wallwidth));
-                front.setColor("lightblue");
-            Part left = new Part("Wall.left", new Shape(new CuboidMesh(wallwidth, h, 299+sourcetoback)), "Vacuum");
-                left.getTransforms().add(0, new Translate(-0.5*roomwidth-0.5*wallwidth,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299/2+0.5*sourcetoback));
-                left.setColor("lightblue");
-            Part right = new Part("Wall.right", new Shape(new CuboidMesh(wallwidth, h, 299+sourcetoback)), "Vacuum");
-                right.getTransforms().add(0, new Translate(0.5*roomwidth+0.5*wallwidth,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299/2+0.5*sourcetoback));
-                right.setColor("lightblue");
-            Part back = new Part("Wall.back", new Shape(new CuboidMesh(roomwidth+2*wallwidth,h,wallwidth)), "Vacuum");
-                back.getTransforms().add(0, new Translate(0,-0.5*h+sourcetoparaffinbase+floortoparaffin,sourcetoback+0.5*wallwidth));
-                back.setColor("lightblue");
-            Part floor = new Part("Wall.floor", new Shape(new CuboidMesh(roomwidth+2*wallwidth,floorwidth,299+sourcetoback+2*wallwidth)), "Vacuum");
-                floor.getTransforms().add(0, new Translate(0,floortoparaffin+sourcetoparaffinbase+0.5*floorwidth,-299/2+0.5*sourcetoback));
-                floor.setColor("lightblue");
-            Part ceiling = new Part("Wall.ceiling", new Shape(new CuboidMesh(roomwidth+2*wallwidth,ceilingwidth,299+sourcetoback+2*wallwidth)), "Vacuum");
-                ceiling.getTransforms().add(0, new Translate(0,-h+sourcetoparaffinbase+floortoparaffin-0.5*ceilingwidth,-299/2+0.5*sourcetoback));
-                ceiling.setColor("lightblue");
-        walls.addAll(front, left, right, back, floor, ceiling);
-        
+        //room walls
+        Part wfront = new Part("W.front", new Shape(TestSV.class.getResource("/meshes/wfront.stl"), "cm"), "Vacuum");
+            wfront.setColor("gray");
+        Part wback = new Part("W.back", new Shape(TestSV.class.getResource("/meshes/wback.stl"), "cm"), "Vacuum");
+            wback.setColor("gray");
+        Part wfloor = new Part("W.floor", new Shape(TestSV.class.getResource("/meshes/wfloor.stl"), "cm"), "Vacuum");
+            wfloor.setColor("gray");
+        Part wceiling = new Part("W.ceiling", new Shape(TestSV.class.getResource("/meshes/wceiling.stl"), "cm"), "Vacuum");
+            wceiling.setColor("gray");
+        Part wleft = new Part("W.left", new Shape(TestSV.class.getResource("/meshes/wleft.stl"), "cm"), "Vacuum");
+            wleft.setColor("gray");
+        Part wright = new Part("W.right", new Shape(TestSV.class.getResource("/meshes/wright.stl"), "cm"), "Vacuum");
+            wright.setColor("gray");
+            
+        //important stuff
+        Part wood = new Part("Wood", new Shape(TestSV.class.getResource("/meshes/wood.stl"), "cm"), "Wood");
+            wood.setColor("yellow");
+        Part pipes = new Part("Steel Pipes", new Shape(TestSV.class.getResource("/meshes/pipes.stl"), "cm"), "Steel");
+            pipes.setColor("gray");
+        Part lead = new Part("Lead Box", new Shape(TestSV.class.getResource("/meshes/leadbox.stl"), "cm"), "Lead");
+            lead.setColor("gray");
+        Part wax = new Part("Wax", new Shape(TestSV.class.getResource("/meshes/5mmcubes.stl"), "cm"), "Paraffin");
+            wax.setColor("lightblue");
         Assembly fusor = new Assembly("Fusor");
-        fusor.addAll(paraffin,walls);
+
+        fusor.addAll(vacChamber, wood, pipes, lead, wax, wfront, wback, wfloor, wceiling, wleft, wright);
+
+        fusor.addTransform(new Rotate(90, new Point3D(1,0,0)));
         
+        Assembly dp = detectorPeople(7, 152.4, new Vector3D(-20,30,-299), 180, 100);
+        fusor.addAll(dp);
+        
+        fusor.containsMaterialAt(
+                "Vacuum", Vector3D.ZERO);
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
-
-        MonteCarloSimulation mcs = new MonteCarloSimulation(fusor,
-            null, /*Vector3D.PLUS_I*/ null, 2.45e6 * Util.Physics.eV, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
-            "Air", null, visualizations); // interstitial, initial
+        MonteCarloSimulation mcs = new MonteCarloSimulation(fusor, null, visualizations);
         return mcs;
     }
+    
+        public static MonteCarloSimulation ROOM1mm(Group visualizations) {
 
+        // vac chamber
+        Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class
+                .getResource("/meshes/vac_chamber.obj")), "Lead");
+        vacChamber.setColor(
+                "black");
+        vacChamber.getTransforms().add(0, new Rotate(90, new Point3D(1,0,0)));
+        
+        //room walls
+        Part wfront = new Part("W.front", new Shape(TestSV.class.getResource("/meshes/wfront.stl"), "cm"), "Vacuum");
+            wfront.setColor("gray");
+        Part wback = new Part("W.back", new Shape(TestSV.class.getResource("/meshes/wback.stl"), "cm"), "Vacuum");
+            wback.setColor("gray");
+        Part wfloor = new Part("W.floor", new Shape(TestSV.class.getResource("/meshes/wfloor.stl"), "cm"), "Vacuum");
+            wfloor.setColor("gray");
+        Part wceiling = new Part("W.ceiling", new Shape(TestSV.class.getResource("/meshes/wceiling.stl"), "cm"), "Vacuum");
+            wceiling.setColor("gray");
+        Part wleft = new Part("W.left", new Shape(TestSV.class.getResource("/meshes/wleft.stl"), "cm"), "Vacuum");
+            wleft.setColor("gray");
+        Part wright = new Part("W.right", new Shape(TestSV.class.getResource("/meshes/wright.stl"), "cm"), "Vacuum");
+            wright.setColor("gray");
+            
+        //important stuff
+        Part wood = new Part("Wood", new Shape(TestSV.class.getResource("/meshes/wood.stl"), "cm"), "Wood");
+            wood.setColor("yellow");
+        Part pipes = new Part("Steel Pipes", new Shape(TestSV.class.getResource("/meshes/pipes.stl"), "cm"), "Steel");
+            pipes.setColor("gray");
+        Part lead = new Part("Lead Box", new Shape(TestSV.class.getResource("/meshes/leadbox.stl"), "cm"), "Lead");
+            lead.setColor("gray");
+        Part wax = new Part("Wax", new Shape(TestSV.class.getResource("/meshes/1mmcubes.stl"), "cm"), "Paraffin");
+            wax.setColor("lightblue");
+        Assembly fusor = new Assembly("Fusor");
+
+        fusor.addAll(vacChamber, wood, pipes, lead, wax, wfront, wback, wfloor, wceiling, wleft, wright);
+        //fusor.addAll(wood);
+        fusor.addTransform(new Rotate(90, new Point3D(1,0,0)));
+        
+        fusor.containsMaterialAt(
+                "Vacuum", Vector3D.ZERO);
+        // make some axes
+        Util.Graphics.drawCoordSystem(visualizations);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(fusor, null, visualizations);
+        return mcs;
+    }
     
         
+//    public static MonteCarloSimulation roomTestNew(Group visualizations){
+//        
+//        Part paraffin = new Part("5mmblank", new Shape(TestSV.class.getResource("/meshes/3mmblank.obj"), "cm"), "Paraffin");
+//        //paraffin.setColor("light gray"); //this makes it return null
+//        
+//        double h = 250; //floor to ceiling height of room
+//        double roomwidth = 200;
+//        
+//        double wallwidth = 20;
+//        double floorwidth = 20;
+//        double ceilingwidth = 20;
+//        
+//        double floortoparaffin = 80;
+//        double sourcetoparaffinbase = 25;
+//        double sourcetoback = 70.5;
+//        
+//        Assembly walls = new Assembly("Walls");
+//            Part front = new Part("Wall.front", new Shape(new CuboidMesh(roomwidth+2*wallwidth,h,wallwidth)), "Vacuum");
+//                front.getTransforms().add(0, new Translate(0,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299-0.5*wallwidth));
+//                front.setColor("lightblue");
+//            Part left = new Part("Wall.left", new Shape(new CuboidMesh(wallwidth, h, 299+sourcetoback)), "Vacuum");
+//                left.getTransforms().add(0, new Translate(-0.5*roomwidth-0.5*wallwidth,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299/2+0.5*sourcetoback));
+//                left.setColor("lightblue");
+//            Part right = new Part("Wall.right", new Shape(new CuboidMesh(wallwidth, h, 299+sourcetoback)), "Vacuum");
+//                right.getTransforms().add(0, new Translate(0.5*roomwidth+0.5*wallwidth,-0.5*h+sourcetoparaffinbase+floortoparaffin,-299/2+0.5*sourcetoback));
+//                right.setColor("lightblue");
+//            Part back = new Part("Wall.back", new Shape(new CuboidMesh(roomwidth+2*wallwidth,h,wallwidth)), "Vacuum");
+//                back.getTransforms().add(0, new Translate(0,-0.5*h+sourcetoparaffinbase+floortoparaffin,sourcetoback+0.5*wallwidth));
+//                back.setColor("lightblue");
+//            Part floor = new Part("Wall.floor", new Shape(new CuboidMesh(roomwidth+2*wallwidth,floorwidth,299+sourcetoback+2*wallwidth)), "Vacuum");
+//                floor.getTransforms().add(0, new Translate(0,floortoparaffin+sourcetoparaffinbase+0.5*floorwidth,-299/2+0.5*sourcetoback));
+//                floor.setColor("lightblue");
+//            Part ceiling = new Part("Wall.ceiling", new Shape(new CuboidMesh(roomwidth+2*wallwidth,ceilingwidth,299+sourcetoback+2*wallwidth)), "Vacuum");
+//                ceiling.getTransforms().add(0, new Translate(0,-h+sourcetoparaffinbase+floortoparaffin-0.5*ceilingwidth,-299/2+0.5*sourcetoback));
+//                ceiling.setColor("lightblue");
+//        walls.addAll(front, left, right, back, floor, ceiling);
+//        
+//        // assemble
+//        Assembly fusor = new Assembly("Fusor");
+//        fusor.addAll(paraffin);
+//        //fusor.addAll(paraffin, walls); //this makes whole mcs return null, not sure why nesting them makes difference
+//        fusor.containsMaterialAt("Vacuum", Vector3D.ZERO);
+//        
+//        // make some axes
+//        Util.Graphics.drawCoordSystem(visualizations);
+//
+//        return new MonteCarloSimulation(fusor, Vector3D.ZERO, visualizations);    
+//    }
+
+
+
  
 }
