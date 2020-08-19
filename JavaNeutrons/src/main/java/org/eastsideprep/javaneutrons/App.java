@@ -104,8 +104,10 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            double side = Double.parseDouble(gridSize.getText());
-            if (grid.isSelected() && (sim.grid == null || sim.grid.side != side)) {
+            if (gridSize.getText().trim().length() > 0
+                    && grid.isSelected()
+                    && (sim.grid == null)) {
+                double side = Double.parseDouble(gridSize.getText());
                 this.sim.grid = null;
                 this.sim.prepareGrid(side, view);
             } else if (!grid.isSelected() && sim.grid != null) {
@@ -118,7 +120,8 @@ public class App extends Application {
                 root.setRight(null);
             }
 
-        });
+        }
+        );
         bRun.setPrefWidth(200);
 
         Button bStop = new Button("Stop");
@@ -213,7 +216,8 @@ public class App extends Application {
         stage.setOnCloseRequest((e) -> noIdle());
     }
 
-    void addItems(ChoiceBox cb, Class c) {
+    void addItems(ChoiceBox cb, Class c
+    ) {
         Method[] methods = c.getMethods();
         for (int i = 0; i < methods.length; i++) {
             if (methods[i].getReturnType() == MonteCarloSimulation.class) {
@@ -226,7 +230,8 @@ public class App extends Application {
         }
     }
 
-    MonteCarloSimulation fromString(String m, Group g) {
+    MonteCarloSimulation fromString(String m, Group g
+    ) {
         String cname = App.class.getPackageName() + "." + m.substring(0, m.indexOf("::"));
         String mname = m.substring(m.indexOf("::") + 2);
         MonteCarloSimulation mcs = null;

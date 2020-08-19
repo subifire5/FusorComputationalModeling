@@ -17,10 +17,9 @@ table = libFile.tables['1001.800nc']
 #print table.reactions[102]
 #print vars(table.reactions[102]).keys()
 #print table.reactions[102].sigma
-
-# x= 1/0
-# print table.reactions[2]
-# print vars(table.reactions[2]).keys()
+print table.reactions[2]
+print vars(table.reactions[2]).keys()
+x= 1/0
 
 # start = 94
 # stop = 95
