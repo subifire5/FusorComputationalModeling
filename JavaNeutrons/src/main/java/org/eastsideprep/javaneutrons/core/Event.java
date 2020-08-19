@@ -5,7 +5,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.*;
 public class Event {
 
     public enum Code {
-        Entry, Exit, Scatter, Capture, Gone, EmergencyDirectionChange, EmergencyExit
+        Entry, Exit, ExitEntry, Scatter, Capture, Gone, EmergencyDirectionChange, EmergencyExit
     };
 
     public Code code; // what kind of interesting thing happened here
@@ -17,6 +17,7 @@ public class Event {
     public double energyOut;
     public double t; // how far along was this on the vector we took to get here
     public Part part;
+    public Part part2;
     public int face;
     public Material exitMaterial;
     
@@ -76,6 +77,14 @@ public class Event {
         this.face = face;
     }
    
+    public Event(Vector3D position, Part p, Part p2, double t) {
+        this.position = new Vector3D(position.getX(), position.getY(), position.getZ());
+        this.part = p;
+        this.part2 = p2;
+        this.code = Event.Code.ExitEntry;
+        this.t = t;
+    }
+    
     @Override
     public String toString() {
         return "Event: " + this.hashCode() + ": " + this.code + ": "+this.position;

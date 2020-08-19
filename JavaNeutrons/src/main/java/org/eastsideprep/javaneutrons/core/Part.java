@@ -118,12 +118,12 @@ public class Part {
         double t;
         Event exitEvent;
         Event interactionEvent;
-        Event event;
+        Event event = null;
         double epsilon = 1e-10; // 10^-12m (in cm) 
 
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
-        p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
+//        p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
         if (p.mcs.traceLevel >= 2) {
             System.out.println("Neutron " + p.hashCode() + " entry into part " + this.name);
             System.out.println(" Neutron energy in: " + String.format("%6.3e eV", p.energy / Util.Physics.eV));
@@ -137,27 +137,25 @@ public class Part {
 
             if (grid != null) {
                 exitEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, interactionEvent.t);
-                // DEBUG
-//                if (exitEvent == null) {
-//                    // find it the slow way
-//                    exitEvent = this.rayIntersect(n.position, n.direction, false, visualizations);
-//                    if (exitEvent != null) {
-//                        System.out.println("oh oh.");
-//                    }
-//                }
             } else {
                 exitEvent = this.rayIntersect(p.position, p.direction, true, visualizations);
             }
 
             if (exitEvent == null) {
                 //throw new IllegalArgumentException();
-                exitEvent = new Event(p.position.add(p.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
-                Util.Graphics.visualizeEvent(exitEvent, p.direction, visualizations);
-                if (p.mcs.traceLevel >= 2) {
-                    p.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
+                // repeat for debugging
+                exitEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, interactionEvent.t);
+                if (exitEvent == null) {
+                    exitEvent = new Event(p.position.add(p.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
+                    Util.Graphics.visualizeEvent(exitEvent, p.direction, visualizations);
+                    if (p.mcs.traceLevel >= 2) {
+                        p.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
+                    }
+                    event = exitEvent;
                 }
-                event = exitEvent;
-            } else {
+            }
+
+            if (exitEvent != null) {
                 if (exitEvent.t > interactionEvent.t) {
                     // scattering / absorption did really happen, process it
                     event = interactionEvent;
@@ -173,25 +171,25 @@ public class Part {
                     event.particle = p;
                     event.exitMaterial = this.shape.getContactMaterial(event.face);
                 }
-                // call for Detector parts to record
-                this.material.processEvent(event, false);
-                this.processPathLength(p, event.t, currentEnergy);
             }
+            // call for Detector parts to record
+            this.material.processEvent(event, false);
+            this.processPathLength(p, event.t, currentEnergy);
 
             // also record event for the individual neutron
             if (!p.record(event)) {
                 // too many events, get out
                 return event;
             }
-        } while (event.code != Event.Code.Exit && event.code != Event.Code.Capture);
+        } while (event.code != Event.Code.Exit && event.code != Event.Code.ExitEntry && event.code != Event.Code.Capture);
         if (event.code == Event.Code.Capture) {
             if (p.mcs.traceLevel >= 2) {
                 System.out.println("Neutron " + p.hashCode() + " captured in part " + this.name);
                 System.out.println(" Neutron energy final: " + String.format("%6.3e eV", p.energy / Util.Physics.eV));
             }
         } else {
-            // advance the neutron a bit to the outside
-            p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
+//            // advance the neutron a bit to the outside
+//            p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
             if (p.mcs.traceLevel >= 2) {
                 System.out.println("Neutron " + p.hashCode() + " exit from part " + this.name);
                 System.out.println(" Neutron energy out: " + String.format("%6.3e eV", p.energy / Util.Physics.eV));
@@ -199,16 +197,18 @@ public class Part {
         }
 
         return event;
-    }
-
-    //
+    } //
     // detector functionality
     //
-    void processPathLength(Particle particle, double length, double energy) {
+
+    void processPathLength(Particle particle,
+             double length, double energy
+    ) {
         this.fluenceMap.get(particle.type).record(particle, length / volume, energy);
     }
 
-    void processEntry(Particle p) {
+    void processEntry(Particle p
+    ) {
         this.entriesOverEnergy.record(1, p.energy);
         p.entryEnergy = p.energy;
 

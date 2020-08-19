@@ -256,7 +256,7 @@ public class MonteCarloSimulation {
 
         NeutronCollection neutrons = new NeutronCollection(count, this.origin, this.direction, this.initialEnergy, this);
         if (count > 0) {
-            if (!MonteCarloSimulation.parallel || this.lastCount < 10) {
+            if (!MonteCarloSimulation.parallel || this.lastCount <= 10) {
                 // simulate up to 10 in a single thread for visualization
                 neutrons.stream().forEach(
                         n -> {

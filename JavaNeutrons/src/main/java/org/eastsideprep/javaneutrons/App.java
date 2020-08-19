@@ -105,13 +105,13 @@ public class App extends Application {
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
             if (gridSize.getText().trim().length() > 0
-                    && grid.isSelected()
-                    && (sim.grid == null)) {
+                    && grid.isSelected()) {
                 double side = Double.parseDouble(gridSize.getText());
                 this.sim.grid = null;
                 this.sim.prepareGrid(side, view);
-            } else if (!grid.isSelected() && sim.grid != null) {
+            } else {
                 this.sim.grid = null;
+                this.sim.prepareGrid(50, view);
             }
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {

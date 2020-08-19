@@ -56,9 +56,9 @@ public class Util {
                     .add(n2.scalarMultiply(ThreadLocalRandom.current().nextGaussian() * sd))
                     .normalize();
         }
-        
+
         public static double randomGaussian() {
-           return ThreadLocalRandom.current().nextGaussian();
+            return ThreadLocalRandom.current().nextGaussian();
         }
 
         public static double random() {
@@ -75,7 +75,7 @@ public class Util {
 
         public static Vector3D randomDir(double cos_theta, double magnitude) {
             double phi = random() * 2 * java.lang.Math.PI;
-            double sin_theta = java.lang.Math.sqrt(1-cos_theta*cos_theta);
+            double sin_theta = java.lang.Math.sqrt(1 - cos_theta * cos_theta);
             return new Vector3D(magnitude * sin_theta * java.lang.Math.cos(phi), magnitude * sin_theta * java.lang.Math.sin(phi), magnitude * cos_theta);
         }
 
@@ -342,8 +342,15 @@ public class Util {
             //  if (event.code != Event.Code.Gone) {
             String color;
             float size = 0.2f;
+            double jitter = 0.1;
 
             switch (event.code) {
+                case ExitEntry:
+                    Vector3D position = event.position;
+                    Util.Graphics.drawSphere(g, position.add(direction.scalarMultiply(-jitter)), size, "red");
+                    Util.Graphics.drawSphere(g, position.add(direction.scalarMultiply(jitter)), size, "green");
+
+                    return;
                 case Entry:
                     color = "green";
                     size *= 1;
@@ -351,18 +358,22 @@ public class Util {
                 case Exit:
                     color = "red";
                     size *= 1;
+                    jitter *= -1;
                     break;
                 case Scatter:
                     color = "yellow";
                     size *= 0.5;
+                    jitter = 0;
                     break;
                 case EmergencyExit:
                     color = "purple";
-                    size *= 5;
+                    size *= 2;
+                    jitter = 0;
                     break;
                 case Capture:
                     color = "lightblue";
                     size *= 0.5;
+                    jitter = 0;
                     break;
                 default:
                     color = "black";
@@ -370,13 +381,10 @@ public class Util {
             }
             Vector3D position = event.position;
             if (direction != null) {
-                double jitter = 0.1;
                 position = position.add(direction.scalarMultiply(-jitter));
             }
 
             Util.Graphics.drawSphere(g, position, size, color);
-            //System.out.println("Visualizing "+event.code+" event at " + event.position);
-            //        }
         }
 
         //
@@ -398,6 +406,5 @@ public class Util {
         }
 
     }
-    
-   
+
 }

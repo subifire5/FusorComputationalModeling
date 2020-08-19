@@ -48,7 +48,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return bigBlock(visualizations);
+        return sandwich(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -306,6 +306,42 @@ public class TestGM {
         return mcs;
     }
 
+    //
+    // world simulations
+    //
+    
+    public static MonteCarloSimulation sandwich(Group visualizations) {
+        double thickness = 5; //block thickness in cm
+        Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
+
+        Part wall1 = new Part("Wall 1: Lead", blockShape, "Lead");
+        wall1.getTransforms().add(new Translate(50, 0, 0));
+        wall1.setColor("gray");
+
+        Part wall2 = new Part("Wall 2: Wood", blockShape, "Wood");
+        wall2.getTransforms().add(new Translate(50+thickness, 0, 0));
+        wall2.setColor("brown");
+        
+        Part wall3 = new Part("Wall 3: Paraffin", blockShape, "Paraffin");
+        wall3.getTransforms().add(new Translate(50+2*thickness, 0, 0));
+        wall3.setColor("beige");
+        
+        Part detector = new Part("Detector", blockShape, "HighVacuum");
+        detector.getTransforms().add(new Translate(3*thickness + 60, 0, 0));
+        detector.setColor("pink");
+
+
+        Assembly whitmer = new Assembly("Sandwich");
+        whitmer.addAll(wall1, wall2, wall3, detector);
+
+        MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
+                null, null, Neutron.startingEnergyDD,
+                "Vacuum", null, visualizations); // interstitial, initial
+        //mcs.prepareGrid(5.0, visualizations);
+        mcs.targetAdjusted = true;
+        mcs.suggestedCount = 1000000;
+        return mcs;
+    }
     public static MonteCarloSimulation prison(Group visualizations) {
         double thickness = 200; //block thickness in cm
         //String m = "HydrogenWax";

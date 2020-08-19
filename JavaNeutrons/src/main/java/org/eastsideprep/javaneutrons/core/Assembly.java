@@ -67,26 +67,28 @@ public class Assembly extends Part {
     public Event evolveParticlePath(Particle p, LinkedTransferQueue visualizations, boolean outermost, Grid grid) {
         Event partEvent;
         Event interactionEvent;
-        Event event;
+        Event event = null;
         double t;
+        boolean firstTime = true;
 
         // we start in a certain medium.
         Material medium = p.mcs.initialMaterial;
 
         do {
-            // find the closest part we intersect with
-            if (grid != null) {
-                partEvent = grid.rayIntersect(p.position, p.direction, false, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
-                // DEBUG
-//                if (partEvent == null){
-//                    // find it the slow way
-//                    partEvent = this.rayIntersect(n.position, n.direction, false, visualizations);
-//                    if (partEvent != null) {
-//                        System.out.println("oh oh.");
-//                    }
-//                }
+            if (event != null && event.code == Event.Code.ExitEntry) {
+                // we have an exit/entry event from a prior iteration
+                partEvent = event;
+                partEvent.part = event.part2;
+                partEvent.code = Event.Code.Entry;
+                partEvent.position = event.position;
+                partEvent.t = 0;
             } else {
-                partEvent = this.rayIntersect(p.position, p.direction, false, visualizations);
+                // find the closest part we intersect with
+                if (grid != null) {
+                    partEvent = grid.rayIntersect(p.position, p.direction, false, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
+                } else {
+                    partEvent = this.rayIntersect(p.position, p.direction, false, visualizations);
+                }
             }
             if (partEvent == null && !outermost) {
                 // we found nothing and we are not in the outermost assembly,
@@ -97,7 +99,7 @@ public class Assembly extends Part {
             interactionEvent = p.nextPoint(medium);
 
             // did we not find a part, maybe we started inside a part?
-            if (partEvent == null && outermost) {
+            if (partEvent == null && outermost && firstTime) {
                 // repeat search looking at triangle meshes from the inside
                 if (grid != null) {
                     partEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
@@ -105,10 +107,11 @@ public class Assembly extends Part {
                     partEvent = this.rayIntersect(p.position, p.direction, true, visualizations);
                 }
                 if (partEvent != null) {
-                    // we are alsready inside the part. 
+                    // we are already inside the part. 
                     partEvent.t = 0;
                 }
             }
+            firstTime = false;
 
             // did we not find a part, or is it further than an air event?
             if (partEvent == null || partEvent.t > interactionEvent.t) {
