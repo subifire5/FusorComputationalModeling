@@ -6,7 +6,6 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
-import java.util.List;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -52,7 +51,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return ROOM5mm(visualizations);
+        return sandwich(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {

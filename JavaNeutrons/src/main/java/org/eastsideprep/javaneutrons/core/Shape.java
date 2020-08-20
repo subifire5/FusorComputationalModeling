@@ -740,10 +740,19 @@ public class Shape extends MeshView {
             );
             if (t != -1) {
                 //System.out.println("adding incoming " + t);
+                if (t < epsilon) {
+                    t = 0.0;
+                }
                 ts.add(t);
             }
 
         }
+        
+        // catch coincident points on triangles
+        if (ts.size() == 1 && ts.contains(0.0)) {
+            return false;
+        }
+        
         if ((ts.size() % 2) == 1) {
             //System.out.println("unique t parameters: " + ts.size());
         }
