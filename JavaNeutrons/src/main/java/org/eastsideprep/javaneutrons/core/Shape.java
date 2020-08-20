@@ -747,18 +747,20 @@ public class Shape extends MeshView {
             }
 
         }
-        
+
         // catch coincident points on triangles
         if (ts.size() == 1 && ts.contains(0.0)) {
             return false;
         }
-        
+
         if ((ts.size() % 2) == 1) {
             //System.out.println("unique t parameters: " + ts.size());
+            //System.out.println("contained: "+point);
+            return true;
         }
         //System.out.println("");
 
-        return (ts.size() % 2) == 1;
+        return false;
     }
 
     ArrayList<Vector3D> getPoints() {
@@ -777,24 +779,35 @@ public class Shape extends MeshView {
     // does this shape intersect another shape?
     // computes whether any "this" vertices are inside the other volume
     // and vice versa
-    
     public boolean intersects(Shape other) {
-
+        boolean result = false;
         ArrayList<Vector3D> points = getPoints();
         for (Vector3D point : points) {
             if (other.contains(point)) {
-                return true;
+                if (other.contains(point)) {
+                    if (other.contains(point)) {
+                        System.out.println(this.part.name + " contains " + other.part.name + " : " + point);
+
+                        result = true;
+                    }
+                }
             }
         }
 
         points = other.getPoints();
         for (Vector3D point : points) {
             if (this.contains(point)) {
-                return true;
+                if (this.contains(point)) {
+                    if (this.contains(point)) {
+                        System.out.println(this.part.name + " contains " + other.part.name + " : " + point);
+
+                        result = true;
+                    }
+                }
             }
         }
-        
-        return false;
+
+        return result;
     }
 
 }

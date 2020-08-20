@@ -969,8 +969,6 @@ public class TestGM {
         Assembly dp = detectorPeople(7, 152.4, new Vector3D(-20, 30, -299), 180, 100);
         fusor.addAll(dp);
 
-   
-
         fusor.containsMaterialAt("Vacuum", Vector3D.ZERO);
         // make some axes
         Util.Graphics.drawCoordSystem(visualizations);
@@ -978,6 +976,9 @@ public class TestGM {
         mcs.suggestedCount = 10;
         mcs.suggestedGrid = 5.0;
 
+        System.out.println("Specific tests:");
+        vacChamber.shape.intersects(wax.shape);
+        wax.shape.intersects(vacChamber.shape);
         return mcs;
 
     }

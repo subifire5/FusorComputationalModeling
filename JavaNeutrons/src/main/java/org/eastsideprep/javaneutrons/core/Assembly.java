@@ -328,7 +328,9 @@ public class Assembly extends Part {
                     if (other.contains(point)) {
                         // repeat that test with another random ray
                         if (other.contains(point)) {
-                            intersectingParts.add(other);
+                            if (other.contains(point)) {
+                                intersectingParts.add(other);
+                            }
                         }
                     }
                 }
