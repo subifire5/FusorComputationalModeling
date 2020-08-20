@@ -202,7 +202,7 @@ public class Part {
     //
 
     void processPathLength(Particle particle,
-             double length, double energy
+            double length, double energy
     ) {
         this.fluenceMap.get(particle.type).record(particle, length / volume, energy);
     }
@@ -285,6 +285,16 @@ public class Part {
     // and vice-versa?
     public double distance(Part other, Vector3D direction) {
         return shape.distance(other.shape, direction);
+    }
+
+    public boolean contains(Vector3D point) {
+        //System.out.println("Does part "+this+" contain point "+point + "?");
+        return shape.contains(point);
+    }
+
+    @Override
+    public String toString() {
+        return "Part '" + this.name + "' (" + (this.material != null ? this.material.name : "unknown material") + ")";
     }
 
 }

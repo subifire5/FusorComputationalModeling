@@ -119,18 +119,10 @@ public final class Neutron extends Particle {
             Vector3D neutronVelocityOut;
             double vtarget;
 
-            if (this.mcs.targetAdjusted) {
-                // choose particle speed 
-                do {
-                    vtarget = pickTargetSpeed(vneutron, event.scatterParticle);
-                    particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
-                } while (!acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
-            } else {
-                // naive Maxwellian speed distribution
-                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.scatterParticle.mass);
-                particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
-                vtarget = particleVelocityIn.getNorm();
-            }
+            do {
+                vtarget = pickTargetSpeed(vneutron, event.scatterParticle);
+                particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
+            } while (!acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
 
             event.particleEnergyIn = event.scatterParticle.mass * vtarget * vtarget / 2;
             //establish center of mass

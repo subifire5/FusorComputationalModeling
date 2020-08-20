@@ -9,7 +9,10 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import javafx.collections.ObservableList;
@@ -122,9 +125,9 @@ public class MonteCarloSimulation {
     public String lastChartData = "";
     public Grid grid;
     public boolean stop;
-    public boolean targetAdjusted = false; // false: naive Maxwellian target speed distribution, true: speed selected according to OpenMC
     public boolean whitmer = false;
     public long suggestedCount = -1;
+    public double suggestedGrid = 5;
     public boolean fit = false;
 
     public static boolean visualLimitReached = false;
@@ -189,6 +192,13 @@ public class MonteCarloSimulation {
                 System.out.println("No initial medium found, defaulting to " + this.initialMaterial.name);
             }
         }
+
+        // check mesh integrity
+        Set<String> conflicts = assembly.verifyMeshIntegrity();
+        for (String conflict : conflicts) {
+            System.out.println("Failes mesh integrity test: " + conflict);
+        }
+
     }
 
 //    public void checkTallies() {
@@ -425,15 +435,16 @@ public class MonteCarloSimulation {
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        for (String kind : p.fluenceMap.keySet()) {
+                        Map<String, CorrelatedTallyOverEV> map = p.fluenceMap;
+                        for (String kind : map.keySet()) {
                             if (kind.equals("neutron")) {
-                                CorrelatedTallyOverEV h = p.fluenceMap.get(kind);
+                                CorrelatedTallyOverEV h = map.get(kind);
                                 c.getData().add(h.makeSeries("Fluence", this.lastCount, scale));
                                 sErrors = h.makeErrorSeries("Relative Error", this.lastCount, scale);
                             }
                         }
                         if (fit && scale.equals("Linear (thermal)")) {
-                            c.getData().add(p.fluenceMap.get("neutron").makeFittedSeries("Flux fit", this.lastCount));
+                            c.getData().add(map.get("neutron").makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                     } else {
@@ -553,9 +564,9 @@ public class MonteCarloSimulation {
                     + ", Total neutrons: " + this.lastCount
             );
             xAxis.setLabel("Energy (eV)");
-            yAxis.setLabel("Count");
+            yAxis.setLabel("Count/src");
 
-            c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", scale));
+            c.getData().add(Environment.getInstance().counts.makeSeries("Escape counts", this.lastCount, scale));
         }
         copyChartCSV(c, sErrors);
         return c;
@@ -590,7 +601,7 @@ public class MonteCarloSimulation {
     }
 
     public static String makeChartCSV(XYChart<String, Number> c, Series<String, Number> sErrors) {
-        String chartData = "'"+c.getXAxis().getLabel()+"'";
+        String chartData = "'" + c.getXAxis().getLabel() + "'";
         // make header
 
         for (Series<String, Number> s : c.getData()) {

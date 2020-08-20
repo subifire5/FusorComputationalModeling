@@ -65,14 +65,14 @@ public class App extends Application {
         this.viewGroup = new Group();
 
         // control buttons and progress 
+        Label src = new Label("Src: ");
         TextField tf = new TextField("1");
-        tf.setPrefWidth(100);
-        CheckBox grid = new CheckBox("Grid:");
-        grid.setPrefWidth(50);
+        tf.setPrefWidth(85);
+        Label grid = new Label("Grid: ");
         TextField gridSize = new TextField("2.0");
         gridSize.setPrefWidth(40);
         HBox settings = new HBox();
-        settings.getChildren().addAll(tf, grid, gridSize);
+        settings.getChildren().addAll(src, tf, grid, gridSize);
         settings.setAlignment(Pos.CENTER);
         settings.setSpacing(5);
 
@@ -84,8 +84,7 @@ public class App extends Application {
         cb.setOnAction(e -> {
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
-            grid.setSelected(this.sim.grid != null);
-            gridSize.setText(this.sim.grid != null ? "" + this.sim.grid.side : "");
+            gridSize.setText("" + this.sim.suggestedGrid);
             if (this.sim instanceof MC0D) {
                 ((MC0D) sim).init();
             }
@@ -104,8 +103,7 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            if (gridSize.getText().trim().length() > 0
-                    && grid.isSelected()) {
+            if (gridSize.getText().trim().length() > 0) {
                 double side = Double.parseDouble(gridSize.getText());
                 this.sim.grid = null;
                 this.sim.prepareGrid(side, view);

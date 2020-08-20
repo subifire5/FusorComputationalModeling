@@ -2,6 +2,7 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -309,14 +310,43 @@ public class Assembly extends Part {
         return parts;
     }
 
-    ;
-    
-    
     public Set<Material> getMaterials() {
         return getParts().stream().map(p -> p.material).filter(m -> m != null).collect(Collectors.toSet());
     }
 
     public Set<Material> getContainedMaterials() {
         return getParts().stream().map(p -> p.shape.containedMaterial).filter(m -> m != null).collect(Collectors.toSet());
+    }
+
+    public Set<Part> verifyPart(Part part) {
+
+        HashSet<Part> intersectingParts = new HashSet<>();
+        ArrayList<Vector3D> points = part.shape.getPoints();
+        for (Part other : parts) {
+            if (other != part) {
+                for (Vector3D point : points) {
+                    if (other.contains(point)) {
+                        // repeat that test with another random ray
+                        if (other.contains(point)) {
+                            intersectingParts.add(other);
+                        }
+                    }
+                }
+            }
+        }
+
+        return intersectingParts;
+    }
+
+    public Set<String> verifyMeshIntegrity() {
+        Set<String> intersectingPairs = new HashSet<>();
+        for (Part p : this.parts) {
+            Set<Part> intersectingParts = verifyPart(p);
+            for (Part other : intersectingParts) {
+                String conflict = "Parts of " + p.name + " are contained in " + other.name;
+                intersectingPairs.add(conflict);
+            }
+        }
+        return intersectingPairs;
     }
 }

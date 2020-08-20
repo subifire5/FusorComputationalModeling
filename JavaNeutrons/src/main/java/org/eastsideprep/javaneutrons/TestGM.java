@@ -6,6 +6,7 @@
 package org.eastsideprep.javaneutrons;
 
 import java.util.ArrayList;
+import java.util.List;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -21,7 +22,9 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+import static org.eastsideprep.javaneutrons.TestSV.detectorPeople;
 import org.eastsideprep.javaneutrons.core.Assembly;
+import org.eastsideprep.javaneutrons.core.Environment;
 import org.eastsideprep.javaneutrons.core.TallyOverEV;
 import org.eastsideprep.javaneutrons.core.Event;
 import org.eastsideprep.javaneutrons.core.Tally;
@@ -38,6 +41,7 @@ import org.eastsideprep.javaneutrons.core.Shape;
 import org.eastsideprep.javaneutrons.materials.N12C;
 import org.eastsideprep.javaneutrons.materials.N1H;
 import org.eastsideprep.javaneutrons.materials.HydrogenWax;
+import org.eastsideprep.javaneutrons.materials.Paraffin;
 import org.eastsideprep.javaneutrons.materials.Vacuum;
 import org.fxyz3d.shapes.primitives.CuboidMesh;
 
@@ -48,7 +52,7 @@ import org.fxyz3d.shapes.primitives.CuboidMesh;
 public class TestGM {
 
     public static MonteCarloSimulation current(Group visualizations) {
-        return sandwich(visualizations);
+        return ROOM5mm(visualizations);
     }
 
     public static MonteCarloSimulation MC0D_Scatter1(Group vis) {
@@ -103,7 +107,6 @@ public class TestGM {
                     // record energy for pair correlation
                     double before = n.energy;
 
-                    this.targetAdjusted = true;
                     n.processEvent(e);
                     double angle = n.direction.getX();
                     // score angle
@@ -154,7 +157,7 @@ public class TestGM {
                     c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
                     c.getData().add(makeThermalSeriesFromCSV("Whitmer MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
                     c.getData().add(makeThermalSeriesFromCSV("MC3D 10m neutrons", TestGM.class.getResource("/whitmer/spherical_mc3d.csv")));
-                } else if (series.equals("Scatter angles"))  {
+                } else if (series.equals("Scatter angles")) {
                     xAxis.setLabel("cos(angle)");
                     yAxis.setLabel("count/src");
                     c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
@@ -261,12 +264,116 @@ public class TestGM {
                     yAxis.setLabel("count/src");
                     c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
                 }
-                copyChartCSV(c,null);
+                copyChartCSV(c, null);
                 return c;
             }
 
         };
-        mcs.targetAdjusted = true;
+        mcs.suggestedCount = 100000;
+        return mcs;
+    }
+
+    public static MonteCarloSimulation MC0D_CountryClubPrison(Group vis) {
+        vis.getChildren().clear();
+
+        MonteCarloSimulation mcs = new MC0D() {
+
+            ArrayList<Vector2D> pairs = new ArrayList<>();
+            Nuclide is = N1H.getInstance();
+            Material pf = Paraffin.getInstance();
+            Shape prison = new Cuboid(44);
+            double vol = prison.getVolume();
+            TallyOverEV adjusted;
+            Tally angles;
+
+            @Override
+            public void init() {
+                System.out.println("Shell volume: " + vol);
+                this.materials.put("Paraffin", pf);
+                before();
+            }
+
+            @Override
+            public void before() {
+                adjusted = new TallyOverEV();
+                angles = new Tally(-1.0, 1.0, 100, false);
+                pairs = new ArrayList<>();
+            }
+
+            @Override
+            public void run(Neutron n) {
+                Event e;
+                // n is a fresh neutron
+
+                n.setPosition(Vector3D.ZERO);
+                n.setDirectionAndEnergy(Util.Math.randomDir(), Neutron.startingEnergyDD);
+
+                // scatter test - will we scatter in the block?
+                // technically, this includes captures, might need to differentiate
+                //e.code = Event.Code.Scatter;
+                //if (hw.getPathLength(Util.Physics.thermalEnergy, Math.random()) < 0.025) {
+                do {
+                    e = pf.nextPoint(n);
+                    if (e.position.getNormInf() > 22) {
+                        Environment.getInstance().counts.record(1, n.energy);
+                        break;
+                    }
+                    // record energy for pair correlation
+                    double before = n.energy;
+                    // score adjusted fluence
+                    adjusted.record(e.t / vol, n.energy);
+
+                    n.processEvent(e);
+                    if (e.code == Event.Code.Scatter) {
+                        // score angle
+                        angles.record(1, e.cos_theta);
+                        // get second part of pair, record it
+                        synchronized (pairs) {
+                            pairs.add(new Vector2D(before, n.energy));
+                        }
+                    }
+                    n.setPosition(e.position);
+
+                } while (e.code == Event.Code.Scatter);
+            }
+
+            @Override
+            public void after() {
+                PearsonsCorrelation pc = new PearsonsCorrelation();
+                double[] x;
+                double[] y;
+                synchronized (pairs) {
+                    x = pairs.stream().mapToDouble(v -> v.getX()).toArray();
+                    y = pairs.stream().mapToDouble(v -> v.getY()).toArray();
+                }
+                double c = pc.correlation(x, y);
+                System.out.println("Correlation of energies before and after scatter: " + c);
+            }
+
+            @Override
+            public Chart makeCustomChart(String series, String scale) {
+                final CategoryAxis xAxis = new CategoryAxis();
+                final NumberAxis yAxis = new NumberAxis();
+                XYChart<String, Number> c = new LineChart<>(xAxis, yAxis);
+                c.setTitle("MC0D prison, src = " + this.lastCount);
+                if (series.equals("Fluence")) {
+                    xAxis.setLabel("Energy (eV)");
+                    yAxis.setLabel("Fluence (n/cm^2)/src");
+                    yAxis.setTickLabelFormatter(new Formatter());
+                    //c.getData().add(maxwell.makeSeries("Maxwell", this.lastCount, scale));
+                    c.getData().add(adjusted.makeSeries("Fluence (n/cm^2)/src", this.lastCount, scale));
+//                    c.getData().add(makeThermalSeriesFromCSV("MCNP", TestGM.class.getResource("/whitmer/thermal_scatter_mcnp.csv")));
+//                    c.getData().add(makeThermalSeriesFromCSV("MC0D 10m scatters", TestGM.class.getResource("/whitmer/thermal_scatter_mc0d.csv")));
+                } else if (series.equals("Scatter angles")) {
+                    xAxis.setLabel("cos(angle)");
+                    yAxis.setLabel("count/src");
+                    c.getData().add(angles.makeSeries("count/src", this.lastCount, 1.0));
+                }
+                copyChartCSV(c, null);
+                return c;
+            }
+
+        };
         mcs.suggestedCount = 100000;
         return mcs;
     }
@@ -301,7 +408,6 @@ public class TestGM {
                 null, null, Neutron.startingEnergyDD,
                 "Vacuum", null, visualizations); // interstitial, initial
         //mcs.prepareGrid(5.0, visualizations);
-        mcs.targetAdjusted = true;
         mcs.suggestedCount = 1000000;
         return mcs;
     }
@@ -309,7 +415,6 @@ public class TestGM {
     //
     // world simulations
     //
-    
     public static MonteCarloSimulation sandwich(Group visualizations) {
         double thickness = 5; //block thickness in cm
         Shape blockShape = new Shape(new CuboidMesh(thickness, 100, 100));
@@ -319,17 +424,16 @@ public class TestGM {
         wall1.setColor("gray");
 
         Part wall2 = new Part("Wall 2: Wood", blockShape, "Wood");
-        wall2.getTransforms().add(new Translate(50+thickness, 0, 0));
+        wall2.getTransforms().add(new Translate(50 + thickness, 0, 0));
         wall2.setColor("brown");
-        
-        Part wall3 = new Part("Wall 3: Paraffin", blockShape, "Paraffin");
-        wall3.getTransforms().add(new Translate(50+2*thickness, 0, 0));
-        wall3.setColor("beige");
-        
-        Part detector = new Part("Detector", blockShape, "HighVacuum");
-        detector.getTransforms().add(new Translate(3*thickness + 60, 0, 0));
-        detector.setColor("pink");
 
+        Part wall3 = new Part("Wall 3: Paraffin", blockShape, "Paraffin");
+        wall3.getTransforms().add(new Translate(50 + 2 * thickness, 0, 0));
+        wall3.setColor("beige");
+
+        Part detector = new Part("Detector", blockShape, "HighVacuum");
+        detector.getTransforms().add(new Translate(3 * thickness + 60, 0, 0));
+        detector.setColor("pink");
 
         Assembly whitmer = new Assembly("Sandwich");
         whitmer.addAll(wall1, wall2, wall3, detector);
@@ -338,15 +442,15 @@ public class TestGM {
                 null, null, Neutron.startingEnergyDD,
                 "Vacuum", null, visualizations); // interstitial, initial
         //mcs.prepareGrid(5.0, visualizations);
-        mcs.targetAdjusted = true;
         mcs.suggestedCount = 1000000;
         return mcs;
     }
+
     public static MonteCarloSimulation prison(Group visualizations) {
-        double thickness = 200; //block thickness in cm
+        double thickness = 44; //block thickness in cm
         //String m = "HydrogenWax";
-        String m = "CarbonWax";
-        //String m = "Paraffin";
+        //String m = "CarbonWax";
+        String m = "Paraffin";
 
         //Part wall = new Part("Prison: " + m, new Shape(TestGM.class.getResource("/meshes/prison.stl"), "cm"), m);
         Part wall = new Part("Prison: " + m, new Cuboid(thickness), m);
@@ -357,9 +461,8 @@ public class TestGM {
         whitmer.containsMaterialAt("Vacuum", Vector3D.ZERO);
 
         MonteCarloSimulation mcs = new MonteCarloSimulation(whitmer,
-                null, Vector3D.PLUS_I, Util.Physics.thermalEnergy, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
+                null, null, Neutron.startingEnergyDD, // origin = (0,0,0), random dir, default DD-neutron energy+1 KeV
                 "Vacuum", null, visualizations); // interstitial, initial
-        mcs.targetAdjusted = true;
         mcs.suggestedCount = 10000000;
         return mcs;
     }
@@ -488,14 +591,12 @@ public class TestGM {
     public static MonteCarloSimulation sphericalAdjusted(Group visualizations) {
         MonteCarloSimulation mcs = spherical(visualizations);
         mcs.prepareGrid(5.0, visualizations);
-        mcs.targetAdjusted = true;
         return mcs;
     }
 
     public static MonteCarloSimulation sphericalWhitmerAdjusted(Group visualizations) {
         MonteCarloSimulation mcs = spherical(visualizations);
         mcs.prepareGrid(5.0, visualizations);
-        mcs.targetAdjusted = true;
         mcs.whitmer = true;
         return mcs;
     }
@@ -525,7 +626,6 @@ public class TestGM {
     public static MonteCarloSimulation thinAdjusted(Group vis) {
 
         MonteCarloSimulation mcs = thin(vis);
-        mcs.targetAdjusted = true;
         return mcs;
     }
 
@@ -819,4 +919,68 @@ public class TestGM {
         }
         System.exit(0);
     }
+
+    public static MonteCarloSimulation ROOM5mm(Group visualizations) {
+
+        // vac chamber
+        Part vacChamber = new Part("Vacuum chamber", new Shape(TestGM.class
+                .getResource("/meshes/vac_chamber.obj")), "Lead");
+        vacChamber.setColor(
+                "black");
+        vacChamber.getTransforms().add(0, new Rotate(90, new Point3D(1, 0, 0)));
+
+        //room walls
+        Part wfront = new Part("W.front", new Shape(TestSV.class.getResource("/meshes/wfront.stl"), "cm"), "Vacuum");
+        wfront.setColor("gray");
+        Part wback = new Part("W.back", new Shape(TestSV.class.getResource("/meshes/wback.stl"), "cm"), "Vacuum");
+        wback.setColor("gray");
+        Part wfloor = new Part("W.floor", new Shape(TestSV.class.getResource("/meshes/wfloor.stl"), "cm"), "Vacuum");
+        wfloor.setColor("gray");
+        Part wceiling = new Part("W.ceiling", new Shape(TestSV.class.getResource("/meshes/wceiling.stl"), "cm"), "Vacuum");
+        wceiling.setColor("gray");
+        Part wleft = new Part("W.left", new Shape(TestSV.class.getResource("/meshes/wleft.stl"), "cm"), "Vacuum");
+        wleft.setColor("gray");
+        Part wright = new Part("W.right", new Shape(TestSV.class.getResource("/meshes/wright.stl"), "cm"), "Vacuum");
+        wright.setColor("gray");
+
+        //important stuff
+        Part wood = new Part("Wood", new Shape(TestSV.class.getResource("/meshes/wood.stl"), "cm"), "Wood");
+        wood.setColor("yellow");
+        Part pipes = new Part("Steel Pipes", new Shape(TestSV.class.getResource("/meshes/pipes.stl"), "cm"), "Steel");
+        pipes.setColor("gray");
+        Part lead = new Part("Lead Box", new Shape(TestSV.class.getResource("/meshes/leadbox.stl"), "cm"), "Lead");
+        lead.setColor("gray");
+        Part wax = new Part("Wax", new Shape(TestSV.class.getResource("/meshes/5mmcubes.stl"), "cm"), "Paraffin");
+        wax.setColor("lightblue");
+        Assembly fusor = new Assembly("Fusor");
+
+        fusor.addAll(vacChamber);
+        fusor.addAll(wood);
+        fusor.addAll(pipes);
+        fusor.addAll(lead);
+        fusor.addAll(wax);
+        fusor.addAll(wfront);
+        fusor.addAll(wback);
+        fusor.addAll(wfloor);
+        fusor.addAll(wceiling);
+        fusor.addAll(wleft);
+        fusor.addAll(wright);
+        fusor.addTransform(new Rotate(90, new Point3D(1, 0, 0)));
+
+        Assembly dp = detectorPeople(7, 152.4, new Vector3D(-20, 30, -299), 180, 100);
+        fusor.addAll(dp);
+
+   
+
+        fusor.containsMaterialAt("Vacuum", Vector3D.ZERO);
+        // make some axes
+        Util.Graphics.drawCoordSystem(visualizations);
+        MonteCarloSimulation mcs = new MonteCarloSimulation(fusor, null, visualizations);
+        mcs.suggestedCount = 10;
+        mcs.suggestedGrid = 5.0;
+
+        return mcs;
+
+    }
+
 }
