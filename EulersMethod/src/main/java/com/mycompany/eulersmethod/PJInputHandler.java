@@ -207,7 +207,7 @@ public class PJInputHandler {
         Double time = Double.valueOf(s.nextLine());
 
         System.out.println("Mass (in Atomic Mass Units, for Deuterium this is 2.0141)");
-        Double mass = Double.valueOf(s.nextLine()) * 1.66E-27;
+        Double mass = 2.014102 * 1.66053906660E-27;;
 
         return new Particle(x, y, z, Vx, Vy, Vz, polarity, charge, time, mass);
     }
@@ -224,17 +224,18 @@ public class PJInputHandler {
         boolean inputRecieved;
         Double vAnnode = null;
         Double vCathode = null;
+   
+
         
-        
-        inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
         outputFilePath = "pjrktestPJinput.csv";
+        inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
         System.out.println("Do you want to skip the input process?");
         String input;
         input = s.nextLine();
         
         if (input.equals("Y") || input.equals("y")) {
             inputRecieved = true;
-            skipInput = true;
+            skipInput = true;      
         } else if (input.equals("N") || input.equals("n")) {
             inputRecieved = true;
             skipInput = false;
@@ -246,7 +247,7 @@ public class PJInputHandler {
             
 
             EFieldFileParser parser = new EFieldFileParser();
-            Charge[][] chargeArrayArray = parser.parseFile("outputChamberGrid20kCharges1kShakes.csv");
+            Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
             charges = chargeArrayArray[0];
             positiveCharges = chargeArrayArray[1];
             negativeCharges = chargeArrayArray[2];
@@ -258,7 +259,7 @@ public class PJInputHandler {
             Particle Partikel = new Particle (70.0, 70.0, 70.0, 0.0, 0.0, 0.0, 1, 1.0, 0.0); //you can decide the values of the velocity, position, etc. of the particle here
             //Particle(Double x, Double y, Double z, Double vx, Double vy,Double vz, int polarity, Double charge, Double time)
             
-            orbitStuff(true,false, Partikel, 100000.0, 1.0, outputFilePath,true, 100, true, false); 
+            orbitStuff(true,false, Partikel, 1000.0, 1e-10, outputFilePath,true, 100, false, true); 
             //orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
             // you can also decide what values to put in 
         
