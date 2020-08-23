@@ -36,6 +36,7 @@ public class InputHandler {
     Charge[] charges;
     Charge[] positiveCharges;
     Charge[] negativeCharges;
+    Boolean skipInput = false;
 
     public InputHandler() {
     }
@@ -255,8 +256,59 @@ public class InputHandler {
         boolean inputReceived = false;
         Double numberOfSteps = 0.0;
         Double stepSize = 1.0;
-        String outputFilePath = "";
-
+        
+        inputFilePath = "outputChamberGrid20kCharges1kShakes.csv"; //name of input file
+        outputFilePath = "rktest.csv"; // name of output file
+        System.out.println("Do you want to skip the user input process? (y/n)");
+        String inputString = s.nextLine();
+        
+        if (inputString.equals("Y") || inputString.equals("y")) {
+            inputReceived = true;
+            skipInput = true;      
+        } else if (inputString.equals("N") || inputString.equals("n")) {
+            inputReceived = true;
+            skipInput = false;
+        } else{
+            System.out.println("Please respond with a (Y) or (N)");
+        }
+        
+        if (skipInput){
+            EFieldFileParser parser = new EFieldFileParser();
+            
+            Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
+            charges = chargeArrayArray[0];
+            positiveCharges = chargeArrayArray[1];
+            negativeCharges = chargeArrayArray[2];
+            
+            // below are all the values you can change (before running the code) so that you can skip the input process
+            vAnnode = 1.0;
+            vCathode = -40000.0;
+            scaleDistance = 0.001;
+            Vector centerOfGrid = new Vector (0.0, 0.0, 0.0);
+            eField = new EField(charges, vAnnode, vCathode, scaleDistance, centerOfGrid);
+            
+            Vector position = new Vector(30.0, 30.0, 30.0);
+            Vector velocity = new Vector(0.0, 0.0, 0.0);
+            int polarity = 1;
+            double charge = 1;
+            double mass = 2.0141;
+            double time = 0.0;
+            
+            Particle particle2 = new Particle(position, velocity, polarity, charge, time, mass);
+            
+            PJ = true; // run PJ's code
+            MY = false; // run MY's code
+            SL = false; // run SL's code
+            numberOfSteps = 10000.0;
+            stepSize = 1E-5;
+            batch = true;
+            batchSize = 100;
+            eu = false;
+            rk = true;
+            orbitStuff(PJ, MY, SL, particle2, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
+            
+        }
+        else {
         inputFilePath = fileNameGet("Please enter your input (including the .csv): ");
 
         System.out.println("Please enter the anode (positive) voltage");
@@ -379,5 +431,5 @@ public class InputHandler {
         input = "";
 
     }
-
+    }
 }

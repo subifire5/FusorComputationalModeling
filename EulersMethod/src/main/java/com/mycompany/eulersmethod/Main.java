@@ -16,25 +16,10 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-        Scanner s = new Scanner(System.in);
-        System.out.println("Would you like to run with MYInputHandler(MY) or PJInputHandler(PJ)?");
-        String inputHandler;
-        inputHandler = s.nextLine();
-        MYInputHandler MYih;
-        PJInputHandler PJih;
-        InputHandler ih;
-        
-        if (inputHandler.equals("MY") || inputHandler.equals("my")) {
-            MYih = new MYInputHandler();
-            MYih.getInput();
-        } else if (inputHandler.equals("PJ") || inputHandler.equals("pj")) {
-            PJih = new PJInputHandler();
-            PJih.getInput();
-        } else {
-            ih = new InputHandler();
-            ih.getInput();
-        }
-        
+        InputHandler ih = new InputHandler();
+        ih.getInput();
+
+
         /*Vector test1 = new Vector(0.0, 0.0, 0.0);
         Vector test2 = new Vector(1000.0, 1000.0, 1000.0);
         Vector test3 = new Vector(0.07, 0.0, 0.0);
