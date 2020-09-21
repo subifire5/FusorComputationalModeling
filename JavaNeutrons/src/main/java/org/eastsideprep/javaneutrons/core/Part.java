@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.shape.DrawMode;
@@ -19,16 +20,16 @@ public class Part {
     public String name;
 
     // universal detector functionality
-    public EnergyHistogram entriesOverEnergy;
-    public EnergyHistogram exitsOverEnergy;
-    public Map<String,EnergyHistogram>  fluenceMap; 
-    public EnergyHistogram scattersOverEnergyBefore;
-    public EnergyHistogram scattersOverEnergyAfter;
-    public EnergyHistogram capturesOverEnergy;
-    public Histogram angles;
+    public TallyOverEV entriesOverEnergy;
+    public TallyOverEV exitsOverEnergy;
+    public Map<String, CorrelatedTallyOverEV> fluenceMap;
+    public TallyOverEV scattersOverEnergyBefore;
+    public TallyOverEV scattersOverEnergyAfter;
+    public TallyOverEV capturesOverEnergy;
+    public Tally angles;
     private double volume = 0;
     private double totalDepositedEnergy = 0;
-    private int totalEvents = 0;
+    private AtomicLong totalEvents;
 
     public Part(String name, Shape s, Object material) {
         if (s != null) {
@@ -57,20 +58,20 @@ public class Part {
 
     public final void resetDetector() {
         this.totalDepositedEnergy = 0;
-        this.totalEvents = 0;
-        this.exitsOverEnergy = new EnergyHistogram();
-        this.entriesOverEnergy = new EnergyHistogram();
-        
-        EnergyHistogram neutronFluence = new EnergyHistogram();
-        EnergyHistogram gammaFluence = new EnergyHistogram();
+        this.totalEvents = new AtomicLong(0);
+        this.exitsOverEnergy = new TallyOverEV();
+        this.entriesOverEnergy = new TallyOverEV();
+
+        CorrelatedTallyOverEV neutronFluence = new CorrelatedTallyOverEV();
+        CorrelatedTallyOverEV gammaFluence = new CorrelatedTallyOverEV();
         this.fluenceMap = new HashMap<>();
         this.fluenceMap.put("neutron", neutronFluence);
         this.fluenceMap.put("gamma", gammaFluence);
-        
-        this.scattersOverEnergyBefore = new EnergyHistogram();
-        this.capturesOverEnergy = new EnergyHistogram();
-        this.scattersOverEnergyAfter = new EnergyHistogram();
-        this.angles = new Histogram(-1, 1, 100, false);
+
+        this.scattersOverEnergyBefore = new TallyOverEV();
+        this.capturesOverEnergy = new TallyOverEV();
+        this.scattersOverEnergyAfter = new TallyOverEV();
+        this.angles = new Tally(-1, 1, 100, false);
     }
 
     public static ArrayList<Part> NewPartsFromShapeList(String name, List<Shape> shapes, Material material) {
@@ -117,12 +118,12 @@ public class Part {
         double t;
         Event exitEvent;
         Event interactionEvent;
-        Event event;
+        Event event = null;
         double epsilon = 1e-10; // 10^-12m (in cm) 
 
         // entry into part - advance neutron ever so slightly
         // so that when something else happens, we will be firmly inside
-        p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
+//        p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
         if (p.mcs.traceLevel >= 2) {
             System.out.println("Neutron " + p.hashCode() + " entry into part " + this.name);
             System.out.println(" Neutron energy in: " + String.format("%6.3e eV", p.energy / Util.Physics.eV));
@@ -136,27 +137,25 @@ public class Part {
 
             if (grid != null) {
                 exitEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, interactionEvent.t);
-                // DEBUG
-//                if (exitEvent == null) {
-//                    // find it the slow way
-//                    exitEvent = this.rayIntersect(n.position, n.direction, false, visualizations);
-//                    if (exitEvent != null) {
-//                        System.out.println("oh oh.");
-//                    }
-//                }
             } else {
                 exitEvent = this.rayIntersect(p.position, p.direction, true, visualizations);
             }
 
             if (exitEvent == null) {
                 //throw new IllegalArgumentException();
-                exitEvent = new Event(p.position.add(p.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
-                Util.Graphics.visualizeEvent(exitEvent, p.direction, visualizations);
-                if (p.mcs.traceLevel >= 2) {
-                    p.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
+                // repeat for debugging
+                exitEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, interactionEvent.t);
+                if (exitEvent == null) {
+                    exitEvent = new Event(p.position.add(p.direction.scalarMultiply(10)), Event.Code.EmergencyExit, 10, 0);
+                    Util.Graphics.visualizeEvent(exitEvent, p.direction, visualizations);
+                    if (p.mcs.traceLevel >= 2) {
+                        p.dumpEvents("--no way out of part, emergency exit, dumping events" + this.name);
+                    }
+                    event = exitEvent;
                 }
-                event = exitEvent;
-            } else {
+            }
+
+            if (exitEvent != null) {
                 if (exitEvent.t > interactionEvent.t) {
                     // scattering / absorption did really happen, process it
                     event = interactionEvent;
@@ -172,25 +171,25 @@ public class Part {
                     event.particle = p;
                     event.exitMaterial = this.shape.getContactMaterial(event.face);
                 }
-                // call for Detector parts to record
-                this.material.processEvent(event, false);
-                this.processPathLength(p, event.t, currentEnergy);
             }
+            // call for Detector parts to record
+            this.material.processEvent(event, false);
+            this.processPathLength(p, event.t, currentEnergy);
 
             // also record event for the individual neutron
             if (!p.record(event)) {
                 // too many events, get out
                 return event;
             }
-        } while (event.code != Event.Code.Exit && event.code != Event.Code.Capture);
+        } while (event.code != Event.Code.Exit && event.code != Event.Code.ExitEntry && event.code != Event.Code.Capture);
         if (event.code == Event.Code.Capture) {
             if (p.mcs.traceLevel >= 2) {
                 System.out.println("Neutron " + p.hashCode() + " captured in part " + this.name);
                 System.out.println(" Neutron energy final: " + String.format("%6.3e eV", p.energy / Util.Physics.eV));
             }
         } else {
-            // advance the neutron a bit to the outside
-            p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
+//            // advance the neutron a bit to the outside
+//            p.setPosition(visualizations, Util.Math.rayPoint(p.position, p.direction, epsilon));
             if (p.mcs.traceLevel >= 2) {
                 System.out.println("Neutron " + p.hashCode() + " exit from part " + this.name);
                 System.out.println(" Neutron energy out: " + String.format("%6.3e eV", p.energy / Util.Physics.eV));
@@ -198,16 +197,18 @@ public class Part {
         }
 
         return event;
-    }
-
-    //
+    } //
     // detector functionality
     //
-    void processPathLength(Particle particle, double length, double energy) {
-        this.fluenceMap.get(particle.type).record(length / volume, energy);
+
+    void processPathLength(Particle particle,
+            double length, double energy
+    ) {
+        this.fluenceMap.get(particle.type).record(particle, length / volume, energy);
     }
 
-    void processEntry(Particle  p) {
+    void processEntry(Particle p
+    ) {
         this.entriesOverEnergy.record(1, p.energy);
         p.entryEnergy = p.energy;
 
@@ -226,9 +227,7 @@ public class Part {
 
         // record more stats for part
         if (event.code == Event.Code.Scatter || event.code == Event.Code.Capture) {
-            synchronized (this) {
-                this.totalEvents++;
-            }
+            this.totalEvents.incrementAndGet();
         }
 
         if (event.code == Event.Code.Scatter) {
@@ -237,9 +236,11 @@ public class Part {
         }
     }
 
-    synchronized void processExit(Particle p) {
+    void processExit(Particle p) {
         this.exitsOverEnergy.record(1, p.energy);
-        this.totalDepositedEnergy += (p.entryEnergy - p.energy);
+        synchronized (this) {
+            this.totalDepositedEnergy += (p.entryEnergy - p.energy);
+        }
     }
 
     public double getTotalDepositedEnergy() {
@@ -247,19 +248,15 @@ public class Part {
     }
 
     public double getTotalFluence(String kind) {
-        double fluence = 0;
-        synchronized(this) {
-            // todo: integrate appropriate histogram
-        }
-        return fluence;
+        return fluenceMap.get(kind).getTotal();
     }
 
     public double getTotalPath(String kind) {
         return this.getTotalFluence(kind) * this.volume;
     }
 
-    public int getTotalEvents() {
-        return this.totalEvents;
+    public long getTotalEvents() {
+        return this.totalEvents.get();
     }
 
     public ObservableList<Transform> getTransforms() {
@@ -288,6 +285,16 @@ public class Part {
     // and vice-versa?
     public double distance(Part other, Vector3D direction) {
         return shape.distance(other.shape, direction);
+    }
+
+    public boolean contains(Vector3D point) {
+        //System.out.println("Does part "+this+" contain point "+point + "?");
+        return shape.contains(point);
+    }
+
+    @Override
+    public String toString() {
+        return "Part '" + this.name + "' (" + (this.material != null ? this.material.name : "unknown material") + ")";
     }
 
 }

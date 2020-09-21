@@ -229,6 +229,7 @@ public class PJInputHandler {
         
         outputFilePath = "pjrktestPJinput.csv";
         inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
+
         System.out.println("Do you want to skip the input process?");
         String input;
         input = s.nextLine();
@@ -236,6 +237,7 @@ public class PJInputHandler {
         if (input.equals("Y") || input.equals("y")) {
             inputRecieved = true;
             skipInput = true;      
+
         } else if (input.equals("N") || input.equals("n")) {
             inputRecieved = true;
             skipInput = false;
@@ -248,6 +250,7 @@ public class PJInputHandler {
 
             EFieldFileParser parser = new EFieldFileParser();
             Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
+
             charges = chargeArrayArray[0];
             positiveCharges = chargeArrayArray[1];
             negativeCharges = chargeArrayArray[2];
@@ -260,6 +263,7 @@ public class PJInputHandler {
             //Particle(Double x, Double y, Double z, Double vx, Double vy,Double vz, int polarity, Double charge, Double time)
             
             orbitStuff(true,false, Partikel, 1000.0, 1e-10, outputFilePath,true, 100, false, true); 
+
             //orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
             // you can also decide what values to put in 
         

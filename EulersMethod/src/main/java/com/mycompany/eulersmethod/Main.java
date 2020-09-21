@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+
 /**
  *
  * @author pjain
@@ -43,6 +44,7 @@ public class Main {
         System.out.println("2 step: " + slrk.step(step1, 5e-11));
         System.out.println("P: " + ih.eField.forceOnCharge(p));
         System.out.println("P acc: " + ih.eField.forceOnCharge(p).scale(1 / p.mass));*/
+
         
     }
 
