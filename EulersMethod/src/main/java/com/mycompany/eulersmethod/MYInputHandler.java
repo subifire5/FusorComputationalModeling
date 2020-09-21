@@ -11,18 +11,20 @@ import java.util.Scanner;
 
 /**
  *
- * @author pjain
+ * @author myan
  */
-public class PJInputHandler {
+public class MYInputHandler {
 
     int numCharges = 100;
     String positiveFilePath = "ThinRightPlate.csv";
     String negativeFilePath = "ThinPlate.csv";
-    String outputFilePath = "outputFilePath.csv";
+    String outputFilePath = "outputFile.csv";
     String inputFilePath = "inputFilePath.csv";
     Double posCharge = 100.0;
     Double negCharge = 100.0;
     Double scaleDistance = 0.01;
+    Double vAnnode;
+    Double vCathode;
     int shakeUps = 100;
     Scanner s;
     EField eField;
@@ -30,22 +32,18 @@ public class PJInputHandler {
     Charge[] positiveCharges;
     Charge[] negativeCharges;
 
-    Double stepSize = 1E-4;
     Boolean skipInput = false;
 
-    public PJInputHandler() {
+    public MYInputHandler() {
 
     }
 
     public void getInput() {
+        s = new Scanner(System.in);
+        readFromFile();
 
-        if (!skipInput) {
-            s = new Scanner(System.in);
-            readFromFile();
-
-            s.close();
-
-        }
+        s.close();
+        
     }
 
     /**
@@ -58,10 +56,21 @@ public class PJInputHandler {
      * @param outputFilePath
      * @return
      */
-    public void orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
+    public void orbitStuff(Boolean PJ, Boolean MY, Boolean SL, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
         Particle[] particles = new Particle[1];
+        System.out.println("pre scaling: " + initial);
+
         initial.setScaleDistance(scaleDistance);
-        initial.totalEnergy(eField);
+        System.out.println("first: " + initial.totalEnergy(eField));
+        Vector origin = new Vector(0.0, 0.0, 0.0);
+        Vector incorrectPosition = new Vector(0.024, 0.072, 0.0);
+        Vector offPosition = new Vector(-0.02, 0.02, 0.0);
+        Particle centered = new Particle(origin, origin, 1, 1.0);
+        Particle offCenter = new Particle(offPosition, origin, 1, 1.0);
+        System.out.println("Centered: " + centered.electricPotentialEnergy(eField));
+        System.out.println("origin: " + eField.electricPotential(origin));
+        System.out.println("OffCenter: " + offCenter.electricPotentialEnergy(eField));
+        System.out.println("offPosition: " + eField.electricPotential(offPosition));
         if (batch) {
             if (PJ && eu) {
                 PJEulersMethod pj = new PJEulersMethod(eField);
@@ -71,12 +80,14 @@ public class PJInputHandler {
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
 
             } else if (PJ && rk) {
-
                 PJRungeKutta pj = new PJRungeKutta(eField);
                 particles = pj.epoch(initial, stepSize, numberOfSteps, batchSize);
             } else if (MY && rk) {
                 MYRungeKutta my = new MYRungeKutta(eField);
                 particles = my.epoch(initial, stepSize, numberOfSteps, batchSize);
+            } else if (SL && rk) {
+                SLRungeKutta sl = new SLRungeKutta(eField);
+                particles = sl.epoch(initial, stepSize, numberOfSteps, batchSize);
             }
 
         } else {
@@ -89,6 +100,10 @@ public class PJInputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
+                    double percentage = i / numberOfSteps;
+                    double difference = numberOfSteps - i;
+                    System.out.println("Progress: " + (percentage * 100) + "%");
+                    System.out.println("Steps Left:" + difference);
                 }
 
             } else if (MY && eu) {
@@ -109,6 +124,10 @@ public class PJInputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = pj.step(p, stepSize).clone();
                     p = particles[i];
+                    double percentage2 = i / numberOfSteps;
+                    double difference2 = numberOfSteps - i;
+                    System.out.println("Progress: " + (percentage2 * 100) + "%");
+                    System.out.println("Steps Left:" + difference2);
                 }
 
             } else if (MY && rk) {
@@ -117,6 +136,14 @@ public class PJInputHandler {
                 Particle p = particles[0].clone();
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = my.step(p, stepSize).clone();
+                    p = particles[i];
+                }
+            } else if (SL && rk) {
+                SLRungeKutta sl = new SLRungeKutta(eField);
+                particles[0] = initial;
+                Particle p = particles[0].clone();
+                for (int i = 1; i < numberOfSteps; i++) {
+                    particles[i] = sl.step(p, stepSize).clone();
                     p = particles[i];
                 }
             }
@@ -198,7 +225,7 @@ public class PJInputHandler {
         int polarity = Integer.valueOf(s.nextLine());
 
         System.out.println("Charge (measured in elementary charge [charge of an electron or proton]): ");
-        Double charge = Double.valueOf(s.nextLine()) * 1.602E-19;
+        Double charge = Double.valueOf(s.nextLine());
 
         System.out.println("To denote a number several decimals below the ones position,"
                 + "\n use the following 2.014E-27, where -27 is the number of,"
@@ -207,69 +234,80 @@ public class PJInputHandler {
         Double time = Double.valueOf(s.nextLine());
 
         System.out.println("Mass (in Atomic Mass Units, for Deuterium this is 2.0141)");
-        Double mass = 2.014102 * 1.66053906660E-27;;
+        Double mass = Double.valueOf(s.nextLine()) * 1.66E-27;
 
         return new Particle(x, y, z, Vx, Vy, Vz, polarity, charge, time, mass);
     }
 
     public void readFromFile() {
-        Boolean PJ = null;
-        Boolean MY = null;
-        Boolean eu = null; 
-        Boolean rk = null;
-        Boolean batch = null;
+        Boolean PJ = false;
+        Boolean MY = false;
+        Boolean SL = false;
+        Boolean eu = false; // eulers
+        Boolean rk = false; // runge kutta
+        Boolean batch = true; // true by default
         int batchSize = 0;
-        Double numberOfSteps;
-        Particle initial;
-        boolean inputRecieved;
-        Double vAnnode = null;
-        Double vCathode = null;
-   
+        Particle initial = null;
+        boolean inputRecieved = false;
+        Double numberOfSteps = 0.0;
+        Double stepSize = 1.0;
+        String outputFilePath = "";
 
-        
-        outputFilePath = "pjrktestPJinput.csv";
         inputFilePath = "outputChamberGrid20kCharges1kShakes.csv";
+        outputFilePath = "MYorbitTest.csv";
+        System.out.println("Do you want to skip the user input process? (y/n)");
+        String inputString = s.nextLine();
 
-        System.out.println("Do you want to skip the input process?");
-        String input;
-        input = s.nextLine();
-        
-        if (input.equals("Y") || input.equals("y")) {
+        if (inputString.equals("y") || inputString.equals("Y")) {
             inputRecieved = true;
-            skipInput = true;      
-
-        } else if (input.equals("N") || input.equals("n")) {
+            skipInput = true;
+        } else if (inputString.equals("n") || inputString.equals("N")) {
             inputRecieved = true;
             skipInput = false;
-        } else{
-            System.out.println("Please respond with a (Y) or (N)");
+        } else {
+            System.out.println("Please respond with y/n");
         }
-        
+
         if (skipInput) {
-            
-
             EFieldFileParser parser = new EFieldFileParser();
+            
             Charge[][] chargeArrayArray = parser.parseFile(inputFilePath);
-
             charges = chargeArrayArray[0];
             positiveCharges = chargeArrayArray[1];
             negativeCharges = chargeArrayArray[2];
-
-            eField = new EField(charges, 1.0, -40000.0, 0.001, new Vector(0.0, 0.0, 0.0));
             
-            //put variables up above w/values instead of directly in particle and orbitStuff
-                   
-            Particle Partikel = new Particle (70.0, 70.0, 70.0, 0.0, 0.0, 0.0, 1, 1.0, 0.0); //you can decide the values of the velocity, position, etc. of the particle here
-            //Particle(Double x, Double y, Double z, Double vx, Double vy,Double vz, int polarity, Double charge, Double time)
+            vAnnode = 1.0;
+            vCathode = -40000.0;
+            scaleDistance = 0.001;
+            Vector centerOfGrid = new Vector (0.0, 0.0, 0.0);
             
-            orbitStuff(true,false, Partikel, 1000.0, 1e-10, outputFilePath,true, 100, false, true); 
-
-            //orbitStuff(Boolean PJ, Boolean MY, Particle initial, Double numberOfSteps, Double stepSize, String outputFilePath, Boolean batch, int batchSize, Boolean eu, Boolean rk) {
-            // you can also decide what values to put in 
-        
+            eField = new EField(charges, vAnnode, vCathode, scaleDistance, centerOfGrid);
             
+            Vector position = new Vector(20.0, 20.0, 0.0);
+            Vector velocity = new Vector(0.0, 0.0, 0.0);
+            int polarity = 1;
+            double charge = 1;
+            double mass = 2.0141;
+            double time = 0.0;
             
-        } else{
+            Particle particle1 = new Particle(position, velocity, polarity, charge, time, mass);
+            
+            PJ = false;
+            MY = true;
+            SL = false;
+            numberOfSteps = 1000.0;
+            stepSize = 1E-5;
+            if (numberOfSteps >= 100000.0) {
+                batch = true;
+            } else {
+                batch = false;
+            }
+            batchSize = 1000;
+            eu = false;
+            rk = true;
+            orbitStuff(PJ, MY, SL, particle1, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
+            
+        } else {
             inputFilePath = fileNameGet("Please enter your input (including the .csv): ");
 
             System.out.println("Please enter the anode (positive) voltage");
@@ -281,6 +319,7 @@ public class PJInputHandler {
             System.out.println("What is the distance, in meters, of 1 unit in the stl files?");
             scaleDistance = Double.valueOf(s.nextLine());
 
+            String input = "";
             inputRecieved = false;
 
             EFieldFileParser parser = new EFieldFileParser();
@@ -291,6 +330,7 @@ public class PJInputHandler {
             negativeCharges = chargeArrayArray[2];
 
             eField = new EField(charges, vAnnode, vCathode, scaleDistance, new Vector(0.0, 0.0, 0.0));
+
             Boolean calculateOrbit = false;
             input = "";
             inputRecieved = false;
@@ -325,7 +365,7 @@ public class PJInputHandler {
                 inputRecieved = false;
 
                 while (!inputRecieved) {
-                    System.out.println("Who's Orbit do you want? Praveer (PJ) Maggie (MY)");
+                    System.out.println("Who's Orbit do you want? Praveer (PJ) Maggie (MY) or (SL)");
                     input = s.nextLine();
                     if (input.equals("PJ") || input.equals("Pj") || input.equals("pJ") || input.equals("pj")) {
                         inputRecieved = true;
@@ -333,8 +373,11 @@ public class PJInputHandler {
                     } else if (input.equals("MY") || input.equals("My") || input.equals("mY") || input.equals("my")) {
                         inputRecieved = true;
                         MY = true;
+                    } else if (input.equals("SL") || input.equals("Sl") || input.equals("sL") || input.equals("sl")) {
+                        inputRecieved = true;
+                        SL = true;
                     } else {
-                        System.out.println("Please respond with (PJ) or (MY)");
+                        System.out.println("Please respond with (PJ), (MY) or (SL)");
                     }
                 }
 
@@ -380,15 +423,12 @@ public class PJInputHandler {
                     batchSize = Integer.valueOf(s.nextLine());
                 }
 
-                orbitStuff(PJ, MY, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
+                orbitStuff(PJ, MY, SL, initial, numberOfSteps, stepSize, outputFilePath, batch, batchSize, eu, rk);
             }
 
             inputRecieved = false;
             input = "";
-
-
         }
 
     }
-
 }
