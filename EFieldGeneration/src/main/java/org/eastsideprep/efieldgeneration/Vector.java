@@ -237,4 +237,10 @@ public class Vector {
         z *= s;
     }
 
+    public void scale(Vector v) {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+    }
+
 }
