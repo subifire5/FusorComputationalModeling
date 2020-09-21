@@ -38,6 +38,12 @@ public class Triangle {
         }
     }
     
+    public void multiply(Vector factor){
+        for(Vector point: points){
+            point.scale(factor);
+        }
+    }
+    
     public Double getSurfaceArea(){
         // according to stack exchange
         // https://math.stackexchange.com/questions/128991/how-to-calculate-the-area-of-a-3d-triangle
