@@ -2,7 +2,6 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -10,7 +9,6 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -301,7 +299,7 @@ public class MonteCarloSimulation {
             completed.incrementAndGet();
             return;
         }
-        this.assembly.evolveNeutronPath(n, this.visualizations, true, this.grid);
+        this.assembly.evolveParticlePath(n, this.visualizations, true, this.grid);
         completed.incrementAndGet();
         if (traceLevel >= 2) {
             System.out.println("");
@@ -412,18 +410,20 @@ public class MonteCarloSimulation {
                     p = this.getPartByName(detector);
                     if (p != null) {
                         f = new DecimalFormat("0.###E0");
-                        e = f.format(p.getTotalFluence() / this.lastCount);
+                        e = f.format(p.getTotalFluence("neutron") / this.lastCount);
                         c.setTitle("Part \"" + p.name + "\" (" + p.material.name + ")"
                                 + "\nTotal fluence = " + e + " (n/cm^2)/src"
                                 + ", src = " + this.lastCount
-                                + p.fluenceOverEnergy.getStatsString(scale, true, this.lastCount)
                         );
                         xAxis.setLabel("Energy (eV)");
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
-                        c.getData().add(p.fluenceOverEnergy.makeSeries("Fluence", this.lastCount, scale));
+                        for (String kind : p.fluenceMap.keySet()) {
+                            EnergyHistogram h = p.fluenceMap.get(kind);
+                            c.getData().add(h.makeSeries("Fluence", this.lastCount, scale));
+                        }
                         if (fit && scale.equals("Linear (thermal)")) {
-                            c.getData().add(p.fluenceOverEnergy.makeFittedSeries("Flux fit", this.lastCount));
+                            c.getData().add(p.fluenceMap.get("neutron").makeFittedSeries("Flux fit", this.lastCount));
                         }
                         //c.getData().add(p.capturesOverEnergy.makeSeries("Capture", log));
                     } else {
@@ -439,7 +439,6 @@ public class MonteCarloSimulation {
                         yAxis.setLabel("Fluence (n/cm^2)/src");
                         yAxis.setTickLabelFormatter(new Formatter());
                         c.getData().add(m.lengthOverEnergy.makeSeries("Fluence", this.lastCount * factor, scale));
-                        //c.getData().add(m.capturesOverEnergy.makeSeries("Capture", log));
                     }
                     break;
 

@@ -12,6 +12,10 @@ table = libFile.tables['6012.800nc']
 # print table.sigma_t
 
 print table.reactions
+print table.reactions[102]
+print vars(table.reactions[102]).keys()
+
+x= 1/0
 print table.reactions[2]
 print vars(table.reactions[2]).keys()
 

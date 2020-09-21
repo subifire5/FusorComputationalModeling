@@ -237,7 +237,7 @@ public class Material {
         {
             switch (event.code) {
                 case Scatter:
-                    this.scattersOverEnergyBefore.record(1, event.neutron.energy);
+                    this.scattersOverEnergyBefore.record(1, event.particle.energy);
                     this.recordCollision();
                     // record more stats for material
                     synchronized (this) {
@@ -245,7 +245,7 @@ public class Material {
                     }
                     break;
                 case Capture:
-                    this.capturesOverEnergy.record(1, event.neutron.energy);
+                    this.capturesOverEnergy.record(1, event.particle.energy);
                     this.recordCollision(); // this needs to be here because it ends a path
                     // record more stats for material
                     synchronized (this) {
@@ -253,7 +253,7 @@ public class Material {
                     }
                     break;
                 case Gone:
-                    Environment.recordEscape(event.neutron.energy);
+                    Environment.recordEscape(event.particle.energy);
                     break;
                 default:
                     break;
@@ -261,7 +261,7 @@ public class Material {
         }
 
         //if (event.neutron.energy > 2.44e6 * Util.Physics.eV) {
-        this.recordLength(event.t, event.neutron.energy);
+        this.recordLength(event.t, event.particle.energy);
 //        if (this.name.equals("Air"))
 //        synchronized (this) {
 //            if (event.t > 300) {
@@ -271,13 +271,13 @@ public class Material {
 //        }
         //}
 
-        if (event.neutron != null && processNeutron) {
+        if (event.particle != null && processNeutron) {
             // let the neutron do its thing
-            event.neutron.processEvent(event);
+            event.particle.processEvent(event);
         }
 
         if (event.code == Event.Code.Scatter) {
-            this.scattersOverEnergyAfter.record(1, event.neutron.energy);
+            this.scattersOverEnergyAfter.record(1, event.particle.energy);
         }
     }
 
