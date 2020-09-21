@@ -68,6 +68,7 @@ public class Grid {
     // member variables for Grid
     HashMap<CellID, Cell> cells = new HashMap<>();
     public double side;
+    public double slice;
     double gminx = Double.POSITIVE_INFINITY;
     double gminy = Double.POSITIVE_INFINITY;
     double gminz = Double.POSITIVE_INFINITY;
@@ -80,6 +81,7 @@ public class Grid {
     public Grid(double side, Assembly a, Vector3D origin, Group g) {
         LinkedTransferQueue<Node> q = new LinkedTransferQueue<>();
         this.side = side;
+        this.slice = 0.01; // give triangles a bit of a third dimension
         this.totalTriangles = 0;
         this.totalTrianglesTimesCells = 0;
         addAssembly(a, q);
@@ -143,12 +145,12 @@ public class Grid {
             minz = Math.min(v[3 * f[t.face + k] + 2], minz);
             maxz = Math.max(v[3 * f[t.face + k] + 2], maxz);
         }
-        minx = Math.floor(minx / side) * side;
-        miny = Math.floor(miny / side) * side;
-        minz = Math.floor(minz / side) * side;
-        maxx = Math.ceil(maxx / side) * side;
-        maxy = Math.ceil(maxy / side) * side;
-        maxz = Math.ceil(maxz / side) * side;
+        minx = Math.floor((minx-this.slice) / side) * side;
+        miny = Math.floor((miny-this.slice) / side) * side;
+        minz = Math.floor((minz-this.slice) / side) * side;
+        maxx = Math.ceil((maxx+this.slice) / side) * side;
+        maxy = Math.ceil((maxy+this.slice) / side) * side;
+        maxz = Math.ceil((maxz+this.slice) / side) * side;
 
         for (double x = minx; x <= maxx; x += side) {
             for (double y = miny; y <= maxy; y += side) {
@@ -231,10 +233,21 @@ public class Grid {
 
                 //   intersect all triangles in cell
                 double tmin = -1;
+                double tmin2 = -1;
                 Part p = null;
+                Part p2 = null;
                 int face = -1;
+                int face2 = -1;
+
                 for (Triangle tr : cell.triangles) {
+                    // find intersecting triangles
                     double t = tr.part.shape.rayTriangleIntersect(ox, oy, oz, dx, dy, dz, goingOut, tr.face);
+                    if (t == 0  && goingOut) {
+                        // there won't be a zero-distance to exiting a part.
+                        // instead, this is the exit face of the adjacent part
+                        // we came out of last.
+                            continue;
+                    }
                     double tminNew = Util.Math.minIfValid(t, tmin);
                     if (tminNew < tmin || (tmin == -1.0 && tminNew != -1.0)) {
                         tmin = tminNew;
@@ -242,10 +255,24 @@ public class Grid {
                         face = tr.face;
                     }
 
+                    if (goingOut) {
+                        // find triangles that intersect right into the next part, if we are on the way out
+                        double t2 = tr.part.shape.rayTriangleIntersect(ox, oy, oz, dx, dy, dz, false, tr.face);
+                        double tminNew2 = Util.Math.minIfValid(t2, tmin2);
+                        if (tminNew2 < tmin2 || (tmin2 == -1.0 && tminNew2 != -1.0)) {
+                            tmin2 = tminNew2;
+                            p2 = tr.part;
+                            face2 = tr.face;
+                        }
+                    }
                 }
                 if (tmin != -1) {
                     ttotal += tmin;
                     // found? Make event and return
+                    if (tmin2 == tmin) {
+                        // found 2 triangles, in and out, at same spot
+                        return new Event(origin.add(direction.scalarMultiply(ttotal)), p, p2, ttotal);
+                    }
                     return new Event(origin.add(direction.scalarMultiply(ttotal)), p, ttotal, goingOut, face);
                 }
             }

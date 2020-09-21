@@ -2,6 +2,7 @@ package org.eastsideprep.javaneutrons.core;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -14,11 +15,10 @@ import javafx.scene.transform.Transform;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Assembly extends Part {
-    // todo: acceleration structure
 
     private AssemblyGroup g;
     public ArrayList<Part> parts = new ArrayList<>();
-    
+
     public Assembly(String name) {
         super(name, null, null);
         this.g = new AssemblyGroup(this);
@@ -68,26 +68,28 @@ public class Assembly extends Part {
     public Event evolveParticlePath(Particle p, LinkedTransferQueue visualizations, boolean outermost, Grid grid) {
         Event partEvent;
         Event interactionEvent;
-        Event event;
+        Event event = null;
         double t;
+        boolean firstTime = true;
 
         // we start in a certain medium.
         Material medium = p.mcs.initialMaterial;
 
         do {
-            // find the closest part we intersect with
-            if (grid != null) {
-                partEvent = grid.rayIntersect(p.position, p.direction, false, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
-                // DEBUG
-//                if (partEvent == null){
-//                    // find it the slow way
-//                    partEvent = this.rayIntersect(n.position, n.direction, false, visualizations);
-//                    if (partEvent != null) {
-//                        System.out.println("oh oh.");
-//                    }
-//                }
+            if (event != null && event.code == Event.Code.ExitEntry) {
+                // we have an exit/entry event from a prior iteration
+                partEvent = event;
+                partEvent.part = event.part2;
+                partEvent.code = Event.Code.Entry;
+                partEvent.position = event.position;
+                partEvent.t = 0;
             } else {
-                partEvent = this.rayIntersect(p.position, p.direction, false, visualizations);
+                // find the closest part we intersect with
+                if (grid != null) {
+                    partEvent = grid.rayIntersect(p.position, p.direction, false, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
+                } else {
+                    partEvent = this.rayIntersect(p.position, p.direction, false, visualizations);
+                }
             }
             if (partEvent == null && !outermost) {
                 // we found nothing and we are not in the outermost assembly,
@@ -98,7 +100,7 @@ public class Assembly extends Part {
             interactionEvent = p.nextPoint(medium);
 
             // did we not find a part, maybe we started inside a part?
-            if (partEvent == null && outermost) {
+            if (partEvent == null && outermost && firstTime) {
                 // repeat search looking at triangle meshes from the inside
                 if (grid != null) {
                     partEvent = grid.rayIntersect(p.position, p.direction, true, p.mcs.traceLevel >= 1 ? visualizations : null, Double.POSITIVE_INFINITY);
@@ -106,10 +108,11 @@ public class Assembly extends Part {
                     partEvent = this.rayIntersect(p.position, p.direction, true, visualizations);
                 }
                 if (partEvent != null) {
-                    // we are alsready inside the part. 
+                    // we are already inside the part. 
                     partEvent.t = 0;
                 }
             }
+            firstTime = false;
 
             // did we not find a part, or is it further than an air event?
             if (partEvent == null || partEvent.t > interactionEvent.t) {
@@ -196,11 +199,12 @@ public class Assembly extends Part {
     }
 
     public void add(Part part) {
-        this.parts.add(part);
         if (part instanceof Assembly) {
             Assembly a = (Assembly) part;
+            this.addAll(a.parts);
             g.getChildren().add(a.getGroup());
         } else {
+            this.parts.add(part);
             g.getChildren().add(part.shape);
         }
 //        if (part.shape != null) {
@@ -306,14 +310,45 @@ public class Assembly extends Part {
         return parts;
     }
 
-    ;
-    
-    
     public Set<Material> getMaterials() {
         return getParts().stream().map(p -> p.material).filter(m -> m != null).collect(Collectors.toSet());
     }
 
     public Set<Material> getContainedMaterials() {
         return getParts().stream().map(p -> p.shape.containedMaterial).filter(m -> m != null).collect(Collectors.toSet());
+    }
+
+    public Set<Part> verifyPart(Part part) {
+
+        HashSet<Part> intersectingParts = new HashSet<>();
+        ArrayList<Vector3D> points = part.shape.getPoints();
+        for (Part other : parts) {
+            if (other != part) {
+                for (Vector3D point : points) {
+                    if (other.contains(point)) {
+                        // repeat that test with another random ray
+                        if (other.contains(point)) {
+                            if (other.contains(point)) {
+                                intersectingParts.add(other);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return intersectingParts;
+    }
+
+    public Set<String> verifyMeshIntegrity() {
+        Set<String> intersectingPairs = new HashSet<>();
+        for (Part p : this.parts) {
+            Set<Part> intersectingParts = verifyPart(p);
+            for (Part other : intersectingParts) {
+                String conflict = "Parts of " + p.name + " are contained in " + other.name;
+                intersectingPairs.add(conflict);
+            }
+        }
+        return intersectingPairs;
     }
 }

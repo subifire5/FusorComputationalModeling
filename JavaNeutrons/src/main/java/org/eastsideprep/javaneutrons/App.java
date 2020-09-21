@@ -65,14 +65,14 @@ public class App extends Application {
         this.viewGroup = new Group();
 
         // control buttons and progress 
+        Label src = new Label("Src: ");
         TextField tf = new TextField("1");
-        tf.setPrefWidth(100);
-        CheckBox grid = new CheckBox("Grid:");
-        grid.setPrefWidth(50);
+        tf.setPrefWidth(85);
+        Label grid = new Label("Grid: ");
         TextField gridSize = new TextField("2.0");
         gridSize.setPrefWidth(40);
         HBox settings = new HBox();
-        settings.getChildren().addAll(tf, grid, gridSize);
+        settings.getChildren().addAll(src, tf, grid, gridSize);
         settings.setAlignment(Pos.CENTER);
         settings.setSpacing(5);
 
@@ -84,8 +84,7 @@ public class App extends Application {
         cb.setOnAction(e -> {
             this.progress.setText("");
             this.sim = fromString((String) cb.getValue(), viewGroup);
-            grid.setSelected(this.sim.grid != null);
-            gridSize.setText(this.sim.grid != null ? "" + this.sim.grid.side : "");
+            gridSize.setText("" + this.sim.suggestedGrid);
             if (this.sim instanceof MC0D) {
                 ((MC0D) sim).init();
             }
@@ -104,10 +103,13 @@ public class App extends Application {
 
         bRun = new Button("Start simulation");
         bRun.setOnAction((e) -> {
-            if (grid.isSelected() && sim.grid == null) {
-                this.sim.prepareGrid(Double.parseDouble(gridSize.getText()), view);
-            } else if (!grid.isSelected() && sim.grid != null) {
+            if (gridSize.getText().trim().length() > 0) {
+                double side = Double.parseDouble(gridSize.getText());
                 this.sim.grid = null;
+                this.sim.prepareGrid(side, view);
+            } else {
+                this.sim.grid = null;
+                this.sim.prepareGrid(50, view);
             }
             this.runSim(Integer.parseInt(tf.getText()));
             if (this.sim.lastCount <= 10) {
@@ -116,7 +118,8 @@ public class App extends Application {
                 root.setRight(null);
             }
 
-        });
+        }
+        );
         bRun.setPrefWidth(200);
 
         Button bStop = new Button("Stop");
@@ -211,7 +214,8 @@ public class App extends Application {
         stage.setOnCloseRequest((e) -> noIdle());
     }
 
-    void addItems(ChoiceBox cb, Class c) {
+    void addItems(ChoiceBox cb, Class c
+    ) {
         Method[] methods = c.getMethods();
         for (int i = 0; i < methods.length; i++) {
             if (methods[i].getReturnType() == MonteCarloSimulation.class) {
@@ -224,7 +228,8 @@ public class App extends Application {
         }
     }
 
-    MonteCarloSimulation fromString(String m, Group g) {
+    MonteCarloSimulation fromString(String m, Group g
+    ) {
         String cname = App.class.getPackageName() + "." + m.substring(0, m.indexOf("::"));
         String mname = m.substring(m.indexOf("::") + 2);
         MonteCarloSimulation mcs = null;

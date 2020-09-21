@@ -45,7 +45,7 @@ public final class Neutron extends Particle {
     }
 
     public Vector3D getScatteredVelocity(Event e, Vector3D neutronVelocity) {
-        Isotope i = e.scatterParticle;
+        Nuclide i = e.scatterParticle;
         double cos_theta;
         if (i.angles != null) {
             double neutronSpeed = neutronVelocity.getNorm();
@@ -70,7 +70,7 @@ public final class Neutron extends Particle {
 
     public Vector3D getIsotropicScatteredVelocity(Event e, Vector3D neutronVelocity) {
         Vector3D v;
-        Isotope i = e.scatterParticle;
+        Nuclide i = e.scatterParticle;
         double vneutron = neutronVelocity.getNorm();
 
         v = Util.Math.randomDir();
@@ -79,7 +79,7 @@ public final class Neutron extends Particle {
         return v;
     }
 
-    private double pickTargetSpeed(double vneutron, Isotope i) {
+    private double pickTargetSpeed(double vneutron, Nuclide i) {
         // according to OpenMC documentation chapter 5.10.1
         double beta = Math.sqrt(i.mass / (2 * Util.Physics.kB * Util.Physics.T));
         double y = beta * vneutron;
@@ -119,18 +119,10 @@ public final class Neutron extends Particle {
             Vector3D neutronVelocityOut;
             double vtarget;
 
-            if (this.mcs.targetAdjusted) {
-                // choose particle speed 
-                do {
-                    vtarget = pickTargetSpeed(vneutron, event.scatterParticle);
-                    particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
-                } while (!acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
-            } else {
-                // naive Maxwellian speed distribution
-                double particleSpeedComponentSD = Math.sqrt(Util.Physics.kB * Util.Physics.T / event.scatterParticle.mass);
-                particleVelocityIn = Util.Math.randomGaussianComponentVector(particleSpeedComponentSD);
-                vtarget = particleVelocityIn.getNorm();
-            }
+            do {
+                vtarget = pickTargetSpeed(vneutron, event.scatterParticle);
+                particleVelocityIn = Util.Math.randomDir().scalarMultiply(vtarget);
+            } while (!acceptCosTheta(vneutron, vtarget, particleVelocityIn.normalize().dotProduct(neutronVelocityIn.normalize())));
 
             event.particleEnergyIn = event.scatterParticle.mass * vtarget * vtarget / 2;
             //establish center of mass

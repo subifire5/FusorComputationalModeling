@@ -255,8 +255,7 @@ public class InputHandler {
         Particle initial = null;
         boolean inputReceived = false;
         Double numberOfSteps = 0.0;
-        Double stepSize = 1.0;
-        
+        Double stepSize = 1.0;        
         inputFilePath = "outputChamberGrid20kCharges1kShakes.csv"; //name of input file
         outputFilePath = "rktest.csv"; // name of output file
         System.out.println("Do you want to skip the user input process? (y/n)");
@@ -309,6 +308,7 @@ public class InputHandler {
             
         }
         else {
+
         inputFilePath = fileNameGet("Please enter your input (including the .csv): ");
 
         System.out.println("Please enter the anode (positive) voltage");
@@ -431,5 +431,5 @@ public class InputHandler {
         input = "";
 
     }
-    }
 }
+
