@@ -183,6 +183,12 @@ public class Particle extends Charge {
         return particle;
     }
 
+    /**
+     * Returns a string version of this particle suitable for printing to a CSV
+     * file
+     *
+     * @return CSV string
+     */
     public String[] toCSVString() {
         this.pos.scale(1 / scaleDistance);
         this.vel.scale(1 / scaleDistance);
@@ -194,6 +200,11 @@ public class Particle extends Charge {
         return csvString;
     }
 
+    /**
+     * Creates a clone of this particle with a different memory address
+     *
+     * @return clone
+     */
     public Particle clone() {
         Particle clone = new Particle(polarity, charge, time, mass);
         clone.pos = this.pos.clone();
@@ -206,12 +217,24 @@ public class Particle extends Charge {
         return clone;
     }
 
+    /**
+     * Finds the kinetic energy of this particle
+     *
+     * @return kinetic energy
+     */
     public double kineticEnergy() {
         Vector zero = new Vector(0.0, 0.0, 0.0);
         this.kineticEnergy = 0.5 * this.mass * this.vel.distanceSquared(zero) / this.e;
         return this.kineticEnergy;
     }
 
+    /**
+     * Given an electric field, finds the electric potential energy of this
+     * particle
+     *
+     * @param e electric field
+     * @return electric potential energy
+     */
     public double electricPotentialEnergy(EField e) {
         double ePotential = 0;
         for (Charge t : e.charges) {
@@ -222,16 +245,33 @@ public class Particle extends Charge {
         return this.ePotentialEnergy;
     }
 
+    /**
+     * Given an electric field, finds the total energy of this particle Also
+     * updates the kinetic and electric potential energy of this particle
+     *
+     * @param e electric field
+     * @return total energy
+     */
     public double totalEnergy(EField e) {
         this.totalEnergy = kineticEnergy() + electricPotentialEnergy(e);
         return this.totalEnergy;
     }
 
+    /**
+     * Adds another particle's position and velocity vectors to this particle's
+     *
+     * @param p input particle
+     */
     public void plusEquals(Particle p) {
         this.pos.plusEquals(p.pos);
         this.vel.plusEquals(p.vel);
     }
 
+    /**
+     * Adds other particle's position and velocity vectors to this particle's
+     *
+     * @param ps input particles
+     */
     public void plusEquals(Particle[] ps) {
         for (Particle p : ps) {
             plusEquals(p);
@@ -239,12 +279,26 @@ public class Particle extends Charge {
 
     }
 
+    /**
+     * Returns the sum of this particle and another particle's position and
+     * velocity vectors without editing this particle's vectors
+     *
+     * @param p input particle
+     * @return sum particle
+     */
     public Particle sum(Particle p) {
         Particle s = this.clone();
         s.plusEquals(p);
         return s;
     }
 
+    /**
+     * Returns the sum of this particle and other particle's position and
+     * velocity vectors without editing this particle's vectors
+     *
+     * @param ps input particles
+     * @return sum particle
+     */
     public Particle sum(Particle[] ps) {
         Particle s = this.clone();
         for (Particle p : ps) {
@@ -253,6 +307,13 @@ public class Particle extends Charge {
         return s;
     }
 
+    /**
+     * Scales this particle's position and velocity vectors by s, and returns
+     * this particle
+     *
+     * @param s scalar
+     * @return scaled particle
+     */
     public Particle multiply(Double s) {
         this.pos.scale(s);
         this.vel.scale(s);
@@ -260,6 +321,13 @@ public class Particle extends Charge {
 
     }
 
+    /**
+     * Scales this particle's position and velocity vectors by s, and returns
+     * this particle
+     *
+     * @param s scalar
+     * @return scaled particle
+     */
     public Particle multiply(int s) {
         this.pos.scale(s);
         this.vel.scale(s);

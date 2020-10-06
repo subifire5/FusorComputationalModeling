@@ -168,7 +168,7 @@ public class InputHandler {
         Charge[] charges = chargeArrayArray[0];
 
         for (Charge c : charges) {
-            c.plusEquals(offset);
+            c.pos.plusEquals(offset);
         }
         TableGraphWriter writer = new TableGraphWriter();
         writer.writeCSV(charges, outputFilePath);

@@ -47,12 +47,12 @@ public class MYRungeKutta implements Solution {
         //System.out.println(k4);
 
         Particle p4 = p.clone();
-        k2.multiply(2.0);
-        k3.multiply(2.0);
+        k2.scale(2.0);
+        k3.scale(2.0);
 
         Particle[] k = {k1, k2, k3, k4};
         p4.plusEquals(k);
-        p4.multiply(stepSize / 6);
+        p4.scale(stepSize / 6);
 
         p4.time += stepSize;
         //System.out.println(p4);

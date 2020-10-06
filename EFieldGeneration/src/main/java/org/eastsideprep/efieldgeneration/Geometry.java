@@ -52,7 +52,7 @@ public class Geometry {
         meshImporter.close();
         return mesh;
     }
-
+    
     public void getTriangles() {
 
         // .getfaces/.getPoints/whatever all return Observable(Object)Arrays

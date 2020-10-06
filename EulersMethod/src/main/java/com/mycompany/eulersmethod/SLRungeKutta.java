@@ -24,7 +24,7 @@ public class SLRungeKutta {
 
     public Particle scaleAdd(Particle y, Particle k, Double h) {
         Particle hk = k.clone();
-        hk.multiply(h);
+        hk.scale(h);
         hk.plusEquals(y.clone());
         return hk;
 
