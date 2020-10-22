@@ -133,12 +133,15 @@ public class Charge {
     /**
      * Scales this charge's position by a scalar
      * @param s scalar
+     * @return this charge
      */
-    public void scale(Double s) {
+    public Charge scale(Double s) {
         pos.x *= s;
         pos.y *= s;
         pos.z *= s;
+        return this;
     }
+
 
     /**
      * Adds a scalar to this charge's position vector (the += sign)

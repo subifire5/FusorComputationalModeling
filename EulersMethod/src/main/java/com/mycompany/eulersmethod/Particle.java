@@ -18,6 +18,7 @@ public class Particle extends Charge {
     final Double e = 1.602176634e-19; // elementary charge 
     // also the conversion between 1 electron volt and Joules
     public Double ePotentialEnergy = 0.0;
+    public Double voltsPerCm = 0.0;
     public Double kineticEnergy = 0.0;
     public Double totalEnergy = 0.0;
     public Double scaleDistance = 1.0;
@@ -165,7 +166,9 @@ public class Particle extends Charge {
     }
 
     void setScaleDistance(Double scaleDistance) {
+        System.out.println("pre scale pos:" + pos);
         this.pos.scale(scaleDistance);
+        System.out.println("post-scal pos:" + pos);
         this.vel.scale(scaleDistance);
         this.scaleDistance = scaleDistance;
     }
@@ -173,13 +176,14 @@ public class Particle extends Charge {
     @Override
     public String toString() {
         String particle = "Position Vector: " + pos.product(1 / scaleDistance).toString();
-        particle += "Velocity Vector: " + vel.product(1 / scaleDistance).toString();
-        particle += "Polarity: " + polarity;
-        particle += "Charge: " + charge;
-        particle += "Time: " + time;
-        particle += "Mass: " + mass;
-        particle += "Electric Potential Energy: " + ePotentialEnergy;
-        particle += "Kinetic Energy: " + kineticEnergy;
+        particle += " Velocity Vector: " + vel.product(1 / scaleDistance).toString();
+        particle += " Polarity: " + polarity;
+        particle += " Charge: " + charge;
+        particle += " Time: " + time;
+        particle += " Mass: " + mass;
+        particle += " Electric Potential Energy: " + ePotentialEnergy;
+        particle += " Kinetic Energy: " + kineticEnergy;
+        particle += " Volts Per Cm: " + voltsPerCm;
         return particle;
     }
 
@@ -196,7 +200,7 @@ public class Particle extends Charge {
             "" + this.vel.x, "" + this.vel.y, "" + this.vel.z,
             "" + this.polarity, "" + this.charge, "" + this.time, "" + this.mass,
             "" + this.ePotentialEnergy, "" + this.kineticEnergy,
-            "" + this.totalEnergy};
+            "" + this.totalEnergy,  "" + this.voltsPerCm};
         return csvString;
     }
 
@@ -214,6 +218,7 @@ public class Particle extends Charge {
         clone.totalEnergy = this.totalEnergy;
         clone.scaleDistance = this.scaleDistance;
         clone.charge = this.charge;
+        clone.voltsPerCm=this.voltsPerCm;
         return clone;
     }
 
@@ -254,7 +259,13 @@ public class Particle extends Charge {
      */
     public double totalEnergy(EField e) {
         this.totalEnergy = kineticEnergy() + electricPotentialEnergy(e);
+        voltsPerCentimeter(e);
         return this.totalEnergy;
+    }
+    
+    public double voltsPerCentimeter(EField e){
+        this.voltsPerCm = e.forceOnCharge(this).norm()*100;
+        return this.voltsPerCm;
     }
 
     /**
@@ -314,7 +325,8 @@ public class Particle extends Charge {
      * @param s scalar
      * @return scaled particle
      */
-    public Particle multiply(Double s) {
+    @Override
+    public Particle scale(Double s) {
         this.pos.scale(s);
         this.vel.scale(s);
         return this;
@@ -328,10 +340,11 @@ public class Particle extends Charge {
      * @param s scalar
      * @return scaled particle
      */
-    public Particle multiply(int s) {
+    public Particle scale(int s) {
         this.pos.scale(s);
         this.vel.scale(s);
         return this;
 
     }
+
 }

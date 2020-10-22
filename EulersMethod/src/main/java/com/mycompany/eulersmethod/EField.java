@@ -267,8 +267,6 @@ public class EField {
      * @return total energy
      */
     public double totalEnergy(Particle p) {
-        double ePotentialEnergy = electricPotentialEnergy(p);
-        double kineticEnergy = kineticEnergy(p);
-        return ePotentialEnergy + kineticEnergy;
+        return p.totalEnergy(this);
     }
 }

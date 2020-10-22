@@ -316,7 +316,8 @@ public class Particle extends Charge {
      * @param s scalar
      * @return scaled particle
      */
-    public Particle multiply(Double s) {
+    @Override
+    public Particle scale(Double s) {
         this.pos.scale(s);
         this.vel.scale(s);
         return this;
@@ -330,7 +331,7 @@ public class Particle extends Charge {
      * @param s scalar
      * @return scaled particle
      */
-    public Particle multiply(int s) {
+    public Particle scale(int s) {
         this.pos.scale(s);
         this.vel.scale(s);
         return this;

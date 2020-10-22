@@ -67,9 +67,9 @@ public class PJRungeKutta implements Solution {
        /* k2_3.scale(2.0);
         k3_4.scale(2.0);*/
         
-        Particle[] k5 = {k2.multiply(2),k3.multiply(2),k4};
+        Particle[] k5 = {k2.scale(2),k3.scale(2),k4};
         k1.plusEquals(k5);
-        Particle pFinal = k1.multiply(stepSize/6);
+        Particle pFinal = k1.scale(stepSize/6);
         p2.plusEquals(pFinal);
         p2.time += stepSize;
         p2.totalEnergy(e);
