@@ -169,6 +169,7 @@ public class InputHandler {
 
         for (Charge c : charges) {
             c.pos.plusEquals(offset);
+
         }
         TableGraphWriter writer = new TableGraphWriter();
         writer.writeCSV(charges, outputFilePath);

@@ -155,6 +155,16 @@ public class Charge {
     }
 
     /**
+     * Adds a vector to this charge's position vector
+    * (the += sign)
+     * @param v the vector
+     */
+    public void plusEquals(Vector v){
+        this.x += v.x;
+        this.y += v.y;
+        this.z += v.z;
+    }
+    /**
      * Sets the position of this charge to a vector
      *
      * @param v vector

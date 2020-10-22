@@ -381,4 +381,10 @@ public class Vector {
 
     }
 
+    public void scale(Vector v) {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+    }
+
 }
