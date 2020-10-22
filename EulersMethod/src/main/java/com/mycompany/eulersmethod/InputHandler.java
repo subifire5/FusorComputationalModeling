@@ -27,7 +27,7 @@ public class InputHandler {
     String inputFilePath = "inputFilePath.csv";
     Double posCharge = 100.0;
     Double negCharge = 100.0;
-    Double scaleDistance = 0.01;
+    Double scaleDistance = 0.001;
     Double vAnnode;
     Double vCathode;
     int shakeUps = 100;
@@ -152,7 +152,7 @@ public class InputHandler {
         }
 
         String[] headers = {"X", "Y", "Z", "Vx", "Vy", "Vz", "Polarity", "Charge", "Time",
-            "Mass", "Electric Potential Energy", "Kinetic Energy", "Total Energy"};
+            "Mass", "Electric Potential Energy", "Kinetic Energy", "Total Energy", "V/Cm"};
 
         TableGraphWriter tgw = new TableGraphWriter();
 
@@ -256,8 +256,8 @@ public class InputHandler {
         boolean inputReceived = false;
         Double numberOfSteps = 0.0;
         Double stepSize = 1.0;
-        inputFilePath = "outputChamberGrid20kCharges1kShakes.csv"; //name of input file
-        outputFilePath = "rktest.csv"; // name of output file
+        inputFilePath = "scalecg20kc1ks.csv"; //name of input file
+        outputFilePath = "rktest8.csv"; // name of output file
         System.out.println("Do you want to skip the user input process? (y/n)");
         String inputString = s.nextLine();
 
@@ -280,27 +280,27 @@ public class InputHandler {
             negativeCharges = chargeArrayArray[2];
 
             // below are all the values you can change (before running the code) so that you can skip the input process
-            vAnnode = 1.0;
+            vAnnode = 0.0;
             vCathode = -40000.0;
             scaleDistance = 0.001;
             Vector centerOfGrid = new Vector(0.0, 0.0, 0.0);
             eField = new EField(charges, vAnnode, vCathode, scaleDistance, centerOfGrid);
 
-            Vector position = new Vector(30.0, 30.0, 30.0);
+            Vector position = new Vector(-30.0, -30.0, -30.0);
             Vector velocity = new Vector(0.0, 0.0, 0.0);
             int polarity = 1;
             double charge = 1;
-            double mass = 2.0141;
+            double mass = 2.014102 * 1.66053906660E-27;
             double time = 0.0;
 
             Particle particle2 = new Particle(position, velocity, polarity, charge, time, mass);
 
-            PJ = true; // run PJ's code
+            PJ = false; // run PJ's code
             MY = false; // run MY's code
-            SL = false; // run SL's code
-            numberOfSteps = 10000.0;
-            stepSize = 1E-5;
-            batch = true;
+            SL = true; // run SL's code
+            numberOfSteps = 3.0;
+            stepSize = 5E-11;
+            batch = false;
             batchSize = 100;
             eu = false;
             rk = true;
