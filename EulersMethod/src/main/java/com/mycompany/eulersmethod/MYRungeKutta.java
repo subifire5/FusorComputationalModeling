@@ -33,16 +33,16 @@ public class MYRungeKutta implements Solution {
         Particle k1 = f(p.clone());
         //System.out.println(k1);
         Particle p1 = p.clone();
-        p1.plusEquals(k1.clone().multiply(stepSize / 2));
+        p1.plusEquals(k1.clone().scale(stepSize / 2));
 
         Particle k2 = f(p1);
         //System.out.println(k2);
         Particle p2 = p.clone();
-        p2.plusEquals(k2.clone().multiply(stepSize / 2));
+        p2.plusEquals(k2.clone().scale(stepSize / 2));
         Particle k3 = f(p2);
         //System.out.println(k3);
         Particle p3 = p.clone();
-        p3.plusEquals(k3.clone().multiply(stepSize));
+        p3.plusEquals(k3.clone().scale(stepSize));
         Particle k4 = f(p3);
         //System.out.println(k4);
 
