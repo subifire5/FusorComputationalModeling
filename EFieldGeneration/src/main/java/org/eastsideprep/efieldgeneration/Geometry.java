@@ -292,7 +292,7 @@ public class Geometry {
         index = binarySearch(positiveSumSA, SA);
 
         t = positiveTriangles[index];
-
+        System.out.println("t: " +t);
         return t.genRandCharge();
 
     }

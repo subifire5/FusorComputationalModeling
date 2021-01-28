@@ -18,6 +18,8 @@ public class InputHandler {
     String positiveFilePath = "ThinRightPlate.csv";
     String negativeFilePath = "ThinPlate.csv";
     String outputFilePath = "outputFile.csv";
+    String trianglesFilePath = "triangleFile.csv"; // this is the file where
+            // we are storing the triangles
     Double posCharge = 100.0;
     Double negCharge = 100.0;
     Double scaleDistance = 0.01;
@@ -80,6 +82,7 @@ public class InputHandler {
         positiveFilePath = "";
         negativeFilePath = "";
         outputFilePath = "";
+        trianglesFilePath = "";
 
         positiveFilePath = fileNameGet("Please type in the annode (positive) file name");
 
@@ -87,6 +90,8 @@ public class InputHandler {
 
         outputFilePath = fileCreate("Please enter your output file location");
 
+        trianglesFilePath = fileCreate("please enter your triangle output file path");
+        
         System.out.println("How many charges of each polarity do you want?");
         numCharges = Integer.valueOf(s.nextLine());
 
@@ -129,7 +134,7 @@ public class InputHandler {
         charges = chargeDistributer.charges;
         TableGraphWriter writer = new TableGraphWriter();
         writer.writeCSV(charges, outputFilePath);
-
+        writer.writeCSV(geometry.triangles, trianglesFilePath);
     }
 
     public void scaleOver() {
@@ -169,9 +174,12 @@ public class InputHandler {
 
         for (Charge c : charges) {
             c.pos.plusEquals(offset);
+
         }
         TableGraphWriter writer = new TableGraphWriter();
         writer.writeCSV(charges, outputFilePath);
     
     }
+    
+    
 }

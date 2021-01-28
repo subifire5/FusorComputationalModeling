@@ -381,4 +381,12 @@ public class Vector {
 
     }
 
+    public void scale(Vector v) {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+    }
+    public Vector product(Vector v) {
+        return new Vector(x*v.x, y*v.y, z*v.z);
+    }
 }
