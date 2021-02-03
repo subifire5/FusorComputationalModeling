@@ -258,6 +258,8 @@ public class InputHandler {
         Double stepSize = 1.0;
         inputFilePath = "scalecg20kc1ks.csv"; //name of input file
         outputFilePath = "rktest8.csv"; // name of output file
+        
+
         System.out.println("Do you want to skip the user input process? (y/n)");
         String inputString = s.nextLine();
 
@@ -286,7 +288,9 @@ public class InputHandler {
             Vector centerOfGrid = new Vector(0.0, 0.0, 0.0);
             eField = new EField(charges, vAnnode, vCathode, scaleDistance, centerOfGrid);
 
-            Vector position = new Vector(-30.0, -30.0, -30.0);
+            
+            Vector position = new Vector(40.0, 40.0, 40.0);
+
             Vector velocity = new Vector(0.0, 0.0, 0.0);
             int polarity = 1;
             double charge = 1;
@@ -297,10 +301,12 @@ public class InputHandler {
 
             PJ = false; // run PJ's code
             MY = false; // run MY's code
+
             SL = true; // run SL's code
             numberOfSteps = 3.0;
             stepSize = 5E-11;
             batch = false;
+
             batchSize = 100;
             eu = false;
             rk = true;
