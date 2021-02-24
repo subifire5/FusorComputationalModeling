@@ -386,5 +386,7 @@ public class Vector {
         y *= v.y;
         z *= v.z;
     }
-
+    public Vector product(Vector v) {
+        return new Vector(x*v.x, y*v.y, z*v.z);
+    }
 }
