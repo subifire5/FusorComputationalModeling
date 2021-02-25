@@ -147,6 +147,7 @@ public class InputHandler {
                 for (int i = 1; i < numberOfSteps; i++) {
                     particles[i] = sl.step(p, stepSize).clone();
                     p = particles[i];
+                    //collisionCheck(particles[i+1], particles[i], stepSize);
                 }
             }
         }

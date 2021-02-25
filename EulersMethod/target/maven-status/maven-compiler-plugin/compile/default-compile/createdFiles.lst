@@ -9,6 +9,7 @@ com\mycompany\EulersMethod\PJInputHandler.class
 com\mycompany\EulersMethod\InputHandler.class
 com\mycompany\EulersMethod\Particle.class
 com\mycompany\EulersMethod\EulersMethod.class
+com\mycompany\EulersMethod\CollisionDetection.class
 com\mycompany\EulersMethod\Vector.class
 com\mycompany\EulersMethod\EFieldFileParser.class
 com\mycompany\EulersMethod\MYInputHandler.class

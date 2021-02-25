@@ -268,10 +268,14 @@ public class Vector {
         return this;
     }
 
+    public Vector product(Vector v) {
+        return new Vector(x*v.x, y*v.y, z*v.z);
+    }
+    
     public Vector product(Double s) {
         return new Vector(x, y, z).scale(s);
     }
-
+    
     public Vector clone() {
         Vector v = new Vector();
         v.x = this.x + 0.0;
