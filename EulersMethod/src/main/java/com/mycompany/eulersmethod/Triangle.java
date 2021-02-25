@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.eastsideprep.efieldgeneration;
+package com.mycompany.EulersMethod;
 
 import java.util.Random;
 
@@ -128,7 +128,7 @@ public class Triangle {
     public boolean checkTriangleCollision(Triangle inputTri, Vector A, Vector B) {
         //Find plane given points P, Q, R
         Vector P = ;
-        Vector Q = ; //testing
+        Vector Q = ;
         Vector R = ;
         
         //Create two vectors from triangle sides
@@ -143,7 +143,7 @@ public class Triangle {
         double t = (coeff.x*(P.x-A.x)+coeff.y*(P.y-A.y)+coeff.z*(P.z-A.z))/(coeff.x*slope.x+coeff.y*slope.y+coeff.z*slope.z);
         
         //Plug stepsize (t) into line equation to get intersection with plane
-        Vector L = A.plusEquals(slope.scale(t));
+        Vector L = A.sum(slope.product(t));
         
         //Check if intersection of line and plane is in triangle PQR
         

@@ -83,44 +83,6 @@ public class TableGraphWriter {
         }
 
     }
-    
-    
-     /**
-     * Prints the triangles into an output file
-     *
-     * @param triangles
-     * @param filePath
-     */
-    public void writeCSV(Triangle[] triangles, String filePath) {
-        FileWriter outputFile = null;
-        try {
-            File file = new File(filePath);
-            file.createNewFile();
-            outputFile = new FileWriter(file);
-            CSVWriter writer = new CSVWriter(outputFile);
-
-            String[] header = {"X1", "Y1", "Z1", "X2", "Y2", "Z2", "X3", "Y3", "Z3", "Polarity"};
-            writer.writeNext(header);
-            for (Triangle t : triangles) {
-                writer.writeNext(t.toCSVString());
-            }
-
-            writer.close();
-        } catch (IOException ex) {
-            ex.printStackTrace(); // try catch for file stuff
-        } finally {
-            try {
-                outputFile.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-    }
-    
-    
-    
-    
 
 
 }
