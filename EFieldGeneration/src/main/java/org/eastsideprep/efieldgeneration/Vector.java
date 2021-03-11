@@ -231,16 +231,40 @@ public class Vector {
         return same;
     }
 
-    public void scale(Double s) {
+    /**
+     * Scales this vector by a factor s, and returns this vector
+     * @param s scalar
+     * @return scaled vector
+     */
+    public Vector scale(Double s) {
         x *= s;
         y *= s;
         z *= s;
+        return this;
     }
 
-    public void scale(Vector v) {
-        x *= v.x;
-        y *= v.y;
-        z *= v.z;
+    /**
+     * Scales this vector by a factor s, and returns this vector
+     * @param s scalar
+     * @return scaled vector
+     */
+    public Vector scale(int s) {
+        x *= s;
+        y *= s;
+        z *= s;
+        return this;
     }
-
+    
+    /**
+     * Multiplies each component of this vector with the corresponding 
+     * component in the input vector
+     * @param v input vector
+     * @return this vector
+     */
+    public Vector multiply(Vector v){
+        x*=v.x;
+        y*=v.y;
+        z*=v.z;
+        return this;
+    }
 }
