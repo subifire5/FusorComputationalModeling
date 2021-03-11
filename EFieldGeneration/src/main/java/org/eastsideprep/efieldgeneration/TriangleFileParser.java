@@ -5,16 +5,17 @@
  */
 package org.eastsideprep.efieldgeneration;
 
-
 /**
  *
  * @author subif
  */
-
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -43,14 +44,14 @@ public class TriangleFileParser {
             int i = 0;
             for (String[] s : rawTriangles) {
                 triangles[i] = (new Triangle(s));
-                if(triangles[i].polarity == 1){
+                if (triangles[i].polarity == 1) {
                     posTriangles.add(triangles[i]);
-                }else{
+                } else {
                     negTriangles.add(triangles[i]);
                 }
                 i++;
             }
-            
+
             positiveTriangles = posTriangles.toArray(triangles);
             negativeTriangles = negTriangles.toArray(triangles);
 
@@ -60,10 +61,42 @@ public class TriangleFileParser {
             System.out.println("io exception");
         }
         Triangle[][] TriangleArrayArray = {triangles, positiveTriangles, negativeTriangles};
-        
+
         return TriangleArrayArray;
 
-    }    
+    }
+
+    /**
+     * Prints the charges into an output file
+     *
+     * @param triangles
+     * @param filePath
+     */
+    public void writeCSV(Triangle[] triangles, String filePath) {
+        FileWriter outputFile = null;
+        try {
+            File file = new File(filePath);
+            file.createNewFile();
+            outputFile = new FileWriter(file);
+            CSVWriter writer = new CSVWriter(outputFile);
+
+            String[] header = {"X1", "Y1", "Z1", "X2", "Y2", "Z2", "X3", "Y3", "Z3", "Polarity", "Surface Area"};
+            writer.writeNext(header);
+            for (Triangle t : triangles) {
+                writer.writeNext(t.toCSVString());
+            }
+
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace(); // try catch for file stuff
+        } finally {
+            try {
+                outputFile.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+    }
 
 }
-

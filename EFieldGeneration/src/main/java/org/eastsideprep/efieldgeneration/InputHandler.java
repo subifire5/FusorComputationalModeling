@@ -18,6 +18,7 @@ public class InputHandler {
     String positiveFilePath = "ThinRightPlate.csv";
     String negativeFilePath = "ThinPlate.csv";
     String outputFilePath = "outputFile.csv";
+    String triangleFilePath = "triangleOutput.csv";
     Double posCharge = 100.0;
     Double negCharge = 100.0;
     Double scaleDistance = 0.01;
@@ -86,6 +87,8 @@ public class InputHandler {
         negativeFilePath = fileNameGet("Please type cathode (negative) file name");
 
         outputFilePath = fileCreate("Please enter your output file location");
+        
+        triangleFilePath = fileCreate("Please enter triangle output file name");
 
         System.out.println("How many charges of each polarity do you want?");
         numCharges = Integer.valueOf(s.nextLine());
@@ -129,6 +132,9 @@ public class InputHandler {
         charges = chargeDistributer.charges;
         TableGraphWriter writer = new TableGraphWriter();
         writer.writeCSV(charges, outputFilePath);
+        
+        TriangleFileParser tParser = new TriangleFileParser();
+        tParser.writeCSV(geometry.triangles, triangleFilePath);
 
     }
 
