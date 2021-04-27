@@ -1,0 +1,14 @@
+{
+	"positiveFilePath": scaledChamber.stl,
+	"negativeFilePath": WireGridScale2.stl,
+	"outputFilePath": CG1-4-21-2021.csv,
+	"triangleFilePath": T1-4-21-2021.csv,
+	"numCharges": 10000,
+	"posCharge": 1.0,
+	"negCharge": -1.0,
+	"scaleDistance": 0.001,
+	"shakeUps": 1 
+
+
+
+}
