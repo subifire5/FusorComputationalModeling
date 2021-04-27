@@ -381,10 +381,6 @@ public class Vector {
      * @return clone
      */
 
-    /**
-     * Creates an identical clone of this vector with a different memory address
-     * @return clone
-     */
     public Vector clone() {
         Vector v = new Vector();
         v.x = this.x + 0.0;
