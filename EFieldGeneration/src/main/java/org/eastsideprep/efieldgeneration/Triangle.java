@@ -28,6 +28,16 @@ public class Triangle {
         this.polarity = polarity;
         this.surfaceArea = getSurfaceArea();
     }
+
+    Triangle(String[] triangle){
+        this.points = new Vector[3];
+        points[0] = new Vector(triangle[0], triangle[1], triangle[2]);
+        points[1] = new Vector(triangle[3], triangle[4], triangle[5]);
+        points[2] = new Vector(triangle[6], triangle[7], triangle[8]);
+        polarity = Integer.parseInt(triangle[9]);
+
+    }
+
     /**
      * 
      * @return The polarity (-1 or +1) of this triangle
@@ -104,6 +114,8 @@ public class Triangle {
         double r1 = randGen.nextDouble(); // generates a double between 0.0 and 1.0
         double r2 = randGen.nextDouble();
         double sqr1 = Math.sqrt(r1);
+        charge.pos = new Vector(0.0,0.0,0.0);
+
         charge.pos.x = (points[0].x*(1-sqr1))+(points[1].x*(sqr1*(1-r2)))+(points[2].x*r2*sqr1);
         charge.pos.y = (points[0].y*(1-sqr1))+(points[1].y*(sqr1*(1-r2)))+(points[2].y*r2*sqr1);
         charge.pos.z = (points[0].z*(1-sqr1))+(points[1].z*(sqr1*(1-r2)))+(points[2].z*r2*sqr1);
@@ -143,6 +155,14 @@ public class Triangle {
         triangle += "Point A: " +points[0] + " \n";
         triangle += "Point B: " +points[1] + " \n";
         triangle += "Point C: " +points[2] + " \n";
+        return triangle;
+    }
+    
+    public String[] toCSVString(){
+        String[] triangle ={ "" +points[0].x, "" + points[0].y, "" + points[0].z,
+            "" +points[1].x, "" + points[1].y, "" + points[1].z,
+            "" +points[2].x, "" + points[2].y, "" + points[2].z,
+        "" + polarity};
         return triangle;
     }
     

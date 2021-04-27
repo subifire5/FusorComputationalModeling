@@ -367,6 +367,17 @@ public class Vector {
         return new Vector(x, y, z).scale(s);
     }
 
+  /**
+     * Returns the product of this vector and another vector spot by spot
+     * without editing the values of this vector
+     * @param v vector
+     * @return 
+     */
+        public Vector product(Vector v) {
+        return new Vector(x*v.x, y*v.y, z*v.z);
+    }
+
+
     /**
      * Creates an identical clone of this vector with a different memory address
      * @return clone
@@ -378,5 +389,5 @@ public class Vector {
         v.z = this.z + 0.0;
         return v;
 
-    }
+
 }
