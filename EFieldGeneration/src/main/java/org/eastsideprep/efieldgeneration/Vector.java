@@ -339,11 +339,13 @@ public class Vector {
      * @return scaled vector
      */
     public Vector scale(int s) {
+
         x *= s;
         y *= s;
         z *= s;
         return this;
     }
+
     
     /**
      * Multiplies each component of this vector with the corresponding 

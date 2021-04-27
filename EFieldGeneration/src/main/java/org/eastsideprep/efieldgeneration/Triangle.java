@@ -28,7 +28,7 @@ public class Triangle {
         this.polarity = polarity;
         this.surfaceArea = getSurfaceArea();
     }
-    
+
     Triangle(String[] triangle){
         this.points = new Vector[3];
         points[0] = new Vector(triangle[0], triangle[1], triangle[2]);
@@ -37,6 +37,7 @@ public class Triangle {
         polarity = Integer.parseInt(triangle[9]);
 
     }
+
     /**
      * 
      * @return The polarity (-1 or +1) of this triangle
@@ -114,6 +115,7 @@ public class Triangle {
         double r2 = randGen.nextDouble();
         double sqr1 = Math.sqrt(r1);
         charge.pos = new Vector(0.0,0.0,0.0);
+
         charge.pos.x = (points[0].x*(1-sqr1))+(points[1].x*(sqr1*(1-r2)))+(points[2].x*r2*sqr1);
         charge.pos.y = (points[0].y*(1-sqr1))+(points[1].y*(sqr1*(1-r2)))+(points[2].y*r2*sqr1);
         charge.pos.z = (points[0].z*(1-sqr1))+(points[1].z*(sqr1*(1-r2)))+(points[2].z*r2*sqr1);

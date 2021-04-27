@@ -341,6 +341,7 @@ public class Vector {
         x *= s;
         y *= s;
         z *= s;
+
         return this;
     }
     
